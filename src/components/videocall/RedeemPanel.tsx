@@ -14,6 +14,7 @@ const REWARD_TIERS = [
 ];
 
 const RedeemPanel = ({ totalMinutes, onClose }: RedeemPanelProps) => {
+  const navigate = useNavigate();
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 w-full">
       {/* Header */}
