@@ -18,6 +18,7 @@ import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
+import VideoCallPage from "@/pages/public/VideoCallPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,9 @@ const App = () => (
               <Route path="blog" element={<PlaceholderPage title="Blog" />} />
               <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
             </Route>
+
+            {/* Video call (full-screen, no public layout) */}
+            <Route path="/videocall" element={<VideoCallPage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
