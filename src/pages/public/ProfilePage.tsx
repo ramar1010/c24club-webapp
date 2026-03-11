@@ -92,7 +92,7 @@ const ProfilePage = () => {
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
         <IconButton src={eventsIcon} label="EVENTS" />
-        <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/store")} />
+        <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
         <IconButton src={vipSettingsIcon} label="VIP SETTINGS" />
       </div>
 
