@@ -45,6 +45,11 @@ const VideoCallPage = () => {
     genderPreference: genderMap[genderFilter],
   });
 
+  // Redirect to home if not logged in
+  if (!loading && !user) {
+    return <Navigate to="/" replace />;
+  }
+
   const isActive = callState !== "idle";
 
   const handleStart = () => {
