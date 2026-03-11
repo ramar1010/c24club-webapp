@@ -1,68 +1,72 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { Database } from "@/integrations/supabase/types";
 
-type Tables = Database["public"]["Tables"];
-type TableName = keyof Tables;
-
-export function useFetchAll<T extends TableName>(table: T) {
+export function useMembers() {
   return useQuery({
-    queryKey: [table],
+    queryKey: ["members"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from(table)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Tables[T]["Row"][];
-    },
-  });
-}
-
-export function useInsertRow<T extends TableName>(table: T) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (row: Tables[T]["Insert"]) => {
-      const { data, error } = await supabase.from(table).insert(row as any).select().single();
+      const { data, error } = await supabase.from("members").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [table] });
-      toast.success("Created successfully");
-    },
-    onError: (e: Error) => toast.error("Create failed", { description: e.message }),
   });
 }
 
-export function useUpdateRow<T extends TableName>(table: T) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: Tables[T]["Update"] & { id: string }) => {
-      const { data, error } = await supabase.from(table).update(updates as any).eq("id", id as any).select().single();
+export function useRewards() {
+  return useQuery({
+    queryKey: ["rewards"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("rewards").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [table] });
-      toast.success("Updated successfully");
-    },
-    onError: (e: Error) => toast.error("Update failed", { description: e.message }),
   });
 }
 
-export function useDeleteRow<T extends TableName>(table: T) {
+export function usePromos() {
+  return useQuery({
+    queryKey: ["promos"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("promos").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useDeleteMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table).delete().eq("id", id as any);
+      const { error } = await supabase.from("members").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [table] });
-      toast.success("Deleted successfully");
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["members"] }); toast.success("Member deleted"); },
+    onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
+  });
+}
+
+export function useDeleteReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("rewards").delete().eq("id", id);
+      if (error) throw error;
     },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["rewards"] }); toast.success("Reward deleted"); },
+    onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
+  });
+}
+
+export function useDeletePromo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("promos").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["promos"] }); toast.success("Promo deleted"); },
     onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
   });
 }
