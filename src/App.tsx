@@ -31,7 +31,7 @@ const App = () => (
             <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" description="View chat room history." />} />
 
             {/* Rewards */}
-            <Route path="rewards" element={<PlaceholderPage title="All Rewards" description="Manage rewards catalog." />} />
+            <Route path="rewards" element={<RewardsPage />} />
             <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
 
             {/* Milestones */}
