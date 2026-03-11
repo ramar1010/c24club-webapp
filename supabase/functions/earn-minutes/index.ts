@@ -163,7 +163,6 @@ Deno.serve(async (req) => {
 
     // ADMIN_ADD_MINUTES: Manually add/set minutes for a user (admin only)
     if (type === "admin_add_minutes") {
-      const { targetUserId, minutes, mode } = await req.json().catch(() => ({}));
       const actualTargetUserId = targetUserId || userId;
       const actualMinutes = minutes ?? minutesEarned ?? 0;
 
