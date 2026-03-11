@@ -42,7 +42,7 @@ const App = () => (
             <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
 
             {/* Promos */}
-            <Route path="promos" element={<PlaceholderPage title="All Promos" />} />
+            <Route path="promos" element={<PromosPage />} />
 
             {/* Reported Users */}
             <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
