@@ -127,20 +127,18 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
         />
 
-        <div className="flex gap-3">
-          <input
-            placeholder="State"
-            value={form.state}
-            onChange={(e) => update("state", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-          <input
-            placeholder="Zip"
-            value={form.zip}
-            onChange={(e) => update("zip", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-        </div>
+        <input
+          placeholder="State"
+          value={form.state}
+          onChange={(e) => update("state", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
+        <input
+          placeholder="Zip"
+          value={form.zip}
+          onChange={(e) => update("zip", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
 
         {/* Confirm button */}
         <div className="pt-4 flex justify-center">
