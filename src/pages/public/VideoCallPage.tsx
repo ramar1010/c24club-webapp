@@ -173,14 +173,16 @@ const VideoCallPage = () => {
             </div>
           </div>
 
-          {/* NEXT Button - mobile only */}
-          <button
-            onClick={handleNext}
-            className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
-          >
-            <span className="font-bold text-sm">NEXT</span>
-            <img src={nextBtn} alt="Next" className="w-9 h-9" />
-          </button>
+          {/* NEXT Button - mobile only, shown only during active call */}
+          {isActive && (
+            <button
+              onClick={handleNext}
+              className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
+            >
+              <span className="font-bold text-sm">NEXT</span>
+              <img src={nextBtn} alt="Next" className="w-9 h-9" />
+            </button>
+          )}
 
           {/* Partner overlay - mobile only */}
           <div className="md:hidden absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
@@ -219,16 +221,18 @@ const VideoCallPage = () => {
         </div>
       </div>
 
-      {/* NEXT Button - desktop only, centered below videos */}
-      <div className="hidden md:flex justify-center mb-4">
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
-        >
-          <span className="font-bold">NEXT</span>
-          <img src={nextBtn} alt="Next" className="w-8 h-8" />
-        </button>
-      </div>
+      {/* NEXT Button - desktop only, shown only during active call */}
+      {isActive && (
+        <div className="hidden md:flex justify-center mb-4">
+          <button
+            onClick={handleNext}
+            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
+          >
+            <span className="font-bold">NEXT</span>
+            <img src={nextBtn} alt="Next" className="w-8 h-8" />
+          </button>
+        </div>
+      )}
 
       {/* Redeem Panel or Nav */}
       {showRedeem ? (
