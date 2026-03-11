@@ -56,10 +56,9 @@ const VideoCallPage = () => {
       </div>
 
       {/* Video Panels */}
-      <div className="flex-1 flex flex-col md:flex-row gap-2 px-2 pb-2 relative">
+      <div className="flex flex-col md:flex-row gap-2 px-3 pb-2 relative">
         {/* User Video (Left / Top) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-0">
-          {/* Placeholder: C24 logo + START button */}
+        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
           {!isConnected && (
             <div className="flex flex-col items-center gap-4">
               <img
@@ -78,7 +77,6 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* When connected: show local video placeholder */}
           {isConnected && (
             <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
               <p className="text-neutral-500 text-sm">Your camera</p>
@@ -87,7 +85,7 @@ const VideoCallPage = () => {
         </div>
 
         {/* Remote Video (Right / Bottom) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-0">
+        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
           {isConnected ? (
             <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
               <p className="text-neutral-500 text-sm">Connecting...</p>
@@ -98,7 +96,6 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* NEXT Button */}
           {isConnected && (
             <button
               onClick={handleNext}
