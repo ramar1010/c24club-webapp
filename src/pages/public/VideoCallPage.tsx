@@ -259,6 +259,15 @@ const VideoCallPage = () => {
           GUYS
         </button>
       </div>
+
+      {/* Cap Reached Popup */}
+      {showCapPopup && capInfo && (
+        <CapReachedPopup
+          isVip={capInfo.isVip}
+          cap={capInfo.cap}
+          onDismiss={dismissCapPopup}
+        />
+      )}
     </div>
   );
 };
