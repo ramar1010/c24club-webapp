@@ -123,6 +123,16 @@ const VideoCallPage = () => {
             }`}
           />
 
+          {/* X button to leave call */}
+          {isActive && (
+            <button
+              onClick={stop}
+              className="absolute top-2 right-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+
           {/* Waiting overlay */}
           {callState === "waiting" && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
