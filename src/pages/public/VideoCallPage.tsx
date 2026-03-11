@@ -3,6 +3,8 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
+import { useCallMinutes } from "@/hooks/useCallMinutes";
+import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -25,16 +27,15 @@ const VideoCallPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
-  const [minutes] = useState(10);
   const [adPoints] = useState(40);
   const [rewardDropMinutes] = useState(50);
 
-  // Use real user ID from auth
   const memberId = user?.id ?? "anonymous";
 
   const {
     callState,
     error,
+    currentPartnerId,
     localVideoRef,
     remoteVideoRef,
     startCall,
@@ -43,6 +44,18 @@ const VideoCallPage = () => {
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
+  });
+
+  const {
+    totalMinutes,
+    showCapPopup,
+    capInfo,
+    dismissCapPopup,
+    flushMinutes,
+  } = useCallMinutes({
+    userId: memberId,
+    partnerId: currentPartnerId,
+    isConnected: callState === "connected",
   });
 
   // Redirect to home if not logged in
