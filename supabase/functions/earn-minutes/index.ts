@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip")
+        .select("total_minutes, is_vip, cap_popup_shown")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
           isVip: data?.is_vip ?? false,
+          capPopupShown: data?.cap_popup_shown ?? false,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -48,11 +49,12 @@ Deno.serve(async (req) => {
       // Get VIP status
       const { data: memberData } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip")
+        .select("total_minutes, is_vip, cap_popup_shown")
         .eq("user_id", userId)
         .maybeSingle();
 
       const isVip = memberData?.is_vip ?? false;
+      const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
       const cap = isVip ? 30 : 10;
 
       // Get current minutes earned with this partner today
@@ -99,29 +101,34 @@ Deno.serve(async (req) => {
 
       // Upsert member_minutes
       const currentTotal = memberData?.total_minutes ?? 0;
+      const newTotal = currentTotal + actualEarned;
+      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShown;
+
       await supabase
         .from("member_minutes")
         .upsert(
           {
             user_id: userId,
-            total_minutes: currentTotal + actualEarned,
+            total_minutes: newTotal,
             updated_at: new Date().toISOString(),
+            ...(shouldShowCapPopup ? { cap_popup_shown: true } : {}),
           },
           { onConflict: "user_id" }
         );
 
       const newTotalWithPartner = alreadyEarned + actualEarned;
-      const capReached = newTotalWithPartner >= cap;
+      const partnerCapReached = newTotalWithPartner >= cap;
 
       return new Response(
         JSON.stringify({
           success: true,
-          message: capReached ? "cap_reached" : "earned",
+          message: partnerCapReached ? "cap_reached" : "earned",
           earned: actualEarned,
-          totalMinutes: currentTotal + actualEarned,
+          totalMinutes: newTotal,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
           isVip,
+          showCapPopup: shouldShowCapPopup,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

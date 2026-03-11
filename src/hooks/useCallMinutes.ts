@@ -18,7 +18,6 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
   const [showCapPopup, setShowCapPopup] = useState(false);
-  const totalCapShownRef = useRef(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef(0);
@@ -81,9 +80,8 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
         setShowCapPopup(true);
       }
 
-      // Also trigger popup when total minutes first reach the cap threshold
-      if (data.totalMinutes >= data.cap && !totalCapShownRef.current && !capReachedRef.current) {
-        totalCapShownRef.current = true;
+      // Server tells us to show the one-time cap popup (first time reaching total cap)
+      if (data.showCapPopup && !capReachedRef.current) {
         setCapInfo({ cap: data.cap, isVip: data.isVip });
         setShowCapPopup(true);
       }
