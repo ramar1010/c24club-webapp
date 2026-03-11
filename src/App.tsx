@@ -3,14 +3,17 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
 
 // Admin
 import AdminLayout from "@/components/admin/AdminLayout";
+import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
 import DashboardPage from "@/pages/admin/DashboardPage";
 import MembersPage from "@/pages/admin/MembersPage";
 import RewardsPage from "@/pages/admin/RewardsPage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
+import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
@@ -22,66 +25,71 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public site */}
-          <Route path="/" element={<PublicLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="faq" element={<PlaceholderPage title="FAQ" />} />
-            <Route path="rules" element={<PlaceholderPage title="Site Rules" />} />
-            <Route path="terms" element={<PlaceholderPage title="Terms & Conditions" />} />
-            <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
-            <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
-            <Route path="blog" element={<PlaceholderPage title="Blog" />} />
-            <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
-          </Route>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public site */}
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="faq" element={<PlaceholderPage title="FAQ" />} />
+              <Route path="rules" element={<PlaceholderPage title="Site Rules" />} />
+              <Route path="terms" element={<PlaceholderPage title="Terms & Conditions" />} />
+              <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
+              <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
+              <Route path="blog" element={<PlaceholderPage title="Blog" />} />
+              <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
+            </Route>
 
-          {/* Admin panel */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="members" element={<MembersPage />} />
-            <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
-            <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
-            <Route path="rewards" element={<RewardsPage />} />
-            <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
-            <Route path="milestones" element={<PlaceholderPage title="All Milestones" />} />
-            <Route path="milestones/new" element={<PlaceholderPage title="Add New Milestone" />} />
-            <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
-            <Route path="promos" element={<PromosPage />} />
-            <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
-            <Route path="categories" element={<PlaceholderPage title="All Categories" />} />
-            <Route path="categories/new" element={<PlaceholderPage title="Add New Category" />} />
-            <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
-            <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
-            <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
-            <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
-            <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
-            <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
-            <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
-            <Route path="contests" element={<PlaceholderPage title="Contests" />} />
-            <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
-            <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
-            <Route path="challenges" element={<PlaceholderPage title="All Challenges" />} />
-            <Route path="challenges/new" element={<PlaceholderPage title="Add New Challenge" />} />
-            <Route path="member-challenges" element={<PlaceholderPage title="Member Challenges" />} />
-            <Route path="spin-to-win" element={<PlaceholderPage title="Manage Spin to Win" />} />
-            <Route path="spin-to-win/winners" element={<PlaceholderPage title="Members Won (Spin to Win)" />} />
-            <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />
-            <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
-            <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
-            <Route path="anchor-rewards/cashouts" element={<PlaceholderPage title="Idle Minutes - Cashouts" />} />
-            <Route path="anchor-rewards/queue" element={<PlaceholderPage title="Anchor Users Queue" />} />
-            <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
-            <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
-          </Route>
+            {/* Admin login */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            {/* Admin panel (protected) */}
+            <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
+              <Route index element={<DashboardPage />} />
+              <Route path="members" element={<MembersPage />} />
+              <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
+              <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
+              <Route path="rewards" element={<RewardsPage />} />
+              <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
+              <Route path="milestones" element={<PlaceholderPage title="All Milestones" />} />
+              <Route path="milestones/new" element={<PlaceholderPage title="Add New Milestone" />} />
+              <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
+              <Route path="promos" element={<PromosPage />} />
+              <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
+              <Route path="categories" element={<PlaceholderPage title="All Categories" />} />
+              <Route path="categories/new" element={<PlaceholderPage title="Add New Category" />} />
+              <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
+              <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
+              <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
+              <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
+              <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
+              <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
+              <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
+              <Route path="contests" element={<PlaceholderPage title="Contests" />} />
+              <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
+              <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
+              <Route path="challenges" element={<PlaceholderPage title="All Challenges" />} />
+              <Route path="challenges/new" element={<PlaceholderPage title="Add New Challenge" />} />
+              <Route path="member-challenges" element={<PlaceholderPage title="Member Challenges" />} />
+              <Route path="spin-to-win" element={<PlaceholderPage title="Manage Spin to Win" />} />
+              <Route path="spin-to-win/winners" element={<PlaceholderPage title="Members Won (Spin to Win)" />} />
+              <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />
+              <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
+              <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
+              <Route path="anchor-rewards/cashouts" element={<PlaceholderPage title="Idle Minutes - Cashouts" />} />
+              <Route path="anchor-rewards/queue" element={<PlaceholderPage title="Anchor Users Queue" />} />
+              <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
+              <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
