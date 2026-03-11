@@ -80,6 +80,9 @@ const SideCard = ({ image }: { image: string }) => (
 );
 
 const HomePage = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="relative">
       <PublicNav />
