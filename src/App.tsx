@@ -24,7 +24,7 @@ const App = () => (
             <Route index element={<DashboardPage />} />
 
             {/* Members */}
-            <Route path="members" element={<PlaceholderPage title="All Members" description="Manage all registered members." />} />
+            <Route path="members" element={<MembersPage />} />
             <Route path="members/new" element={<PlaceholderPage title="Add New Member" description="Create a new member record." />} />
 
             {/* Chat History */}
