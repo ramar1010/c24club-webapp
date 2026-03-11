@@ -264,7 +264,7 @@ const VideoCallPage = () => {
               onClick={() => setShowRedeem(true)}
               highlight
             />
-            <NavIcon src={topicsIcon} label="TOPICS" />
+            <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
           </div>
 
           {/* Quick Nav Icons - Row 2 */}
