@@ -255,7 +255,7 @@ const VideoCallPage = () => {
           {/* Quick Nav Icons - Row 2 */}
           <div className="flex justify-center gap-8 px-4 pb-4">
             <NavIcon src={promoIcon} label="PROMO" />
-            <NavIcon src={profileIcon} label="PROFILE" />
+            <NavIcon src={profileIcon} label="PROFILE" onClick={() => navigate("/profile")} />
             <NavIcon src={vipIcon} label="VIP" />
           </div>
 
