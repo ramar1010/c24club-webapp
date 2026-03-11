@@ -33,6 +33,7 @@ const genderMap: Record<GenderFilter, string> = {
 };
 
 const VideoCallPage = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
