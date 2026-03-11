@@ -61,7 +61,11 @@ const VideoCallPage = () => {
   };
 
   const handleBack = async () => {
-    await stop();
+    try {
+      await stop();
+    } catch (e) {
+      console.warn("Stop error on back:", e);
+    }
     navigate("/");
   };
 
