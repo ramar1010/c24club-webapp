@@ -68,6 +68,86 @@ export type Database = {
         }
         Relationships: []
       }
+      member_redemptions: {
+        Row: {
+          cashout_amount: number | null
+          cashout_paypal: string | null
+          cashout_status: string | null
+          created_at: string
+          id: string
+          minutes_cost: number
+          notes: string | null
+          reward_id: string | null
+          reward_image_url: string | null
+          reward_rarity: string
+          reward_title: string
+          reward_type: string
+          shipping_address: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shipping_name: string | null
+          shipping_state: string | null
+          shipping_zip: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cashout_amount?: number | null
+          cashout_paypal?: string | null
+          cashout_status?: string | null
+          created_at?: string
+          id?: string
+          minutes_cost?: number
+          notes?: string | null
+          reward_id?: string | null
+          reward_image_url?: string | null
+          reward_rarity?: string
+          reward_title: string
+          reward_type?: string
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_name?: string | null
+          shipping_state?: string | null
+          shipping_zip?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cashout_amount?: number | null
+          cashout_paypal?: string | null
+          cashout_status?: string | null
+          created_at?: string
+          id?: string
+          minutes_cost?: number
+          notes?: string | null
+          reward_id?: string | null
+          reward_image_url?: string | null
+          reward_rarity?: string
+          reward_title?: string
+          reward_type?: string
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_name?: string | null
+          shipping_state?: string | null
+          shipping_zip?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           birthdate: string | null

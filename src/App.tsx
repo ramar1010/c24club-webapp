@@ -26,6 +26,7 @@ import HomePage from "@/pages/public/HomePage";
 import VideoCallPage from "@/pages/public/VideoCallPage";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
+import MyRewardsPage from "@/pages/public/MyRewardsPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/videocall" element={<VideoCallPage />} />
             <Route path="/store" element={<RewardStorePage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/my-rewards" element={<MyRewardsPage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
