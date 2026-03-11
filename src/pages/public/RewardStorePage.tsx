@@ -13,7 +13,7 @@ const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
   legendary: { bg: "bg-amber-500", text: "text-black" },
 };
 
-const RewardStorePage = () => {
+const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { data: rewards, isLoading: loadingRewards } = usePublicRewards();
   const { data: categories } = usePublicCategories();
