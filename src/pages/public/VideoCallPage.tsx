@@ -260,7 +260,7 @@ const VideoCallPage = () => {
         <>
           {/* Quick Nav Icons - Row 1 */}
           <div className="flex justify-center gap-8 px-4 pt-2 pb-3">
-            <NavIcon src={storeIcon} label="STORE" onClick={() => navigate("/store")} />
+            <NavIcon src={storeIcon} label="STORE" onClick={() => safeNavigate("/store")} />
             <NavIcon
               src={redeemIcon}
               label="REDEEM"
