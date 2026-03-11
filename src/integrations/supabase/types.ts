@@ -163,6 +163,48 @@ export type Database = {
         }
         Relationships: []
       }
+      rooms: {
+        Row: {
+          channel1: string
+          channel2: string | null
+          connected_at: string | null
+          created_at: string
+          disconnected_at: string | null
+          id: string
+          member1: string
+          member1_gender: string | null
+          member2: string | null
+          member2_gender: string | null
+          status: string
+        }
+        Insert: {
+          channel1: string
+          channel2?: string | null
+          connected_at?: string | null
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          member1: string
+          member1_gender?: string | null
+          member2?: string | null
+          member2_gender?: string | null
+          status?: string
+        }
+        Update: {
+          channel1?: string
+          channel2?: string | null
+          connected_at?: string | null
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          member1?: string
+          member1_gender?: string | null
+          member2?: string | null
+          member2_gender?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -178,6 +220,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      waiting_queue: {
+        Row: {
+          channel_id: string
+          created_at: string
+          gender_preference: string | null
+          id: string
+          member_gender: string | null
+          member_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          gender_preference?: string | null
+          id?: string
+          member_gender?: string | null
+          member_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          gender_preference?: string | null
+          id?: string
+          member_gender?: string | null
+          member_id?: string
         }
         Relationships: []
       }

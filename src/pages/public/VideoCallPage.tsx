@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+import { useWebRTC } from "@/hooks/useWebRTC";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -13,21 +14,48 @@ import vipIcon from "@/assets/videocall/vip-rocket.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
+const genderMap: Record<GenderFilter, string> = {
+  girls: "Female",
+  both: "Both",
+  guys: "Male",
+};
+
 const VideoCallPage = () => {
   const navigate = useNavigate();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
-  const [isConnected, setIsConnected] = useState(false);
   const [minutes] = useState(10);
   const [adPoints] = useState(40);
   const [rewardDropMinutes] = useState(50);
 
+  // Temporary member ID — will be replaced with auth user ID
+  const memberId = useMemo(() => crypto.randomUUID(), []);
+
+  const {
+    callState,
+    error,
+    localVideoRef,
+    remoteVideoRef,
+    startCall,
+    next,
+    stop,
+  } = useWebRTC({
+    memberId,
+    genderPreference: genderMap[genderFilter],
+  });
+
+  const isActive = callState !== "idle";
+
   const handleStart = () => {
-    setIsConnected(true);
+    startCall();
   };
 
   const handleNext = () => {
-    // Will trigger next match via signaling server
-    setIsConnected(false);
+    next();
+  };
+
+  const handleBack = async () => {
+    await stop();
+    navigate("/");
   };
 
   return (
@@ -35,7 +63,7 @@ const VideoCallPage = () => {
       {/* Top Stats Bar */}
       <div className="flex items-center justify-between px-4 py-2 relative z-10">
         <button
-          onClick={() => navigate("/")}
+          onClick={handleBack}
           className="p-2 hover:bg-white/10 rounded-full transition-colors"
         >
           <ChevronLeft className="w-7 h-7" />
@@ -52,14 +80,21 @@ const VideoCallPage = () => {
           </div>
         </div>
 
-        <div className="w-11" /> {/* Spacer for centering */}
+        <div className="w-11" />
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="mx-4 mb-2 px-4 py-2 bg-red-900/60 border border-red-700 rounded-lg text-sm text-center">
+          {error}
+        </div>
+      )}
 
       {/* Video Panels */}
       <div className="flex flex-col md:flex-row gap-3 px-4 pb-2 justify-center max-w-3xl mx-auto w-full">
         {/* User Video (Left / Top) */}
         <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[260px] md:h-[330px] w-full md:w-[400px]">
-          {!isConnected && (
+          {!isActive && (
             <div className="flex flex-col items-center gap-3">
               <img
                 src={c24Logo}
@@ -77,22 +112,52 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {isConnected && (
-            <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
-              <p className="text-neutral-500 text-sm">Your camera</p>
+          {/* Local video */}
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover ${
+              isActive ? "block" : "hidden"
+            }`}
+          />
+
+          {/* Waiting overlay */}
+          {callState === "waiting" && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <p className="text-sm text-neutral-300">Finding a partner...</p>
+              </div>
             </div>
           )}
         </div>
 
         {/* Remote Video (Right / Bottom) */}
         <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[260px] md:h-[330px] w-full md:w-[400px]">
-          <div className="flex items-center justify-center h-full">
-            <p className="text-neutral-600 text-sm">
-              {isConnected ? "Connecting..." : "Partner video"}
-            </p>
-          </div>
+          {/* Remote video */}
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover ${
+              callState === "connected" ? "block" : "hidden"
+            }`}
+          />
 
-          {/* NEXT Button - always visible like in screenshot */}
+          {/* Status text when not connected */}
+          {callState !== "connected" && (
+            <p className="text-neutral-600 text-sm">
+              {callState === "connecting"
+                ? "Connecting..."
+                : callState === "waiting"
+                ? "Searching..."
+                : "Partner video"}
+            </p>
+          )}
+
+          {/* NEXT Button */}
           <button
             onClick={handleNext}
             className="absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-10"
