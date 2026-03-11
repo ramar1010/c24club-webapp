@@ -270,6 +270,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
 
       await getLocalStream();
 
+      console.log("[WebRTC] Calling videocall-match join", {
+        memberId: memberIdRef.current,
+        channelId: channelIdRef.current,
+        genderPreference: genderPreferenceRef.current,
+      });
+
       const { data, error: invokeError } = await supabase.functions.invoke("videocall-match", {
         body: {
           type: "join",
@@ -280,26 +286,29 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
         },
       });
 
+      console.log("[WebRTC] videocall-match response:", { data, invokeError });
+
       if (invokeError) throw invokeError;
 
       if (data?.message === "partner_found") {
+        console.log("[WebRTC] Partner found! Room:", data.roomId);
         roomIdRef.current = data.roomId;
         setCallState("connecting");
-
-        // We found someone in the queue — they'll poll, find the room,
-        // and send us the offer. We just set up and wait.
         createPeerConnection();
         await setupSignaling(data.roomId);
+        console.log("[WebRTC] Signaling ready, waiting for poller's offer");
         return;
       }
 
       if (data?.message === "added_to_queue") {
+        console.log("[WebRTC] Added to queue, starting to poll");
         await pollForMatch();
         return;
       }
 
       throw new Error("Unexpected matchmaking response");
     } catch (startError) {
+      console.error("[WebRTC] startCall error:", startError);
       const message = startError instanceof Error ? startError.message : "Failed to start call";
       setError(message === "Requested device not found" ? "Camera or microphone not found." : message);
       setCallState("idle");
