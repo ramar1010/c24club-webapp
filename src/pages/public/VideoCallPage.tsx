@@ -74,6 +74,13 @@ const VideoCallPage = () => {
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => startCall();
+  const safeNavigate = (path: string) => {
+    if (isActive) {
+      window.open(window.location.origin + path, "_blank");
+    } else {
+      navigate(path);
+    }
+  };
   const handleNext = async () => {
     await flushMinutes();
     next();
@@ -253,7 +260,7 @@ const VideoCallPage = () => {
         <>
           {/* Quick Nav Icons - Row 1 */}
           <div className="flex justify-center gap-8 px-4 pt-2 pb-3">
-            <NavIcon src={storeIcon} label="STORE" onClick={() => navigate("/store")} />
+            <NavIcon src={storeIcon} label="STORE" onClick={() => safeNavigate("/store")} />
             <NavIcon
               src={redeemIcon}
               label="REDEEM"
@@ -266,7 +273,7 @@ const VideoCallPage = () => {
           {/* Quick Nav Icons - Row 2 */}
           <div className="flex justify-center gap-8 px-4 pb-4">
             <NavIcon src={promoIcon} label="PROMO" />
-            <NavIcon src={profileIcon} label="PROFILE" onClick={() => navigate("/profile")} />
+            <NavIcon src={profileIcon} label="PROFILE" onClick={() => safeNavigate("/profile")} />
             <NavIcon src={vipIcon} label="VIP" />
           </div>
 
