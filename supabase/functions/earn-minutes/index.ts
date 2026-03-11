@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip")
+        .select("total_minutes, is_vip, cap_popup_shown")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
           isVip: data?.is_vip ?? false,
+          capPopupShown: data?.cap_popup_shown ?? false,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
