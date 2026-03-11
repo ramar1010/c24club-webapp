@@ -16,6 +16,22 @@ import logoutIcon from "@/assets/profile/logout-icon.png";
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+      .then((s) => {
+        stream = s;
+        if (videoRef.current) {
+          videoRef.current.srcObject = s;
+        }
+      })
+      .catch(() => {});
+    return () => {
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   const { data: balance } = useQuery({
     queryKey: ["profile-balance", user?.id],
