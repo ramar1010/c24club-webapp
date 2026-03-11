@@ -152,6 +152,7 @@ const RewardStorePage = () => {
         {/* Redeem button */}
         <div className="px-4 pb-6 pt-2">
           <button
+            onClick={() => setShowShipping(true)}
             disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
             className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
               (userMinutes ?? 0) >= selectedReward.minutes_cost
