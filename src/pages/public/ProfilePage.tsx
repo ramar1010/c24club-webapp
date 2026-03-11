@@ -11,6 +11,8 @@ import challengesIcon from "@/assets/profile/challenges-icon.png";
 import becomeVipIcon from "@/assets/profile/vip-settings-icon.png";
 import settingsIcon from "@/assets/profile/settings-gear.png";
 import rulebookIcon from "@/assets/profile/rulebook-book.png";
+import challengesPin from "@/assets/profile/challenges-pin.png";
+import challengesTarget from "@/assets/profile/challenges-target.png";
 import logoutIcon from "@/assets/profile/logout-icon.png";
 
 const ProfilePage = () => {
@@ -101,7 +103,10 @@ const ProfilePage = () => {
           <span className="font-black text-sm tracking-wide text-center leading-tight">
             WEEKLY<br />CHALLENGES
           </span>
-          <img src={challengesIcon} alt="Challenges" className="w-12 h-12 object-contain" />
+          <div className="flex gap-2 items-center">
+            <img src={challengesPin} alt="Pin" className="w-10 h-10 object-contain" />
+            <img src={challengesTarget} alt="Target" className="w-10 h-10 object-contain" />
+          </div>
           <span className="text-xs font-bold text-green-200">Faster Rewards</span>
         </button>
 
