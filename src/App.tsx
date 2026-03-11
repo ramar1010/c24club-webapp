@@ -19,6 +19,7 @@ import AddMilestonePage from "@/pages/admin/AddMilestonePage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
