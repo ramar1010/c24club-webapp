@@ -26,6 +26,7 @@ const rewardSchema = z.object({
   info: z.string().optional(),
   image_url: z.string().optional(),
   minutes_cost: z.coerce.number().min(0).default(0),
+  shipping_fee: z.coerce.number().min(0).default(0),
 });
 
 type RewardForm = z.infer<typeof rewardSchema>;
