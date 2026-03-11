@@ -187,40 +187,44 @@ const VideoCallPage = () => {
           )}
 
           {/* Partner overlay - mobile only */}
-          <div className="md:hidden absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
+          {isMobile && (
+            <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
+              />
+              {callState !== "connected" && (
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-neutral-600 text-[10px] text-center px-1">
+                    {callState === "connecting" ? "Connecting..." : callState === "waiting" ? "Searching..." : ""}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Partner Video - desktop only */}
+        {!isMobile && (
+          <div className="flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
+              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
             />
             {callState !== "connected" && (
-              <div className="w-full h-full flex items-center justify-center">
-                <p className="text-neutral-600 text-[10px] text-center px-1">
-                  {callState === "connecting" ? "Connecting..." : callState === "waiting" ? "Searching..." : ""}
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <p className="text-neutral-400 text-sm">
+                  {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Partner Video - desktop only */}
-        <div className="hidden md:flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
-          />
-          {callState !== "connected" && (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-              <p className="text-neutral-400 text-sm">
-                {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* NEXT Button - desktop only, shown only during active call */}
