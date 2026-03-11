@@ -5,8 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AdminLayout from "@/components/admin/AdminLayout";
 import DashboardPage from "@/pages/admin/DashboardPage";
+import MembersPage from "@/pages/admin/MembersPage";
+import RewardsPage from "@/pages/admin/RewardsPage";
+import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
-import NotFound from "./pages/NotFound.tsx";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -21,14 +24,14 @@ const App = () => (
             <Route index element={<DashboardPage />} />
 
             {/* Members */}
-            <Route path="members" element={<PlaceholderPage title="All Members" description="Manage all registered members." />} />
+            <Route path="members" element={<MembersPage />} />
             <Route path="members/new" element={<PlaceholderPage title="Add New Member" description="Create a new member record." />} />
 
             {/* Chat History */}
             <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" description="View chat room history." />} />
 
             {/* Rewards */}
-            <Route path="rewards" element={<PlaceholderPage title="All Rewards" description="Manage rewards catalog." />} />
+            <Route path="rewards" element={<RewardsPage />} />
             <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
 
             {/* Milestones */}
@@ -39,7 +42,7 @@ const App = () => (
             <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
 
             {/* Promos */}
-            <Route path="promos" element={<PlaceholderPage title="All Promos" />} />
+            <Route path="promos" element={<PromosPage />} />
 
             {/* Reported Users */}
             <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
