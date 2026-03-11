@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
