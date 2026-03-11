@@ -71,22 +71,30 @@ const VideoCallPage = () => {
 
   const isMobile = useIsMobile();
 
+  const fetchPinnedTopics = async (userId: string) => {
+    const { data: pins } = await supabase
+      .from("pinned_topics")
+      .select("topic_id")
+      .eq("user_id", userId);
+    if (!pins || pins.length === 0) return [];
+    const topicIds = pins.map((p) => p.topic_id);
+    const { data: topics } = await supabase
+      .from("topics")
+      .select("id, name")
+      .in("id", topicIds);
+    return topics || [];
+  };
+
   const { data: pinnedTopics = [] } = useQuery({
     queryKey: ["my_pinned_topics", memberId],
     enabled: memberId !== "anonymous",
-    queryFn: async () => {
-      const { data: pins } = await supabase
-        .from("pinned_topics")
-        .select("topic_id")
-        .eq("user_id", memberId);
-      if (!pins || pins.length === 0) return [];
-      const topicIds = pins.map((p) => p.topic_id);
-      const { data: topics } = await supabase
-        .from("topics")
-        .select("id, name")
-        .in("id", topicIds);
-      return topics || [];
-    },
+    queryFn: () => fetchPinnedTopics(memberId),
+  });
+
+  const { data: partnerPinnedTopics = [] } = useQuery({
+    queryKey: ["partner_pinned_topics", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
   if (!loading && !user) {
