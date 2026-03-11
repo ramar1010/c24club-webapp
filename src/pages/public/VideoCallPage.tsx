@@ -56,10 +56,9 @@ const VideoCallPage = () => {
       </div>
 
       {/* Video Panels */}
-      <div className="flex-1 flex flex-col md:flex-row gap-2 px-2 pb-2 relative">
+      <div className="flex flex-col md:flex-row gap-2 px-3 pb-2 relative">
         {/* User Video (Left / Top) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-0">
-          {/* Placeholder: C24 logo + START button */}
+        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
           {!isConnected && (
             <div className="flex flex-col items-center gap-4">
               <img
@@ -78,7 +77,6 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* When connected: show local video placeholder */}
           {isConnected && (
             <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
               <p className="text-neutral-500 text-sm">Your camera</p>
@@ -87,7 +85,7 @@ const VideoCallPage = () => {
         </div>
 
         {/* Remote Video (Right / Bottom) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-0">
+        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
           {isConnected ? (
             <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
               <p className="text-neutral-500 text-sm">Connecting...</p>
@@ -98,7 +96,6 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* NEXT Button */}
           {isConnected && (
             <button
               onClick={handleNext}
@@ -112,20 +109,20 @@ const VideoCallPage = () => {
       </div>
 
       {/* Reward Drop Timer */}
-      <div className="text-center py-3">
-        <p className="text-sm font-bold tracking-wide">
+      <div className="text-center py-4">
+        <p className="text-base font-bold tracking-wide">
           NEXT REWARD DROP IN{" "}
           <span className="text-yellow-400">{rewardDropMinutes} MINUTES!</span>
         </p>
       </div>
 
       {/* Quick Nav Icons */}
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-3">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 px-4 pb-4">
         <NavIcon src={storeIcon} label="STORE" />
         <NavIcon src={redeemIcon} label="REDEEM" />
         <NavIcon src={topicsIcon} label="TOPICS" />
       </div>
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-4">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 px-4 pb-5">
         <NavIcon src={promoIcon} label="PROMO" />
         <NavIcon src={profileIcon} label="PROFILE" />
         <NavIcon src={vipIcon} label="VIP" />
@@ -175,9 +172,9 @@ const VideoCallPage = () => {
 };
 
 const NavIcon = ({ src, label }: { src: string; label: string }) => (
-  <button className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-    <img src={src} alt={label} className="w-12 h-12 object-contain" />
-    <span className="text-[10px] font-bold tracking-wider">{label}</span>
+  <button className="flex flex-col items-center gap-1.5 hover:scale-110 transition-transform">
+    <img src={src} alt={label} className="w-16 h-16 object-contain" />
+    <span className="text-xs font-bold tracking-wider">{label}</span>
   </button>
 );
 
