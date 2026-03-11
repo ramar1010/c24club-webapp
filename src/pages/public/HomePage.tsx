@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Video } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import step1Img from "@/assets/index-step1.png";
 import step3Img from "@/assets/index-step3.png";
