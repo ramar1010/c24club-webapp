@@ -24,10 +24,19 @@ const SidebarItem = ({ item, collapsed }: { item: MenuItem; collapsed: boolean }
 
   const Icon = item.icon;
 
+  const { signOut } = useAuth();
+
   if (!item.submenu) {
+    const handleClick = () => {
+      if (item.key === "logout") {
+        signOut().then(() => navigate("/admin/login"));
+      } else if (item.path) {
+        navigate(item.path);
+      }
+    };
     return (
       <button
-        onClick={() => item.path && navigate(item.path)}
+        onClick={handleClick}
         className={cn(
           "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
           "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
