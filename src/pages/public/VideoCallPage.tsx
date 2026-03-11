@@ -56,24 +56,24 @@ const VideoCallPage = () => {
       </div>
 
       {/* Video Panels */}
-      <div className="flex flex-col md:flex-row gap-2 px-3 pb-2 relative">
+      <div className="flex flex-col md:flex-row gap-3 px-4 pb-2 justify-center max-w-3xl mx-auto w-full">
         {/* User Video (Left / Top) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
+        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[220px] md:h-[280px] w-full md:w-[340px]">
           {!isConnected && (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
               <img
                 src={c24Logo}
                 alt="C24 Club"
-                className="w-48 md:w-56 drop-shadow-lg"
+                className="w-40 md:w-48 drop-shadow-lg"
               />
-              <p className="text-xs text-neutral-400 -mt-2">The Omegle That Rewards You!</p>
+              <p className="text-[10px] text-neutral-400 -mt-1">The Omegle That Rewards You!</p>
               <button
                 onClick={handleStart}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold text-lg px-8 py-2 rounded-lg transition-colors shadow-lg"
               >
                 START
               </button>
-              <span className="text-neutral-500 text-xs tracking-wide">C24CLUB.COM</span>
+              <span className="text-neutral-500 text-[10px] tracking-wide">C24CLUB.COM</span>
             </div>
           )}
 
@@ -85,26 +85,21 @@ const VideoCallPage = () => {
         </div>
 
         {/* Remote Video (Right / Bottom) */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[240px] md:h-[320px]">
-          {isConnected ? (
-            <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
-              <p className="text-neutral-500 text-sm">Connecting...</p>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-neutral-600 text-sm">Partner video</p>
-            </div>
-          )}
+        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[220px] md:h-[280px] w-full md:w-[340px]">
+          <div className="flex items-center justify-center h-full">
+            <p className="text-neutral-600 text-sm">
+              {isConnected ? "Connecting..." : "Partner video"}
+            </p>
+          </div>
 
-          {isConnected && (
-            <button
-              onClick={handleNext}
-              className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-4 py-2 transition-colors z-10"
-            >
-              <span className="font-bold text-sm">NEXT</span>
-              <img src={nextBtn} alt="Next" className="w-10 h-10" />
-            </button>
-          )}
+          {/* NEXT Button - always visible like in screenshot */}
+          <button
+            onClick={handleNext}
+            className="absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-10"
+          >
+            <span className="font-bold text-sm">NEXT</span>
+            <img src={nextBtn} alt="Next" className="w-9 h-9" />
+          </button>
         </div>
       </div>
 
