@@ -61,7 +61,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5a623] text-black font-['Antigone',sans-serif] flex flex-col">
+    <div className="min-h-screen bg-[#f5a623] text-black font-['Antigone',sans-serif] flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4">
         <button onClick={onBack} className="flex items-center gap-1 font-black text-sm">
