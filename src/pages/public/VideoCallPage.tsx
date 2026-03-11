@@ -327,6 +327,9 @@ const VideoCallPage = () => {
           <ProfilePage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       )}
+      {overlayPage === "topics" && (
+        <PinTopicsOverlay userId={memberId} onClose={() => setOverlayPage(null)} />
+      )}
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (

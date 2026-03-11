@@ -263,8 +263,7 @@ const TopicsPage = () => {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title={`Delete ${deleteTarget?.type}`}
-        description={`Are you sure you want to delete "${deleteTarget?.name}"? This cannot be undone.`}
+        title={deleteTarget?.name}
       />
     </div>
   );
