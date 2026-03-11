@@ -149,6 +149,14 @@ const VideoCallPage = () => {
             }`}
           />
 
+          {/* Call timer */}
+          {callState === "connected" && (
+            <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm font-mono font-bold">{timerDisplay}</span>
+            </div>
+          )}
+
           {/* X button to leave call */}
           {isActive && (
             <button
