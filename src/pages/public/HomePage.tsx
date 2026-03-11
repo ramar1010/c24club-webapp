@@ -119,12 +119,12 @@ const HomePage = () => {
                 <span className="text-2xl md:text-3xl font-black">5 Minutes</span>
               </div>
 
-              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <div className="relative w-full h-48 md:h-64 lg:h-72 rounded-xl overflow-hidden">
                 <iframe
                   src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
                   allow="autoplay; fullscreen"
                   allowFullScreen
-                  className="absolute inset-0 w-full h-full rounded-xl border-0"
+                  className="absolute inset-0 w-full h-full border-0"
                   title="C24 Club Video Chat Preview"
                 />
               </div>
