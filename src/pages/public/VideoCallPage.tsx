@@ -173,14 +173,16 @@ const VideoCallPage = () => {
             </div>
           </div>
 
-          {/* NEXT Button - mobile only */}
-          <button
-            onClick={handleNext}
-            className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
-          >
-            <span className="font-bold text-sm">NEXT</span>
-            <img src={nextBtn} alt="Next" className="w-9 h-9" />
-          </button>
+          {/* NEXT Button - mobile only, shown only during active call */}
+          {isActive && (
+            <button
+              onClick={handleNext}
+              className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
+            >
+              <span className="font-bold text-sm">NEXT</span>
+              <img src={nextBtn} alt="Next" className="w-9 h-9" />
+            </button>
+          )}
 
           {/* Partner overlay - mobile only */}
           <div className="md:hidden absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
