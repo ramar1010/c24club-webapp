@@ -27,10 +27,8 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
   const channelId = useRef<string>(crypto.randomUUID());
   const signalingChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const currentRoomId = useRef<string | null>(null);
-  const isInitiator = useRef(false);
   const pollingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Get local camera/mic stream
   const getLocalStream = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -48,27 +46,25 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     }
   }, []);
 
-  // Create peer connection
-  const createPeerConnection = useCallback((partnerChannelId: string) => {
+  const createPeerConnection = useCallback(() => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
 
-    // Add local tracks
     if (localStream.current) {
       localStream.current.getTracks().forEach((track) => {
         pc.addTrack(track, localStream.current!);
       });
     }
 
-    // Handle remote tracks
     pc.ontrack = (event) => {
+      console.log("[WebRTC] Remote track received", event.streams.length);
       if (remoteVideoRef.current && event.streams[0]) {
         remoteVideoRef.current.srcObject = event.streams[0];
       }
     };
 
-    // Handle ICE candidates — send via Realtime
     pc.onicecandidate = (event) => {
       if (event.candidate && signalingChannel.current) {
+        console.log("[WebRTC] Sending ICE candidate");
         signalingChannel.current.send({
           type: "broadcast",
           event: "ice-candidate",
@@ -80,7 +76,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       }
     };
 
+    pc.oniceconnectionstatechange = () => {
+      console.log("[WebRTC] ICE state:", pc.iceConnectionState);
+    };
+
     pc.onconnectionstatechange = () => {
+      console.log("[WebRTC] Connection state:", pc.connectionState);
       if (pc.connectionState === "connected") {
         setCallState("connected");
       } else if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
@@ -92,66 +93,79 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     return pc;
   }, []);
 
-  // Set up signaling channel
+  // Set up signaling and return a promise that resolves when subscribed
   const setupSignaling = useCallback(
-    (roomId: string, partnerChannelId: string) => {
-      const channel = supabase.channel(`room:${roomId}`, {
-        config: { broadcast: { self: false } },
-      });
+    (roomId: string): Promise<void> => {
+      return new Promise((resolve) => {
+        // Clean up any existing channel
+        if (signalingChannel.current) {
+          supabase.removeChannel(signalingChannel.current);
+        }
 
-      channel
-        .on("broadcast", { event: "offer" }, async ({ payload }) => {
-          if (payload.from === channelId.current) return;
-          const pc = peerConnection.current;
-          if (!pc) return;
+        const channel = supabase.channel(`room:${roomId}`, {
+          config: { broadcast: { self: false } },
+        });
 
-          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
+        channel
+          .on("broadcast", { event: "offer" }, async ({ payload }) => {
+            if (payload.from === channelId.current) return;
+            console.log("[Signaling] Received offer");
+            const pc = peerConnection.current;
+            if (!pc) return;
 
-          channel.send({
-            type: "broadcast",
-            event: "answer",
-            payload: { sdp: answer, from: channelId.current },
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            console.log("[Signaling] Sending answer");
+            channel.send({
+              type: "broadcast",
+              event: "answer",
+              payload: { sdp: answer, from: channelId.current },
+            });
+          })
+          .on("broadcast", { event: "answer" }, async ({ payload }) => {
+            if (payload.from === channelId.current) return;
+            console.log("[Signaling] Received answer");
+            const pc = peerConnection.current;
+            if (!pc) return;
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          })
+          .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
+            if (payload.from === channelId.current) return;
+            const pc = peerConnection.current;
+            if (!pc) return;
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+            } catch (e) {
+              console.warn("[WebRTC] Failed to add ICE candidate", e);
+            }
+          })
+          .on("broadcast", { event: "partner-disconnected" }, () => {
+            console.log("[Signaling] Partner disconnected");
+            setCallState("disconnected");
+            cleanupPeer();
+          })
+          .subscribe((status) => {
+            console.log("[Signaling] Channel status:", status);
+            if (status === "SUBSCRIBED") {
+              resolve();
+            }
           });
-        })
-        .on("broadcast", { event: "answer" }, async ({ payload }) => {
-          if (payload.from === channelId.current) return;
-          const pc = peerConnection.current;
-          if (!pc) return;
-          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        })
-        .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
-          if (payload.from === channelId.current) return;
-          const pc = peerConnection.current;
-          if (!pc) return;
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-          } catch (e) {
-            console.warn("Failed to add ICE candidate", e);
-          }
-        })
-        .on("broadcast", { event: "partner-disconnected" }, () => {
-          setCallState("disconnected");
-          cleanupPeer();
-        })
-        .subscribe();
 
-      signalingChannel.current = channel;
+        signalingChannel.current = channel;
+      });
     },
     []
   );
 
-  // Start the call flow
   const startCall = useCallback(async () => {
     try {
       setError(null);
       setCallState("waiting");
 
-      // Get camera first
       await getLocalStream();
 
-      // Call edge function to join queue / find match
       const { data, error: fnError } = await supabase.functions.invoke(
         "videocall-match",
         {
@@ -166,82 +180,87 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       );
 
       if (fnError) throw new Error(fnError.message);
+      console.log("[Match] Response:", data);
 
       if (data.message === "partner_found") {
-        // Matched! Set up WebRTC
         currentRoomId.current = data.roomId;
-        isInitiator.current = false; // we joined an existing partner
         setCallState("connecting");
 
-        const pc = createPeerConnection(data.partnerChannelId);
-        setupSignaling(data.roomId, data.partnerChannelId);
+        // We are the joiner — we create the offer
+        const pc = createPeerConnection();
+        await setupSignaling(data.roomId);
 
-        // Small delay to let channel subscribe, then create offer
-        setTimeout(async () => {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          signalingChannel.current?.send({
-            type: "broadcast",
-            event: "offer",
-            payload: { sdp: offer, from: channelId.current },
-          });
-        }, 1000);
+        console.log("[WebRTC] Creating and sending offer");
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        signalingChannel.current?.send({
+          type: "broadcast",
+          event: "offer",
+          payload: { sdp: offer, from: channelId.current },
+        });
       } else if (data.message === "added_to_queue") {
-        // Waiting for a partner — poll for match
+        console.log("[Match] Added to queue, starting poll");
         startPolling();
       }
     } catch (err: any) {
+      console.error("[Match] Error:", err);
       setError(err.message || "Failed to start call");
       setCallState("idle");
     }
   }, [memberId, genderPreference, memberGender, getLocalStream, createPeerConnection, setupSignaling]);
 
-  // Poll queue to see if someone matched us
+  // Poll for match — user1 was queued, user2 matched and created the room
   const startPolling = useCallback(() => {
     if (pollingInterval.current) clearInterval(pollingInterval.current);
 
     pollingInterval.current = setInterval(async () => {
-      // Check if we've been pulled from queue (a room was created with us)
-      const { data: rooms } = await supabase
+      // Check rooms where we are member1 (we were in queue first)
+      const { data: rooms1 } = await supabase
         .from("rooms")
         .select("*")
-        .or(`member1.eq.${memberId},member2.eq.${memberId}`)
+        .eq("member1", memberId)
         .eq("status", "connected")
         .order("created_at", { ascending: false })
         .limit(1);
 
-      if (rooms && rooms.length > 0) {
-        const room = rooms[0];
+      // Also check rooms where we are member2
+      const { data: rooms2 } = await supabase
+        .from("rooms")
+        .select("*")
+        .eq("member2", memberId)
+        .eq("status", "connected")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const allRooms = [...(rooms1 || []), ...(rooms2 || [])];
+
+      if (allRooms.length > 0) {
+        const room = allRooms[0];
+        console.log("[Poll] Found room!", room.id);
         clearInterval(pollingInterval.current!);
         pollingInterval.current = null;
 
         currentRoomId.current = room.id;
-        isInitiator.current = true; // we were waiting, partner initiated
         setCallState("connecting");
 
-        const partnerChannelId =
-          room.member1 === memberId ? room.channel2 : room.channel1;
-
-        createPeerConnection(partnerChannelId!);
-        setupSignaling(room.id, partnerChannelId!);
-        // Don't create offer — the joiner will send it
+        // We were waiting — set up peer connection and signaling
+        // The joiner (user2) will send the offer
+        createPeerConnection();
+        await setupSignaling(room.id);
+        console.log("[Poll] Signaling ready, waiting for offer from joiner");
       }
     }, 2000);
   }, [memberId, createPeerConnection, setupSignaling]);
 
-  // Cleanup peer connection
   const cleanupPeer = useCallback(() => {
     peerConnection.current?.close();
     peerConnection.current = null;
-
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
     }
   }, []);
 
-  // Disconnect current call
   const disconnect = useCallback(async () => {
-    // Notify partner
     signalingChannel.current?.send({
       type: "broadcast",
       event: "partner-disconnected",
@@ -250,19 +269,16 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
 
     cleanupPeer();
 
-    // Unsubscribe signaling
     if (signalingChannel.current) {
       supabase.removeChannel(signalingChannel.current);
       signalingChannel.current = null;
     }
 
-    // Clear polling
     if (pollingInterval.current) {
       clearInterval(pollingInterval.current);
       pollingInterval.current = null;
     }
 
-    // Update server
     await supabase.functions.invoke("videocall-match", {
       body: { type: "disconnect", memberId },
     });
@@ -271,33 +287,25 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     setCallState("idle");
   }, [memberId, cleanupPeer]);
 
-  // Next: disconnect current + immediately find new match
   const next = useCallback(async () => {
     await disconnect();
-    // Generate new channel ID for next connection
     channelId.current = crypto.randomUUID();
     await startCall();
   }, [disconnect, startCall]);
 
-  // Stop everything (leave page)
   const stop = useCallback(async () => {
     await disconnect();
-
-    // Stop local stream
     localStream.current?.getTracks().forEach((t) => t.stop());
     localStream.current = null;
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = null;
     }
-
     await supabase.functions.invoke("videocall-match", {
       body: { type: "leave_queue", memberId },
     });
-
     setCallState("idle");
   }, [disconnect, memberId]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       localStream.current?.getTracks().forEach((t) => t.stop());
@@ -308,7 +316,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       if (pollingInterval.current) {
         clearInterval(pollingInterval.current);
       }
-      // Fire and forget cleanup
       supabase.functions.invoke("videocall-match", {
         body: { type: "leave_queue", memberId },
       });
