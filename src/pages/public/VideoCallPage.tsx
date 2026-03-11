@@ -11,6 +11,7 @@ import NavIcon from "@/components/videocall/NavIcon";
 import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
+import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -35,7 +36,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -263,7 +264,7 @@ const VideoCallPage = () => {
               onClick={() => setShowRedeem(true)}
               highlight
             />
-            <NavIcon src={topicsIcon} label="TOPICS" />
+            <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
           </div>
 
           {/* Quick Nav Icons - Row 2 */}
@@ -325,6 +326,9 @@ const VideoCallPage = () => {
         <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <ProfilePage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
+      )}
+      {overlayPage === "topics" && (
+        <PinTopicsOverlay userId={memberId} onClose={() => setOverlayPage(null)} />
       )}
 
       {/* Cap Reached Popup */}

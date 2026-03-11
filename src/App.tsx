@@ -20,6 +20,7 @@ import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
+import TopicsPage from "@/pages/admin/TopicsPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
@@ -79,8 +80,7 @@ const App = () => (
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="categories/new" element={<AddCategoryPage />} />
               <Route path="categories/:id/edit" element={<AddCategoryPage />} />
-              <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
-              <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
+              <Route path="topics" element={<TopicsPage />} />
               <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
               <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
               <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
