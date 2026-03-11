@@ -49,11 +49,12 @@ Deno.serve(async (req) => {
       // Get VIP status
       const { data: memberData } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip")
+        .select("total_minutes, is_vip, cap_popup_shown")
         .eq("user_id", userId)
         .maybeSingle();
 
       const isVip = memberData?.is_vip ?? false;
+      const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
       const cap = isVip ? 30 : 10;
 
       // Get current minutes earned with this partner today
