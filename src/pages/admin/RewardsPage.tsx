@@ -79,7 +79,7 @@ const RewardsPage = () => {
         searchKeys={["title", "type", "rarity"]}
         actions={(row) => (
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/admin/rewards/${row.id}/edit`)}>
               <Pencil className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}>
