@@ -93,7 +93,7 @@ const VideoCallPage = () => {
         <div className="text-center">
           <div className="flex items-center justify-center gap-1.5 text-lg font-bold">
             <span className="text-xl">🪙</span>
-            <span>{minutes} Minutes</span>
+            <span>{totalMinutes} Minutes</span>
           </div>
           <div className="flex items-center justify-center gap-1 text-sm text-yellow-400">
             <span>⭐</span>
