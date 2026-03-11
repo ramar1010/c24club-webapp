@@ -64,14 +64,14 @@ const App = () => (
               <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
               <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
               <Route path="rewards" element={<RewardsPage />} />
-              <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
-              <Route path="milestones" element={<PlaceholderPage title="All Milestones" />} />
-              <Route path="milestones/new" element={<PlaceholderPage title="Add New Milestone" />} />
+              <Route path="rewards/new" element={<AddRewardPage />} />
+              <Route path="milestones" element={<MilestonesPage />} />
+              <Route path="milestones/new" element={<AddMilestonePage />} />
               <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
-              <Route path="categories" element={<PlaceholderPage title="All Categories" />} />
-              <Route path="categories/new" element={<PlaceholderPage title="Add New Category" />} />
+              <Route path="categories" element={<CategoriesPage />} />
+              <Route path="categories/new" element={<AddCategoryPage />} />
               <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
               <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
               <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
