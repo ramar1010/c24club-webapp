@@ -71,22 +71,30 @@ const VideoCallPage = () => {
 
   const isMobile = useIsMobile();
 
+  const fetchPinnedTopics = async (userId: string) => {
+    const { data: pins } = await supabase
+      .from("pinned_topics")
+      .select("topic_id")
+      .eq("user_id", userId);
+    if (!pins || pins.length === 0) return [];
+    const topicIds = pins.map((p) => p.topic_id);
+    const { data: topics } = await supabase
+      .from("topics")
+      .select("id, name")
+      .in("id", topicIds);
+    return topics || [];
+  };
+
   const { data: pinnedTopics = [] } = useQuery({
     queryKey: ["my_pinned_topics", memberId],
     enabled: memberId !== "anonymous",
-    queryFn: async () => {
-      const { data: pins } = await supabase
-        .from("pinned_topics")
-        .select("topic_id")
-        .eq("user_id", memberId);
-      if (!pins || pins.length === 0) return [];
-      const topicIds = pins.map((p) => p.topic_id);
-      const { data: topics } = await supabase
-        .from("topics")
-        .select("id, name")
-        .in("id", topicIds);
-      return topics || [];
-    },
+    queryFn: () => fetchPinnedTopics(memberId),
+  });
+
+  const { data: partnerPinnedTopics = [] } = useQuery({
+    queryKey: ["partner_pinned_topics", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
   if (!loading && !user) {
@@ -228,6 +236,16 @@ const VideoCallPage = () => {
                   </p>
                 </div>
               )}
+              {/* Partner's pinned topics - mobile overlay */}
+              {partnerPinnedTopics.length > 0 && callState === "connected" && (
+                <div className="absolute bottom-1 left-1 z-20 flex flex-wrap gap-1 max-w-[90%]">
+                  {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
+                    <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                      📌 {topic.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -261,6 +279,16 @@ const VideoCallPage = () => {
                 <p className="text-neutral-400 text-sm">
                   {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
+              </div>
+            )}
+            {/* Partner's pinned topics - desktop */}
+            {partnerPinnedTopics.length > 0 && callState === "connected" && (
+              <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
+                {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
+                  <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                    📌 {topic.name}
+                  </span>
+                ))}
               </div>
             )}
           </div>
