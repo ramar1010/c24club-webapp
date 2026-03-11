@@ -73,6 +73,7 @@ export type Database = {
       }
       member_redemptions: {
         Row: {
+          address_exists: string | null
           cashout_amount: number | null
           cashout_paypal: string | null
           cashout_status: string | null
@@ -90,12 +91,14 @@ export type Database = {
           shipping_country: string | null
           shipping_name: string | null
           shipping_state: string | null
+          shipping_tracking_url: string | null
           shipping_zip: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          address_exists?: string | null
           cashout_amount?: number | null
           cashout_paypal?: string | null
           cashout_status?: string | null
@@ -113,12 +116,14 @@ export type Database = {
           shipping_country?: string | null
           shipping_name?: string | null
           shipping_state?: string | null
+          shipping_tracking_url?: string | null
           shipping_zip?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          address_exists?: string | null
           cashout_amount?: number | null
           cashout_paypal?: string | null
           cashout_status?: string | null
@@ -136,6 +141,7 @@ export type Database = {
           shipping_country?: string | null
           shipping_name?: string | null
           shipping_state?: string | null
+          shipping_tracking_url?: string | null
           shipping_zip?: string | null
           status?: string
           updated_at?: string
