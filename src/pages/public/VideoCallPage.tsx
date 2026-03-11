@@ -58,7 +58,7 @@ const VideoCallPage = () => {
       {/* Video Panels */}
       <div className="flex flex-col md:flex-row gap-3 px-4 pb-2 justify-center max-w-3xl mx-auto w-full">
         {/* User Video (Left / Top) */}
-        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[220px] md:h-[280px] w-full md:w-[340px]">
+        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[260px] md:h-[330px] w-full md:w-[400px]">
           {!isConnected && (
             <div className="flex flex-col items-center gap-3">
               <img
@@ -85,7 +85,7 @@ const VideoCallPage = () => {
         </div>
 
         {/* Remote Video (Right / Bottom) */}
-        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[220px] md:h-[280px] w-full md:w-[340px]">
+        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[260px] md:h-[330px] w-full md:w-[400px]">
           <div className="flex items-center justify-center h-full">
             <p className="text-neutral-600 text-sm">
               {isConnected ? "Connecting..." : "Partner video"}
