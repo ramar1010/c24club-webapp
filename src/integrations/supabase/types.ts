@@ -46,6 +46,7 @@ export type Database = {
       }
       member_minutes: {
         Row: {
+          cap_popup_shown: boolean
           id: string
           is_vip: boolean
           total_minutes: number
@@ -53,6 +54,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
           total_minutes?: number
@@ -60,6 +62,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
           total_minutes?: number
