@@ -1,4 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ChevronLeft, X } from "lucide-react";
@@ -31,6 +33,7 @@ const genderMap: Record<GenderFilter, string> = {
 };
 
 const VideoCallPage = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
@@ -67,6 +70,24 @@ const VideoCallPage = () => {
   });
 
   const isMobile = useIsMobile();
+
+  const { data: pinnedTopics = [] } = useQuery({
+    queryKey: ["my_pinned_topics", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data: pins } = await supabase
+        .from("pinned_topics")
+        .select("topic_id")
+        .eq("user_id", memberId);
+      if (!pins || pins.length === 0) return [];
+      const topicIds = pins.map((p) => p.topic_id);
+      const { data: topics } = await supabase
+        .from("topics")
+        .select("id, name")
+        .in("id", topicIds);
+      return topics || [];
+    },
+  });
 
   if (!loading && !user) {
     return <Navigate to="/" replace />;
@@ -209,6 +230,20 @@ const VideoCallPage = () => {
               )}
             </div>
           )}
+
+          {/* Pinned Topics - bottom of local video */}
+          {pinnedTopics.length > 0 && isActive && (
+            <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
+              {pinnedTopics.map((topic: { id: string; name: string }) => (
+                <span
+                  key={topic.id}
+                  className="bg-red-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg"
+                >
+                  📌 {topic.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Partner Video - desktop only */}
@@ -328,7 +363,7 @@ const VideoCallPage = () => {
         </FullScreenOverlay>
       )}
       {overlayPage === "topics" && (
-        <PinTopicsOverlay userId={memberId} onClose={() => setOverlayPage(null)} />
+        <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
 
       {/* Cap Reached Popup */}
