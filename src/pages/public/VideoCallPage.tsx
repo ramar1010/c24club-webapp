@@ -77,13 +77,6 @@ const VideoCallPage = () => {
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => startCall();
-  const safeNavigate = (path: string) => {
-    if (isActive) {
-      window.open(window.location.origin + path, "_blank");
-    } else {
-      navigate(path);
-    }
-  };
   const handleNext = async () => {
     await flushMinutes();
     next();
