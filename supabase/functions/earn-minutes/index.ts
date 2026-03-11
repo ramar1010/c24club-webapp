@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { type, userId, partnerId, minutesEarned } = await req.json();
+    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode } = await req.json();
 
     // GET_BALANCE: Return current minutes + VIP status
     if (type === "get_balance") {
