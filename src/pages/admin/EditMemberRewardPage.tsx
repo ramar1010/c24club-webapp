@@ -36,13 +36,21 @@ const EditMemberRewardPage = () => {
     queryKey: ["member_redemption", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: redemption, error } = await supabase
         .from("member_redemptions")
-        .select("*, members!member_redemptions_user_id_fkey(name, email)")
+        .select("*")
         .eq("id", id!)
         .single();
       if (error) throw error;
-      return data;
+
+      // Fetch member info separately since user_id references auth.users
+      const { data: member } = await supabase
+        .from("members")
+        .select("name, email")
+        .eq("id", redemption.user_id)
+        .single();
+
+      return { ...redemption, members: member };
     },
   });
 

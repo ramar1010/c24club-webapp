@@ -93,12 +93,26 @@ const MemberRewardsPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["admin_member_redemptions"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // member_redemptions.user_id references auth.users, not members table directly
+      // So we fetch redemptions first, then enrich with member data
+      const { data: redemptions, error } = await supabase
         .from("member_redemptions")
-        .select("*, members!member_redemptions_user_id_fkey(name, email)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as unknown as MemberRedemption[];
+
+      // Get unique user_ids and fetch member info
+      const userIds = [...new Set((redemptions || []).map(r => r.user_id))];
+      const { data: members } = await supabase
+        .from("members")
+        .select("id, name, email")
+        .in("id", userIds);
+
+      const memberMap = new Map((members || []).map(m => [m.id, m]));
+      return (redemptions || []).map(r => ({
+        ...r,
+        members: memberMap.get(r.user_id) || null,
+      })) as MemberRedemption[];
     },
   });
 
