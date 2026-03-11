@@ -15,7 +15,7 @@ import challengesPin from "@/assets/profile/challenges-pin.png";
 import challengesTarget from "@/assets/profile/challenges-target.png";
 import logoutIcon from "@/assets/profile/logout-icon.png";
 
-const ProfilePage = () => {
+const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
