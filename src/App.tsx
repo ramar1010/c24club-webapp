@@ -18,6 +18,7 @@ import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
+import VideoCallPage from "@/pages/public/VideoCallPage";
 
 import NotFound from "./pages/NotFound";
 
