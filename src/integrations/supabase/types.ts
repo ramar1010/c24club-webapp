@@ -128,6 +128,78 @@ export type Database = {
         }
         Relationships: []
       }
+      milestone_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          milestone_id: string
+          reward_id: string
+          reward_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          milestone_id: string
+          reward_id: string
+          reward_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          milestone_id?: string
+          reward_id?: string
+          reward_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_rewards_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          brief: string | null
+          created_at: string
+          enable_shipping: boolean
+          id: string
+          title: string
+          unlock_minutes: number
+          updated_at: string
+          vip_only: boolean
+        }
+        Insert: {
+          brief?: string | null
+          created_at?: string
+          enable_shipping?: boolean
+          id?: string
+          title: string
+          unlock_minutes?: number
+          updated_at?: string
+          vip_only?: boolean
+        }
+        Update: {
+          brief?: string | null
+          created_at?: string
+          enable_shipping?: boolean
+          id?: string
+          title?: string
+          unlock_minutes?: number
+          updated_at?: string
+          vip_only?: boolean
+        }
+        Relationships: []
+      }
       promos: {
         Row: {
           ad_points_balance: number | null
@@ -190,32 +262,103 @@ export type Database = {
           },
         ]
       }
-      rewards: {
+      reward_categories: {
         Row: {
           created_at: string
           id: string
-          info: string | null
-          title: string
-          type: string
+          image_url: string | null
+          name: string
+          show_as: string
+          status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
-          info?: string | null
-          title: string
-          type: string
+          image_url?: string | null
+          name: string
+          show_as?: string
+          status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
-          info?: string | null
-          title?: string
-          type?: string
+          image_url?: string | null
+          name?: string
+          show_as?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      rewards: {
+        Row: {
+          brief: string | null
+          category_id: string | null
+          created_at: string
+          delivery: string | null
+          id: string
+          image_url: string | null
+          info: string | null
+          minutes_cost: number
+          product_name: string | null
+          rarity: string
+          ships_to: string[] | null
+          sizes: string | null
+          sub_type: string | null
+          title: string
+          type: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          brief?: string | null
+          category_id?: string | null
+          created_at?: string
+          delivery?: string | null
+          id?: string
+          image_url?: string | null
+          info?: string | null
+          minutes_cost?: number
+          product_name?: string | null
+          rarity?: string
+          ships_to?: string[] | null
+          sizes?: string | null
+          sub_type?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          brief?: string | null
+          category_id?: string | null
+          created_at?: string
+          delivery?: string | null
+          id?: string
+          image_url?: string | null
+          info?: string | null
+          minutes_cost?: number
+          product_name?: string | null
+          rarity?: string
+          ships_to?: string[] | null
+          sizes?: string | null
+          sub_type?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "reward_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rooms: {
         Row: {

@@ -11,6 +11,11 @@ import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
 import DashboardPage from "@/pages/admin/DashboardPage";
 import MembersPage from "@/pages/admin/MembersPage";
 import RewardsPage from "@/pages/admin/RewardsPage";
+import AddRewardPage from "@/pages/admin/AddRewardPage";
+import CategoriesPage from "@/pages/admin/CategoriesPage";
+import AddCategoryPage from "@/pages/admin/AddCategoryPage";
+import MilestonesPage from "@/pages/admin/MilestonesPage";
+import AddMilestonePage from "@/pages/admin/AddMilestonePage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
@@ -19,6 +24,7 @@ import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
 import VideoCallPage from "@/pages/public/VideoCallPage";
+import RewardStorePage from "@/pages/public/RewardStorePage";
 
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +52,7 @@ const App = () => (
 
             {/* Video call (full-screen, no public layout) */}
             <Route path="/videocall" element={<VideoCallPage />} />
+            <Route path="/store" element={<RewardStorePage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -57,14 +64,14 @@ const App = () => (
               <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
               <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
               <Route path="rewards" element={<RewardsPage />} />
-              <Route path="rewards/new" element={<PlaceholderPage title="Add New Reward" />} />
-              <Route path="milestones" element={<PlaceholderPage title="All Milestones" />} />
-              <Route path="milestones/new" element={<PlaceholderPage title="Add New Milestone" />} />
+              <Route path="rewards/new" element={<AddRewardPage />} />
+              <Route path="milestones" element={<MilestonesPage />} />
+              <Route path="milestones/new" element={<AddMilestonePage />} />
               <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
-              <Route path="categories" element={<PlaceholderPage title="All Categories" />} />
-              <Route path="categories/new" element={<PlaceholderPage title="Add New Category" />} />
+              <Route path="categories" element={<CategoriesPage />} />
+              <Route path="categories/new" element={<AddCategoryPage />} />
               <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
               <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
               <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />

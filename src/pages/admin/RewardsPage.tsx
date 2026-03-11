@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { useRewards, useDeleteReward } from "@/hooks/useCrud";
 import { Button } from "@/components/ui/button";
@@ -10,30 +11,49 @@ type Reward = {
   id: string;
   title: string;
   type: string;
+  rarity: string;
+  minutes_cost: number;
+  delivery: string;
+  visible: boolean;
   info: string | null;
+  reward_categories: { name: string } | null;
+};
+
+const RARITY_COLORS: Record<string, string> = {
+  common: "bg-muted text-muted-foreground",
+  rare: "bg-blue-500/10 text-blue-500",
+  legendary: "bg-amber-500/10 text-amber-500",
 };
 
 const rewardColumns: DataTableColumn<Reward>[] = [
   { key: "id", header: "ID", className: "w-20", render: (row) => <span className="font-mono text-xs">{row.id.slice(0, 8)}</span> },
   { key: "title", header: "Title" },
+  { key: "type", header: "Type" },
   {
-    key: "type",
-    header: "Type",
-    render: (row) => {
-      const colors: Record<string, string> = {
-        Badge: "bg-primary/10 text-primary",
-        Trophy: "bg-warning/10 text-warning",
-        Certificate: "bg-accent/10 text-accent",
-        "Points Bonus": "bg-success/10 text-success",
-        "Gift Card": "bg-destructive/10 text-destructive",
-      };
-      return <Badge className={`text-xs font-medium ${colors[row.type] || ""}`}>{row.type}</Badge>;
-    },
+    key: "rarity",
+    header: "Rarity",
+    render: (row) => <Badge className={`text-xs ${RARITY_COLORS[row.rarity] || ""}`}>{row.rarity}</Badge>,
   },
-  { key: "info", header: "Info" },
+  {
+    key: "minutes_cost",
+    header: "Cost (min)",
+    render: (row) => <span className="font-bold">{row.minutes_cost}</span>,
+  },
+  { key: "delivery", header: "Delivery" },
+  {
+    key: "visible",
+    header: "Visible",
+    render: (row) => row.visible ? <Badge className="bg-green-500/10 text-green-600">Yes</Badge> : <Badge className="bg-muted text-muted-foreground">No</Badge>,
+  },
+  {
+    key: "reward_categories",
+    header: "Category",
+    render: (row) => row.reward_categories?.name || <span className="text-muted-foreground">—</span>,
+  },
 ];
 
 const RewardsPage = () => {
+  const navigate = useNavigate();
   const { data, isLoading } = useRewards();
   const deleteMutation = useDeleteReward();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -47,7 +67,7 @@ const RewardsPage = () => {
             {isLoading ? "Loading..." : `${data?.length ?? 0} rewards total.`}
           </p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/admin/rewards/new")}>
           <Gift className="mr-2 h-4 w-4" />
           Add New Reward
         </Button>
@@ -56,7 +76,7 @@ const RewardsPage = () => {
       <DataTable
         data={(data as Reward[]) ?? []}
         columns={rewardColumns}
-        searchKeys={["title", "type", "info"]}
+        searchKeys={["title", "type", "rarity"]}
         actions={(row) => (
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8">
