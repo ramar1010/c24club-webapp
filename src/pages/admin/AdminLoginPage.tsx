@@ -75,7 +75,7 @@ const AdminLoginPage = () => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trimStart())}
                 required
                 placeholder="admin@c24club.com"
               />
