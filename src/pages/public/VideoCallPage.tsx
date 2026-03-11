@@ -221,16 +221,18 @@ const VideoCallPage = () => {
         </div>
       </div>
 
-      {/* NEXT Button - desktop only, centered below videos */}
-      <div className="hidden md:flex justify-center mb-4">
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
-        >
-          <span className="font-bold">NEXT</span>
-          <img src={nextBtn} alt="Next" className="w-8 h-8" />
-        </button>
-      </div>
+      {/* NEXT Button - desktop only, shown only during active call */}
+      {isActive && (
+        <div className="hidden md:flex justify-center mb-4">
+          <button
+            onClick={handleNext}
+            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
+          >
+            <span className="font-bold">NEXT</span>
+            <img src={nextBtn} alt="Next" className="w-8 h-8" />
+          </button>
+        </div>
+      )}
 
       {/* Redeem Panel or Nav */}
       {showRedeem ? (
