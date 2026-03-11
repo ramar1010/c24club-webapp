@@ -384,6 +384,7 @@ export type Database = {
           minutes_cost: number
           product_name: string | null
           rarity: string
+          shipping_fee: number
           ships_to: string[] | null
           sizes: string | null
           sub_type: string | null
@@ -403,6 +404,7 @@ export type Database = {
           minutes_cost?: number
           product_name?: string | null
           rarity?: string
+          shipping_fee?: number
           ships_to?: string[] | null
           sizes?: string | null
           sub_type?: string | null
@@ -422,6 +424,7 @@ export type Database = {
           minutes_cost?: number
           product_name?: string | null
           rarity?: string
+          shipping_fee?: number
           ships_to?: string[] | null
           sizes?: string | null
           sub_type?: string | null

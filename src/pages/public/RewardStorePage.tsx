@@ -3,8 +3,9 @@ import { usePublicRewards, usePublicCategories, usePublicMilestones } from "@/ho
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import ShippingForm from "@/components/store/ShippingForm";
 
 const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
   common: { bg: "bg-neutral-700", text: "text-white" },
@@ -19,6 +20,8 @@ const RewardStorePage = () => {
   const { data: milestones } = usePublicMilestones();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedReward, setSelectedReward] = useState<any | null>(null);
+  const [showShipping, setShowShipping] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch user's current minute balance
   const { data: userMinutes } = useQuery({
@@ -42,6 +45,21 @@ const RewardStorePage = () => {
     const count = rewards?.filter((r: any) => r.category_id === cat.id).length ?? 0;
     return { ...cat, count };
   });
+
+  // Shipping form view
+  if (selectedReward && showShipping) {
+    return (
+      <ShippingForm
+        reward={selectedReward}
+        onBack={() => setShowShipping(false)}
+        onSuccess={() => {
+          setShowShipping(false);
+          setSelectedReward(null);
+          queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+        }}
+      />
+    );
+  }
 
   // Product detail view
   if (selectedReward) {
@@ -134,6 +152,7 @@ const RewardStorePage = () => {
         {/* Redeem button */}
         <div className="px-4 pb-6 pt-2">
           <button
+            onClick={() => setShowShipping(true)}
             disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
             className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
               (userMinutes ?? 0) >= selectedReward.minutes_cost

@@ -26,6 +26,7 @@ const rewardSchema = z.object({
   info: z.string().optional(),
   image_url: z.string().optional(),
   minutes_cost: z.coerce.number().min(0).default(0),
+  shipping_fee: z.coerce.number().min(0).default(0),
 });
 
 type RewardForm = z.infer<typeof rewardSchema>;
@@ -55,6 +56,7 @@ const AddRewardPage = () => {
       rarity: "common",
       visible: true,
       minutes_cost: 0,
+      shipping_fee: 0,
     },
   });
 
@@ -75,6 +77,7 @@ const AddRewardPage = () => {
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
         minutes_cost: existingReward.minutes_cost || 0,
+        shipping_fee: existingReward.shipping_fee || 0,
       });
     }
   }, [existingReward, form]);
@@ -187,6 +190,14 @@ const AddRewardPage = () => {
                 <FormItem>
                   <FormLabel>Minutes Cost</FormLabel>
                   <FormControl><Input type="number" min={0} {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="shipping_fee" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shipping Fee ($) <span className="text-xs text-muted-foreground">0 = free</span></FormLabel>
+                  <FormControl><Input type="number" min={0} step="0.01" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
