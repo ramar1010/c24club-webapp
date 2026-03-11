@@ -86,6 +86,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     if (isConnected && !capReachedRef.current) {
       timerRef.current = setInterval(() => {
         elapsedRef.current += 1;
+        setElapsedSeconds(elapsedRef.current);
 
         // Report every 60 seconds (1 minute earned)
         const totalMinutesElapsed = Math.floor(elapsedRef.current / 60);
