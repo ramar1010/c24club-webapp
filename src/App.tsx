@@ -65,6 +65,7 @@ const App = () => (
               <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
               <Route path="rewards" element={<RewardsPage />} />
               <Route path="rewards/new" element={<AddRewardPage />} />
+              <Route path="rewards/:id/edit" element={<AddRewardPage />} />
               <Route path="milestones" element={<MilestonesPage />} />
               <Route path="milestones/new" element={<AddMilestonePage />} />
               <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="categories/new" element={<AddCategoryPage />} />
+              <Route path="categories/:id/edit" element={<AddCategoryPage />} />
               <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
               <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
               <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />

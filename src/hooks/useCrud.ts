@@ -167,6 +167,18 @@ export function useCreateReward() {
   });
 }
 
+export function useUpdateReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Record<string, unknown> & { id: string }) => {
+      const { error } = await supabase.from("rewards").update(values as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["rewards"] }); toast.success("Reward updated"); },
+    onError: (e: Error) => toast.error("Update failed", { description: e.message }),
+  });
+}
+
 export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
@@ -176,6 +188,18 @@ export function useCreateCategory() {
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["reward_categories"] }); toast.success("Category created"); },
     onError: (e: Error) => toast.error("Create failed", { description: e.message }),
+  });
+}
+
+export function useUpdateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Record<string, unknown> & { id: string }) => {
+      const { error } = await supabase.from("reward_categories").update(values as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["reward_categories"] }); toast.success("Category updated"); },
+    onError: (e: Error) => toast.error("Update failed", { description: e.message }),
   });
 }
 

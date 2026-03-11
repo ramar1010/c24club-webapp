@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateReward, useRewardCategories } from "@/hooks/useCrud";
+import { useCreateReward, useUpdateReward, useRewardCategories, useRewards } from "@/hooks/useCrud";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from "react";
 
 const rewardSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -35,8 +36,15 @@ const DELIVERIES = ["digital", "physical", "both"];
 
 const AddRewardPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const createMutation = useCreateReward();
+  const updateMutation = useUpdateReward();
   const { data: categories } = useRewardCategories();
+  const { data: allRewards } = useRewards();
+
+  const existingReward = isEdit ? allRewards?.find((r: any) => r.id === id) : null;
 
   const form = useForm<RewardForm>({
     resolver: zodResolver(rewardSchema),
@@ -50,26 +58,52 @@ const AddRewardPage = () => {
     },
   });
 
+  // Populate form when editing
+  useEffect(() => {
+    if (existingReward) {
+      form.reset({
+        title: existingReward.title || "",
+        type: existingReward.type || "Product / Giftcard",
+        sub_type: existingReward.sub_type || "",
+        delivery: existingReward.delivery || "digital",
+        rarity: existingReward.rarity || "common",
+        category_id: existingReward.category_id || "",
+        product_name: existingReward.product_name || "",
+        sizes: existingReward.sizes || "",
+        visible: existingReward.visible ?? true,
+        brief: existingReward.brief || "",
+        info: existingReward.info || "",
+        image_url: existingReward.image_url || "",
+        minutes_cost: existingReward.minutes_cost || 0,
+      });
+    }
+  }, [existingReward, form]);
+
+  const mutation = isEdit ? updateMutation : createMutation;
+
   const onSubmit = (values: RewardForm) => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
+      ...(isEdit ? { id } : {}),
     };
-    createMutation.mutate(payload, {
+    mutation.mutate(payload, {
       onSuccess: () => navigate("/admin/rewards"),
     });
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight text-foreground">Add New Reward</h2>
+      <h2 className="text-2xl font-bold tracking-tight text-foreground">
+        {isEdit ? "Edit Reward" : "Add New Reward"}
+      </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-base text-primary border-b border-primary pb-2">
-                ADD NEW REWARD DETAILS
+                {isEdit ? "EDIT REWARD DETAILS" : "ADD NEW REWARD DETAILS"}
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -84,7 +118,7 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="type" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent>
                       {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -105,7 +139,7 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="delivery" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Delivery</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent>
                       {DELIVERIES.map((d) => <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>)}
@@ -118,7 +152,7 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="rarity" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Rarity</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent>
                       {RARITIES.map((r) => <SelectItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>)}
@@ -131,10 +165,10 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="category_id" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {categories?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      {categories?.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -206,8 +240,8 @@ const AddRewardPage = () => {
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" onClick={() => navigate("/admin/rewards")}>Cancel</Button>
-            <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Saving..." : "Save Reward"}
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Saving..." : isEdit ? "Update Reward" : "Save Reward"}
             </Button>
           </div>
         </form>
