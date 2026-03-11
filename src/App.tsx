@@ -52,6 +52,7 @@ const App = () => (
 
             {/* Video call (full-screen, no public layout) */}
             <Route path="/videocall" element={<VideoCallPage />} />
+            <Route path="/store" element={<RewardStorePage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
