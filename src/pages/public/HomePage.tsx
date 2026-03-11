@@ -119,19 +119,14 @@ const HomePage = () => {
                 <span className="text-2xl md:text-3xl font-black">5 Minutes</span>
               </div>
 
-              <div className="flex gap-2 h-48 md:h-64">
-                <div className="flex-1 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                  <div className="text-center">
-                    <Video className="h-10 w-10 mx-auto text-white/50 mb-2" />
-                    <span className="text-white/50 text-sm">You</span>
-                  </div>
-                </div>
-                <div className="flex-1 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                  <div className="text-center">
-                    <Users className="h-10 w-10 mx-auto text-white/50 mb-2" />
-                    <span className="text-white/50 text-sm">Stranger</span>
-                  </div>
-                </div>
+              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                <iframe
+                  src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full rounded-xl border-0"
+                  title="C24 Club Video Chat Preview"
+                />
               </div>
 
               <p
