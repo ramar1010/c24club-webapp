@@ -21,6 +21,8 @@ import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 import TopicsPage from "@/pages/admin/TopicsPage";
+import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
+import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
@@ -74,7 +76,8 @@ const App = () => (
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
               <Route path="milestones" element={<MilestonesPage />} />
               <Route path="milestones/new" element={<AddMilestonePage />} />
-              <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
+              <Route path="member-rewards" element={<MemberRewardsPage />} />
+              <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
               <Route path="categories" element={<CategoriesPage />} />
