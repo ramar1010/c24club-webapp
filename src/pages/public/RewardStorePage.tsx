@@ -3,6 +3,8 @@ import { usePublicRewards, usePublicCategories, usePublicMilestones } from "@/ho
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
   common: { bg: "bg-neutral-700", text: "text-white" },
@@ -17,6 +19,19 @@ const RewardStorePage = () => {
   const { data: milestones } = usePublicMilestones();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedReward, setSelectedReward] = useState<any | null>(null);
+
+  // Fetch user's current minute balance
+  const { data: userMinutes } = useQuery({
+    queryKey: ["user-minutes-balance"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+      const { data } = await supabase.functions.invoke("earn-minutes", {
+        body: { type: "get_balance", userId: user.id },
+      });
+      return data?.totalMinutes ?? 0;
+    },
+  });
 
   const filteredRewards = selectedCategory
     ? rewards?.filter((r: any) => r.category_id === selectedCategory)
@@ -108,9 +123,24 @@ const RewardStorePage = () => {
           </p>
         </div>
 
+        {/* User's current balance */}
+        <div className="mt-auto px-4 pb-2">
+          <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center">
+            <p className="text-neutral-400 text-sm">Your Balance</p>
+            <p className="text-green-400 font-black text-2xl">🪙 {userMinutes ?? 0} Minutes</p>
+          </div>
+        </div>
+
         {/* Redeem button */}
-        <div className="mt-auto px-4 pb-6">
-          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-black text-xl py-4 rounded-xl transition-colors shadow-lg shadow-green-900/30">
+        <div className="px-4 pb-6 pt-2">
+          <button
+            disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
+            className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
+              (userMinutes ?? 0) >= selectedReward.minutes_cost
+                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-900/30"
+                : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+            }`}
+          >
             Redeem This Product
           </button>
         </div>
