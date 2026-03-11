@@ -3,6 +3,8 @@ import { usePublicRewards, usePublicCategories, usePublicMilestones } from "@/ho
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
   common: { bg: "bg-neutral-700", text: "text-white" },
