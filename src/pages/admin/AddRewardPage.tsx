@@ -194,6 +194,14 @@ const AddRewardPage = () => {
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="shipping_fee" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shipping Fee ($) <span className="text-xs text-muted-foreground">0 = free</span></FormLabel>
+                  <FormControl><Input type="number" min={0} step="0.01" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="sizes" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Sizes <span className="text-xs text-muted-foreground">(comma separated)</span></FormLabel>
