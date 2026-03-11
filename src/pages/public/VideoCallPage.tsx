@@ -109,20 +109,20 @@ const VideoCallPage = () => {
       </div>
 
       {/* Reward Drop Timer */}
-      <div className="text-center py-3">
-        <p className="text-sm font-bold tracking-wide">
+      <div className="text-center py-4">
+        <p className="text-base font-bold tracking-wide">
           NEXT REWARD DROP IN{" "}
           <span className="text-yellow-400">{rewardDropMinutes} MINUTES!</span>
         </p>
       </div>
 
       {/* Quick Nav Icons */}
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-3">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 px-4 pb-4">
         <NavIcon src={storeIcon} label="STORE" />
         <NavIcon src={redeemIcon} label="REDEEM" />
         <NavIcon src={topicsIcon} label="TOPICS" />
       </div>
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-4">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 px-4 pb-5">
         <NavIcon src={promoIcon} label="PROMO" />
         <NavIcon src={profileIcon} label="PROFILE" />
         <NavIcon src={vipIcon} label="VIP" />
