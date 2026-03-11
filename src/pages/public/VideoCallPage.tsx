@@ -66,6 +66,7 @@ const VideoCallPage = () => {
     return <Navigate to="/" replace />;
   }
 
+  const isMobile = useIsMobile();
   const isActive = callState !== "idle";
   const timerMin = Math.floor(elapsedSeconds / 60);
   const timerSec = elapsedSeconds % 60;
