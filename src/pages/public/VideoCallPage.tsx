@@ -247,6 +247,7 @@ const VideoCallPage = () => {
                 </div>
               )}
             </div>
+          )}
 
           {/* Pinned Topics - bottom of local video */}
           {pinnedTopics.length > 0 && isActive && (
