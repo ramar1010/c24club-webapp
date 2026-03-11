@@ -11,6 +11,8 @@ import challengesIcon from "@/assets/profile/challenges-icon.png";
 import becomeVipIcon from "@/assets/profile/vip-settings-icon.png";
 import settingsIcon from "@/assets/profile/settings-gear.png";
 import rulebookIcon from "@/assets/profile/rulebook-book.png";
+import challengesPin from "@/assets/profile/challenges-pin.png";
+import challengesTarget from "@/assets/profile/challenges-target.png";
 import logoutIcon from "@/assets/profile/logout-icon.png";
 
 const ProfilePage = () => {
