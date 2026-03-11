@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import redeemIcon from "@/assets/videocall/redeem.png";
 import storeIcon from "@/assets/videocall/store.png";
 
