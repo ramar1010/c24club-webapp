@@ -236,8 +236,17 @@ const VideoCallPage = () => {
                   </p>
                 </div>
               )}
+              {/* Partner's pinned topics - mobile overlay */}
+              {partnerPinnedTopics.length > 0 && callState === "connected" && (
+                <div className="absolute bottom-1 left-1 z-20 flex flex-wrap gap-1 max-w-[90%]">
+                  {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
+                    <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                      📌 {topic.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
 
           {/* Pinned Topics - bottom of local video */}
           {pinnedTopics.length > 0 && isActive && (
