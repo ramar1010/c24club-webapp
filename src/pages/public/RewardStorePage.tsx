@@ -20,6 +20,8 @@ const RewardStorePage = () => {
   const { data: milestones } = usePublicMilestones();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedReward, setSelectedReward] = useState<any | null>(null);
+  const [showShipping, setShowShipping] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch user's current minute balance
   const { data: userMinutes } = useQuery({
