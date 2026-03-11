@@ -161,27 +161,8 @@ const HomePage = () => {
           >
             Step 1: Video Chat With Anyone & Earn Minutes!
           </h3>
-          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-200 to-pink-200 p-8 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                  <Video className="h-8 w-8 text-white/50" />
-                </div>
-                <Sparkles className="h-8 w-8 text-yellow-500" />
-                <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                  <Users className="h-8 w-8 text-white/50" />
-                </div>
-              </div>
-              <div className="bg-orange-500 text-white font-black text-xl px-6 py-2 rounded-lg inline-block">
-                200 Minutes Earned
-              </div>
-              <p
-                className="text-lg font-black text-gray-800"
-                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-              >
-                VIDEO <span className="text-3xl">CHAT & EARN!</span> REWARDS
-              </p>
-            </div>
+          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
+            <img src={step1Img} alt="Video Chat & Earn Rewards" className="w-full h-auto" />
           </div>
         </div>
 
