@@ -281,6 +281,16 @@ const VideoCallPage = () => {
                 </p>
               </div>
             )}
+            {/* Partner's pinned topics - desktop */}
+            {partnerPinnedTopics.length > 0 && callState === "connected" && (
+              <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
+                {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
+                  <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                    📌 {topic.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
