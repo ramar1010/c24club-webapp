@@ -25,6 +25,7 @@ import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
 import VideoCallPage from "@/pages/public/VideoCallPage";
 import RewardStorePage from "@/pages/public/RewardStorePage";
+import ProfilePage from "@/pages/public/ProfilePage";
 
 import NotFound from "./pages/NotFound";
 
