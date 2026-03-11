@@ -62,11 +62,12 @@ const VideoCallPage = () => {
     isConnected: callState === "connected",
   });
 
+  const isMobile = useIsMobile();
+
   if (!loading && !user) {
     return <Navigate to="/" replace />;
   }
 
-  const isMobile = useIsMobile();
   const isActive = callState !== "idle";
   const timerMin = Math.floor(elapsedSeconds / 60);
   const timerSec = elapsedSeconds % 60;
