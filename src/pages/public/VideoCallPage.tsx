@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
