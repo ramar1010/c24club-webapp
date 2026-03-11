@@ -106,35 +106,16 @@ const HomePage = () => {
             ))}
           </div>
 
-          {/* Main hero card */}
-          <div className="flex-1 max-w-2xl rounded-2xl overflow-hidden bg-gradient-to-b from-orange-300 via-orange-200 to-pink-300 p-1 shadow-2xl">
-            <div className="rounded-xl bg-gradient-to-b from-orange-200/80 to-pink-200/80 p-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">C24</div>
-                <span className="text-gray-700 font-semibold text-sm">CLUB</span>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 text-gray-800">
-                <Clock className="h-6 w-6" />
-                <span className="text-2xl md:text-3xl font-black">5 Minutes</span>
-              </div>
-
-              <div className="relative w-full h-48 md:h-64 lg:h-72 rounded-xl overflow-hidden">
-                <iframe
-                  src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full border-0"
-                  title="C24 Club Video Chat Preview"
-                />
-              </div>
-
-              <p
-                className="text-center text-xl md:text-2xl font-black text-gray-800"
-                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-              >
-                Video Chat = <span className="text-orange-600">Rewards!</span>
-              </p>
+          {/* Main hero video */}
+          <div className="flex-1 max-w-2xl rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full" style={{ paddingBottom: "75%" }}>
+              <iframe
+                src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full border-0"
+                title="C24 Club Video Chat Preview"
+              />
             </div>
           </div>
 
