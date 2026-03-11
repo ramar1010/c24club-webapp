@@ -1,0 +1,153 @@
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+import profileAvatar from "@/assets/videocall/profile-avatar.png";
+import eventsIcon from "@/assets/profile/events-icon.png";
+import myRewardsIcon from "@/assets/profile/my-rewards-icon.png";
+import vipSettingsIcon from "@/assets/profile/vip-settings-icon.png";
+import challengesIcon from "@/assets/profile/challenges-icon.png";
+import becomeVipIcon from "@/assets/profile/become-vip-icon.png";
+import settingsIcon from "@/assets/profile/settings-icon.png";
+import rulebookIcon from "@/assets/profile/rulebook-icon.png";
+import logoutIcon from "@/assets/profile/logout-icon.png";
+
+const ProfilePage = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const { data: balance } = useQuery({
+    queryKey: ["profile-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("earn-minutes", {
+        body: { type: "get_balance", userId: user!.id },
+      });
+      return { minutes: data?.totalMinutes ?? 0, adPoints: data?.adPoints ?? 0, productPoints: data?.productPoints ?? 0 };
+    },
+  });
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
+      {/* Back button */}
+      <div className="w-full flex items-center pt-3 pb-2">
+        <button
+          onClick={() => navigate("/videocall")}
+          className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+        >
+          <ChevronLeft className="w-7 h-7" />
+          <span className="font-black text-sm tracking-wider">BACK</span>
+        </button>
+      </div>
+
+      {/* Avatar */}
+      <div className="mt-4 mb-6">
+        <img
+          src={profileAvatar}
+          alt="Profile"
+          className="w-20 h-20 rounded-full border-2 border-neutral-600 object-cover"
+        />
+      </div>
+
+      {/* Title / Enhancer */}
+      <div className="text-center mb-2">
+        <p className="text-lg font-black">
+          🔥 10% Chance Enhancer
+        </p>
+      </div>
+
+      {/* Stats */}
+      <p className="text-sm font-bold text-neutral-300 mb-8">
+        {balance?.minutes ?? 0} Minutes | {balance?.adPoints ?? 0} Ad Points | {balance?.productPoints ?? 0} Product Points
+      </p>
+
+      {/* Row 1: Events, My Rewards, VIP Settings */}
+      <div className="flex justify-center gap-8 mb-8">
+        <IconButton src={eventsIcon} label="EVENTS" />
+        <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/store")} />
+        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" />
+      </div>
+
+      {/* Feature Cards */}
+      <div className="flex gap-4 w-full max-w-sm mb-8">
+        {/* Weekly Challenges */}
+        <button className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
+          <span className="font-black text-sm tracking-wide text-center leading-tight">
+            WEEKLY<br />CHALLENGES
+          </span>
+          <img src={challengesIcon} alt="Challenges" className="w-12 h-12 object-contain" />
+          <span className="text-xs font-bold text-green-200">Faster Rewards</span>
+        </button>
+
+        {/* Become VIP */}
+        <button className="flex-1 bg-gradient-to-b from-blue-600 to-blue-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-blue-500/30">
+          <span className="font-black text-sm tracking-wide text-center leading-tight">
+            BECOME VIP
+          </span>
+          <img src={becomeVipIcon} alt="Become VIP" className="w-12 h-12 object-contain" />
+          <span className="text-xs font-bold text-blue-200">More Rewards</span>
+        </button>
+      </div>
+
+      {/* FAQ */}
+      <button
+        onClick={() => navigate("/faq")}
+        className="font-black text-base underline underline-offset-4 decoration-2 mb-8 hover:opacity-80 transition-opacity tracking-wide"
+      >
+        Frequently Asked Questions
+      </button>
+
+      {/* Row 2: Settings, Rulebook, Logout */}
+      <div className="flex justify-center gap-8 mb-8">
+        <IconButton src={settingsIcon} label="SETTINGS" />
+        <IconButton src={rulebookIcon} label="RULEBOOK" onClick={() => navigate("/rules")} />
+        <IconButton src={logoutIcon} label="LOGOUT" onClick={handleLogout} />
+      </div>
+
+      {/* Unlock Rewards Early */}
+      <button className="w-full max-w-xs bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-6 tracking-wide">
+        Unlock Rewards Early
+      </button>
+
+      {/* Footer Links */}
+      <div className="flex items-center gap-2 text-xs text-neutral-400 font-bold">
+        <a href="/terms" className="hover:text-white transition-colors">Terms</a>
+        <span>|</span>
+        <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
+        <span>|</span>
+        <a href="/rules" className="hover:text-white transition-colors">Rules</a>
+        <span>|</span>
+        <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
+      </div>
+    </div>
+  );
+};
+
+const IconButton = ({
+  src,
+  label,
+  onClick,
+}: {
+  src: string;
+  label: string;
+  onClick?: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center gap-1 hover:scale-110 transition-transform"
+  >
+    <img src={src} alt={label} className="w-14 h-14 object-contain" />
+    <span className="text-[10px] font-black tracking-wider text-center leading-tight">
+      {label}
+    </span>
+  </button>
+);
+
+export default ProfilePage;

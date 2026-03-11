@@ -25,6 +25,7 @@ import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
 import VideoCallPage from "@/pages/public/VideoCallPage";
 import RewardStorePage from "@/pages/public/RewardStorePage";
+import ProfilePage from "@/pages/public/ProfilePage";
 
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +54,7 @@ const App = () => (
             {/* Video call (full-screen, no public layout) */}
             <Route path="/videocall" element={<VideoCallPage />} />
             <Route path="/store" element={<RewardStorePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
