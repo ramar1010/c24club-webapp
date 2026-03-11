@@ -362,7 +362,7 @@ const VideoCallPage = () => {
         </FullScreenOverlay>
       )}
       {overlayPage === "topics" && (
-        <PinTopicsOverlay userId={memberId} onClose={() => setOverlayPage(null)} />
+        <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
 
       {/* Cap Reached Popup */}
