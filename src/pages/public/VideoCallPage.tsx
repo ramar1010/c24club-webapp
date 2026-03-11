@@ -69,12 +69,13 @@ const VideoCallPage = () => {
     startCall();
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    await flushMinutes();
     next();
   };
 
   const handleBack = () => {
-    // Navigate immediately, cleanup runs in background
+    flushMinutes().catch(() => {});
     stop().catch(() => {});
     navigate("/");
   };
