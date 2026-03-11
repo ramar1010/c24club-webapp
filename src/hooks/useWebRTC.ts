@@ -201,11 +201,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
 
   async function pollForMatch() {
     clearPolling();
+    console.log("[WebRTC] Starting poll for match, memberId:", memberIdRef.current);
 
     pollingIntervalRef.current = setInterval(async () => {
       const mid = memberIdRef.current;
 
-      const [{ data: roomsAsMember1 }, { data: roomsAsMember2 }] = await Promise.all([
+      const [{ data: roomsAsMember1, error: e1 }, { data: roomsAsMember2, error: e2 }] = await Promise.all([
         supabase
           .from("rooms")
           .select("*")
@@ -222,9 +223,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
           .limit(1),
       ]);
 
+      console.log("[WebRTC] Poll result:", { roomsAsMember1, roomsAsMember2, e1, e2 });
+
       const room = roomsAsMember1?.[0] || roomsAsMember2?.[0];
       if (!room) return;
 
+      console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;
       setCallState("connecting");
@@ -232,10 +236,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       const pc = createPeerConnection();
       await setupSignaling(room.id);
 
-      // The poller sends the offer — the partner is already subscribed
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
+      console.log("[WebRTC] Sending offer from poller");
       await signalingChannelRef.current?.send({
         type: "broadcast",
         event: "offer",
@@ -270,6 +274,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
 
       await getLocalStream();
 
+      console.log("[WebRTC] Calling videocall-match join", {
+        memberId: memberIdRef.current,
+        channelId: channelIdRef.current,
+        genderPreference: genderPreferenceRef.current,
+      });
+
       const { data, error: invokeError } = await supabase.functions.invoke("videocall-match", {
         body: {
           type: "join",
@@ -280,26 +290,29 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
         },
       });
 
+      console.log("[WebRTC] videocall-match response:", { data, invokeError });
+
       if (invokeError) throw invokeError;
 
       if (data?.message === "partner_found") {
+        console.log("[WebRTC] Partner found! Room:", data.roomId);
         roomIdRef.current = data.roomId;
         setCallState("connecting");
-
-        // We found someone in the queue — they'll poll, find the room,
-        // and send us the offer. We just set up and wait.
         createPeerConnection();
         await setupSignaling(data.roomId);
+        console.log("[WebRTC] Signaling ready, waiting for poller's offer");
         return;
       }
 
       if (data?.message === "added_to_queue") {
+        console.log("[WebRTC] Added to queue, starting to poll");
         await pollForMatch();
         return;
       }
 
       throw new Error("Unexpected matchmaking response");
     } catch (startError) {
+      console.error("[WebRTC] startCall error:", startError);
       const message = startError instanceof Error ? startError.message : "Failed to start call";
       setError(message === "Requested device not found" ? "Camera or microphone not found." : message);
       setCallState("idle");
