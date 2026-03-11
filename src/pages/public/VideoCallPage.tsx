@@ -36,7 +36,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
