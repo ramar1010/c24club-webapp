@@ -172,9 +172,9 @@ const VideoCallPage = () => {
 };
 
 const NavIcon = ({ src, label }: { src: string; label: string }) => (
-  <button className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-    <img src={src} alt={label} className="w-12 h-12 object-contain" />
-    <span className="text-[10px] font-bold tracking-wider">{label}</span>
+  <button className="flex flex-col items-center gap-1.5 hover:scale-110 transition-transform">
+    <img src={src} alt={label} className="w-16 h-16 object-contain" />
+    <span className="text-xs font-bold tracking-wider">{label}</span>
   </button>
 );
 
