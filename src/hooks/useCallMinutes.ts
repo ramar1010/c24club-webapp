@@ -73,9 +73,17 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     if (data?.success) {
       setTotalMinutes(data.totalMinutes);
 
+      // Trigger popup when per-partner cap is reached
       if (data.message === "cap_reached" && !capReachedRef.current) {
         capReachedRef.current = true;
         setCapReached(true);
+        setCapInfo({ cap: data.cap, isVip: data.isVip });
+        setShowCapPopup(true);
+      }
+
+      // Also trigger popup when total minutes first reach the cap threshold
+      if (data.totalMinutes >= data.cap && !totalCapShownRef.current && !capReachedRef.current) {
+        totalCapShownRef.current = true;
         setCapInfo({ cap: data.cap, isVip: data.isVip });
         setShowCapPopup(true);
       }
