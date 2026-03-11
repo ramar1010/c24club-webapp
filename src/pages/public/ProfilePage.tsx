@@ -3,8 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-import profileAvatar from "@/assets/videocall/profile-avatar.png";
+import { useEffect, useRef } from "react";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -17,6 +16,22 @@ import logoutIcon from "@/assets/profile/logout-icon.png";
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+      .then((s) => {
+        stream = s;
+        if (videoRef.current) {
+          videoRef.current.srcObject = s;
+        }
+      })
+      .catch(() => {});
+    return () => {
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   const { data: balance } = useQuery({
     queryKey: ["profile-balance", user?.id],
@@ -47,13 +62,17 @@ const ProfilePage = () => {
         </button>
       </div>
 
-      {/* Avatar */}
+      {/* Avatar - Live Camera */}
       <div className="mt-4 mb-6">
-        <img
-          src={profileAvatar}
-          alt="Profile"
-          className="w-20 h-20 rounded-full border-2 border-neutral-600 object-cover"
-        />
+        <div className="w-20 h-20 rounded-full border-2 border-neutral-600 overflow-hidden bg-neutral-800">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover scale-x-[-1]"
+          />
+        </div>
       </div>
 
       {/* Title / Enhancer */}
