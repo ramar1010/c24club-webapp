@@ -1,28 +1,32 @@
 import { useEffect, useRef } from "react";
-import { Gift, Video, ShoppingBag, ArrowRight, Clock, DollarSign, Users, Sparkles, Eye } from "lucide-react";
+import { Video, ArrowRight, Clock, Users, Sparkles, Eye } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
-// Reward carousel data (placeholder images replaced with colored cards)
+import reward1 from "@/assets/rewards/reward1.jpg";
+import reward3 from "@/assets/rewards/reward3.jpg";
+import reward4 from "@/assets/rewards/reward4.jpeg";
+import reward5 from "@/assets/rewards/reward5.jpg";
+import reward6 from "@/assets/rewards/reward6.jpg";
+import reward7 from "@/assets/rewards/reward7.jpg";
+import bagImg from "@/assets/rewards/bag.png";
+import cashImg from "@/assets/rewards/cash.png";
+
+// Reward carousel data with real images
 const rewards = [
-  { label: "PayPal", minutes: 400, color: "from-blue-500 to-blue-700", icon: "💳" },
-  { label: "Cash App", minutes: 400, color: "from-green-400 to-green-600", icon: "💵" },
-  { label: "Headset", minutes: 90, color: "from-purple-400 to-purple-600", icon: "🎧" },
-  { label: "Bag", minutes: 150, color: "from-pink-400 to-pink-600", icon: "👜" },
-  { label: "Shoes", minutes: 200, color: "from-cyan-400 to-cyan-600", icon: "👟" },
-  { label: "Gift Card", minutes: 100, color: "from-yellow-400 to-orange-500", icon: "🎁" },
-  { label: "Clothes", minutes: 80, color: "from-rose-400 to-rose-600", icon: "👗" },
-  { label: "Accessories", minutes: 95, color: "from-indigo-400 to-indigo-600", icon: "💎" },
+  { label: "PayPal", minutes: 400, image: reward1 },
+  { label: "Cash App", minutes: 400, image: cashImg },
+  { label: "Bucket Hat", minutes: 80, image: reward4 },
+  { label: "Bag", minutes: 150, image: bagImg },
+  { label: "Boots", minutes: 200, image: reward3 },
+  { label: "Dress", minutes: 100, image: reward5 },
+  { label: "Heart Bag", minutes: 95, image: reward6 },
+  { label: "Phone Cases", minutes: 90, image: reward7 },
 ];
 
-const sideRewards = [
-  { icon: "👗", color: "from-pink-300 to-pink-500" },
-  { icon: "👜", color: "from-blue-300 to-blue-500" },
-  { icon: "🧸", color: "from-amber-300 to-amber-500" },
-  { icon: "💵", color: "from-green-400 to-green-600" },
-  { icon: "💳", color: "from-blue-500 to-blue-700" },
-  { icon: "👟", color: "from-gray-300 to-gray-500" },
-];
+// Side reward images (3 per side)
+const leftSideRewards = [reward5, bagImg, reward1];
+const rightSideRewards = [reward6, cashImg, reward3];
 
 const RewardCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -45,16 +49,15 @@ const RewardCarousel = () => {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  const items = [...rewards, ...rewards]; // duplicate for seamless loop
+  const items = [...rewards, ...rewards];
 
   return (
     <div className="w-full overflow-hidden rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-pink-400 py-6 cursor-grab">
       <div ref={scrollRef} className="flex w-max will-change-transform">
         {items.map((r, i) => (
           <div key={i} className="flex-shrink-0 mx-3">
-            <div className={`w-40 h-40 rounded-2xl bg-gradient-to-br ${r.color} flex flex-col items-center justify-center shadow-lg`}>
-              <span className="text-4xl mb-1">{r.icon}</span>
-              <span className="text-white font-bold text-sm">{r.label}</span>
+            <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg">
+              <img src={r.image} alt={r.label} className="w-full h-full object-cover" />
             </div>
             <p className="text-center text-white font-bold text-sm mt-2 drop-shadow">{r.minutes} Minutes</p>
           </div>
@@ -64,9 +67,9 @@ const RewardCarousel = () => {
   );
 };
 
-const SideCard = ({ icon, color }: { icon: string; color: string }) => (
-  <div className={`w-16 h-16 lg:w-20 lg:h-20 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-md text-2xl lg:text-3xl`}>
-    {icon}
+const SideCard = ({ image }: { image: string }) => (
+  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md">
+    <img src={image} alt="Reward" className="w-full h-full object-cover" />
   </div>
 );
 
@@ -78,7 +81,10 @@ const HomePage = () => {
       {/* ===== HERO ===== */}
       <section className="pt-24 pb-12 px-4">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-tight tracking-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          <h1
+            className="text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-tight tracking-tight"
+            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+          >
             <span className="text-white">C24 CLUB</span>
             <br />
             <span className="text-white">The Omegle Alternative</span>
@@ -95,27 +101,24 @@ const HomePage = () => {
         <div className="max-w-5xl mx-auto flex items-center justify-center gap-3 lg:gap-5">
           {/* Left side rewards */}
           <div className="hidden sm:flex flex-col gap-3">
-            {sideRewards.slice(0, 6).map((r, i) => (
-              <SideCard key={`l-${i}`} icon={r.icon} color={r.color} />
+            {leftSideRewards.map((img, i) => (
+              <SideCard key={`l-${i}`} image={img} />
             ))}
           </div>
 
           {/* Main hero card */}
           <div className="flex-1 max-w-2xl rounded-2xl overflow-hidden bg-gradient-to-b from-orange-300 via-orange-200 to-pink-300 p-1 shadow-2xl">
             <div className="rounded-xl bg-gradient-to-b from-orange-200/80 to-pink-200/80 p-6 space-y-4">
-              {/* C24 Club badge */}
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">C24</div>
                 <span className="text-gray-700 font-semibold text-sm">CLUB</span>
               </div>
 
-              {/* Timer */}
               <div className="flex items-center justify-center gap-2 text-gray-800">
                 <Clock className="h-6 w-6" />
                 <span className="text-2xl md:text-3xl font-black">5 Minutes</span>
               </div>
 
-              {/* Video preview placeholder */}
               <div className="flex gap-2 h-48 md:h-64">
                 <div className="flex-1 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
                   <div className="text-center">
@@ -131,8 +134,10 @@ const HomePage = () => {
                 </div>
               </div>
 
-              {/* Bottom text */}
-              <p className="text-center text-xl md:text-2xl font-black text-gray-800" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <p
+                className="text-center text-xl md:text-2xl font-black text-gray-800"
+                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+              >
                 Video Chat = <span className="text-orange-600">Rewards!</span>
               </p>
             </div>
@@ -140,8 +145,8 @@ const HomePage = () => {
 
           {/* Right side rewards */}
           <div className="hidden sm:flex flex-col gap-3">
-            {[...sideRewards].reverse().map((r, i) => (
-              <SideCard key={`r-${i}`} icon={r.icon} color={r.color} />
+            {rightSideRewards.map((img, i) => (
+              <SideCard key={`r-${i}`} image={img} />
             ))}
           </div>
         </div>
@@ -162,7 +167,6 @@ const HomePage = () => {
 
       {/* ===== STEPS ===== */}
       <section className="px-4 py-12 max-w-5xl mx-auto space-y-16">
-        {/* Intro text */}
         <div className="text-center">
           <h4 className="text-xl md:text-2xl font-bold text-white leading-relaxed">
             Stop talking for free....<br />
@@ -173,7 +177,10 @@ const HomePage = () => {
 
         {/* Step 1 */}
         <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          <h3
+            className="text-2xl md:text-3xl font-black text-white text-center"
+            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+          >
             Step 1: Video Chat With Anyone & Earn Minutes!
           </h3>
           <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-200 to-pink-200 p-8 flex items-center justify-center">
@@ -190,7 +197,10 @@ const HomePage = () => {
               <div className="bg-orange-500 text-white font-black text-xl px-6 py-2 rounded-lg inline-block">
                 200 Minutes Earned
               </div>
-              <p className="text-lg font-black text-gray-800" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <p
+                className="text-lg font-black text-gray-800"
+                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+              >
                 VIDEO <span className="text-3xl">CHAT & EARN!</span> REWARDS
               </p>
             </div>
@@ -199,7 +209,10 @@ const HomePage = () => {
 
         {/* Step 2 */}
         <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          <h3
+            className="text-2xl md:text-3xl font-black text-white text-center"
+            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+          >
             Step 2: Exchange your earned minutes for cash & rewards!
           </h3>
           <RewardCarousel />
@@ -207,12 +220,18 @@ const HomePage = () => {
 
         {/* Step 3 */}
         <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          <h3
+            className="text-2xl md:text-3xl font-black text-white text-center"
+            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+          >
             Step 3. Don't want to video chat...Create post to reach more people to chat elsewhere!
           </h3>
           <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-300 via-blue-300 to-purple-300 p-8">
             <div className="text-center space-y-4">
-              <h4 className="text-2xl md:text-3xl font-black text-blue-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <h4
+                className="text-2xl md:text-3xl font-black text-blue-900"
+                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+              >
                 Display Anything<br />Between Chat Sessions!
               </h4>
               <div className="flex items-center justify-center gap-4 flex-wrap">
