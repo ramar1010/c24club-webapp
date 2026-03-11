@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useAuth } from "@/hooks/useAuth";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -22,13 +23,14 @@ const genderMap: Record<GenderFilter, string> = {
 
 const VideoCallPage = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [minutes] = useState(10);
   const [adPoints] = useState(40);
   const [rewardDropMinutes] = useState(50);
 
-  // Temporary member ID — will be replaced with auth user ID
-  const memberId = useMemo(() => crypto.randomUUID(), []);
+  // Use real user ID from auth
+  const memberId = user?.id ?? "anonymous";
 
   const {
     callState,
@@ -42,6 +44,11 @@ const VideoCallPage = () => {
     memberId,
     genderPreference: genderMap[genderFilter],
   });
+
+  // Redirect to home if not logged in
+  if (!loading && !user) {
+    return <Navigate to="/" replace />;
+  }
 
   const isActive = callState !== "idle";
 
