@@ -123,9 +123,24 @@ const RewardStorePage = () => {
           </p>
         </div>
 
+        {/* User's current balance */}
+        <div className="mt-auto px-4 pb-2">
+          <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center">
+            <p className="text-neutral-400 text-sm">Your Balance</p>
+            <p className="text-green-400 font-black text-2xl">🪙 {userMinutes ?? 0} Minutes</p>
+          </div>
+        </div>
+
         {/* Redeem button */}
-        <div className="mt-auto px-4 pb-6">
-          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-black text-xl py-4 rounded-xl transition-colors shadow-lg shadow-green-900/30">
+        <div className="px-4 pb-6 pt-2">
+          <button
+            disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
+            className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
+              (userMinutes ?? 0) >= selectedReward.minutes_cost
+                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-900/30"
+                : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+            }`}
+          >
             Redeem This Product
           </button>
         </div>
