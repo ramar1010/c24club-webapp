@@ -275,18 +275,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
         roomIdRef.current = data.roomId;
         setCallState("connecting");
 
-        const pc = createPeerConnection();
+        // We found someone in the queue — they'll poll, find the room,
+        // and send us the offer. We just set up and wait.
+        createPeerConnection();
         await setupSignaling(data.roomId);
-
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        await signalingChannelRef.current?.send({
-          type: "broadcast",
-          event: "offer",
-          payload: { from: channelIdRef.current, sdp: offer },
-        });
-
         return;
       }
 
