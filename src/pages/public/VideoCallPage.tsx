@@ -85,7 +85,7 @@ const VideoCallPage = () => {
         </div>
 
         {/* Remote Video (Right / Bottom) */}
-        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[220px] md:h-[280px] w-full md:w-[340px]">
+        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center h-[260px] md:h-[330px] w-full md:w-[400px]">
           <div className="flex items-center justify-center h-full">
             <p className="text-neutral-600 text-sm">
               {isConnected ? "Connecting..." : "Partner video"}
