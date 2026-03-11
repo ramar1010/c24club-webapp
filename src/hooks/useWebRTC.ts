@@ -285,6 +285,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       if (data?.message === "partner_found") {
         console.log("[WebRTC] Partner found! Room:", data.roomId);
         roomIdRef.current = data.roomId;
+        setCurrentPartnerId(data.partnerId);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
