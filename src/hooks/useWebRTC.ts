@@ -19,6 +19,7 @@ interface UseWebRTCOptions {
 export function useWebRTC({ memberId, genderPreference = "Both", memberGender }: UseWebRTCOptions) {
   const [callState, setCallState] = useState<CallState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
