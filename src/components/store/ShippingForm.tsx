@@ -75,20 +75,18 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
 
       <div className="flex-1 px-4 pb-6 space-y-4">
         {/* Name row */}
-        <div className="flex gap-3">
-          <input
-            placeholder="First name"
-            value={form.firstName}
-            onChange={(e) => update("firstName", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-          <input
-            placeholder="Last name"
-            value={form.lastName}
-            onChange={(e) => update("lastName", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-        </div>
+        <input
+          placeholder="First name"
+          value={form.firstName}
+          onChange={(e) => update("firstName", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
+        <input
+          placeholder="Last name"
+          value={form.lastName}
+          onChange={(e) => update("lastName", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
 
         <input
           placeholder="Mobile"
@@ -129,20 +127,18 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
         />
 
-        <div className="flex gap-3">
-          <input
-            placeholder="State"
-            value={form.state}
-            onChange={(e) => update("state", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-          <input
-            placeholder="Zip"
-            value={form.zip}
-            onChange={(e) => update("zip", e.target.value)}
-            className="flex-1 bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
-          />
-        </div>
+        <input
+          placeholder="State"
+          value={form.state}
+          onChange={(e) => update("state", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
+        <input
+          placeholder="Zip"
+          value={form.zip}
+          onChange={(e) => update("zip", e.target.value)}
+          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+        />
 
         {/* Confirm button */}
         <div className="pt-4 flex justify-center">
