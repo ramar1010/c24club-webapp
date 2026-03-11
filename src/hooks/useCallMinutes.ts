@@ -18,7 +18,6 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
   const [showCapPopup, setShowCapPopup] = useState(false);
-  const totalCapShownRef = useRef(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef(0);
