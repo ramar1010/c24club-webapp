@@ -5,8 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AdminLayout from "@/components/admin/AdminLayout";
 import DashboardPage from "@/pages/admin/DashboardPage";
+import MembersPage from "@/pages/admin/MembersPage";
+import RewardsPage from "@/pages/admin/RewardsPage";
+import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
-import NotFound from "./pages/NotFound.tsx";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
