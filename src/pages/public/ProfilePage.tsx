@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import profileAvatar from "@/assets/videocall/profile-avatar.png";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
-import vipSettingsIcon from "@/assets/profile/become-vip-icon.png";
+import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
 import challengesIcon from "@/assets/profile/challenges-icon.png";
 import becomeVipIcon from "@/assets/profile/vip-settings-icon.png";
 import settingsIcon from "@/assets/profile/settings-gear.png";
