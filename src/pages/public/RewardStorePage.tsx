@@ -172,7 +172,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4">
-        <button onClick={() => navigate(-1)} className="text-red-500 hover:text-red-400 transition-colors">
+        <button onClick={() => onClose ? onClose() : navigate(-1)} className="text-red-500 hover:text-red-400 transition-colors">
           <X className="w-8 h-8" strokeWidth={3} />
         </button>
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-1">
