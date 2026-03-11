@@ -1,16 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Gift, Target, Trophy, MessageSquare, ShoppingBag } from "lucide-react";
-
-const stats = [
-  { label: "Total Members", value: "—", icon: Users, color: "text-primary" },
-  { label: "Active Rewards", value: "—", icon: Gift, color: "text-accent" },
-  { label: "Milestones", value: "—", icon: Target, color: "text-warning" },
-  { label: "Contests", value: "—", icon: Trophy, color: "text-success" },
-  { label: "Chat Rooms", value: "—", icon: MessageSquare, color: "text-info" },
-  { label: "Product Points", value: "—", icon: ShoppingBag, color: "text-destructive" },
-];
+import { Users, Gift, Tag } from "lucide-react";
+import { useMembers, useRewards, usePromos } from "@/hooks/useCrud";
 
 const DashboardPage = () => {
+  const { data: members } = useMembers();
+  const { data: rewards } = useRewards();
+  const { data: promos } = usePromos();
+
+  const stats = [
+    { label: "Total Members", value: members?.length ?? 0, icon: Users, color: "text-primary" },
+    { label: "Active Rewards", value: rewards?.length ?? 0, icon: Gift, color: "text-accent" },
+    { label: "Total Promos", value: promos?.length ?? 0, icon: Tag, color: "text-warning" },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
