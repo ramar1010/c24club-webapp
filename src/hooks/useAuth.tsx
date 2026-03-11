@@ -54,7 +54,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    checkAdmin(user.id);
+    // Small delay to ensure the JWT is set on the supabase client before querying
+    const timeout = setTimeout(() => {
+      checkAdmin(user.id);
+    }, 100);
+
+    return () => clearTimeout(timeout);
   }, [user, checkAdmin]);
 
   const signIn = async (email: string, password: string) => {

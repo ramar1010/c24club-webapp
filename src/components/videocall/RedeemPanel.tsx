@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import redeemIcon from "@/assets/videocall/redeem.png";
 import storeIcon from "@/assets/videocall/store.png";
 
@@ -13,6 +14,7 @@ const REWARD_TIERS = [
 ];
 
 const RedeemPanel = ({ totalMinutes, onClose }: RedeemPanelProps) => {
+  const navigate = useNavigate();
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 w-full">
       {/* Header */}
@@ -56,7 +58,7 @@ const RedeemPanel = ({ totalMinutes, onClose }: RedeemPanelProps) => {
 
       {/* View Reward Store */}
       <div className="text-center">
-        <button className="flex items-center justify-center gap-2 mx-auto hover:opacity-80 transition-opacity">
+        <button onClick={() => navigate("/store")} className="flex items-center justify-center gap-2 mx-auto hover:opacity-80 transition-opacity">
           <img src={storeIcon} alt="Store" className="w-10 h-10 object-contain" />
           <span className="text-white font-bold text-lg">View Reward Store</span>
         </button>
