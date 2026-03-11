@@ -73,6 +73,7 @@ const App = () => (
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="categories/new" element={<AddCategoryPage />} />
+              <Route path="categories/:id/edit" element={<AddCategoryPage />} />
               <Route path="topics" element={<PlaceholderPage title="All Topics" />} />
               <Route path="topics/new" element={<PlaceholderPage title="Add New Topic" />} />
               <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
