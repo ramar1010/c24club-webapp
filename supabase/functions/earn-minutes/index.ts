@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { type, userId, partnerId, minutesEarned } = await req.json();
+    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode } = await req.json();
 
     // GET_BALANCE: Return current minutes + VIP status
     if (type === "get_balance") {
@@ -156,6 +156,41 @@ Deno.serve(async (req) => {
           remaining: Math.max(0, cap - alreadyEarned),
           cap,
           isVip,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ADMIN_ADD_MINUTES: Manually add/set minutes for a user (admin only)
+    if (type === "admin_add_minutes") {
+      const actualTargetUserId = targetUserId || userId;
+      const actualMinutes = minutes ?? minutesEarned ?? 0;
+
+      const { data: existing } = await supabase
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", actualTargetUserId)
+        .maybeSingle();
+
+      const currentTotal = existing?.total_minutes ?? 0;
+      const newTotal = mode === "set" ? actualMinutes : currentTotal + actualMinutes;
+
+      await supabase
+        .from("member_minutes")
+        .upsert(
+          {
+            user_id: actualTargetUserId,
+            total_minutes: Math.max(0, newTotal),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          previousMinutes: currentTotal,
+          newMinutes: Math.max(0, newTotal),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

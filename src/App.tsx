@@ -19,6 +19,7 @@ import AddMilestonePage from "@/pages/admin/AddMilestonePage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
@@ -100,6 +101,7 @@ const App = () => (
               <Route path="anchor-rewards/queue" element={<PlaceholderPage title="Anchor Users Queue" />} />
               <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
               <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
+              <Route path="manage-minutes" element={<ManageMinutesPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -219,6 +219,7 @@ export const adminMenu: MenuItem[] = [
     title: "Settings",
     submenu: [
       { key: "settings-form", label: "Manage Settings", path: "/admin/settings" },
+      { key: "manage-minutes", label: "Manage Minutes", path: "/admin/manage-minutes" },
     ],
   },
   {
