@@ -206,28 +206,15 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     pollingIntervalRef.current = setInterval(async () => {
       const mid = memberIdRef.current;
 
-      const [{ data: roomsAsMember1, error: e1 }, { data: roomsAsMember2, error: e2 }] = await Promise.all([
-        supabase
-          .from("rooms")
-          .select("*")
-          .eq("member1", mid)
-          .eq("status", "connected")
-          .order("created_at", { ascending: false })
-          .limit(1),
-        supabase
-          .from("rooms")
-          .select("*")
-          .eq("member2", mid)
-          .eq("status", "connected")
-          .order("created_at", { ascending: false })
-          .limit(1),
-      ]);
+      const { data, error: pollError } = await supabase.functions.invoke("videocall-match", {
+        body: { type: "poll", memberId: mid },
+      });
 
-      console.log("[WebRTC] Poll result:", { roomsAsMember1, roomsAsMember2, e1, e2 });
+      console.log("[WebRTC] Poll result:", data, pollError);
 
-      const room = roomsAsMember1?.[0] || roomsAsMember2?.[0];
-      if (!room) return;
+      if (pollError || !data?.room) return;
 
+      const room = data.room;
       console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;

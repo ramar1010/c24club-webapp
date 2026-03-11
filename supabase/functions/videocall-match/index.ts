@@ -129,6 +129,32 @@ Deno.serve(async (req) => {
       );
     }
 
+    // POLL: Check if a room was created for this member
+    if (type === "poll") {
+      const [{ data: r1 }, { data: r2 }] = await Promise.all([
+        supabase
+          .from("rooms")
+          .select("*")
+          .eq("member1", memberId)
+          .eq("status", "connected")
+          .order("created_at", { ascending: false })
+          .limit(1),
+        supabase
+          .from("rooms")
+          .select("*")
+          .eq("member2", memberId)
+          .eq("status", "connected")
+          .order("created_at", { ascending: false })
+          .limit(1),
+      ]);
+
+      const room = r1?.[0] || r2?.[0];
+      return new Response(
+        JSON.stringify({ success: true, room: room || null }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // LEAVE_QUEUE: Remove from queue without disconnecting a call
     if (type === "leave_queue") {
       await supabase
