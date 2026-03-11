@@ -49,6 +49,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   useEffect(() => {
     elapsedRef.current = 0;
     lastReportedRef.current = 0;
+    setElapsedSeconds(0);
     setCapReached(false);
     capReachedRef.current = false;
     setShowCapPopup(false);
