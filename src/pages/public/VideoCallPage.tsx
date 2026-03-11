@@ -11,6 +11,7 @@ import NavIcon from "@/components/videocall/NavIcon";
 import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
+import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
