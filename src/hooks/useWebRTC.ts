@@ -19,6 +19,7 @@ interface UseWebRTCOptions {
 export function useWebRTC({ memberId, genderPreference = "Both", memberGender }: UseWebRTCOptions) {
   const [callState, setCallState] = useState<CallState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -218,6 +219,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;
+      // Determine partner ID from the room
+      const pid = room.member1 === mid ? room.member2 : room.member1;
+      setCurrentPartnerId(pid);
       setCallState("connecting");
 
       const pc = createPeerConnection();
@@ -251,6 +255,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     });
 
     roomIdRef.current = null;
+    setCurrentPartnerId(null);
     setCallState("idle");
   }
 
@@ -284,6 +289,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       if (data?.message === "partner_found") {
         console.log("[WebRTC] Partner found! Room:", data.roomId);
         roomIdRef.current = data.roomId;
+        setCurrentPartnerId(data.partnerId);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
@@ -344,6 +350,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
   return {
     callState,
     error,
+    currentPartnerId,
     localVideoRef,
     remoteVideoRef,
     startCall,

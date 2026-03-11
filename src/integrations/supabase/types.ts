@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_minutes_log: {
+        Row: {
+          created_at: string
+          id: string
+          minutes_earned: number
+          partner_id: string
+          session_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          minutes_earned?: number
+          partner_id: string
+          session_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minutes_earned?: number
+          partner_id?: string
+          session_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      member_minutes: {
+        Row: {
+          id: string
+          is_vip: boolean
+          total_minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_vip?: boolean
+          total_minutes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_vip?: boolean
+          total_minutes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           birthdate: string | null
