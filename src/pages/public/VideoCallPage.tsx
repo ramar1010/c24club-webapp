@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
@@ -122,6 +122,16 @@ const VideoCallPage = () => {
               isActive ? "block" : "hidden"
             }`}
           />
+
+          {/* X button to leave call */}
+          {isActive && (
+            <button
+              onClick={stop}
+              className="absolute top-2 right-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           {/* Waiting overlay */}
           {callState === "waiting" && (
