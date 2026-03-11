@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Video, ArrowRight, Clock, Users, Sparkles, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import step1Img from "@/assets/index-step1.png";
+import step3Img from "@/assets/index-step3.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
@@ -159,27 +161,8 @@ const HomePage = () => {
           >
             Step 1: Video Chat With Anyone & Earn Minutes!
           </h3>
-          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-orange-200 to-pink-200 p-8 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                  <Video className="h-8 w-8 text-white/50" />
-                </div>
-                <Sparkles className="h-8 w-8 text-yellow-500" />
-                <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                  <Users className="h-8 w-8 text-white/50" />
-                </div>
-              </div>
-              <div className="bg-orange-500 text-white font-black text-xl px-6 py-2 rounded-lg inline-block">
-                200 Minutes Earned
-              </div>
-              <p
-                className="text-lg font-black text-gray-800"
-                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-              >
-                VIDEO <span className="text-3xl">CHAT & EARN!</span> REWARDS
-              </p>
-            </div>
+          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
+            <img src={step1Img} alt="Video Chat & Earn Rewards" className="w-full h-auto" />
           </div>
         </div>
 
@@ -202,28 +185,8 @@ const HomePage = () => {
           >
             Step 3. Don't want to video chat...Create post to reach more people to chat elsewhere!
           </h3>
-          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-300 via-blue-300 to-purple-300 p-8">
-            <div className="text-center space-y-4">
-              <h4
-                className="text-2xl md:text-3xl font-black text-blue-900"
-                style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-              >
-                Display Anything<br />Between Chat Sessions!
-              </h4>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                {[
-                  { views: 500, label: "Dm ME!" },
-                  { views: 800, label: "Follow!" },
-                  { views: 1000, label: "Check it out!" },
-                ].map((card) => (
-                  <div key={card.label} className="w-36 h-40 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex flex-col items-center justify-center shadow-lg">
-                    <Eye className="h-6 w-6 text-white/60 mb-1" />
-                    <span className="text-white font-bold text-sm">{card.views} Views</span>
-                    <span className="text-orange-400 font-black text-xs mt-2">{card.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
+            <img src={step3Img} alt="Display Anything Between Chat Sessions" className="w-full h-auto" />
           </div>
         </div>
 
