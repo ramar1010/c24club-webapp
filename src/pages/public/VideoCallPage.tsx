@@ -48,6 +48,7 @@ const VideoCallPage = () => {
 
   const {
     totalMinutes,
+    elapsedSeconds,
     showCapPopup,
     capInfo,
     dismissCapPopup,
@@ -64,6 +65,9 @@ const VideoCallPage = () => {
   }
 
   const isActive = callState !== "idle";
+  const timerMin = Math.floor(elapsedSeconds / 60);
+  const timerSec = elapsedSeconds % 60;
+  const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => {
     startCall();
@@ -144,6 +148,14 @@ const VideoCallPage = () => {
               isActive ? "block" : "hidden"
             }`}
           />
+
+          {/* Call timer */}
+          {callState === "connected" && (
+            <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm font-mono font-bold">{timerDisplay}</span>
+            </div>
+          )}
 
           {/* X button to leave call */}
           {isActive && (

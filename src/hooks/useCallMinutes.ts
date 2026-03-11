@@ -14,6 +14,7 @@ interface CapInfo {
 
 export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
   const [showCapPopup, setShowCapPopup] = useState(false);
@@ -48,6 +49,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   useEffect(() => {
     elapsedRef.current = 0;
     lastReportedRef.current = 0;
+    setElapsedSeconds(0);
     setCapReached(false);
     capReachedRef.current = false;
     setShowCapPopup(false);
@@ -84,6 +86,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     if (isConnected && !capReachedRef.current) {
       timerRef.current = setInterval(() => {
         elapsedRef.current += 1;
+        setElapsedSeconds(elapsedRef.current);
 
         // Report every 60 seconds (1 minute earned)
         const totalMinutesElapsed = Math.floor(elapsedRef.current / 60);
@@ -119,11 +122,11 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
 
   return {
     totalMinutes,
+    elapsedSeconds,
     capReached,
     capInfo,
     showCapPopup,
     dismissCapPopup,
     flushMinutes,
-    callDuration: elapsedRef,
   };
 }
