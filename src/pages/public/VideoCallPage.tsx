@@ -315,6 +315,18 @@ const VideoCallPage = () => {
         </>
       )}
 
+      {/* Full-screen overlay pages */}
+      {overlayPage === "store" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <RewardStorePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
+      {overlayPage === "profile" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <ProfilePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
+
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
         <CapReachedPopup
