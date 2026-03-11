@@ -101,29 +101,34 @@ Deno.serve(async (req) => {
 
       // Upsert member_minutes
       const currentTotal = memberData?.total_minutes ?? 0;
+      const newTotal = currentTotal + actualEarned;
+      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShown;
+
       await supabase
         .from("member_minutes")
         .upsert(
           {
             user_id: userId,
-            total_minutes: currentTotal + actualEarned,
+            total_minutes: newTotal,
             updated_at: new Date().toISOString(),
+            ...(shouldShowCapPopup ? { cap_popup_shown: true } : {}),
           },
           { onConflict: "user_id" }
         );
 
       const newTotalWithPartner = alreadyEarned + actualEarned;
-      const capReached = newTotalWithPartner >= cap;
+      const partnerCapReached = newTotalWithPartner >= cap;
 
       return new Response(
         JSON.stringify({
           success: true,
-          message: capReached ? "cap_reached" : "earned",
+          message: partnerCapReached ? "cap_reached" : "earned",
           earned: actualEarned,
-          totalMinutes: currentTotal + actualEarned,
+          totalMinutes: newTotal,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
           isVip,
+          showCapPopup: shouldShowCapPopup,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
