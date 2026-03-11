@@ -20,6 +20,7 @@ import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
+import TopicsPage from "@/pages/admin/TopicsPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
