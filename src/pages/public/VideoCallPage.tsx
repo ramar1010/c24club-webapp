@@ -48,6 +48,7 @@ const VideoCallPage = () => {
 
   const {
     totalMinutes,
+    elapsedSeconds,
     showCapPopup,
     capInfo,
     dismissCapPopup,
@@ -64,6 +65,9 @@ const VideoCallPage = () => {
   }
 
   const isActive = callState !== "idle";
+  const timerMin = Math.floor(elapsedSeconds / 60);
+  const timerSec = elapsedSeconds % 60;
+  const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => {
     startCall();
