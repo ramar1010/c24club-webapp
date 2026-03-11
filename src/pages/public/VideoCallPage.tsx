@@ -113,10 +113,10 @@ const VideoCallPage = () => {
         </div>
       )}
 
-      {/* Main Video Area with partner overlay */}
-      <div className="relative mx-3 mb-2">
-        {/* Main / Local Video */}
-        <div className="rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center aspect-[3/4] max-h-[55vh] w-full">
+      {/* Video Area - Desktop: side by side, Mobile: overlay */}
+      <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0">
+        {/* Local Video */}
+        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive && (
             <div className="flex flex-col items-center gap-3">
               <img
@@ -165,18 +165,25 @@ const VideoCallPage = () => {
             </button>
           )}
 
-          {/* Waiting overlay */}
-          {callState === "waiting" && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                <p className="text-sm text-neutral-300">Finding a partner...</p>
-              </div>
+          {/* Waiting overlay - mobile only (desktop shows in partner box) */}
+          <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              <p className="text-sm text-neutral-300">Finding a partner...</p>
             </div>
-          )}
+          </div>
 
-          {/* Partner Video - small overlay top-right */}
-          <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
+          {/* NEXT Button - mobile only */}
+          <button
+            onClick={handleNext}
+            className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
+          >
+            <span className="font-bold text-sm">NEXT</span>
+            <img src={nextBtn} alt="Next" className="w-9 h-9" />
+          </button>
+
+          {/* Partner overlay - mobile only */}
+          <div className="md:hidden absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
             <video
               ref={remoteVideoRef}
               autoPlay
@@ -186,25 +193,41 @@ const VideoCallPage = () => {
             {callState !== "connected" && (
               <div className="w-full h-full flex items-center justify-center">
                 <p className="text-neutral-600 text-[10px] text-center px-1">
-                  {callState === "connecting"
-                    ? "Connecting..."
-                    : callState === "waiting"
-                    ? "Searching..."
-                    : ""}
+                  {callState === "connecting" ? "Connecting..." : callState === "waiting" ? "Searching..." : ""}
                 </p>
               </div>
             )}
           </div>
-
-          {/* NEXT Button - bottom right of main video */}
-          <button
-            onClick={handleNext}
-            className="absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
-          >
-            <span className="font-bold text-sm">NEXT</span>
-            <img src={nextBtn} alt="Next" className="w-9 h-9" />
-          </button>
         </div>
+
+        {/* Partner Video - desktop only */}
+        <div className="hidden md:flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
+          />
+          {callState !== "connected" && (
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              <p className="text-neutral-400 text-sm">
+                {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* NEXT Button - desktop only, centered below videos */}
+      <div className="hidden md:flex justify-center mb-4">
+        <button
+          onClick={handleNext}
+          className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
+        >
+          <span className="font-bold">NEXT</span>
+          <img src={nextBtn} alt="Next" className="w-8 h-8" />
+        </button>
       </div>
 
       {/* Redeem Panel or Nav */}
