@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Video, ArrowRight, Clock, Users, Sparkles, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import step1Img from "@/assets/index-step1.png";
+import step3Img from "@/assets/index-step3.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
