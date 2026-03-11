@@ -219,6 +219,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;
+      // Determine partner ID from the room
+      const pid = room.member1 === mid ? room.member2 : room.member1;
+      setCurrentPartnerId(pid);
       setCallState("connecting");
 
       const pc = createPeerConnection();
