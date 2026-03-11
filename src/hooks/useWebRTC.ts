@@ -255,6 +255,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     });
 
     roomIdRef.current = null;
+    setCurrentPartnerId(null);
     setCallState("idle");
   }
 
