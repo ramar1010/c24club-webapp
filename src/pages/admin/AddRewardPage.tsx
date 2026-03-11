@@ -77,6 +77,7 @@ const AddRewardPage = () => {
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
         minutes_cost: existingReward.minutes_cost || 0,
+        shipping_fee: existingReward.shipping_fee || 0,
       });
     }
   }, [existingReward, form]);
