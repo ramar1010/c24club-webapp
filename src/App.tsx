@@ -44,6 +44,9 @@ const App = () => (
               <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
             </Route>
 
+            {/* Video call (full-screen, no public layout) */}
+            <Route path="/videocall" element={<VideoCallPage />} />
+
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
 
