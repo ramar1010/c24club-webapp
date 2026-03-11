@@ -56,6 +56,7 @@ const AddRewardPage = () => {
       rarity: "common",
       visible: true,
       minutes_cost: 0,
+      shipping_fee: 0,
     },
   });
 
