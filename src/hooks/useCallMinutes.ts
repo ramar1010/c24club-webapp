@@ -122,11 +122,11 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
 
   return {
     totalMinutes,
+    elapsedSeconds,
     capReached,
     capInfo,
     showCapPopup,
     dismissCapPopup,
     flushMinutes,
-    callDuration: elapsedRef,
   };
 }
