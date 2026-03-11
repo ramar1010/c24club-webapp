@@ -8,6 +8,9 @@ import { useCallMinutes } from "@/hooks/useCallMinutes";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
 import NavIcon from "@/components/videocall/NavIcon";
+import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
+import RewardStorePage from "@/pages/public/RewardStorePage";
+import ProfilePage from "@/pages/public/ProfilePage";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -32,7 +35,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
-
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -74,13 +77,6 @@ const VideoCallPage = () => {
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => startCall();
-  const safeNavigate = (path: string) => {
-    if (isActive) {
-      window.open(window.location.origin + path, "_blank");
-    } else {
-      navigate(path);
-    }
-  };
   const handleNext = async () => {
     await flushMinutes();
     next();
@@ -260,7 +256,7 @@ const VideoCallPage = () => {
         <>
           {/* Quick Nav Icons - Row 1 */}
           <div className="flex justify-center gap-8 px-4 pt-2 pb-3">
-            <NavIcon src={storeIcon} label="STORE" onClick={() => safeNavigate("/store")} />
+            <NavIcon src={storeIcon} label="STORE" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} />
             <NavIcon
               src={redeemIcon}
               label="REDEEM"
@@ -273,7 +269,7 @@ const VideoCallPage = () => {
           {/* Quick Nav Icons - Row 2 */}
           <div className="flex justify-center gap-8 px-4 pb-4">
             <NavIcon src={promoIcon} label="PROMO" />
-            <NavIcon src={profileIcon} label="PROFILE" onClick={() => safeNavigate("/profile")} />
+            <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label="VIP" />
           </div>
 
@@ -317,6 +313,18 @@ const VideoCallPage = () => {
             </button>
           </div>
         </>
+      )}
+
+      {/* Full-screen overlay pages */}
+      {overlayPage === "store" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <RewardStorePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
+      {overlayPage === "profile" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <ProfilePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
       )}
 
       {/* Cap Reached Popup */}

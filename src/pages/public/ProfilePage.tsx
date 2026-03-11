@@ -15,7 +15,7 @@ import challengesPin from "@/assets/profile/challenges-pin.png";
 import challengesTarget from "@/assets/profile/challenges-target.png";
 import logoutIcon from "@/assets/profile/logout-icon.png";
 
-const ProfilePage = () => {
+const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -56,7 +56,7 @@ const ProfilePage = () => {
       {/* Back button */}
       <div className="w-full flex items-center pt-3 pb-2">
         <button
-          onClick={() => navigate("/videocall")}
+          onClick={() => onClose ? onClose() : navigate("/videocall")}
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
         >
           <ChevronLeft className="w-7 h-7" />
