@@ -21,12 +21,14 @@ const AdminLoginPage = () => {
     e.preventDefault();
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
+
     if (error) {
+      setLoading(false);
       toast.error("Login failed", { description: error.message });
-    } else {
-      navigate("/admin");
+      return;
     }
+
+    navigate("/admin");
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -73,7 +75,7 @@ const AdminLoginPage = () => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trimStart())}
                 required
                 placeholder="admin@c24club.com"
               />
