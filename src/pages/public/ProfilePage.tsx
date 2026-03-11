@@ -62,13 +62,17 @@ const ProfilePage = () => {
         </button>
       </div>
 
-      {/* Avatar */}
+      {/* Avatar - Live Camera */}
       <div className="mt-4 mb-6">
-        <img
-          src={profileAvatar}
-          alt="Profile"
-          className="w-20 h-20 rounded-full border-2 border-neutral-600 object-cover"
-        />
+        <div className="w-20 h-20 rounded-full border-2 border-neutral-600 overflow-hidden bg-neutral-800">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover scale-x-[-1]"
+          />
+        </div>
       </div>
 
       {/* Title / Enhancer */}
