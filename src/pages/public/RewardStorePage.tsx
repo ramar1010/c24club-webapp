@@ -46,6 +46,21 @@ const RewardStorePage = () => {
     return { ...cat, count };
   });
 
+  // Shipping form view
+  if (selectedReward && showShipping) {
+    return (
+      <ShippingForm
+        reward={selectedReward}
+        onBack={() => setShowShipping(false)}
+        onSuccess={() => {
+          setShowShipping(false);
+          setSelectedReward(null);
+          queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+        }}
+      />
+    );
+  }
+
   // Product detail view
   if (selectedReward) {
     const rarity = RARITY_STYLES[selectedReward.rarity] || RARITY_STYLES.common;
