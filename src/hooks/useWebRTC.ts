@@ -228,8 +228,19 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       clearPolling();
       roomIdRef.current = room.id;
       setCallState("connecting");
-      createPeerConnection();
+
+      const pc = createPeerConnection();
       await setupSignaling(room.id);
+
+      // The poller sends the offer — the partner is already subscribed
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      await signalingChannelRef.current?.send({
+        type: "broadcast",
+        event: "offer",
+        payload: { from: channelIdRef.current, sdp: offer },
+      });
     }, 2000);
   }
 
