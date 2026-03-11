@@ -20,6 +20,19 @@ const RewardStorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedReward, setSelectedReward] = useState<any | null>(null);
 
+  // Fetch user's current minute balance
+  const { data: userMinutes } = useQuery({
+    queryKey: ["user-minutes-balance"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+      const { data } = await supabase.functions.invoke("earn-minutes", {
+        body: { type: "get_balance", userId: user.id },
+      });
+      return data?.totalMinutes ?? 0;
+    },
+  });
+
   const filteredRewards = selectedCategory
     ? rewards?.filter((r: any) => r.category_id === selectedCategory)
     : rewards;
