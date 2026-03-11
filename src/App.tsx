@@ -76,7 +76,8 @@ const App = () => (
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
               <Route path="milestones" element={<MilestonesPage />} />
               <Route path="milestones/new" element={<AddMilestonePage />} />
-              <Route path="member-rewards" element={<PlaceholderPage title="All Member Rewards" />} />
+              <Route path="member-rewards" element={<MemberRewardsPage />} />
+              <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<PlaceholderPage title="Reported Users" />} />
               <Route path="categories" element={<CategoriesPage />} />
