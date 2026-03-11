@@ -14,6 +14,7 @@ interface CapInfo {
 
 export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
   const [showCapPopup, setShowCapPopup] = useState(false);
