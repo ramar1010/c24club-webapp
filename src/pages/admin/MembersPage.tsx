@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { useMembers, useDeleteMember } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, User, ShieldX } from "lucide-react";
+import { Pencil, Trash2, User, ShieldX, Crown } from "lucide-react";
 import DeleteDialog from "@/components/admin/DeleteDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
