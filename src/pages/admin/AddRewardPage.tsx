@@ -29,11 +29,12 @@ const rewardSchema = z.object({
   
   minutes_cost: z.coerce.number().min(0).default(0),
   shipping_fee: z.coerce.number().min(0).default(0),
+  grant_amount: z.coerce.number().min(0).default(0),
 });
 
 type RewardForm = z.infer<typeof rewardSchema>;
 
-const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus"];
+const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus", "Spins", "Ad Points"];
 const RARITIES = ["common", "rare", "legendary"];
 const DELIVERIES = ["digital", "physical", "both"];
 
@@ -66,6 +67,7 @@ const AddRewardPage = () => {
       visible: true,
       minutes_cost: 0,
       shipping_fee: 0,
+      grant_amount: 0,
     },
   });
 
@@ -88,6 +90,7 @@ const AddRewardPage = () => {
         
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
+        grant_amount: existingReward.grant_amount || 0,
       });
       setVariationImages(existingReward.variation_images || []);
       setColorOptions(Array.isArray(existingReward.color_options) ? existingReward.color_options as any[] : []);
@@ -241,6 +244,18 @@ const AddRewardPage = () => {
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {(form.watch("type") === "Spins" || form.watch("type") === "Ad Points") && (
+                <FormField control={form.control} name="grant_amount" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {form.watch("type") === "Spins" ? "Spins Granted" : "Ad Points Granted"}
+                    </FormLabel>
+                    <FormControl><Input type="number" min={1} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
 
               <FormField control={form.control} name="sizes" render={({ field }) => (
                 <FormItem>

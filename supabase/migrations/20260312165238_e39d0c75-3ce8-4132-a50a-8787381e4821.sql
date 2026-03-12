@@ -1,0 +1,1 @@
+ALTER TABLE public.rewards ADD COLUMN grant_amount integer NOT NULL DEFAULT 0;

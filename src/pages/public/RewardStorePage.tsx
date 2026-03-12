@@ -457,6 +457,27 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     );
   }
 
+  // Instant redeem handler for Spins / Ad Points
+  const [instantRedeeming, setInstantRedeeming] = useState(false);
+  const handleInstantRedeem = async (reward: any) => {
+    setInstantRedeeming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-reward", {
+        body: { action: "redeem-instant", rewardId: reward.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const label = reward.type === "Spins" ? "spin tokens" : "ad points";
+      toast.success(`🎉 +${data.grantAmount} ${label} added to your account!`);
+      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+      setSelectedReward(null);
+    } catch (e: any) {
+      toast.error(e.message || "Redemption failed");
+    } finally {
+      setInstantRedeeming(false);
+    }
+  };
+
   // Shipping form view
   if (selectedReward && showShipping) {
     return (
@@ -476,8 +497,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   if (selectedReward) {
     const rarity = RARITY_STYLES[selectedReward.rarity] || RARITY_STYLES.common;
     const sizes = selectedReward.sizes?.split(",").map((s: string) => s.trim()).filter(Boolean) || [];
-    const isRareOrLegendary = selectedReward.rarity === "rare" || selectedReward.rarity === "legendary";
-    const canSpinThis = selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip);
+    const isInstantType = selectedReward.type === "Spins" || selectedReward.type === "Ad Points";
+    const isRareOrLegendary = !isInstantType && (selectedReward.rarity === "rare" || selectedReward.rarity === "legendary");
+    const canSpinThis = !isInstantType && (selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip));
     const displayShippingFee = isPremiumVip ? 0 : (Number(selectedReward.shipping_fee) || 0);
 
     // Build image gallery: main + feature + variations + color images
@@ -613,7 +635,19 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           <p className="text-neutral-400 text-sm">
             Cost: <span className="text-white font-bold">🪙 {selectedReward.minutes_cost} Minutes</span>
           </p>
-          {isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
+          {isInstantType && (
+            <div className="mt-3 bg-purple-500/10 border border-purple-500/30 rounded-xl px-4 py-3">
+              <p className="text-purple-400 font-black text-sm">
+                {selectedReward.type === "Spins" ? "🎰" : "⚡"} You'll receive: <span className="text-white">{selectedReward.grant_amount || 0} {selectedReward.type === "Spins" ? "Spin Tokens" : "Ad Points"}</span>
+              </p>
+              <p className="text-neutral-400 text-[10px] mt-1">
+                {selectedReward.type === "Spins"
+                  ? "Spin tokens can be used in Spin to Win (Events). They bypass the daily limit!"
+                  : "Ad points let you promote your content to other users."}
+              </p>
+            </div>
+          )}
+          {!isInstantType && isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
             <p className="text-purple-400 text-xs font-bold mt-1">👑 FREE SHIPPING (Premium VIP)</p>
           )}
           {selectedReward.rarity === "legendary" && Number(selectedReward.cashout_value) > 0 && (
@@ -665,7 +699,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </div>
           )}
 
-          {!isRareOrLegendary && (
+          {!isRareOrLegendary && selectedReward.type !== "Spins" && selectedReward.type !== "Ad Points" && (
             <button
               onClick={() => setShowShipping(true)}
               disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
@@ -676,6 +710,27 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
               }`}
             >
               Redeem This Product
+            </button>
+          )}
+
+          {(selectedReward.type === "Spins" || selectedReward.type === "Ad Points") && (
+            <button
+              onClick={() => handleInstantRedeem(selectedReward)}
+              disabled={instantRedeeming || (userMinutes ?? 0) < selectedReward.minutes_cost}
+              className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
+                (userMinutes ?? 0) >= selectedReward.minutes_cost
+                  ? selectedReward.type === "Spins"
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/30 hover:scale-105 active:scale-95"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-900/30 hover:scale-105 active:scale-95"
+                  : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+              }`}
+            >
+              {instantRedeeming
+                ? "Redeeming..."
+                : selectedReward.type === "Spins"
+                  ? `🎰 Redeem ${selectedReward.grant_amount || 0} Spin${(selectedReward.grant_amount || 0) !== 1 ? "s" : ""}`
+                  : `⚡ Redeem ${selectedReward.grant_amount || 0} Ad Points`
+              }
             </button>
           )}
         </div>
