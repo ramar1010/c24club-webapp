@@ -252,6 +252,12 @@ const VideoCallPage = () => {
               <span>{totalMinutes} Minutes</span>
             )}
           </div>
+          {callState === "connected" && (
+            <div className="flex items-center justify-end gap-1 text-[10px] text-green-400 font-mono font-bold">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span>{timerDisplay}</span>
+            </div>
+          )}
           <div className="flex items-center justify-end gap-1 text-sm text-yellow-400 font-bold">
             <span>⭐</span>
             <span>{adPoints} Ad Points</span>
@@ -297,12 +303,6 @@ const VideoCallPage = () => {
             </button>
           )}
 
-          {callState === "connected" && (
-            <div className="absolute top-12 md:top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-mono font-bold">{timerDisplay}</span>
-            </div>
-          )}
 
           <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
             <div className="flex flex-col items-center gap-3">
@@ -315,7 +315,7 @@ const VideoCallPage = () => {
           {callState === "connected" && currentPartnerId && isMobile && (
             <button
               onClick={() => setShowReportOverlay(true)}
-              className="absolute top-[5.5rem] left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+              className="absolute top-12 left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
               title="Report User"
             >
               <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
