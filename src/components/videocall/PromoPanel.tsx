@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Eye, EyeOff, BarChart3, Trash2, Image as ImageIcon } from "lucide-react";
+import { X, Eye, EyeOff, BarChart3, Trash2, Image as ImageIcon, Link2, Gift, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
