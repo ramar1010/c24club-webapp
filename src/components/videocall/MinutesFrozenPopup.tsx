@@ -10,7 +10,7 @@ interface MinutesFrozenPopupProps {
   isVip?: boolean;
 }
 
-const MinutesFrozenPopup = ({ onDismiss, onGoToChallenges, isVip }: MinutesFrozenPopupProps) => {
+const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip }: MinutesFrozenPopupProps) => {
   const [loading, setLoading] = useState(false);
 
   const handlePurchaseUnfreeze = async () => {
