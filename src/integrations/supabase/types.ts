@@ -1097,6 +1097,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      atomic_increment_minutes: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
