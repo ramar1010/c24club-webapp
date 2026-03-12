@@ -108,6 +108,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinReelItems, setSpinReelItems] = useState<any[]>([]);
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
   const [spinAnimating, setSpinAnimating] = useState(false);
+  const [instantRedeeming, setInstantRedeeming] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
