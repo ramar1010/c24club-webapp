@@ -356,13 +356,6 @@ const VideoCallPage = () => {
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
 
-      {/* Promo Ad Overlay - shown between skips */}
-      {showPromoAd && (
-        <PromoAdOverlay
-          viewerId={memberId}
-          onDismiss={() => setShowPromoAd(false)}
-        />
-      )}
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
