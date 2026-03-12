@@ -202,6 +202,18 @@ const VideoCallPage = () => {
       supabase.functions.invoke("unfreeze-purchase", { body: { action: "apply" } });
       window.history.replaceState({}, "", "/videocall");
     }
+    if (params.get("unfreeze_partner") === "success") {
+      const partnerId = params.get("partner_id");
+      if (partnerId) {
+        supabase.functions.invoke("unfreeze-purchase", {
+          body: { action: "apply_for_partner", partner_id: partnerId },
+        }).then(() => {
+          toast.success("🥶 You unfroze their minutes! What a hero!");
+          queryClient.invalidateQueries({ queryKey: ["partner_is_frozen"] });
+        });
+      }
+      window.history.replaceState({}, "", "/videocall");
+    }
     if (params.get("gift") === "success") {
       const sessionId = params.get("session_id");
       if (sessionId) {
