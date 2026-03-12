@@ -1,11 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Video } from "lucide-react";
+import { Video, X } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import step1Img from "@/assets/index-step1.png";
 import step3Img from "@/assets/index-step3.png";
+import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
@@ -18,7 +20,6 @@ import reward7 from "@/assets/rewards/reward7.jpg";
 import bagImg from "@/assets/rewards/bag.png";
 import cashImg from "@/assets/rewards/cash.png";
 
-// Reward carousel data with real images
 const rewards = [
   { label: "PayPal", minutes: 400, image: reward1 },
   { label: "Cash App", minutes: 400, image: cashImg },
@@ -30,7 +31,6 @@ const rewards = [
   { label: "Phone Cases", minutes: 90, image: reward7 },
 ];
 
-// Side reward images (3 per side)
 const leftSideRewards = [reward5, bagImg, reward1];
 const rightSideRewards = [reward6, cashImg, reward3];
 
@@ -79,10 +79,233 @@ const SideCard = ({ image }: { image: string }) => (
   </div>
 );
 
-const HomePage = () => {
-  const { user, loading, signOut } = useAuth();
-  const navigate = useNavigate();
+/* ─── Sign-In Popup ─── */
+const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  if (!open) return null;
 
+  const handleGoogle = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (error) toast.error("Sign in failed", { description: String(error) });
+  };
+
+  const handleApple = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+    if (error) toast.error("Sign in failed", { description: String(error) });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative bg-[#2a2a2a] rounded-2xl p-8 w-full max-w-sm mx-4 shadow-2xl border border-white/10" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-3 right-3 text-white/60 hover:text-white">
+          <X className="h-5 w-5" />
+        </button>
+        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">Sign In to C24 Club</h2>
+        <p className="text-sm text-white/60 text-center mb-6">Choose how you'd like to sign in</p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleGoogle}
+            className="flex items-center justify-center gap-3 w-full px-6 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-gray-800 font-bold text-base shadow-lg transition-all hover:scale-[1.02]"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Sign in with Google
+          </button>
+          <button
+            onClick={handleApple}
+            className="flex items-center justify-center gap-3 w-full px-6 py-3.5 rounded-xl bg-black hover:bg-gray-900 text-white font-bold text-base shadow-lg transition-all hover:scale-[1.02] border border-white/20"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+            Sign in with Apple
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Onboarding Popup (name + gender) ─── */
+const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () => void }) => {
+  const [name, setName] = useState("");
+  const [gender, setGender] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+
+  if (!open) return null;
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !gender) {
+      toast.error("Please enter your name and select a gender");
+      return;
+    }
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("members")
+      .update({ name: name.trim(), gender })
+      .eq("id", user.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to save profile", { description: error.message });
+      return;
+    }
+    toast.success("Welcome to C24 Club!");
+    onComplete();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="relative bg-[#2a2a2a] rounded-2xl p-8 w-full max-w-sm mx-4 shadow-2xl border border-white/10">
+        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">Set Up Your Profile</h2>
+        <p className="text-sm text-white/60 text-center mb-6">Tell us a bit about yourself</p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-white/80 mb-1">Your Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-white/80 mb-2">Gender</label>
+            <div className="flex gap-3">
+              {["Male", "Female", "Other"].map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGender(g.toLowerCase())}
+                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all border ${
+                    gender === g.toLowerCase()
+                      ? "bg-yellow-400 text-black border-yellow-400"
+                      : "bg-white/10 text-white/70 border-white/20 hover:border-white/40"
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-base uppercase tracking-wide shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+          >
+            {saving ? "Saving..." : (
+              <>
+                Enter C24 Club
+                <img src={arrowRight} alt="" className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── CTA Buttons Component ─── */
+const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [memberName, setMemberName] = useState<string | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setMemberName(null);
+      setNeedsOnboarding(false);
+      return;
+    }
+    const fetchMember = async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("name, gender")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        const hasProfile = data.name && data.name !== user.email && data.gender;
+        setMemberName(hasProfile ? data.name : null);
+        setNeedsOnboarding(!hasProfile);
+        if (!hasProfile) setShowOnboarding(true);
+      }
+    };
+    fetchMember();
+  }, [user]);
+
+  const handleEnterClub = () => {
+    if (needsOnboarding) {
+      setShowOnboarding(true);
+    } else {
+      navigate("/videocall");
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setNeedsOnboarding(false);
+    navigate("/videocall");
+  };
+
+  return (
+    <>
+      <SignInPopup open={showSignIn} onClose={() => setShowSignIn(false)} />
+      <OnboardingPopup open={showOnboarding} onComplete={handleOnboardingComplete} />
+
+      <div className="flex flex-col items-center gap-3">
+        {user ? (
+          <>
+            {memberName && (
+              <p className="text-lg font-bold text-white italic">
+                Welcome, {memberName}
+              </p>
+            )}
+            <button
+              onClick={handleEnterClub}
+              className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+            >
+              <span className="flex items-center gap-2">
+                Enter C24 Club
+                <img src={arrowRight} alt="" className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </button>
+            <button
+              onClick={signOut}
+              className="px-8 py-3 rounded-full bg-green-500 hover:bg-green-600 text-white font-black text-sm uppercase tracking-wide shadow-lg transition-all transform hover:scale-105"
+            >
+              Sign Out
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setShowSignIn(true)}
+              className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+            >
+              <span className="flex items-center gap-2">
+                Get Rewards Now
+                <img src={arrowRight} alt="" className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <span className="block text-sm font-bold text-yellow-300 mt-0.5">Sign Up Today</span>
+            </button>
+            <button
+              onClick={() => setShowSignIn(true)}
+              className="px-8 py-3 rounded-full bg-green-500 hover:bg-green-600 text-white font-black text-sm uppercase tracking-wide shadow-lg transition-all transform hover:scale-105"
+            >
+              Sign In
+            </button>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const HomePage = () => {
   return (
     <div className="relative">
       <PublicNav />
@@ -108,14 +331,12 @@ const HomePage = () => {
 
         {/* Hero card with side rewards */}
         <div className="max-w-5xl mx-auto flex items-center justify-center gap-3 lg:gap-5">
-          {/* Left side rewards */}
           <div className="hidden sm:flex flex-col gap-3">
             {leftSideRewards.map((img, i) => (
               <SideCard key={`l-${i}`} image={img} />
             ))}
           </div>
 
-          {/* Main hero video */}
           <div className="flex-1 max-w-2xl rounded-2xl overflow-hidden shadow-2xl">
             <div className="relative w-full" style={{ paddingBottom: "75%" }}>
               <iframe
@@ -128,7 +349,6 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Right side rewards */}
           <div className="hidden sm:flex flex-col gap-3">
             {rightSideRewards.map((img, i) => (
               <SideCard key={`r-${i}`} image={img} />
@@ -137,61 +357,8 @@ const HomePage = () => {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col items-center gap-3 mt-8">
-          {user ? (
-            <>
-              <button
-                onClick={() => navigate("/videocall")}
-                className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-              >
-                <span className="flex items-center gap-2">
-                  <Video className="h-5 w-5" />
-                  Start Video Call <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </button>
-              <button
-                onClick={signOut}
-                className="text-sm text-neutral-400 hover:text-white transition-colors"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-              >
-                <span className="flex items-center gap-2">
-                  Get Rewards Now <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <span className="block text-sm font-bold opacity-90 mt-0.5">Sign Up Today</span>
-              </button>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="flex items-center gap-2 px-8 py-3 rounded-lg bg-white hover:bg-gray-100 text-gray-800 font-bold text-base shadow-lg transition-all transform hover:scale-105"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                Sign in with Google
-              </button>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="flex items-center gap-2 px-8 py-3 rounded-lg bg-black hover:bg-gray-900 text-white font-bold text-base shadow-lg transition-all transform hover:scale-105"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-                Sign in with Apple
-              </button>
-            </>
-          )}
+        <div className="mt-8">
+          <CTAButtons />
         </div>
       </section>
 
@@ -205,12 +372,8 @@ const HomePage = () => {
           </h4>
         </div>
 
-        {/* Step 1 */}
         <div className="space-y-6">
-          <h3
-            className="text-2xl md:text-3xl font-black text-white text-center"
-            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-          >
+          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
             Step 1: Video Chat With Anyone & Earn Minutes!
           </h3>
           <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
@@ -218,23 +381,15 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Step 2 */}
         <div className="space-y-6">
-          <h3
-            className="text-2xl md:text-3xl font-black text-white text-center"
-            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-          >
+          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
             Step 2: Exchange your earned minutes for cash & rewards!
           </h3>
           <RewardCarousel />
         </div>
 
-        {/* Step 3 */}
         <div className="space-y-6">
-          <h3
-            className="text-2xl md:text-3xl font-black text-white text-center"
-            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
-          >
+          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
             Step 3. Don't want to video chat...Create post to reach more people to chat elsewhere!
           </h3>
           <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
@@ -243,53 +398,8 @@ const HomePage = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="flex flex-col items-center gap-3 pt-8">
-          {user ? (
-            <button
-              onClick={() => navigate("/videocall")}
-              className="group px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-            >
-              <span className="flex items-center gap-2">
-                <Video className="h-5 w-5" />
-                Start Video Call <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="group px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-              >
-                <span className="flex items-center gap-2">
-                  Get Rewards Now <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <span className="block text-sm font-bold opacity-90 mt-0.5">Sign Up Today</span>
-              </button>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="flex items-center gap-2 px-8 py-3 rounded-lg bg-white hover:bg-gray-100 text-gray-800 font-bold text-base shadow-lg transition-all transform hover:scale-105"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                Sign in with Google
-              </button>
-              <button
-                onClick={async () => {
-                  const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
-                  if (error) toast.error("Sign in failed", { description: String(error) });
-                }}
-                className="flex items-center gap-2 px-8 py-3 rounded-lg bg-black hover:bg-gray-900 text-white font-bold text-base shadow-lg transition-all transform hover:scale-105"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-                Sign in with Apple
-              </button>
-            </>
-          )}
+        <div className="pt-8">
+          <CTAButtons variant="bottom" />
         </div>
       </section>
 
