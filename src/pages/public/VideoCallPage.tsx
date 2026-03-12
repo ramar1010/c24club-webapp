@@ -439,7 +439,7 @@ const VideoCallPage = () => {
               <span className="text-4xl md:text-5xl">📵</span>
               <p className="text-white font-black text-sm md:text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
               <p className="text-yellow-400 text-xs md:text-sm text-center px-6 mt-1 animate-pulse font-bold">
-                Turn on your camera or you'll appear faceless
+                Turn on your camera to see your partner
               </p>
             </div>
           )}
@@ -517,6 +517,13 @@ const VideoCallPage = () => {
                   <p className="text-neutral-400 text-[7px] text-center px-1">Tap Next to skip</p>
                 </div>
               )}
+              {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred && (
+                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl">🙈</span>
+                  <p className="text-white font-black text-[8px] text-center px-1">HIDDEN</p>
+                  <p className="text-yellow-400 text-[6px] text-center px-1">You're faceless — partner hidden</p>
+                </div>
+              )}
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-neutral-600 text-[10px] text-center px-1">
@@ -568,6 +575,14 @@ const VideoCallPage = () => {
                 <span className="text-4xl">📵</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
                 <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
+              </div>
+            )}
+            {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred && (
+              <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">🙈</span>
+                <p className="text-white font-black text-sm mt-2">PARTNER HIDDEN</p>
+                <p className="text-yellow-400 text-xs text-center px-6 mt-1">Since you're faceless, we won't show you the opposing user's face.</p>
+                <p className="text-neutral-400 text-xs text-center px-6 mt-1">Turn on your camera to see them.</p>
               </div>
             )}
             {callState !== "connected" && (
