@@ -394,6 +394,15 @@ const VideoCallPage = () => {
                 <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
               </div>
             )}
+            {callState === "connected" && currentPartnerId && (
+              <button
+                onClick={() => setShowReportOverlay(true)}
+                className="absolute top-2 left-2 z-20 w-9 h-9 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+                title="Report User"
+              >
+                <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
+              </button>
+            )}
           </div>
         )}
       </div>
