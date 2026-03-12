@@ -245,6 +245,18 @@ const AddRewardPage = () => {
                 </FormItem>
               )} />
 
+              {(form.watch("type") === "Spins" || form.watch("type") === "Ad Points") && (
+                <FormField control={form.control} name="grant_amount" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {form.watch("type") === "Spins" ? "Spins Granted" : "Ad Points Granted"}
+                    </FormLabel>
+                    <FormControl><Input type="number" min={1} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
+
               <FormField control={form.control} name="sizes" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Sizes <span className="text-xs text-muted-foreground">(comma separated)</span></FormLabel>
