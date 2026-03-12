@@ -55,6 +55,7 @@ const VideoCallPage = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
+  const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
