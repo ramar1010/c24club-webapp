@@ -94,12 +94,22 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip }: Mi
           <CreditCard className="w-4 h-4" /> BUY UNFREEZE — $1.99
         </button>
 
-        <button
-          onClick={onDismiss}
-          className="text-neutral-500 text-xs font-bold hover:text-white transition-colors"
-        >
-          Dismiss
-        </button>
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={onDismiss}
+            className="text-neutral-500 text-xs font-bold hover:text-white transition-colors"
+          >
+            Dismiss
+          </button>
+          {onSnooze && (
+            <button
+              onClick={onSnooze}
+              className="text-neutral-500 text-xs font-bold hover:text-yellow-400 transition-colors"
+            >
+              Don't show for 24h
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

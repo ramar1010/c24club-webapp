@@ -406,6 +406,10 @@ const VideoCallPage = () => {
       {showFrozenPopup && (
         <MinutesFrozenPopup
           onDismiss={() => setShowFrozenPopup(false)}
+          onSnooze={() => {
+            localStorage.setItem("freeze_popup_snoozed_until", String(Date.now() + 24 * 60 * 60 * 1000));
+            setShowFrozenPopup(false);
+          }}
           onGoToChallenges={() => {
             setShowFrozenPopup(false);
             setOverlayPage("profile");
