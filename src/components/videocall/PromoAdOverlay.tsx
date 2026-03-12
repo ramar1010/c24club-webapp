@@ -10,6 +10,8 @@ interface PromoAd {
   url_text: string | null;
   image_thumb_url: string | null;
   sameuser: boolean | null;
+  gender: string | null;
+  country: string | null;
 }
 
 interface PromoAdOverlayProps {
