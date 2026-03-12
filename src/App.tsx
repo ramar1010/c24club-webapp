@@ -106,6 +106,7 @@ const App = () => (
               <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
               <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
+              <Route path="freeze-settings" element={<FreezeSettingsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
