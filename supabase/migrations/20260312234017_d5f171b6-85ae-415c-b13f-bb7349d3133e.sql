@@ -1,0 +1,1 @@
+ALTER TABLE public.member_minutes ADD COLUMN IF NOT EXISTS frozen_cap_popup_shown boolean NOT NULL DEFAULT false;

@@ -145,12 +145,13 @@ Deno.serve(async (req) => {
 
       const { data: memberData } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points")
-        .eq("user_id", userId)
-        .maybeSingle();
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points")
+         .eq("user_id", userId)
+         .maybeSingle();
 
-      const isVip = memberData?.is_vip ?? false;
-      const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
+       const isVip = memberData?.is_vip ?? false;
+       const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
+       const frozenCapPopupAlreadyShown = memberData?.frozen_cap_popup_shown ?? false;
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
@@ -174,6 +175,15 @@ Deno.serve(async (req) => {
 
       if (actualEarned <= 0) {
         const currentTotal = memberData?.total_minutes ?? 0;
+        // For frozen users, only show cap popup once ever
+        let showFrozenPopup = false;
+        if (freezeInfo.isFrozen && !frozenCapPopupAlreadyShown) {
+          showFrozenPopup = true;
+          await supabase
+            .from("member_minutes")
+            .update({ frozen_cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
         return new Response(
           JSON.stringify({
             success: true,
@@ -184,6 +194,7 @@ Deno.serve(async (req) => {
             earned: 0,
             totalMinutes: currentTotal,
             totalEarnedWithPartner: alreadyEarned,
+            showCapPopup: showFrozenPopup,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -213,13 +224,26 @@ Deno.serve(async (req) => {
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
       const capPopupAlreadyShownNow = memberData?.cap_popup_shown ?? false;
-      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShownNow;
+      let shouldShowCapPopup = false;
 
-      if (shouldShowCapPopup) {
-        await supabase
-          .from("member_minutes")
-          .update({ cap_popup_shown: true })
-          .eq("user_id", userId);
+      if (freezeInfo.isFrozen) {
+        // Frozen users: only show cap popup once ever
+        if (!frozenCapPopupAlreadyShown) {
+          shouldShowCapPopup = true;
+          await supabase
+            .from("member_minutes")
+            .update({ frozen_cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
+      } else {
+        // Normal/VIP users: show once when total reaches cap
+        shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShownNow;
+        if (shouldShowCapPopup) {
+          await supabase
+            .from("member_minutes")
+            .update({ cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
       }
 
       const newTotalWithPartner = alreadyEarned + safeCapped;
