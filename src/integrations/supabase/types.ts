@@ -773,6 +773,7 @@ export type Database = {
           is_active: boolean
           label: string
           prize_type: string
+          rarity: string
           sort_order: number
           updated_at: string
         }
@@ -784,6 +785,7 @@ export type Database = {
           is_active?: boolean
           label: string
           prize_type: string
+          rarity?: string
           sort_order?: number
           updated_at?: string
         }
@@ -795,6 +797,7 @@ export type Database = {
           is_active?: boolean
           label?: string
           prize_type?: string
+          rarity?: string
           sort_order?: number
           updated_at?: string
         }

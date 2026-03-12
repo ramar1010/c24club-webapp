@@ -1,0 +1,1 @@
+ALTER TABLE public.spin_prizes ADD COLUMN rarity text NOT NULL DEFAULT 'common';
