@@ -143,8 +143,8 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     const { error } = await supabase.from("promos").insert({
       title: title || "Untitled Promo",
       description: description || null,
-      url: isVip ? (url || null) : null,
-      url_text: isVip ? urlText : null,
+      url: isPremiumVip ? (url || null) : null,
+      url_text: isPremiumVip ? urlText : null,
       image_thumb_url: imageUrl,
       member_id: userId,
       gender: isVip ? gender : "Both",
