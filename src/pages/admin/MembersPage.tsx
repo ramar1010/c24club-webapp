@@ -100,6 +100,64 @@ const MembersPage = () => {
   const [customReason, setCustomReason] = useState("");
   const [banning, setBanning] = useState(false);
 
+  // VIP management
+  const [vipTarget, setVipTarget] = useState<Member | null>(null);
+  const [vipTier, setVipTier] = useState<string>("basic");
+  const [savingVip, setSavingVip] = useState(false);
+  const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
+
+  // Load current VIP status when dialog opens
+  useEffect(() => {
+    if (!vipTarget) return;
+    (async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("is_vip, vip_tier")
+        .eq("user_id", vipTarget.id)
+        .maybeSingle();
+      setCurrentVipInfo(data ? { is_vip: data.is_vip, vip_tier: data.vip_tier } : null);
+      if (data?.vip_tier) setVipTier(data.vip_tier);
+    })();
+  }, [vipTarget]);
+
+  const handleSetVip = async (enable: boolean) => {
+    if (!vipTarget) return;
+    setSavingVip(true);
+    try {
+      const { data: existing } = await supabase
+        .from("member_minutes")
+        .select("id")
+        .eq("user_id", vipTarget.id)
+        .maybeSingle();
+
+      const updates = {
+        is_vip: enable,
+        vip_tier: enable ? vipTier : null,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existing) {
+        const { error } = await supabase
+          .from("member_minutes")
+          .update(updates)
+          .eq("user_id", vipTarget.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("member_minutes")
+          .insert({ user_id: vipTarget.id, ...updates } as any);
+        if (error) throw error;
+      }
+
+      toast.success(enable ? `${vipTarget.name} is now VIP (${vipTier})` : `${vipTarget.name} VIP removed`);
+      setVipTarget(null);
+    } catch (err: any) {
+      toast.error("Failed to update VIP status", { description: err.message });
+    } finally {
+      setSavingVip(false);
+    }
+  };
+
   const handleBan = async () => {
     if (!banTarget || !user) return;
     setBanning(true);
