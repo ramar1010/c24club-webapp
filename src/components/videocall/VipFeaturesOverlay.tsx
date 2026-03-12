@@ -63,10 +63,7 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
         <div className="flex gap-3 mb-6 w-full max-w-sm">
           {/* Basic Button */}
           <button
-            onClick={() => {
-              setViewingTier("basic");
-              if (!currentTier) handlePurchase(VIP_TIERS.basic.price_id);
-            }}
+            onClick={() => setViewingTier("basic")}
             className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all border-2 ${
               viewingTier === "basic"
                 ? "bg-green-600 border-green-400 text-white"
