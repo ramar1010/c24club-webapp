@@ -408,7 +408,16 @@ const VideoCallPage = () => {
           onClose={() => setOverlayPage(null)}
           currentTier={vipTier}
           onPurchase={startCheckout}
-          onManage={openPortal}
+          onManage={() => { setOverlayPage("vip-settings"); return Promise.resolve(); }}
+        />
+      )}
+      {overlayPage === "vip-settings" && (
+        <VipSettingsOverlay
+          onClose={() => setOverlayPage(null)}
+          userId={memberId}
+          vipTier={vipTier}
+          genderFilter={genderFilter}
+          onGenderFilterChange={setGenderFilter}
         />
       )}
 
