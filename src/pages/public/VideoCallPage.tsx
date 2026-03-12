@@ -538,6 +538,15 @@ const VideoCallPage = () => {
           onClose={() => setShowGiftOverlay(false)}
         />
       )}
+
+      {/* Report User Overlay */}
+      {showReportOverlay && currentPartnerId && (
+        <ReportUserOverlay
+          reporterId={memberId}
+          reportedUserId={currentPartnerId}
+          onClose={() => setShowReportOverlay(false)}
+        />
+      )}
     </div>
   );
 };
