@@ -136,6 +136,11 @@ const VideoCallPage = () => {
       checkSubscription();
       window.history.replaceState({}, "", "/videocall");
     }
+    if (params.get("unfreeze") === "success") {
+      // Apply the unfreeze after successful payment
+      supabase.functions.invoke("unfreeze-purchase", { body: { action: "apply" } });
+      window.history.replaceState({}, "", "/videocall");
+    }
   }, [banInfo, recheckBan, checkSubscription]);
 
   if (!loading && !user) {
@@ -403,6 +408,7 @@ const VideoCallPage = () => {
             setShowFrozenPopup(false);
             setOverlayPage("profile");
           }}
+          isVip={subscribed}
         />
       )}
     </div>
