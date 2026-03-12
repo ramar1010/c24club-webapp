@@ -381,6 +381,11 @@ const VideoCallPage = () => {
                 ))}
               </div>
             )}
+            {partnerPinnedSocials.length > 0 && callState === "connected" && (
+              <div className="absolute top-2 right-2 z-20">
+                <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
+              </div>
+            )}
           </div>
         )}
       </div>
