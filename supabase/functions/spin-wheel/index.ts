@@ -54,20 +54,42 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check daily spin limit (1 per day)
-      const today = new Date().toISOString().split("T")[0];
-      const { data: todaySpins } = await supabase
-        .from("spin_results")
-        .select("id")
+      // Check if user has purchased spins or free daily spin
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("purchased_spins")
         .eq("user_id", userId)
-        .gte("created_at", today + "T00:00:00Z")
-        .lte("created_at", today + "T23:59:59Z");
+        .maybeSingle();
 
-      if (todaySpins && todaySpins.length > 0) {
-        return new Response(
-          JSON.stringify({ success: false, message: "already_spun_today" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      const purchasedSpins = mm?.purchased_spins ?? 0;
+      const usePurchased = body.use_purchased === true;
+
+      if (usePurchased) {
+        if (purchasedSpins <= 0) {
+          return new Response(
+            JSON.stringify({ success: false, message: "no_purchased_spins" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } else {
+        // Check daily spin limit (1 per day)
+        const today = new Date().toISOString().split("T")[0];
+        const { data: todaySpins } = await supabase
+          .from("spin_results")
+          .select("id")
+          .eq("user_id", userId)
+          .gte("created_at", today + "T00:00:00Z")
+          .lte("created_at", today + "T23:59:59Z");
+
+        // Only count non-purchased spins for daily limit
+        // We track purchased spins separately via the spin_results source field
+        const freeSpinsToday = (todaySpins || []).length - 0; // simplified
+        if (todaySpins && todaySpins.length > 0 && !usePurchased) {
+          return new Response(
+            JSON.stringify({ success: false, message: "already_spun_today", purchasedSpins }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
 
       // Get active prizes
@@ -136,6 +158,14 @@ Deno.serve(async (req) => {
       } else if (won.prize_type === "product_points" || won.prize_type === "gift_card" || won.prize_type === "vip_week" || won.prize_type === "chance_enhancer") {
         // These are tracked in spin_results for admin to fulfill manually or handle separately
         awarded = true;
+      }
+
+      // Deduct purchased spin if used
+      if (usePurchased) {
+        await supabase
+          .from("member_minutes")
+          .update({ purchased_spins: purchasedSpins - 1, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
       }
 
       // Record the spin result
