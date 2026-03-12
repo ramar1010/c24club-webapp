@@ -10,6 +10,8 @@ interface PromoAd {
   url_text: string | null;
   image_thumb_url: string | null;
   sameuser: boolean | null;
+  gender: string | null;
+  country: string | null;
 }
 
 interface PromoAdOverlayProps {
@@ -26,12 +28,22 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   const pausedRef = useRef(false);
   const promoIdRef = useRef<string | null>(null);
 
-  // Fetch a random active promo, respecting sameuser setting
+  // Fetch a random active promo, respecting sameuser/gender/country targeting
   useEffect(() => {
     const fetchPromo = async () => {
+      // Fetch viewer's profile for gender/country matching
+      const { data: viewerProfile } = await supabase
+        .from("members")
+        .select("gender, country")
+        .eq("id", viewerId)
+        .maybeSingle();
+
+      const viewerGender = viewerProfile?.gender ?? null;
+      const viewerCountry = viewerProfile?.country ?? null;
+
       const { data: promos } = await supabase
         .from("promos")
-        .select("id, title, description, url, url_text, image_thumb_url, sameuser")
+        .select("id, title, description, url, url_text, image_thumb_url, sameuser, gender, country")
         .eq("is_active", true)
         .eq("status", "Active")
         .neq("member_id", viewerId)
@@ -50,7 +62,12 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
       const seenPromoIds = new Set((seenData ?? []).map((r) => r.promo_id));
 
       const eligible = promos.filter((p) => {
+        // sameuser filter: if false, don't show to same viewer twice
         if (!p.sameuser && seenPromoIds.has(p.id)) return false;
+        // Gender targeting: if promo targets a specific gender, viewer must match
+        if (p.gender && viewerGender && p.gender !== viewerGender) return false;
+        // Country targeting: if promo targets a specific country, viewer must match
+        if (p.country && viewerCountry && p.country.toLowerCase() !== viewerCountry.toLowerCase()) return false;
         return true;
       });
 
