@@ -497,8 +497,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   if (selectedReward) {
     const rarity = RARITY_STYLES[selectedReward.rarity] || RARITY_STYLES.common;
     const sizes = selectedReward.sizes?.split(",").map((s: string) => s.trim()).filter(Boolean) || [];
-    const isRareOrLegendary = selectedReward.rarity === "rare" || selectedReward.rarity === "legendary";
-    const canSpinThis = selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip);
+    const isInstantType = selectedReward.type === "Spins" || selectedReward.type === "Ad Points";
+    const isRareOrLegendary = !isInstantType && (selectedReward.rarity === "rare" || selectedReward.rarity === "legendary");
+    const canSpinThis = !isInstantType && (selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip));
     const displayShippingFee = isPremiumVip ? 0 : (Number(selectedReward.shipping_fee) || 0);
 
     // Build image gallery: main + feature + variations + color images
