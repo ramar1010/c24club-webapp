@@ -222,14 +222,14 @@ Deno.serve(async (req) => {
           .eq("user_id", userId);
       }
 
-      const newTotalWithPartner = alreadyEarned + actualEarned;
+      const newTotalWithPartner = alreadyEarned + safeCapped;
       const partnerCapReached = newTotalWithPartner >= cap;
 
       return new Response(
         JSON.stringify({
           success: true,
           message: partnerCapReached ? "cap_reached" : "earned",
-          earned: actualEarned,
+          earned: safeCapped,
           totalMinutes: newTotal,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
