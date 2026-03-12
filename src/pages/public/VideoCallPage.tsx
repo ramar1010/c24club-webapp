@@ -363,9 +363,9 @@ const VideoCallPage = () => {
       )}
 
       {/* Video Area */}
-      <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0 md:justify-center md:items-center md:max-w-4xl md:mx-auto md:w-full">
         {/* Local Video */}
-        <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
+        <div className="flex-1 md:flex-none md:w-[420px] md:aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive && (
             <div className="flex flex-col items-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
@@ -485,7 +485,7 @@ const VideoCallPage = () => {
 
         {/* Partner Video - desktop */}
         {!isMobile && (
-          <div className="flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
+          <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             <video ref={remoteVideoRef} autoPlay playsInline
               className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
             {callState !== "connected" && (
