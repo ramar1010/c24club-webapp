@@ -151,6 +151,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     
     setTimeout(() => {
       setSpinAnimating(false);
+      // The item at winnerIndex is what they landed on
+      const landed = items[winnerIndex];
+      setLandedItem(landed);
       if (won) {
         setSpinState("won");
         toast.success(`🎉 You won ${targetReward.title}!`);
