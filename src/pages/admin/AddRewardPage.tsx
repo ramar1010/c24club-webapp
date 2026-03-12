@@ -90,6 +90,7 @@ const AddRewardPage = () => {
         
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
+        grant_amount: existingReward.grant_amount || 0,
       });
       setVariationImages(existingReward.variation_images || []);
       setColorOptions(Array.isArray(existingReward.color_options) ? existingReward.color_options as any[] : []);
