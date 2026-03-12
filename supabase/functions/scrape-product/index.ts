@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -36,7 +34,6 @@ Deno.serve(async (req) => {
 
     console.log("Scraping product URL:", formattedUrl);
 
-    // Use Firecrawl with JSON extraction for structured data + markdown for description
     const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
@@ -45,43 +42,40 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         url: formattedUrl,
-        formats: [
-          "markdown",
-          {
-            type: "json",
-            schema: {
-              type: "object",
-              properties: {
-                title: { type: "string", description: "Product title/name" },
-                description: { type: "string", description: "Product description text" },
-                price: { type: "string", description: "Product price" },
-                images: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "All product image URLs (full resolution)",
-                },
-                sizes: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Available sizes like S, M, L, XL, or numeric sizes",
-                },
-                colors: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string", description: "Color name" },
-                      image_url: { type: "string", description: "Image URL for this color variant" },
-                    },
+        formats: ["extract"],
+        extract: {
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Product title/name" },
+              description: { type: "string", description: "Product description text" },
+              price: { type: "string", description: "Product price" },
+              images: {
+                type: "array",
+                items: { type: "string" },
+                description: "All product image URLs (full resolution, not thumbnails)",
+              },
+              sizes: {
+                type: "array",
+                items: { type: "string" },
+                description: "Available sizes like S, M, L, XL, or numeric sizes",
+              },
+              colors: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string", description: "Color name" },
+                    image_url: { type: "string", description: "Image URL for this color variant" },
                   },
-                  description: "Available color options with their variant images",
                 },
+                description: "Available color options with their variant images",
               },
             },
-            prompt:
-              "Extract the product title, description, all product image URLs (not thumbnails — full size images), available sizes, available colors with their variant image URLs, and the price. For images, get ALL product gallery images.",
           },
-        ],
+          prompt:
+            "Extract the product title, description, all product image URLs (not thumbnails — full size images), available sizes, available colors with their variant image URLs, and the price. For images, get ALL product gallery images.",
+        },
         waitFor: 3000,
       }),
     });
@@ -96,18 +90,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Extract structured data
-    const json = data?.data?.json || data?.json || {};
-    const markdown = data?.data?.markdown || data?.markdown || "";
+    const extracted = data?.data?.extract || data?.extract || {};
 
     const result = {
       success: true,
-      title: json.title || "",
-      description: json.description || markdown?.slice(0, 500) || "",
-      price: json.price || "",
-      images: (json.images || []).filter((u: string) => u && u.startsWith("http")),
-      sizes: json.sizes || [],
-      colors: (json.colors || []).map((c: any) => ({
+      title: extracted.title || "",
+      description: extracted.description || "",
+      price: extracted.price || "",
+      images: (extracted.images || []).filter((u: string) => u && u.startsWith("http")),
+      sizes: extracted.sizes || [],
+      colors: (extracted.colors || []).map((c: any) => ({
         name: c.name || "",
         hex: "#000000",
         image_url: c.image_url || "",
