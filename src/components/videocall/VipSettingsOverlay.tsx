@@ -181,7 +181,9 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
                 className="flex flex-col items-center gap-1.5 transition-all"
               >
                 <div className="relative">
-                  <img src={maleIcon} alt="Male" className="w-16 h-16 object-contain" />
+                  <div className="w-16 h-16 rounded-full bg-neutral-700 flex items-center justify-center overflow-hidden">
+                    <img src={maleIcon} alt="Male" className="w-14 h-14 object-contain" />
+                  </div>
                   {genderFilter === "guys" && (
                     <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
                   )}
@@ -194,12 +196,14 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
                 onClick={() => onGenderFilterChange("both")}
                 className="flex flex-col items-center gap-1.5 transition-all"
               >
-                <div className="relative flex -space-x-3">
-                  <img src={maleIcon} alt="Male" className="w-12 h-12 object-contain" />
-                  <img src={femaleIcon} alt="Female" className="w-12 h-12 object-contain" />
-                  {genderFilter === "both" && (
-                    <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
-                  )}
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center">
+                    {genderFilter === "both" ? (
+                      <img src={greenCheck} alt="Selected" className="w-8 h-8" />
+                    ) : (
+                      <span className="text-neutral-400 text-lg font-black">✓</span>
+                    )}
+                  </div>
                 </div>
                 <span className="text-neutral-400 text-[10px] font-black tracking-wider">Both</span>
               </button>
@@ -210,7 +214,9 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
                 className="flex flex-col items-center gap-1.5 transition-all"
               >
                 <div className="relative">
-                  <img src={femaleIcon} alt="Female" className="w-16 h-16 object-contain" />
+                  <div className="w-16 h-16 rounded-full bg-neutral-700 flex items-center justify-center overflow-hidden">
+                    <img src={femaleIcon} alt="Female" className="w-14 h-14 object-contain" />
+                  </div>
                   {genderFilter === "girls" && (
                     <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
                   )}
