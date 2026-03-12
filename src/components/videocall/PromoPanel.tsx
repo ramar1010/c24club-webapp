@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import LinkClicksRewardPicker from "./LinkClicksRewardPicker";
 
 interface PromoPanelProps {
   userId: string;
@@ -12,7 +13,7 @@ interface PromoPanelProps {
   onAdPointsChange: () => void;
 }
 
-type PromoView = "main" | "create" | "my-promos" | "templates" | "analytics" | "link-clicks";
+type PromoView = "main" | "create" | "my-promos" | "templates" | "analytics" | "link-clicks" | "pick-reward";
 
 interface PromoData {
   id: string;
