@@ -44,11 +44,88 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_submissions: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          proof_image_url: string | null
+          proof_text: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          proof_image_url?: string | null
+          proof_text?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          proof_image_url?: string | null
+          proof_text?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_submissions_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freeze_settings: {
+        Row: {
+          frozen_earn_rate: number
+          id: string
+          minute_threshold: number
+          one_time_unfreeze_price: number
+          updated_at: string
+          vip_unfreezes_per_month: number
+        }
+        Insert: {
+          frozen_earn_rate?: number
+          id?: string
+          minute_threshold?: number
+          one_time_unfreeze_price?: number
+          updated_at?: string
+          vip_unfreezes_per_month?: number
+        }
+        Update: {
+          frozen_earn_rate?: number
+          id?: string
+          minute_threshold?: number
+          one_time_unfreeze_price?: number
+          updated_at?: string
+          vip_unfreezes_per_month?: number
+        }
+        Relationships: []
+      }
       member_minutes: {
         Row: {
           ad_points: number
           cap_popup_shown: boolean
+          freeze_free_until: string | null
+          frozen_at: string | null
           id: string
+          is_frozen: boolean
           is_vip: boolean
           stripe_customer_id: string | null
           subscription_end: string | null
@@ -56,11 +133,16 @@ export type Database = {
           updated_at: string
           user_id: string
           vip_tier: string | null
+          vip_unfreezes_reset_at: string | null
+          vip_unfreezes_used: number
         }
         Insert: {
           ad_points?: number
           cap_popup_shown?: boolean
+          freeze_free_until?: string | null
+          frozen_at?: string | null
           id?: string
+          is_frozen?: boolean
           is_vip?: boolean
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -68,11 +150,16 @@ export type Database = {
           updated_at?: string
           user_id: string
           vip_tier?: string | null
+          vip_unfreezes_reset_at?: string | null
+          vip_unfreezes_used?: number
         }
         Update: {
           ad_points?: number
           cap_popup_shown?: boolean
+          freeze_free_until?: string | null
+          frozen_at?: string | null
           id?: string
+          is_frozen?: boolean
           is_vip?: boolean
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -80,6 +167,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vip_tier?: string | null
+          vip_unfreezes_reset_at?: string | null
+          vip_unfreezes_used?: number
         }
         Relationships: []
       }
@@ -767,6 +856,33 @@ export type Database = {
           id?: string
           member_gender?: string | null
           member_id?: string
+        }
+        Relationships: []
+      }
+      weekly_challenges: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

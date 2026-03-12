@@ -211,6 +211,7 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "settings-form", label: "Manage Settings", path: "/admin/settings" },
       { key: "manage-minutes", label: "Manage Minutes", path: "/admin/manage-minutes" },
+      { key: "freeze-settings", label: "Freeze Settings", path: "/admin/freeze-settings" },
     ],
   },
   {

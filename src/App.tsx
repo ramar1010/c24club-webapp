@@ -21,6 +21,7 @@ import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 import TopicsPage from "@/pages/admin/TopicsPage";
 import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
 import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
+import FreezeSettingsPage from "@/pages/admin/FreezeSettingsPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
@@ -105,6 +106,7 @@ const App = () => (
               <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
               <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
+              <Route path="freeze-settings" element={<FreezeSettingsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

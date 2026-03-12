@@ -12,12 +12,18 @@ interface CapInfo {
   isVip: boolean;
 }
 
+interface FreezeInfo {
+  isFrozen: boolean;
+  earnRate: number;
+}
+
 export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
   const [showCapPopup, setShowCapPopup] = useState(false);
+  const [freezeInfo, setFreezeInfo] = useState<FreezeInfo>({ isFrozen: false, earnRate: 10 });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef(0);
@@ -41,6 +47,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
       .then(({ data }) => {
         if (data?.success) {
           setTotalMinutes(data.totalMinutes);
+          setFreezeInfo({ isFrozen: data.isFrozen ?? false, earnRate: data.earnRate ?? 10 });
         }
       });
   }, [userId]);
@@ -135,5 +142,6 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     showCapPopup,
     dismissCapPopup,
     flushMinutes,
+    freezeInfo,
   };
 }

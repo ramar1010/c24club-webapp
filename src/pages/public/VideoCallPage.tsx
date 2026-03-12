@@ -19,6 +19,7 @@ import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
+import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import { useVipStatus } from "@/hooks/useVipStatus";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
@@ -70,11 +71,23 @@ const VideoCallPage = () => {
     capInfo,
     dismissCapPopup,
     flushMinutes,
+    freezeInfo,
   } = useCallMinutes({
     userId: memberId,
     partnerId: currentPartnerId,
     isConnected: callState === "connected",
   });
+
+  const [showFrozenPopup, setShowFrozenPopup] = useState(false);
+  const frozenPopupShownRef = useRef(false);
+
+  // Show frozen popup once when freeze is detected
+  useEffect(() => {
+    if (freezeInfo.isFrozen && !frozenPopupShownRef.current) {
+      frozenPopupShownRef.current = true;
+      setShowFrozenPopup(true);
+    }
+  }, [freezeInfo.isFrozen]);
 
   const { adPoints, awardAdPoints, refreshBalance } = useAdPoints({
     userId: memberId,
@@ -170,7 +183,11 @@ const VideoCallPage = () => {
         <div className="text-right">
           <div className="flex items-center justify-end gap-1.5 text-2xl font-black">
             <span>⏱️</span>
-            <span>{totalMinutes} Minutes</span>
+            {freezeInfo.isFrozen ? (
+              <span className="text-blue-300">🥶 {totalMinutes} Frozen</span>
+            ) : (
+              <span>{totalMinutes} Minutes</span>
+            )}
           </div>
           <div className="flex items-center justify-end gap-1 text-sm text-yellow-400 font-bold">
             <span>⭐</span>
@@ -376,6 +393,17 @@ const VideoCallPage = () => {
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
         <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
+      )}
+
+      {/* Minutes Frozen Popup */}
+      {showFrozenPopup && (
+        <MinutesFrozenPopup
+          onDismiss={() => setShowFrozenPopup(false)}
+          onGoToChallenges={() => {
+            setShowFrozenPopup(false);
+            setOverlayPage("profile");
+          }}
+        />
       )}
     </div>
   );
