@@ -46,6 +46,7 @@ export type Database = {
       }
       member_minutes: {
         Row: {
+          ad_points: number
           cap_popup_shown: boolean
           id: string
           is_vip: boolean
@@ -54,6 +55,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ad_points?: number
           cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
@@ -62,6 +64,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ad_points?: number
           cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
@@ -318,6 +321,92 @@ export type Database = {
           },
         ]
       }
+      promo_analytics: {
+        Row: {
+          id: string
+          link_clicked: boolean
+          paused: boolean
+          promo_id: string
+          viewed_at: string
+          viewer_id: string
+          watch_time_seconds: number
+        }
+        Insert: {
+          id?: string
+          link_clicked?: boolean
+          paused?: boolean
+          promo_id: string
+          viewed_at?: string
+          viewer_id: string
+          watch_time_seconds?: number
+        }
+        Update: {
+          id?: string
+          link_clicked?: boolean
+          paused?: boolean
+          promo_id?: string
+          viewed_at?: string
+          viewer_id?: string
+          watch_time_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_analytics_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_templates: {
+        Row: {
+          ad_points_balance: number | null
+          country: string | null
+          created_at: string
+          description: string | null
+          gender: string | null
+          id: string
+          image_url: string | null
+          interest: string | null
+          sameuser: boolean | null
+          title: string | null
+          url: string | null
+          url_text: string | null
+          user_id: string
+        }
+        Insert: {
+          ad_points_balance?: number | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          image_url?: string | null
+          interest?: string | null
+          sameuser?: boolean | null
+          title?: string | null
+          url?: string | null
+          url_text?: string | null
+          user_id: string
+        }
+        Update: {
+          ad_points_balance?: number | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          image_url?: string | null
+          interest?: string | null
+          sameuser?: boolean | null
+          title?: string | null
+          url?: string | null
+          url_text?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       promos: {
         Row: {
           ad_points_balance: number | null
@@ -328,6 +417,7 @@ export type Database = {
           id: string
           image_thumb_url: string | null
           interest: string | null
+          is_active: boolean | null
           member_id: string | null
           promo_type: string | null
           sameuser: boolean | null
@@ -335,6 +425,7 @@ export type Database = {
           title: string
           updated_at: string
           url: string | null
+          url_text: string | null
         }
         Insert: {
           ad_points_balance?: number | null
@@ -345,6 +436,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           interest?: string | null
+          is_active?: boolean | null
           member_id?: string | null
           promo_type?: string | null
           sameuser?: boolean | null
@@ -352,6 +444,7 @@ export type Database = {
           title: string
           updated_at?: string
           url?: string | null
+          url_text?: string | null
         }
         Update: {
           ad_points_balance?: number | null
@@ -362,6 +455,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           interest?: string | null
+          is_active?: boolean | null
           member_id?: string | null
           promo_type?: string | null
           sameuser?: boolean | null
@@ -369,6 +463,7 @@ export type Database = {
           title?: string
           updated_at?: string
           url?: string | null
+          url_text?: string | null
         }
         Relationships: [
           {
