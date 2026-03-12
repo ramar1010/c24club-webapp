@@ -1,4 +1,4 @@
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Pencil, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,6 +6,22 @@ import maleIcon from "@/assets/profile/male-shades.png";
 import femaleIcon from "@/assets/profile/girl-shades.png";
 import chanceEnhancerIcon from "@/assets/vip/chance-enhancer.png";
 import getGiftedIcon from "@/assets/vip/get-gifted.png";
+import pinSocialsIcon from "@/assets/vip/pin-socials.png";
+import cashappIcon from "@/assets/socials/cashapp.png";
+import tiktokIcon from "@/assets/socials/tiktok.png";
+import instagramIcon from "@/assets/socials/instagram.png";
+import snapchatIcon from "@/assets/socials/snapchat.png";
+import venmoIcon from "@/assets/socials/venmo.png";
+import paypalIcon from "@/assets/socials/paypal.png";
+
+const SOCIAL_PLATFORMS = [
+  { key: "cashapp", label: "$cashtag", icon: cashappIcon, prefix: "$", placeholder: "$cashtag" },
+  { key: "tiktok", label: "TikTok", icon: tiktokIcon, prefix: "@", placeholder: "@username" },
+  { key: "instagram", label: "Instagram", icon: instagramIcon, prefix: "@", placeholder: "@username" },
+  { key: "snapchat", label: "Snapchat", icon: snapchatIcon, prefix: "/", placeholder: "/username" },
+  { key: "venmo", label: "Venmo", icon: venmoIcon, prefix: "/", placeholder: "/username" },
+  { key: "paypal", label: "PayPal", icon: paypalIcon, prefix: "@", placeholder: "@username" },
+] as const;
 
 interface VipSettingsOverlayProps {
   onClose: () => void;
@@ -19,10 +35,17 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
   const [showPromoAds, setShowPromoAds] = useState(true);
   const [getGifted, setGetGifted] = useState(false);
   const [pinnedSocials, setPinnedSocials] = useState<string[]>([]);
-  const [newSocial, setNewSocial] = useState("");
+  const [socialEditing, setSocialEditing] = useState<string | null>(null);
+  const [socialDraft, setSocialDraft] = useState("");
   const [loading, setLoading] = useState(true);
 
   const isPremium = vipTier === "premium";
+
+  // Parse pinned_socials array: stored as "platform:username" strings
+  const getSocialValue = (platformKey: string) => {
+    const entry = pinnedSocials.find((s) => s.startsWith(platformKey + ":"));
+    return entry ? entry.split(":").slice(1).join(":") : "";
+  };
 
   useEffect(() => {
     loadSettings();
@@ -74,19 +97,33 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
     toast.success(val ? "Gifting enabled" : "Gifting disabled");
   };
 
-  const handleAddSocial = async () => {
-    if (!newSocial.trim()) return;
-    const updated = [...pinnedSocials, newSocial.trim()].slice(0, 5);
+  const handleSaveSocial = async (platformKey: string) => {
+    const value = socialDraft.trim();
+    let updated: string[];
+    if (value) {
+      const entry = `${platformKey}:${value}`;
+      updated = pinnedSocials.filter((s) => !s.startsWith(platformKey + ":"));
+      updated.push(entry);
+    } else {
+      updated = pinnedSocials.filter((s) => !s.startsWith(platformKey + ":"));
+    }
     setPinnedSocials(updated);
-    setNewSocial("");
+    setSocialEditing(null);
+    setSocialDraft("");
     await saveSettings({ pinned_socials: updated });
-    toast.success("Social added");
+    toast.success(value ? "Social saved" : "Social removed");
   };
 
-  const handleRemoveSocial = async (index: number) => {
-    const updated = pinnedSocials.filter((_, i) => i !== index);
+  const handleRemoveSocial = async (platformKey: string) => {
+    const updated = pinnedSocials.filter((s) => !s.startsWith(platformKey + ":"));
     setPinnedSocials(updated);
     await saveSettings({ pinned_socials: updated });
+    toast.success("Social removed");
+  };
+
+  const startEditing = (platformKey: string) => {
+    setSocialEditing(platformKey);
+    setSocialDraft(getSocialValue(platformKey));
   };
 
   const ToggleButton = ({ active, onToggle, yesLabel = "Yes", noLabel = "No" }: {
@@ -172,36 +209,65 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
 
           {/* Pin Social & Pay Apps On Screen */}
           <div className="bg-neutral-900 border border-neutral-700/60 rounded-2xl p-4">
-            <p className="text-neutral-400 text-xs font-black tracking-wider text-center mb-3">Pin Social & Pay Apps On Screen.</p>
-            <div className="space-y-2 mb-3">
-              {pinnedSocials.map((social, i) => (
-                <div key={i} className="flex items-center justify-between bg-neutral-800 rounded-lg px-3 py-2">
-                  <span className="text-green-400 text-sm font-bold flex items-center gap-1">
-                    @{social} <span className="text-green-500">✓</span>
-                  </span>
-                  <button onClick={() => handleRemoveSocial(i)} className="text-red-400 hover:text-red-300">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <p className="text-neutral-400 text-xs font-black tracking-wider text-center">Pin Social & Pay Apps On Screen.</p>
+              <img src={pinSocialsIcon} alt="" className="w-5 h-5 object-contain" />
             </div>
-            {pinnedSocials.length < 5 && (
-              <div className="flex gap-2">
-                <input
-                  value={newSocial}
-                  onChange={(e) => setNewSocial(e.target.value)}
-                  placeholder="@username"
-                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white text-sm placeholder-neutral-500 focus:outline-none focus:border-blue-500"
-                  onKeyDown={(e) => e.key === "Enter" && handleAddSocial()}
-                />
-                <button
-                  onClick={handleAddSocial}
-                  className="bg-green-600 text-white px-3 rounded-lg hover:bg-green-500 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            <div className="flex items-center justify-center gap-1.5 mb-4">
+              <span className="text-[10px] text-neutral-500">📌</span>
+              <Pencil className="w-3 h-3 text-yellow-500" />
+            </div>
+
+            <div className="space-y-2">
+              {SOCIAL_PLATFORMS.map((platform) => {
+                const value = getSocialValue(platform.key);
+                const isEditing = socialEditing === platform.key;
+
+                return (
+                  <div key={platform.key} className="flex items-center gap-2.5">
+                    <img src={platform.icon} alt={platform.label} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    
+                    {isEditing ? (
+                      <div className="flex-1 flex items-center gap-1.5">
+                        <input
+                          value={socialDraft}
+                          onChange={(e) => setSocialDraft(e.target.value)}
+                          placeholder={platform.placeholder}
+                          autoFocus
+                          className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-2.5 py-1.5 text-white text-sm placeholder-neutral-500 focus:outline-none focus:border-green-500"
+                          onKeyDown={(e) => e.key === "Enter" && handleSaveSocial(platform.key)}
+                        />
+                        <button
+                          onClick={() => handleSaveSocial(platform.key)}
+                          className="bg-green-600 p-1.5 rounded-lg hover:bg-green-500 transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      </div>
+                    ) : value ? (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="text-green-400 text-sm font-bold">{value}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => startEditing(platform.key)} className="text-neutral-500 hover:text-white transition-colors">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleRemoveSocial(platform.key)} className="text-red-400 hover:text-red-300 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEditing(platform.key)}
+                        className="flex-1 text-left text-neutral-600 text-sm italic hover:text-neutral-400 transition-colors"
+                      >
+                        {platform.placeholder}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Chance Enhancer */}
