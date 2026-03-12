@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import giftBoxIcon from "@/assets/videocall/gift-box.png";
+import giftBoxIcon from "@/assets/videocall/gift-icon.svg";
 
 interface SendGiftOverlayProps {
   onClose: () => void;
