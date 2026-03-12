@@ -270,6 +270,11 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
             <p className="text-green-400 font-black text-xl">🎉 YOU WON!</p>
             <p className="text-neutral-300 text-sm mt-1">Click below to claim your prize</p>
+            {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
+              <p className="text-green-300 text-xs mt-2">
+                💰 You can also cash out <span className="font-black text-green-400">${Number(targetReward.cashout_value).toFixed(2)}</span> instead!
+              </p>
+            )}
           </div>
         )}
         {spinState === "lost" && !canRespin && landedItem && (
