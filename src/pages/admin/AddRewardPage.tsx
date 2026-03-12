@@ -100,7 +100,7 @@ const AddRewardPage = () => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
-      feature_image_url: values.feature_image_url || null,
+      
       variation_images: variationImages,
       color_options: colorOptions,
       ...(isEdit ? { id } : {}),
