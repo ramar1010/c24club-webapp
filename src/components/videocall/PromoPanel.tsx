@@ -662,6 +662,21 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     );
   }
 
+  // ─── PICK REWARD VIEW ───
+  if (view === "pick-reward") {
+    return (
+      <LinkClicksRewardPicker
+        userId={userId}
+        onBack={() => setView("link-clicks")}
+        onClaimed={() => {
+          setLinkClicksClaimed((prev) => prev + 1);
+          fetchTotalLinkClicks();
+          setView("link-clicks");
+        }}
+      />
+    );
+  }
+
   return null;
 };
 
