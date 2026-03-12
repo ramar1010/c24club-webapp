@@ -113,7 +113,68 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     setView("analytics");
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const LINK_CLICKS_THRESHOLD = 200;
+
+  const fetchTotalLinkClicks = useCallback(async () => {
+    // Get all user's promo IDs
+    const { data: userPromos } = await supabase
+      .from("promos")
+      .select("id")
+      .eq("member_id", userId);
+
+    if (!userPromos || userPromos.length === 0) {
+      setTotalLinkClicks(0);
+      return;
+    }
+
+    const promoIds = userPromos.map((p) => p.id);
+    const { data: clickData } = await supabase
+      .from("promo_analytics")
+      .select("id")
+      .in("promo_id", promoIds)
+      .eq("link_clicked", true);
+
+    setTotalLinkClicks(clickData?.length ?? 0);
+
+    // Check how many rewards already claimed from link clicks
+    const { data: claimedData } = await supabase
+      .from("member_redemptions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("reward_type", "promo_link_clicks");
+
+    setLinkClicksClaimed(claimedData?.length ?? 0);
+  }, [userId]);
+
+  const availableRewards = Math.floor(totalLinkClicks / LINK_CLICKS_THRESHOLD) - linkClicksClaimed;
+
+  const handleClaimLinkClickReward = async () => {
+    if (availableRewards <= 0) {
+      toast.error("Not enough link clicks to claim a reward");
+      return;
+    }
+    setClaimingReward(true);
+    // Insert a redemption record for the promo link click reward
+    const { error } = await supabase.from("member_redemptions").insert({
+      user_id: userId,
+      reward_title: "Promo Link Clicks Reward",
+      reward_type: "promo_link_clicks",
+      reward_rarity: "common",
+      minutes_cost: 0,
+      status: "pending_selection",
+      notes: `Earned from ${LINK_CLICKS_THRESHOLD} promo link clicks`,
+    });
+
+    if (error) {
+      toast.error("Failed to claim reward");
+    } else {
+      toast.success("🎉 Reward unlocked! An admin will reach out with your reward selection.");
+      setLinkClicksClaimed((prev) => prev + 1);
+    }
+    setClaimingReward(false);
+  };
+
+
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
