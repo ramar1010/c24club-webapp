@@ -103,13 +103,13 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60 resize-none"
         />
 
-        <h2 className="font-black text-lg text-center mt-4">Address</h2>
+        <h2 className="font-black text-lg text-center mt-4 text-white/90">Address</h2>
 
         <input
           placeholder="Country/Region"
           value={form.country}
           onChange={(e) => update("country", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <textarea
@@ -117,27 +117,27 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           value={form.address}
           onChange={(e) => update("address", e.target.value)}
           rows={2}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none resize-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60 resize-none"
         />
 
         <input
           placeholder="City"
           value={form.city}
           onChange={(e) => update("city", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <input
           placeholder="State"
           value={form.state}
           onChange={(e) => update("state", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
         <input
           placeholder="Zip"
           value={form.zip}
           onChange={(e) => update("zip", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         {/* Confirm button */}
