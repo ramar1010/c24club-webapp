@@ -36,7 +36,7 @@ const genderMap: Record<GenderFilter, string> = {
 const VideoCallPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
