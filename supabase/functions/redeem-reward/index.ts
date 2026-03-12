@@ -46,6 +46,38 @@ Deno.serve(async (req) => {
         });
       }
 
+      // --- Duplicate address detection ---
+      if (shipping?.address && shipping.address.trim() !== "") {
+        const normalizedAddress = shipping.address.trim().toLowerCase();
+        const normalizedCity = (shipping.city || "").trim().toLowerCase();
+        const normalizedZip = (shipping.zip || "").trim().toLowerCase();
+        const normalizedCountry = (shipping.country || "").trim().toLowerCase();
+
+        // Find any redemptions from OTHER users with the same address combo
+        const { data: existingAddresses } = await supabase
+          .from("member_redemptions")
+          .select("id, user_id, shipping_address, shipping_city, shipping_zip, shipping_country")
+          .neq("user_id", user.id)
+          .not("shipping_address", "is", null);
+
+        if (existingAddresses && existingAddresses.length > 0) {
+          const duplicate = existingAddresses.find((r) => {
+            const addr = (r.shipping_address || "").trim().toLowerCase();
+            const city = (r.shipping_city || "").trim().toLowerCase();
+            const zip = (r.shipping_zip || "").trim().toLowerCase();
+            const country = (r.shipping_country || "").trim().toLowerCase();
+            return addr === normalizedAddress && city === normalizedCity && zip === normalizedZip && country === normalizedCountry;
+          });
+
+          if (duplicate) {
+            return new Response(
+              JSON.stringify({ error: "Address Taken — this shipping address is already registered to another account." }),
+              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+      }
+
       // Check user has enough minutes
       const { data: memberData } = await supabase
         .from("member_minutes")
