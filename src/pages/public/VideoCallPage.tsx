@@ -291,17 +291,17 @@ const VideoCallPage = () => {
               onDismiss={() => setShowPromoAd(false)}
             />
           )}
-          {callState === "connected" && (
-            <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-mono font-bold">{timerDisplay}</span>
-            </div>
-          )}
-
           {isActive && (
             <button onClick={stop} className="absolute top-2 left-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors">
               <X className="w-5 h-5" />
             </button>
+          )}
+
+          {callState === "connected" && (
+            <div className="absolute top-12 md:top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm font-mono font-bold">{timerDisplay}</span>
+            </div>
           )}
 
           <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
