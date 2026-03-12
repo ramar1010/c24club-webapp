@@ -58,6 +58,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
   const [spinAnimating, setSpinAnimating] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const isPremiumVip = subscribed && vipTier === "premium";
 
   const filteredRewards = selectedCategory
     ? rewards?.filter((r: any) => r.category_id === selectedCategory)
