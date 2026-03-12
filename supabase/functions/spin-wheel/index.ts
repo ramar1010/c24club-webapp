@@ -17,12 +17,12 @@ function calculateChanceEnhancer(
   lastLoginAt: string | null,
   isVip: boolean
 ): { ce: number; newCheckpoint: number } {
-  const minCE = isVip ? 35 : 10;
-  const maxCE = isVip ? 85 : 65;
-  const boostPer = isVip ? 50 : 30;
-  const minutesInterval = isVip ? 100 : 200;
-  const decayPercent = isVip ? 40 : 50;
-  const graceDays = isVip ? 2 : 1;
+  const minCE = isVip ? 15 : 5;
+  const maxCE = isVip ? 45 : 25;
+  const boostPer = isVip ? 10 : 5;
+  const minutesInterval = isVip ? 150 : 200;
+  const decayPercent = isVip ? 50 : 60;
+  const graceDays = 1;
 
   let ce = currentCE;
 
