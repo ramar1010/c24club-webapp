@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
+      const cap = isVip ? 30 : 10;
 
       const today = new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
