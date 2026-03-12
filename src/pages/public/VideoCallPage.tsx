@@ -46,7 +46,7 @@ const VideoCallPage = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
