@@ -9,6 +9,8 @@ import ShippingForm from "@/components/store/ShippingForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+import fireRed from "@/assets/rewards/fire-red.png";
+import fireBlue from "@/assets/rewards/fire-blue.png";
 
 const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
   common: { bg: "bg-neutral-700", text: "text-white" },
