@@ -70,11 +70,23 @@ const VideoCallPage = () => {
     capInfo,
     dismissCapPopup,
     flushMinutes,
+    freezeInfo,
   } = useCallMinutes({
     userId: memberId,
     partnerId: currentPartnerId,
     isConnected: callState === "connected",
   });
+
+  const [showFrozenPopup, setShowFrozenPopup] = useState(false);
+  const frozenPopupShownRef = useRef(false);
+
+  // Show frozen popup once when freeze is detected
+  useEffect(() => {
+    if (freezeInfo.isFrozen && !frozenPopupShownRef.current) {
+      frozenPopupShownRef.current = true;
+      setShowFrozenPopup(true);
+    }
+  }, [freezeInfo.isFrozen]);
 
   const { adPoints, awardAdPoints, refreshBalance } = useAdPoints({
     userId: memberId,
