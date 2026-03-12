@@ -323,7 +323,7 @@ const VideoCallPage = () => {
           <div className="flex justify-center gap-8 px-4 pb-4">
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
-            <NavIcon src={vipIcon} label="VIP" />
+            <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
           </div>
           <div className="flex justify-center items-center gap-8 pb-6 text-sm font-bold tracking-wider">
             <button onClick={() => setGenderFilter("girls")} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
