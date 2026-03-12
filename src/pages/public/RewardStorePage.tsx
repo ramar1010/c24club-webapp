@@ -682,11 +682,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="font-black text-sm leading-tight text-white drop-shadow-lg">{reward.title}</p>
+                      <p className="font-black text-sm leading-tight text-white drop-shadow-lg">
+                        {reward.title}
+                        {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 && (
+                          <span className="text-green-400"> Or 🔺${Number(reward.cashout_value).toFixed(0)} Cash Out!</span>
+                        )}
+                      </p>
                       <p className="text-xs text-neutral-300 mt-0.5">🪙 {reward.minutes_cost} min</p>
-                      {(reward.rarity === "rare" || reward.rarity === "legendary") && (
+                      {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 ? (
+                        <span className="text-[9px] text-green-400 font-bold">💰 Real Cash Value!</span>
+                      ) : (reward.rarity === "rare" || reward.rarity === "legendary") ? (
                         <span className="text-[9px] text-yellow-400 font-bold">🎰 Spin to Win</span>
-                      )}
+                      ) : null}
                     </div>
                     <span className={`absolute top-2 right-2 ${rarity.bg} ${rarity.text} px-2 py-0.5 rounded-md font-bold text-[10px]`}>
                       {reward.rarity}
