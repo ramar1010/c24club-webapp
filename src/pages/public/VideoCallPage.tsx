@@ -22,6 +22,7 @@ import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
 import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
+import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 
@@ -150,6 +151,20 @@ const VideoCallPage = () => {
         .eq("user_id", currentPartnerId!)
         .maybeSingle();
       return mm?.is_vip ?? false;
+    },
+  });
+
+  // Fetch partner's pinned socials
+  const { data: partnerPinnedSocials = [] } = useQuery({
+    queryKey: ["partner_pinned_socials", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("vip_settings")
+        .select("pinned_socials")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      return (data?.pinned_socials as string[]) ?? [];
     },
   });
 
@@ -330,6 +345,11 @@ const VideoCallPage = () => {
                   ))}
                 </div>
               )}
+              {partnerPinnedSocials.length > 0 && callState === "connected" && (
+                <div className="absolute top-1 left-1 z-20">
+                  <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
+                </div>
+              )}
             </div>
           )}
 
@@ -364,6 +384,11 @@ const VideoCallPage = () => {
                     📌 {topic.name}
                   </span>
                 ))}
+              </div>
+            )}
+            {partnerPinnedSocials.length > 0 && callState === "connected" && (
+              <div className="absolute top-2 right-2 z-20">
+                <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
               </div>
             )}
           </div>
