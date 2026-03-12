@@ -832,6 +832,36 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_settings: {
+        Row: {
+          created_at: string
+          get_gifted: boolean
+          id: string
+          pinned_socials: string[] | null
+          show_promo_ads: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          get_gifted?: boolean
+          id?: string
+          pinned_socials?: string[] | null
+          show_promo_ads?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          get_gifted?: boolean
+          id?: string
+          pinned_socials?: string[] | null
+          show_promo_ads?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       waiting_queue: {
         Row: {
           channel_id: string

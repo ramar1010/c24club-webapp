@@ -20,6 +20,7 @@ import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
 import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
+import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
@@ -47,7 +48,7 @@ const VideoCallPage = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -407,7 +408,16 @@ const VideoCallPage = () => {
           onClose={() => setOverlayPage(null)}
           currentTier={vipTier}
           onPurchase={startCheckout}
-          onManage={openPortal}
+          onManage={() => { setOverlayPage("vip-settings"); return Promise.resolve(); }}
+        />
+      )}
+      {overlayPage === "vip-settings" && (
+        <VipSettingsOverlay
+          onClose={() => setOverlayPage(null)}
+          userId={memberId}
+          vipTier={vipTier}
+          genderFilter={genderFilter}
+          onGenderFilterChange={(g) => setGenderFilter(g as GenderFilter)}
         />
       )}
 
