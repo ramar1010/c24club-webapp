@@ -261,6 +261,37 @@ const VideoCallPage = () => {
 
   const handleStart = () => startCall();
   const handleNext = async () => {
+    // --- Skip Penalty Logic ---
+    const connectedDurationMs = connectionStartRef.current
+      ? Date.now() - connectionStartRef.current
+      : Infinity;
+    const connectedDurationSec = connectedDurationMs / 1000;
+    const isQuickSkip = connectedDurationSec < 5;
+
+    // Only penalize non-VIP users
+    if (isQuickSkip && !subscribed && totalMinutes > 0) {
+      // Deduct 2 minutes server-side
+      const { data: penaltyData } = await supabase.functions.invoke("earn-minutes", {
+        body: { type: "deduct", userId: memberId, amount: 2 },
+      });
+
+      // Update local balance
+      if (penaltyData?.success) {
+        // The useCallMinutes hook will be stale, but we need to force refresh
+        // We'll rely on the next get_balance or earn call to sync
+      }
+
+      skipPenaltyCountRef.current += 1;
+
+      if (skipPenaltyCountRef.current <= 3) {
+        // Show full popup for first 3 times
+        setShowSkipPenaltyPopup(true);
+      } else {
+        // After 3 times, just show floating text
+        setShowMinuteLossToast(true);
+      }
+    }
+
     // Award ad points for this call before moving to next
     await awardAdPoints(elapsedSeconds);
     await flushMinutes();
