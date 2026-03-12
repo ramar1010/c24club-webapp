@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
+import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
@@ -90,6 +91,30 @@ const VideoCallPage = () => {
     localStreamRef,
     isConnected: callState === "connected",
   });
+
+  const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
+    remoteVideoRef,
+    isConnected: callState === "connected",
+  });
+
+  // Auto-ban when NSFW strikes reach threshold
+  useEffect(() => {
+    if (!shouldBan || !user?.id) return;
+    const banUser = async () => {
+      try {
+        await supabase.from("user_bans").insert({
+          user_id: user.id,
+          reason: "Nudity detected on camera (automated)",
+          ban_type: "standard",
+          is_active: true,
+        });
+        recheckBan();
+      } catch (err) {
+        console.error("[NSFW] Failed to ban user:", err);
+      }
+    };
+    banUser();
+  }, [shouldBan, user?.id, recheckBan]);
 
   const {
     totalMinutes,
@@ -471,7 +496,14 @@ const VideoCallPage = () => {
           {isMobile && (
             <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
               <video ref={remoteVideoRef} autoPlay playsInline
-                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
+                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+              {isNsfwBlurred && callState === "connected" && (
+                <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl">🚫</span>
+                  <p className="text-white font-black text-[8px] text-center px-1">BLURRED</p>
+                  <p className="text-red-400 text-[7px] font-bold">{nsfwStrikes}/5</p>
+                </div>
+              )}
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-neutral-600 text-[10px] text-center px-1">
@@ -507,7 +539,17 @@ const VideoCallPage = () => {
         {!isMobile && (
           <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             <video ref={remoteVideoRef} autoPlay playsInline
-              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
+              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+            {isNsfwBlurred && callState === "connected" && (
+              <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">🚫</span>
+                <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
+                <p className="text-red-400 text-xs font-bold mt-1">Strike {nsfwStrikes}/5 — nudity detected</p>
+                {nsfwStrikes >= 3 && (
+                  <p className="text-yellow-400 text-xs font-bold mt-1 animate-pulse">⚠️ Warning: Ban at 5 strikes</p>
+                )}
+              </div>
+            )}
             {callState !== "connected" && (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
