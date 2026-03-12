@@ -8,6 +8,7 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
+import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
 import NavIcon from "@/components/videocall/NavIcon";
@@ -15,6 +16,8 @@ import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
+import PromoPanel from "@/components/videocall/PromoPanel";
+import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -38,8 +41,9 @@ const VideoCallPage = () => {
   const navigate = useNavigate();
   const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
-  const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
+  const [showPromo, setShowPromo] = useState(false);
+  const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
@@ -68,6 +72,12 @@ const VideoCallPage = () => {
     userId: memberId,
     partnerId: currentPartnerId,
     isConnected: callState === "connected",
+  });
+
+  const { adPoints, awardAdPoints, refreshBalance } = useAdPoints({
+    userId: memberId,
+    isConnected: callState === "connected",
+    elapsedSeconds,
   });
 
   const isMobile = useIsMobile();
@@ -122,10 +132,15 @@ const VideoCallPage = () => {
 
   const handleStart = () => startCall();
   const handleNext = async () => {
+    // Award ad points for this call before moving to next
+    await awardAdPoints(elapsedSeconds);
     await flushMinutes();
     next();
+    // Show a promo ad between skips
+    setShowPromoAd(true);
   };
   const handleBack = () => {
+    awardAdPoints(elapsedSeconds).catch(() => {});
     flushMinutes().catch(() => {});
     stop().catch(() => {});
     navigate("/");
@@ -163,41 +178,24 @@ const VideoCallPage = () => {
         </div>
       )}
 
-      {/* Video Area - Desktop: side by side, Mobile: overlay */}
+      {/* Video Area */}
       <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0">
         {/* Local Video */}
         <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive && (
             <div className="flex flex-col items-center gap-3">
-              <img
-                src={c24Logo}
-                alt="C24 Club"
-                className="w-48 md:w-56 drop-shadow-lg"
-              />
-              <p className="text-[10px] text-neutral-400 -mt-1">
-                The Omegle That Rewards You!
-              </p>
-              <button
-                onClick={handleStart}
-                className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg"
-              >
+              <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
+              <p className="text-[10px] text-neutral-400 -mt-1">The Omegle That Rewards You!</p>
+              <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
                 START
               </button>
-              <span className="text-neutral-500 text-[10px] tracking-wide font-bold">
-                C24CLUB.COM
-              </span>
+              <span className="text-neutral-500 text-[10px] tracking-wide font-bold">C24CLUB.COM</span>
             </div>
           )}
 
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`}
-          />
+          <video ref={localVideoRef} autoPlay muted playsInline
+            className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
 
-          {/* Call timer */}
           {callState === "connected" && (
             <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -205,17 +203,12 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* X button to leave call */}
           {isActive && (
-            <button
-              onClick={stop}
-              className="absolute top-2 left-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors"
-            >
+            <button onClick={stop} className="absolute top-2 left-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors">
               <X className="w-5 h-5" />
             </button>
           )}
 
-          {/* Waiting overlay - mobile only (desktop shows in partner box) */}
           <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -223,26 +216,17 @@ const VideoCallPage = () => {
             </div>
           </div>
 
-          {/* NEXT Button - mobile only, shown only during active call */}
           {isActive && (
-            <button
-              onClick={handleNext}
-              className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20"
-            >
+            <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
               <img src={nextBtn} alt="Next" className="w-9 h-9" />
             </button>
           )}
 
-          {/* Partner overlay - mobile only */}
           {isMobile && (
             <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
-              />
+              <video ref={remoteVideoRef} autoPlay playsInline
+                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-neutral-600 text-[10px] text-center px-1">
@@ -250,7 +234,6 @@ const VideoCallPage = () => {
                   </p>
                 </div>
               )}
-              {/* Partner's pinned topics - mobile overlay */}
               {partnerPinnedTopics.length > 0 && callState === "connected" && (
                 <div className="absolute bottom-1 left-1 z-20 flex flex-wrap gap-1 max-w-[90%]">
                   {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
@@ -263,14 +246,10 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {/* Pinned Topics - bottom of local video */}
           {pinnedTopics.length > 0 && isActive && (
             <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
               {pinnedTopics.map((topic: { id: string; name: string }) => (
-                <span
-                  key={topic.id}
-                  className="bg-red-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg"
-                >
+                <span key={topic.id} className="bg-red-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
                   📌 {topic.name}
                 </span>
               ))}
@@ -278,15 +257,11 @@ const VideoCallPage = () => {
           )}
         </div>
 
-        {/* Partner Video - desktop only */}
+        {/* Partner Video - desktop */}
         {!isMobile && (
           <div className="flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`}
-            />
+            <video ref={remoteVideoRef} autoPlay playsInline
+              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
             {callState !== "connected" && (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -295,7 +270,6 @@ const VideoCallPage = () => {
                 </p>
               </div>
             )}
-            {/* Partner's pinned topics - desktop */}
             {partnerPinnedTopics.length > 0 && callState === "connected" && (
               <div className="absolute bottom-2 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
                 {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
@@ -309,85 +283,51 @@ const VideoCallPage = () => {
         )}
       </div>
 
-      {/* NEXT Button - desktop only, shown only during active call */}
+      {/* NEXT Button - desktop */}
       {isActive && (
         <div className="hidden md:flex justify-center mb-4">
-          <button
-            onClick={handleNext}
-            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors"
-          >
+          <button onClick={handleNext} className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors">
             <span className="font-bold">NEXT</span>
             <img src={nextBtn} alt="Next" className="w-8 h-8" />
           </button>
         </div>
       )}
 
-      {/* Redeem Panel or Nav */}
-      {showRedeem ? (
+      {/* Panels */}
+      {showPromo ? (
         <div className="px-3 pb-4">
-          <RedeemPanel
-            totalMinutes={totalMinutes}
-            onClose={() => setShowRedeem(false)}
+          <PromoPanel
+            userId={memberId}
+            adPoints={adPoints}
+            onClose={() => setShowPromo(false)}
+            onAdPointsChange={refreshBalance}
           />
+        </div>
+      ) : showRedeem ? (
+        <div className="px-3 pb-4">
+          <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div>
       ) : (
         <>
-          {/* Quick Nav Icons - Row 1 */}
           <div className="flex justify-center gap-8 px-4 pt-2 pb-3">
             <NavIcon src={storeIcon} label="STORE" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} />
-            <NavIcon
-              src={redeemIcon}
-              label="REDEEM"
-              onClick={() => setShowRedeem(true)}
-              highlight
-            />
+            <NavIcon src={redeemIcon} label="REDEEM" onClick={() => setShowRedeem(true)} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
           </div>
-
-          {/* Quick Nav Icons - Row 2 */}
           <div className="flex justify-center gap-8 px-4 pb-4">
-            <NavIcon src={promoIcon} label="PROMO" />
+            <NavIcon src={promoIcon} label="PROMO" onClick={() => setShowPromo(true)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label="VIP" />
           </div>
-
-          {/* Gender Filter */}
           <div className="flex justify-center items-center gap-8 pb-6 text-sm font-bold tracking-wider">
-            <button
-              onClick={() => setGenderFilter("girls")}
-              className={`uppercase transition-colors ${
-                genderFilter === "girls"
-                  ? "text-yellow-400"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">
-                CONNECT TO
-              </span>
-              GIRLS
+            <button onClick={() => setGenderFilter("girls")} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
+              <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GIRLS
             </button>
-            <button
-              onClick={() => setGenderFilter("both")}
-              className={`uppercase transition-colors text-lg ${
-                genderFilter === "both"
-                  ? "text-white font-extrabold"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
+            <button onClick={() => setGenderFilter("both")} className={`uppercase transition-colors text-lg ${genderFilter === "both" ? "text-white font-extrabold" : "text-neutral-400 hover:text-white"}`}>
               BOTH
             </button>
-            <button
-              onClick={() => setGenderFilter("guys")}
-              className={`uppercase transition-colors ${
-                genderFilter === "guys"
-                  ? "text-yellow-400"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">
-                CONNECT TO
-              </span>
-              GUYS
+            <button onClick={() => setGenderFilter("guys")} className={`uppercase transition-colors ${genderFilter === "guys" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
+              <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GUYS
             </button>
           </div>
         </>
@@ -408,13 +348,17 @@ const VideoCallPage = () => {
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
 
+      {/* Promo Ad Overlay - shown between skips */}
+      {showPromoAd && (
+        <PromoAdOverlay
+          viewerId={memberId}
+          onDismiss={() => setShowPromoAd(false)}
+        />
+      )}
+
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
-        <CapReachedPopup
-          isVip={capInfo.isVip}
-          cap={capInfo.cap}
-          onDismiss={dismissCapPopup}
-        />
+        <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
       )}
     </div>
   );
