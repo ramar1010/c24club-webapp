@@ -322,6 +322,13 @@ const VideoCallPage = () => {
             </button>
           )}
 
+          {/* Pinned socials - mobile, below report icon */}
+          {isMobile && partnerPinnedSocials.length > 0 && callState === "connected" && (
+            <div className="absolute top-[5.5rem] left-2 z-20">
+              <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
+            </div>
+          )}
+
           {/* Gift icon - shows when partner is VIP */}
           {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
             <button
