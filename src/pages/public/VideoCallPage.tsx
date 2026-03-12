@@ -23,6 +23,7 @@ import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
+import ReportUserOverlay from "@/components/videocall/ReportUserOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ import promoIcon from "@/assets/videocall/promo-star.png";
 import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
 import giftIcon from "@/assets/videocall/gift-icon.svg";
+import reportIconImg from "@/assets/videocall/report-icon.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
@@ -51,6 +53,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
+  const [showReportOverlay, setShowReportOverlay] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
@@ -308,7 +311,18 @@ const VideoCallPage = () => {
             </div>
           </div>
 
-          {/* Gift icon - shows when partner has gifting enabled */}
+          {/* Report button - mobile, on local video top-right area below partner overlay */}
+          {callState === "connected" && currentPartnerId && isMobile && (
+            <button
+              onClick={() => setShowReportOverlay(true)}
+              className="absolute top-2 left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+              title="Report User"
+            >
+              <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
+            </button>
+          )}
+
+          {/* Gift icon - shows when partner is VIP */}
           {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
             <button
               onClick={() => setShowGiftOverlay(true)}
@@ -390,6 +404,15 @@ const VideoCallPage = () => {
               <div className="absolute top-2 right-2 z-20">
                 <PinnedSocialsDisplay pinnedSocials={partnerPinnedSocials} />
               </div>
+            )}
+            {callState === "connected" && currentPartnerId && (
+              <button
+                onClick={() => setShowReportOverlay(true)}
+                className="absolute top-2 left-2 z-20 w-9 h-9 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+                title="Report User"
+              >
+                <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
+              </button>
             )}
           </div>
         )}
@@ -513,6 +536,15 @@ const VideoCallPage = () => {
         <SendGiftOverlay
           recipientId={currentPartnerId}
           onClose={() => setShowGiftOverlay(false)}
+        />
+      )}
+
+      {/* Report User Overlay */}
+      {showReportOverlay && currentPartnerId && (
+        <ReportUserOverlay
+          reporterId={memberId}
+          reportedUserId={currentPartnerId}
+          onClose={() => setShowReportOverlay(false)}
         />
       )}
     </div>
