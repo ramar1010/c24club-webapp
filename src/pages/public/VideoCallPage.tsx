@@ -91,6 +91,7 @@ const VideoCallPage = () => {
     dismissCapPopup,
     flushMinutes,
     freezeInfo,
+    refreshBalance: refreshMinutesBalance,
   } = useCallMinutes({
     userId: memberId,
     partnerId: currentPartnerId,
