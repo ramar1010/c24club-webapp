@@ -3,8 +3,15 @@ import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { useMembers, useDeleteMember } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, User } from "lucide-react";
+import { Pencil, Trash2, User, ShieldX } from "lucide-react";
 import DeleteDialog from "@/components/admin/DeleteDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 type Member = {
   id: string;
@@ -21,6 +28,11 @@ type Member = {
   gender: string | null;
   membership: string | null;
 };
+
+const BAN_REASONS = [
+  { value: "standard", label: "Standard Ban", reasons: ["Violation of terms", "Inappropriate behavior", "Spam / abuse", "Harassment"] },
+  { value: "underage", label: "Underage (Permanent)", reasons: ["User is underage"] },
+];
 
 const memberColumns: DataTableColumn<Member>[] = [
   {
@@ -72,7 +84,44 @@ const memberColumns: DataTableColumn<Member>[] = [
 const MembersPage = () => {
   const { data, isLoading } = useMembers();
   const deleteMutation = useDeleteMember();
+  const { user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [banTarget, setBanTarget] = useState<Member | null>(null);
+  const [banType, setBanType] = useState("standard");
+  const [banReason, setBanReason] = useState("Violation of terms");
+  const [customReason, setCustomReason] = useState("");
+  const [banning, setBanning] = useState(false);
+
+  const handleBan = async () => {
+    if (!banTarget || !user) return;
+    setBanning(true);
+    try {
+      const reason = banReason === "custom" ? customReason.trim() : banReason;
+      if (!reason) {
+        toast.error("Please provide a ban reason");
+        setBanning(false);
+        return;
+      }
+
+      const { error } = await supabase.from("user_bans").insert({
+        user_id: banTarget.id,
+        reason,
+        ban_type: banType,
+        banned_by: user.id,
+      } as any);
+
+      if (error) throw error;
+      toast.success(`${banTarget.name} has been banned`);
+      setBanTarget(null);
+      setBanReason("Violation of terms");
+      setBanType("standard");
+      setCustomReason("");
+    } catch (err: any) {
+      toast.error("Failed to ban user", { description: err.message });
+    } finally {
+      setBanning(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -106,6 +155,20 @@ const MembersPage = () => {
         )}
         actions={(row) => (
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              title="Ban user"
+              onClick={() => {
+                setBanTarget(row);
+                setBanType("standard");
+                setBanReason("Violation of terms");
+                setCustomReason("");
+              }}
+            >
+              <ShieldX className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <Pencil className="h-4 w-4" />
             </Button>
@@ -123,6 +186,78 @@ const MembersPage = () => {
         title="this member"
         isPending={deleteMutation.isPending}
       />
+
+      {/* Ban Dialog */}
+      <Dialog open={!!banTarget} onOpenChange={(open) => !open && setBanTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldX className="h-5 w-5 text-destructive" />
+              Ban {banTarget?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Ban Type</Label>
+              <Select value={banType} onValueChange={(v) => {
+                setBanType(v);
+                const group = BAN_REASONS.find(b => b.value === v);
+                if (group) setBanReason(group.reasons[0]);
+              }}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BAN_REASONS.map(b => (
+                    <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Reason</Label>
+              <Select value={banReason} onValueChange={setBanReason}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BAN_REASONS.find(b => b.value === banType)?.reasons.map(r => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom reason...</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {banReason === "custom" && (
+              <div className="space-y-2">
+                <Label>Custom Reason</Label>
+                <Textarea
+                  value={customReason}
+                  onChange={(e) => setCustomReason(e.target.value)}
+                  placeholder="Enter custom ban reason..."
+                  maxLength={500}
+                />
+              </div>
+            )}
+
+            {banType === "underage" && (
+              <p className="text-sm text-destructive font-medium">
+                ⚠️ Underage bans are permanent and cannot be appealed via payment.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBanTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleBan} disabled={banning}>
+              {banning ? "Banning..." : "Confirm Ban"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

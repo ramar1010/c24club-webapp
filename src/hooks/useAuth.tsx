@@ -2,13 +2,21 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+interface BanInfo {
+  reason: string;
+  ban_type: string;
+  created_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
   loading: boolean;
+  banInfo: BanInfo | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  recheckBan: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
 
   const checkAdmin = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -29,6 +38,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setIsAdmin(!!data);
   }, []);
+
+  const checkBan = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("user_bans")
+      .select("reason, ban_type, created_at")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    setBanInfo(data ? { reason: data.reason, ban_type: data.ban_type, created_at: data.created_at } : null);
+  }, []);
+
+  const recheckBan = useCallback(async () => {
+    if (user) await checkBan(user.id);
+  }, [user, checkBan]);
 
   useEffect(() => {
     const {
@@ -51,16 +77,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setBanInfo(null);
       return;
     }
 
-    // Small delay to ensure the JWT is set on the supabase client before querying
     const timeout = setTimeout(() => {
       checkAdmin(user.id);
+      checkBan(user.id);
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [user, checkAdmin]);
+  }, [user, checkAdmin, checkBan]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -74,10 +101,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setBanInfo(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, loading, banInfo, signIn, signOut, recheckBan }}>
       {children}
     </AuthContext.Provider>
   );

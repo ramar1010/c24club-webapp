@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
+import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
@@ -35,7 +36,7 @@ const genderMap: Record<GenderFilter, string> = {
 const VideoCallPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [adPoints] = useState(40);
   const [showRedeem, setShowRedeem] = useState(false);
@@ -97,8 +98,21 @@ const VideoCallPage = () => {
     queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
+  // Check for unban success in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("unban") === "success" && banInfo) {
+      recheckBan();
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, [banInfo, recheckBan]);
+
   if (!loading && !user) {
     return <Navigate to="/" replace />;
+  }
+
+  if (!loading && banInfo) {
+    return <BannedScreen reason={banInfo.reason} banType={banInfo.ban_type} createdAt={banInfo.created_at} />;
   }
 
   const isActive = callState !== "idle";
