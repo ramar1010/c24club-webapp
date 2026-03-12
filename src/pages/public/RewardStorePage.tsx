@@ -108,6 +108,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinReelItems, setSpinReelItems] = useState<any[]>([]);
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
   const [spinAnimating, setSpinAnimating] = useState(false);
+  const [instantRedeeming, setInstantRedeeming] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -226,8 +227,8 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   // Spin to Win overlay
   if (showSpinToWin) {
     const targetReward = showSpinToWin;
-    const rarity = RARITY_STYLES[targetReward.rarity] || RARITY_STYLES.common;
-    const rarityColor = targetReward.rarity === "legendary" ? "text-amber-400" : "text-blue-400";
+    const rarity = RARITY_STYLES[targetReward?.rarity] || RARITY_STYLES.common;
+    const rarityColor = targetReward?.rarity === "legendary" ? "text-amber-400" : "text-blue-400";
 
     return (
       <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8 overflow-hidden">
@@ -465,7 +466,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   }
 
   // Instant redeem handler for Spins / Ad Points
-  const [instantRedeeming, setInstantRedeeming] = useState(false);
   const handleInstantRedeem = async (reward: any) => {
     setInstantRedeeming(true);
     try {
