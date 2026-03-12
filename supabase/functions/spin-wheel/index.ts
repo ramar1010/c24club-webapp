@@ -160,6 +160,14 @@ Deno.serve(async (req) => {
         awarded = true;
       }
 
+      // Deduct purchased spin if used
+      if (usePurchased) {
+        await supabase
+          .from("member_minutes")
+          .update({ purchased_spins: purchasedSpins - 1, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+      }
+
       // Record the spin result
       await supabase.from("spin_results").insert({
         user_id: userId,
