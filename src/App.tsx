@@ -21,6 +21,7 @@ import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 import TopicsPage from "@/pages/admin/TopicsPage";
 import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
 import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
+import FreezeSettingsPage from "@/pages/admin/FreezeSettingsPage";
 
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
