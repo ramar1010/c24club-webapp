@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+function generateSessionId() {
+  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 interface UseCallMinutesOptions {
   userId: string;
   partnerId: string | null;
@@ -30,6 +34,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   const lastReportedRef = useRef(0);
   const partnerIdRef = useRef(partnerId);
   const capReachedRef = useRef(false);
+  const sessionIdRef = useRef(generateSessionId());
 
   // Keep refs in sync
   useEffect(() => {
@@ -52,7 +57,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
       });
   }, [userId]);
 
-  // Reset when partner changes
+  // Reset when partner changes — new session
   useEffect(() => {
     elapsedRef.current = 0;
     lastReportedRef.current = 0;
@@ -60,6 +65,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     setCapReached(false);
     capReachedRef.current = false;
     setShowCapPopup(false);
+    sessionIdRef.current = generateSessionId();
   }, [partnerId]);
 
   // Report earned minutes to the server
@@ -73,6 +79,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
         userId,
         partnerId: pid,
         minutesEarned: minutes,
+        sessionId: sessionIdRef.current,
       },
     });
 
