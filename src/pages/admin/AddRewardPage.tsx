@@ -85,7 +85,7 @@ const AddRewardPage = () => {
         brief: existingReward.brief || "",
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
-        feature_image_url: existingReward.feature_image_url || "",
+        
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
       });
