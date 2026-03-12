@@ -34,7 +34,7 @@ serve(async (req) => {
     });
 
     if (action === "purchase") {
-      // Create one-time payment for unfreeze
+      // Create one-time payment for unfreeze (self)
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
       let customerId;
       if (customers.data.length > 0) customerId = customers.data[0].id;
@@ -50,6 +50,55 @@ serve(async (req) => {
       });
 
       return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "purchase_for_partner") {
+      // Create one-time payment to unfreeze another user
+      const { partner_id } = await req.json().catch(() => ({}));
+      const body = await req.clone().json().catch(() => ({}));
+      const partnerId = body.partner_id;
+      if (!partnerId) throw new Error("partner_id is required");
+
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      let customerId;
+      if (customers.data.length > 0) customerId = customers.data[0].id;
+
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email,
+        line_items: [{ price: UNFREEZE_PRICE_ID, quantity: 1 }],
+        mode: "payment",
+        success_url: `${req.headers.get("origin")}/videocall?unfreeze_partner=success&partner_id=${partnerId}`,
+        cancel_url: `${req.headers.get("origin")}/videocall?unfreeze_partner=cancel`,
+        metadata: { user_id: user.id, partner_id: partnerId, type: "unfreeze_partner" },
+      });
+
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "apply_for_partner") {
+      // Apply unfreeze for a partner user
+      const body = await req.clone().json().catch(() => ({}));
+      const partnerId = body.partner_id;
+      if (!partnerId) throw new Error("partner_id is required");
+
+      const freezeFreeUntil = new Date();
+      freezeFreeUntil.setDate(freezeFreeUntil.getDate() + 7);
+
+      await supabaseClient
+        .from("member_minutes")
+        .update({
+          is_frozen: false,
+          freeze_free_until: freezeFreeUntil.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", partnerId);
+
+      return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
