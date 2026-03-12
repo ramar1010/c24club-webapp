@@ -90,7 +90,7 @@ const AddRewardPage = () => {
         shipping_fee: existingReward.shipping_fee || 0,
       });
       setVariationImages(existingReward.variation_images || []);
-      setColorOptions(existingReward.color_options || []);
+      setColorOptions(Array.isArray(existingReward.color_options) ? existingReward.color_options as any[] : []);
     }
   }, [existingReward, form]);
 
