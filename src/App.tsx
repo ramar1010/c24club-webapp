@@ -14,8 +14,6 @@ import RewardsPage from "@/pages/admin/RewardsPage";
 import AddRewardPage from "@/pages/admin/AddRewardPage";
 import CategoriesPage from "@/pages/admin/CategoriesPage";
 import AddCategoryPage from "@/pages/admin/AddCategoryPage";
-import MilestonesPage from "@/pages/admin/MilestonesPage";
-import AddMilestonePage from "@/pages/admin/AddMilestonePage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
