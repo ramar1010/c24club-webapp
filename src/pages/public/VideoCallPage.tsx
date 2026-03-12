@@ -335,6 +335,16 @@ const VideoCallPage = () => {
           <ProfilePage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       )}
+      {overlayPage === "promo" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <PromoPanel
+            userId={memberId}
+            adPoints={adPoints}
+            onClose={() => setOverlayPage(null)}
+            onAdPointsChange={refreshBalance}
+          />
+        </FullScreenOverlay>
+      )}
       {overlayPage === "topics" && (
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
