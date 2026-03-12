@@ -305,27 +305,31 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
             className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold min-h-[80px]"
           />
 
-          {isVip && (
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <p className="text-xs font-bold text-neutral-400 mb-1">Target URL Link (optional)</p>
-                <Input
-                  placeholder="Enter url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
-                />
-              </div>
-              <div className="w-32">
-                <p className="text-xs font-bold text-neutral-400 mb-1">CTA Text</p>
-                <Input
-                  value={urlText}
-                  onChange={(e) => setUrlText(e.target.value)}
-                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
-                />
-              </div>
+          {/* URL Link - Premium VIP only */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <p className="text-xs font-bold text-neutral-400 mb-1">Target URL Link {!isPremiumVip && "🔒 Premium VIP"}</p>
+              <Input
+                placeholder="Enter url"
+                value={url}
+                disabled={!isPremiumVip}
+                onChange={(e) => setUrl(e.target.value)}
+                className={`bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold ${!isPremiumVip ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (!isPremiumVip) toast("👑 Premium VIP Feature", { description: "Upgrade to Premium VIP to add clickable links to your promos!" });
+                }}
+              />
             </div>
-          )}
+            <div className="w-32">
+              <p className="text-xs font-bold text-neutral-400 mb-1">CTA Text</p>
+              <Input
+                value={urlText}
+                disabled={!isPremiumVip}
+                onChange={(e) => setUrlText(e.target.value)}
+                className={`bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold ${!isPremiumVip ? "opacity-50 cursor-not-allowed" : ""}`}
+              />
+            </div>
+          </div>
 
           {/* Ad Points */}
           <div className="flex items-center justify-center gap-3 pt-2">
