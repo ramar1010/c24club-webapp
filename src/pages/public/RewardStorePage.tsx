@@ -576,8 +576,5 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   );
 };
 
-// Need these variables accessible in the component
-const filteredRewards = undefined; // handled inline
-const categoryCards = undefined; // handled inline
 
 export default RewardStorePage;
