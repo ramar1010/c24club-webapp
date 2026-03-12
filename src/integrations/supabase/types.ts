@@ -158,11 +158,14 @@ export type Database = {
         Row: {
           ad_points: number
           cap_popup_shown: boolean
+          ce_minutes_checkpoint: number
+          chance_enhancer: number
           freeze_free_until: string | null
           frozen_at: string | null
           id: string
           is_frozen: boolean
           is_vip: boolean
+          last_login_at: string | null
           purchased_spins: number
           stripe_customer_id: string | null
           subscription_end: string | null
@@ -176,11 +179,14 @@ export type Database = {
         Insert: {
           ad_points?: number
           cap_popup_shown?: boolean
+          ce_minutes_checkpoint?: number
+          chance_enhancer?: number
           freeze_free_until?: string | null
           frozen_at?: string | null
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
+          last_login_at?: string | null
           purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -194,11 +200,14 @@ export type Database = {
         Update: {
           ad_points?: number
           cap_popup_shown?: boolean
+          ce_minutes_checkpoint?: number
+          chance_enhancer?: number
           freeze_free_until?: string | null
           frozen_at?: string | null
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
+          last_login_at?: string | null
           purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
