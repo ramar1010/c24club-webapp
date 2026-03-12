@@ -12,7 +12,7 @@ interface PromoPanelProps {
   onAdPointsChange: () => void;
 }
 
-type PromoView = "main" | "create" | "my-promos" | "templates" | "analytics";
+type PromoView = "main" | "create" | "my-promos" | "templates" | "analytics" | "link-clicks";
 
 interface PromoData {
   id: string;
