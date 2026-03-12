@@ -410,6 +410,7 @@ const VideoCallPage = () => {
       )}
   const isMobile = useIsMobile();
 
+  const isMobile = useIsMobile();
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
