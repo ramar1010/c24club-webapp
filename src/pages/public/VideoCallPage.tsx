@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
+import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
