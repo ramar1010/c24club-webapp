@@ -353,6 +353,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     currentPartnerId,
     localVideoRef,
     remoteVideoRef,
+    localStreamRef,
     startCall,
     next,
     stop,
