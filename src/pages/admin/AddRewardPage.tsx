@@ -52,6 +52,44 @@ const AddRewardPage = () => {
 
   const existingReward = isEdit ? allRewards?.find((r: any) => r.id === id) : null;
 
+  // AliExpress import
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-product", {
+        body: { url: importUrl.trim() },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Import failed");
+
+      // Fill form fields
+      if (data.title) form.setValue("title", data.title);
+      if (data.description) form.setValue("brief", data.description);
+      if (data.images?.length > 0) {
+        form.setValue("image_url", data.images[0]);
+        setVariationImages(data.images.slice(1));
+      }
+      if (data.sizes?.length > 0) {
+        form.setValue("sizes", data.sizes.join(", "));
+      }
+      if (data.colors?.length > 0) {
+        setColorOptions(data.colors);
+      }
+      form.setValue("type", "Product / Giftcard");
+      form.setValue("delivery", "physical");
+
+      toast.success(`Imported "${data.title}" with ${data.images?.length || 0} images`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to import product");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // Variation images (array of URLs)
   const [variationImages, setVariationImages] = useState<string[]>([]);
   const [newVariationUrl, setNewVariationUrl] = useState("");
