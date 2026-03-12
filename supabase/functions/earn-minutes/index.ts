@@ -6,6 +6,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Ad points tiers based on call duration
+function computeAdPoints(elapsedSeconds: number): number {
+  if (elapsedSeconds >= 300) return 4;
+  if (elapsedSeconds >= 120) return 2;
+  if (elapsedSeconds >= 30) return 1;
+  return 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -16,13 +24,14 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode } = await req.json();
+    const body = await req.json();
+    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds } = body;
 
-    // GET_BALANCE: Return current minutes + VIP status
+    // GET_BALANCE: Return current minutes + ad points + VIP status
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -30,6 +39,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
+          adPoints: data?.ad_points ?? 0,
           isVip: data?.is_vip ?? false,
           capPopupShown: data?.cap_popup_shown ?? false,
         }),
@@ -46,10 +56,9 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Get VIP status
       const { data: memberData } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -57,7 +66,6 @@ Deno.serve(async (req) => {
       const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
       const cap = isVip ? 30 : 10;
 
-      // Get current minutes earned with this partner today
       const today = new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
         .from("call_minutes_log")
@@ -85,7 +93,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Upsert call_minutes_log
       await supabase
         .from("call_minutes_log")
         .upsert(
@@ -99,7 +106,6 @@ Deno.serve(async (req) => {
           { onConflict: "user_id,partner_id,session_date" }
         );
 
-      // Upsert member_minutes
       const currentTotal = memberData?.total_minutes ?? 0;
       const newTotal = currentTotal + actualEarned;
       const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShown;
@@ -134,7 +140,89 @@ Deno.serve(async (req) => {
       );
     }
 
-    // CHECK_CAP: Check remaining minutes with a specific partner
+    // EARN_AD_POINTS: Award ad points based on call duration
+    if (type === "earn_ad_points") {
+      if (!userId || !elapsedSeconds || elapsedSeconds <= 0) {
+        return new Response(
+          JSON.stringify({ success: true, adPointsEarned: 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const pointsToAward = computeAdPoints(elapsedSeconds);
+      if (pointsToAward <= 0) {
+        return new Response(
+          JSON.stringify({ success: true, adPointsEarned: 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: memberData } = await supabase
+        .from("member_minutes")
+        .select("ad_points")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const currentAdPoints = memberData?.ad_points ?? 0;
+      const newAdPoints = currentAdPoints + pointsToAward;
+
+      await supabase
+        .from("member_minutes")
+        .upsert(
+          {
+            user_id: userId,
+            ad_points: newAdPoints,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          adPointsEarned: pointsToAward,
+          totalAdPoints: newAdPoints,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // SPEND_AD_POINTS: Deduct ad points when posting a promo
+    if (type === "spend_ad_points") {
+      const { points } = body;
+      if (!userId || !points || points <= 0) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Invalid parameters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: memberData } = await supabase
+        .from("member_minutes")
+        .select("ad_points")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const currentAdPoints = memberData?.ad_points ?? 0;
+      if (currentAdPoints < points) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Insufficient ad points" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      await supabase
+        .from("member_minutes")
+        .update({ ad_points: currentAdPoints - points, updated_at: new Date().toISOString() })
+        .eq("user_id", userId);
+
+      return new Response(
+        JSON.stringify({ success: true, totalAdPoints: currentAdPoints - points }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // CHECK_CAP
     if (type === "check_cap") {
       const { data: memberData } = await supabase
         .from("member_minutes")
@@ -168,7 +256,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ADMIN_ADD_MINUTES: Manually add/set minutes for a user (admin only)
+    // ADMIN_ADD_MINUTES
     if (type === "admin_add_minutes") {
       const actualTargetUserId = targetUserId || userId;
       const actualMinutes = minutes ?? minutesEarned ?? 0;
