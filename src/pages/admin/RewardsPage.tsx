@@ -4,8 +4,11 @@ import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { useRewards, useDeleteReward } from "@/hooks/useCrud";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Gift, Pencil, Trash2 } from "lucide-react";
+import { Gift, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import DeleteDialog from "@/components/admin/DeleteDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 type Reward = {
   id: string;
@@ -43,7 +46,7 @@ const rewardColumns: DataTableColumn<Reward>[] = [
   {
     key: "visible",
     header: "Visible",
-    render: (row) => row.visible ? <Badge className="bg-green-500/10 text-green-600">Yes</Badge> : <Badge className="bg-muted text-muted-foreground">No</Badge>,
+    render: (row) => row.visible ? <Badge className="bg-green-500/10 text-green-600">Yes</Badge> : <Badge className="bg-muted text-muted-foreground">Hidden</Badge>,
   },
   {
     key: "reward_categories",
@@ -57,6 +60,20 @@ const RewardsPage = () => {
   const { data, isLoading } = useRewards();
   const deleteMutation = useDeleteReward();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const toggleVisibility = async (reward: Reward) => {
+    const { error } = await supabase
+      .from("rewards")
+      .update({ visible: !reward.visible })
+      .eq("id", reward.id);
+    if (error) {
+      toast.error("Failed to update visibility");
+    } else {
+      toast.success(reward.visible ? "Product hidden from store" : "Product visible in store");
+      queryClient.invalidateQueries({ queryKey: ["rewards"] });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -79,6 +96,15 @@ const RewardsPage = () => {
         searchKeys={["title", "type", "rarity"]}
         actions={(row) => (
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title={row.visible ? "Hide from store" : "Show in store"}
+              onClick={() => toggleVisibility(row)}
+            >
+              {row.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/admin/rewards/${row.id}/edit`)}>
               <Pencil className="h-4 w-4" />
             </Button>
