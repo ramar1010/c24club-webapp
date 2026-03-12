@@ -478,7 +478,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   }
 
   // Instant redeem handler for Spins / Ad Points
-  const [instantRedeeming, setInstantRedeeming] = useState(false);
   const handleInstantRedeem = async (reward: any) => {
     setInstantRedeeming(true);
     try {
