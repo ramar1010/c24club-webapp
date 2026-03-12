@@ -316,42 +316,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       )}
 
-      {/* Milestones section */}
-      {milestones && milestones.length > 0 && !selectedCategory && (
-        <div className="px-4 pb-8">
-          <h2 className="text-xl font-black mb-3 flex items-center gap-2">
-            <Target className="w-5 h-5 text-yellow-400" />
-            Milestones
-          </h2>
-          <div className="space-y-3">
-            {milestones.map((ms: any) => (
-              <div key={ms.id} className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-yellow-500/10 border-2 border-yellow-500/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-yellow-400 font-black text-lg">{ms.unlock_minutes}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-white">{ms.title}</p>
-                  {ms.brief && <p className="text-xs text-neutral-500 mt-0.5 line-clamp-1">{ms.brief}</p>}
-                  <div className="flex gap-1 mt-1.5">
-                    {ms.vip_only && (
-                      <span className="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">VIP</span>
-                    )}
-                    {ms.milestone_rewards?.map((mr: any) => (
-                      <span key={mr.id} className="bg-neutral-800 text-neutral-400 text-[10px] font-bold px-2 py-0.5 rounded">
-                        {mr.rewards?.title}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-[10px] text-neutral-600 font-bold">UNLOCK</p>
-                  <p className="text-yellow-400 font-black">{ms.unlock_minutes} min</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

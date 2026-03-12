@@ -72,8 +72,6 @@ const App = () => (
               <Route path="rewards" element={<RewardsPage />} />
               <Route path="rewards/new" element={<AddRewardPage />} />
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
-              <Route path="milestones" element={<MilestonesPage />} />
-              <Route path="milestones/new" element={<AddMilestonePage />} />
               <Route path="member-rewards" element={<MemberRewardsPage />} />
               <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />
