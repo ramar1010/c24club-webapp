@@ -80,10 +80,7 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
 
           {/* Premium Button */}
           <button
-            onClick={() => {
-              setViewingTier("premium");
-              if (!currentTier) handlePurchase(VIP_TIERS.premium.price_id);
-            }}
+            onClick={() => setViewingTier("premium")}
             className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all border-2 ${
               viewingTier === "premium"
                 ? "bg-gradient-to-b from-yellow-500 to-orange-700 border-yellow-400 text-white"
