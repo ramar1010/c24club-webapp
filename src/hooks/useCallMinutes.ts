@@ -77,7 +77,9 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     });
 
     if (data?.success) {
-      setTotalMinutes(data.totalMinutes);
+      if (data.totalMinutes !== undefined) {
+        setTotalMinutes(data.totalMinutes);
+      }
 
       // Trigger popup when per-partner cap is reached
       if (data.message === "cap_reached" && !capReachedRef.current) {

@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
       const actualEarned = Math.min(minutesEarned, remaining);
 
       if (actualEarned <= 0) {
+        const currentTotal = memberData?.total_minutes ?? 0;
         return new Response(
           JSON.stringify({
             success: true,
@@ -169,6 +170,7 @@ Deno.serve(async (req) => {
             isVip,
             isFrozen: freezeInfo.isFrozen,
             earned: 0,
+            totalMinutes: currentTotal,
             totalEarnedWithPartner: alreadyEarned,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
