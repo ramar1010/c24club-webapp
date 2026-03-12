@@ -26,6 +26,7 @@ import AdminChallengesPage from "@/pages/admin/AdminChallengesPage";
 import AdminMemberChallengesPage from "@/pages/admin/AdminMemberChallengesPage";
 import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
 import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
+import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
