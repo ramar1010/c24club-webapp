@@ -465,6 +465,16 @@ const VideoCallPage = () => {
                 <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
               </button>
             )}
+            {/* Frozen icon - desktop, below report icon */}
+            {callState === "connected" && partnerIsFrozen && currentPartnerId && (
+              <button
+                onClick={() => setShowUnfreezePartnerPopup(true)}
+                className="absolute top-14 left-2 z-20 w-10 h-10 hover:scale-110 transition-transform drop-shadow-lg"
+                title="This user is frozen"
+              >
+                <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
+              </button>
+            )}
             {/* NEXT Button - inside partner box, bottom-right */}
             {isActive && (
               <button onClick={handleNext} className="absolute bottom-3 right-3 z-20 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-5 py-2 transition-colors">
