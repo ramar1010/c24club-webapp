@@ -18,6 +18,26 @@ const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
 
 const SPIN_SLOT_COLORS = ["#FF6B35", "#2EC4B6", "#9B5DE5", "#E71D36"];
 
+// Build a long reel of items for the spin animation
+function buildSpinReel(commons: any[], target: any, won: boolean, totalSlots = 28): { items: any[]; winnerIndex: number } {
+  // We'll place the winning item near the end so the reel scrolls a good distance
+  const winnerIndex = totalSlots - 4; // lands 4 from end
+  const items: any[] = [];
+  for (let i = 0; i < totalSlots; i++) {
+    if (i === winnerIndex) {
+      items.push(won ? { ...target, isTarget: true } : { ...commons[i % commons.length], isTarget: false });
+    } else {
+      // Mix commons and target randomly, but target appears occasionally to tease
+      if (Math.random() < 0.2 && i < winnerIndex - 1) {
+        items.push({ ...target, isTarget: true });
+      } else {
+        items.push({ ...commons[i % commons.length], isTarget: false });
+      }
+    }
+  }
+  return { items, winnerIndex };
+}
+
 const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -34,6 +54,10 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [canRespin, setCanRespin] = useState(false);
   const [selectedColor, setSelectedColorState] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [spinReelItems, setSpinReelItems] = useState<any[]>([]);
+  const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
+  const [spinAnimating, setSpinAnimating] = useState(false);
+  const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const isPremiumVip = subscribed && vipTier === "premium";
@@ -86,34 +110,54 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
 
   const executeItemSpin = (targetReward: any, isRespin = false) => {
     setSpinState("spinning");
+    setSpinAnimating(true);
     
     // Pick 3 random commons
     const shuffled = [...commonRewards].sort(() => Math.random() - 0.5);
-    const commons = shuffled.slice(0, 3);
+    const commons = shuffled.slice(0, Math.min(3, shuffled.length));
+    if (commons.length === 0) return;
     
     // Determine win based on chance enhancer
-    // CE is the win percentage (e.g., 35% CE = 35% chance to win the target)
     const roll = Math.random() * 100;
     const won = roll < chanceEnhancer;
     
-    // Build 4 slots: 3 commons + 1 target, shuffle positions
-    const slots = [...commons.map(c => ({ ...c, isTarget: false })), { ...targetReward, isTarget: true }];
-    const shuffledSlots = slots.sort(() => Math.random() - 0.5);
+    // Build the reel
+    const { items, winnerIndex } = buildSpinReel(commons, targetReward, won);
+    setSpinReelItems(items);
+    setSpinWinnerIndex(winnerIndex);
+    setSpinResult(items);
     
-    setSpinResult(shuffledSlots);
+    // Animate: after a short delay, scroll the reel to the winner position
+    requestAnimationFrame(() => {
+      if (reelRef.current) {
+        // Reset position instantly
+        reelRef.current.style.transition = "none";
+        reelRef.current.style.transform = "translateX(0)";
+        
+        requestAnimationFrame(() => {
+          if (reelRef.current) {
+            const itemWidth = 88; // 80px + 8px gap
+            const containerCenter = 160; // half of ~320px viewport area
+            const targetX = winnerIndex * itemWidth - containerCenter + 40;
+            reelRef.current.style.transition = "transform 3.5s cubic-bezier(0.15, 0.85, 0.35, 1)";
+            reelRef.current.style.transform = `translateX(-${targetX}px)`;
+          }
+        });
+      }
+    });
     
     setTimeout(() => {
+      setSpinAnimating(false);
       if (won) {
         setSpinState("won");
         toast.success(`🎉 You won ${targetReward.title}!`);
       } else {
         setSpinState("lost");
-        // Premium VIP can respin for legendary items only (not on a respin)
         if (isPremiumVip && targetReward.rarity === "legendary" && !isRespin) {
           setCanRespin(true);
         }
       }
-    }, 2000);
+    }, 4000);
   };
 
   const handleRespin = () => {
@@ -126,37 +170,38 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   if (showSpinToWin) {
     const targetReward = showSpinToWin;
     const rarity = RARITY_STYLES[targetReward.rarity] || RARITY_STYLES.common;
+    const rarityColor = targetReward.rarity === "legendary" ? "text-amber-400" : "text-blue-400";
 
     return (
-      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8 overflow-hidden">
+        {/* Header */}
         <div className="w-full flex items-center pt-3 pb-2">
-          <button onClick={() => setShowSpinToWin(null)} className="flex items-center gap-1 hover:opacity-80">
+          <button onClick={() => { setShowSpinToWin(null); setSpinReelItems([]); }} className="flex items-center gap-1 hover:opacity-80">
             <ChevronLeft className="w-7 h-7" />
             <span className="font-black text-sm">BACK</span>
           </button>
         </div>
 
-        <h1 className="text-2xl font-black mt-2 mb-1">🎰 SPIN TO WIN</h1>
-        <p className="text-neutral-400 text-xs mb-4 text-center">
-          Win the <span className={`${rarity.text === "text-black" ? "text-amber-400" : "text-blue-400"} font-bold`}>
-            {targetReward.rarity}
-          </span> item using your Chance Enhancer!
+        <h1 className="text-3xl font-black mt-2 mb-1">🎰 SPIN TO WIN</h1>
+        <p className="text-neutral-400 text-xs mb-3 text-center">
+          Land on the <span className={`${rarityColor} font-bold`}>{targetReward.rarity}</span> item to win!
         </p>
 
         {/* CE Display */}
-        <div className="bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 mb-6 flex items-center gap-2">
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 mb-5 flex items-center gap-2">
           <span className="text-orange-400 text-xs font-black">
-            🔥 Your Win Chance: {Math.round(chanceEnhancer)}%
+            🔥 Win Chance: {Math.round(chanceEnhancer)}%
           </span>
         </div>
 
-        {/* Target item display */}
-        <div className="mb-6 text-center">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-neutral-800 mx-auto mb-2 border-2 border-amber-500/50">
+        {/* Target item preview */}
+        <div className="mb-5 text-center">
+          <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider mb-2">You're spinning for</p>
+          <div className="w-20 h-20 rounded-2xl overflow-hidden bg-neutral-800 mx-auto mb-2 border-2 border-amber-500/50 shadow-lg shadow-amber-500/20">
             {targetReward.image_url ? (
               <img src={targetReward.image_url} alt={targetReward.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-4xl">🎁</div>
+              <div className="w-full h-full flex items-center justify-center text-3xl">🎁</div>
             )}
           </div>
           <p className="font-black text-sm">{targetReward.title}</p>
@@ -165,70 +210,87 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           </span>
         </div>
 
-        {/* Spin Slots */}
-        {spinResult.length > 0 && (
-          <div className="grid grid-cols-4 gap-3 mb-6 w-full max-w-sm">
-            {spinResult.map((slot, i) => {
-              const isWinning = spinState === "won" && slot.isTarget;
-              const isLosing = spinState === "lost" && !slot.isTarget;
-              return (
-                <div
-                  key={i}
-                  className={`rounded-2xl overflow-hidden aspect-square border-2 transition-all duration-500 ${
-                    spinState === "spinning"
-                      ? "border-yellow-500/50 animate-pulse"
-                      : isWinning
-                      ? "border-green-500 shadow-lg shadow-green-500/30 scale-105"
-                      : spinState === "won" && !slot.isTarget
-                      ? "border-neutral-700 opacity-40"
-                      : spinState === "lost" && slot.isTarget
-                      ? "border-red-500 opacity-60"
-                      : "border-neutral-700"
-                  }`}
-                >
-                  {slot.image_url ? (
-                    <img src={slot.image_url} alt={slot.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-2xl">🎁</div>
-                  )}
-                </div>
-              );
-            })}
+        {/* Spin Reel */}
+        {spinReelItems.length > 0 && (
+          <div className="w-full max-w-sm mb-6 relative">
+            {/* Pointer indicator */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-20">
+              <div className="w-0 h-0 border-l-[10px] border-r-[10px] border-t-[14px] border-l-transparent border-r-transparent border-t-yellow-400" />
+            </div>
+            {/* Bottom pointer */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-2 z-20">
+              <div className="w-0 h-0 border-l-[10px] border-r-[10px] border-b-[14px] border-l-transparent border-r-transparent border-b-yellow-400" />
+            </div>
+            
+            {/* Reel container with mask */}
+            <div className="overflow-hidden rounded-2xl border-2 border-neutral-700 bg-neutral-900 py-3"
+              style={{ 
+                maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)"
+              }}
+            >
+              <div ref={reelRef} className="flex gap-2 pl-[140px]" style={{ willChange: "transform" }}>
+                {spinReelItems.map((item, i) => {
+                  const isLanded = !spinAnimating && i === spinWinnerIndex;
+                  const isTarget = item.isTarget;
+                  const borderColor = isLanded
+                    ? (spinState === "won" ? "border-green-500 shadow-green-500/40 shadow-lg" : "border-red-500 shadow-red-500/30 shadow-lg")
+                    : isTarget
+                    ? (targetReward.rarity === "legendary" ? "border-amber-500/40" : "border-blue-500/40")
+                    : "border-neutral-700";
+                  
+                  return (
+                    <div
+                      key={i}
+                      className={`w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all duration-500 ${borderColor} ${
+                        !spinAnimating && spinState !== "idle" && i !== spinWinnerIndex ? "opacity-40" : ""
+                      }`}
+                    >
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-2xl">🎁</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
         {/* Result message */}
         {spinState === "won" && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 mb-4 text-center">
-            <p className="text-green-400 font-black text-lg">🎉 YOU WON!</p>
-            <p className="text-neutral-300 text-sm">Click below to redeem your prize</p>
+          <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
+            <p className="text-green-400 font-black text-xl">🎉 YOU WON!</p>
+            <p className="text-neutral-300 text-sm mt-1">Click below to claim your prize</p>
           </div>
         )}
         {spinState === "lost" && !canRespin && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 mb-4 text-center">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
             <p className="text-red-400 font-black text-lg">😔 Not this time!</p>
             <p className="text-neutral-400 text-sm">Keep chatting to boost your Chance Enhancer</p>
           </div>
         )}
         {spinState === "lost" && canRespin && (
-          <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-4 mb-4 text-center">
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
             <p className="text-purple-400 font-black text-lg">👑 Premium VIP Perk!</p>
             <p className="text-neutral-300 text-sm">You get one more shot at this legendary item</p>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="w-full max-w-xs space-y-3">
+        <div className="w-full max-w-xs space-y-3 mt-auto">
           {spinState === "idle" && (
             <button
               onClick={() => executeItemSpin(targetReward)}
-              className="w-full py-3 rounded-full font-black text-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:scale-105 active:scale-95 transition-all shadow-lg"
+              className="w-full py-4 rounded-full font-black text-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-orange-500/30"
             >
               🎰 SPIN NOW!
             </button>
           )}
           {spinState === "spinning" && (
-            <button disabled className="w-full py-3 rounded-full font-black text-lg bg-neutral-700 text-neutral-400 cursor-wait">
+            <button disabled className="w-full py-4 rounded-full font-black text-lg bg-neutral-700 text-neutral-400 cursor-wait animate-pulse">
               SPINNING...
             </button>
           )}
@@ -236,25 +298,26 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <button
               onClick={() => {
                 setShowSpinToWin(null);
+                setSpinReelItems([]);
                 setSelectedReward(targetReward);
                 setShowShipping(true);
               }}
-              className="w-full py-3 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
+              className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
             >
-              REDEEM NOW
+              🎁 REDEEM NOW
             </button>
           )}
           {canRespin && (
             <button
               onClick={handleRespin}
-              className="w-full py-3 rounded-full font-black text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-full font-black text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2"
             >
               <RotateCw className="w-5 h-5" /> SPIN AGAIN (VIP)
             </button>
           )}
           {(spinState === "lost" && !canRespin) && (
             <button
-              onClick={() => setShowSpinToWin(null)}
+              onClick={() => { setShowSpinToWin(null); setSpinReelItems([]); }}
               className="w-full py-3 rounded-full font-black text-sm bg-neutral-800 text-neutral-400 hover:bg-neutral-700 transition-all"
             >
               Back to Store
