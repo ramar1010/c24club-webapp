@@ -92,6 +92,30 @@ const VideoCallPage = () => {
     isConnected: callState === "connected",
   });
 
+  const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
+    remoteVideoRef,
+    isConnected: callState === "connected",
+  });
+
+  // Auto-ban when NSFW strikes reach threshold
+  useEffect(() => {
+    if (!shouldBan || !user?.id) return;
+    const banUser = async () => {
+      try {
+        await supabase.from("user_bans").insert({
+          user_id: user.id,
+          reason: "Nudity detected on camera (automated)",
+          ban_type: "standard",
+          is_active: true,
+        });
+        recheckBan();
+      } catch (err) {
+        console.error("[NSFW] Failed to ban user:", err);
+      }
+    };
+    banUser();
+  }, [shouldBan, user?.id, recheckBan]);
+
   const {
     totalMinutes,
     elapsedSeconds,
