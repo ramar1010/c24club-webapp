@@ -145,7 +145,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           <button
             onClick={handleConfirm}
             disabled={loading}
-            className="bg-green-700 text-white font-black text-xl px-10 py-3 rounded-full hover:bg-green-800 transition-colors disabled:opacity-50"
+            className="bg-primary text-primary-foreground font-black text-xl px-10 py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading
               ? "Processing..."
