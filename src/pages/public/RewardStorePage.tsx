@@ -430,7 +430,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         </div>
 
         {/* Product Image */}
-        <div className="px-4 mb-4">
+        <div className="px-4 mb-4 md:max-w-md md:mx-auto lg:max-w-lg">
           <div className="relative rounded-2xl overflow-hidden bg-neutral-800 aspect-square">
             {displayImage ? (
               <img src={displayImage} alt={selectedReward.title} className="w-full h-full object-cover" />
