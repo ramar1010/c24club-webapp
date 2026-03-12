@@ -29,6 +29,7 @@ const rewardSchema = z.object({
   
   minutes_cost: z.coerce.number().min(0).default(0),
   shipping_fee: z.coerce.number().min(0).default(0),
+  grant_amount: z.coerce.number().min(0).default(0),
 });
 
 type RewardForm = z.infer<typeof rewardSchema>;
