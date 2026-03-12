@@ -101,11 +101,14 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   // Get common rewards for the spin mechanic
   const commonRewards = rewards?.filter((r: any) => r.rarity === "common") || [];
 
+  const [landedItem, setLandedItem] = useState<any | null>(null);
+
   const handleSpinToWin = (reward: any) => {
     setShowSpinToWin(reward);
     setSpinState("idle");
     setSpinResult([]);
     setCanRespin(false);
+    setLandedItem(null);
   };
 
   const executeItemSpin = (targetReward: any, isRespin = false) => {
