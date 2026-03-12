@@ -86,6 +86,11 @@ const AdminSpinWinnersPage = () => {
                         <span className="text-xs text-muted-foreground block">{member.email}</span>
                       )}
                     </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                        {getSpinCount(r.user_id)}
+                      </span>
+                    </TableCell>
                     <TableCell>{r.prize_label}</TableCell>
                     <TableCell className="capitalize">{r.prize_type.replace("_", " ")}</TableCell>
                     <TableCell>{r.prize_amount}</TableCell>
