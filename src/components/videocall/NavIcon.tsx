@@ -12,7 +12,7 @@ const NavIcon = ({ src, label, onClick, highlight }: NavIconProps) => (
       highlight ? "scale-105" : ""
     }`}
   >
-    <img src={src} alt={label} className="w-14 h-14 object-contain" />
+    <img src={src} alt={label} className="w-14 h-14 md:w-20 md:h-20 object-contain" />
     <span
       className={`text-[11px] font-black tracking-wider ${
         highlight ? "text-white text-sm" : "text-white"
