@@ -154,30 +154,12 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
 
   const availableRewards = Math.floor(totalLinkClicks / LINK_CLICKS_THRESHOLD) - linkClicksClaimed;
 
-  const handleClaimLinkClickReward = async () => {
+  const handleClaimLinkClickReward = () => {
     if (availableRewards <= 0) {
       toast.error("Not enough link clicks to claim a reward");
       return;
     }
-    setClaimingReward(true);
-    // Insert a redemption record for the promo link click reward
-    const { error } = await supabase.from("member_redemptions").insert({
-      user_id: userId,
-      reward_title: "Promo Link Clicks Reward",
-      reward_type: "promo_link_clicks",
-      reward_rarity: "common",
-      minutes_cost: 0,
-      status: "pending_selection",
-      notes: `Earned from ${LINK_CLICKS_THRESHOLD} promo link clicks`,
-    });
-
-    if (error) {
-      toast.error("Failed to claim reward");
-    } else {
-      toast.success("🎉 Reward unlocked! An admin will reach out with your reward selection.");
-      setLinkClicksClaimed((prev) => prev + 1);
-    }
-    setClaimingReward(false);
+    setView("pick-reward");
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
