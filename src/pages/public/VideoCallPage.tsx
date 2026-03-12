@@ -417,7 +417,7 @@ const VideoCallPage = () => {
           userId={memberId}
           vipTier={vipTier}
           genderFilter={genderFilter}
-          onGenderFilterChange={setGenderFilter}
+          onGenderFilterChange={(g) => setGenderFilter(g as GenderFilter)}
         />
       )}
 
