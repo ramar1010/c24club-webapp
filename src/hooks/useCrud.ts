@@ -6,9 +6,23 @@ export function useMembers() {
   return useQuery({
     queryKey: ["members"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      const { data: members, error: membersError } = await supabase
+        .from("members")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (membersError) throw membersError;
+
+      const { data: minutes, error: minutesError } = await supabase
+        .from("member_minutes")
+        .select("user_id, total_minutes");
+      if (minutesError) throw minutesError;
+
+      const minutesMap = new Map(minutes?.map((m) => [m.user_id, m.total_minutes]) ?? []);
+
+      return members?.map((member) => ({
+        ...member,
+        minutes: minutesMap.get(member.id) ?? 0,
+      })) ?? [];
     },
   });
 }

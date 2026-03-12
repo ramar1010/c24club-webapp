@@ -27,6 +27,7 @@ type Member = {
   birthdate: string | null;
   gender: string | null;
   membership: string | null;
+  minutes?: number;
 };
 
 const BAN_REASONS = [
@@ -57,6 +58,13 @@ const memberColumns: DataTableColumn<Member>[] = [
   { key: "country", header: "Country" },
   { key: "stats", header: "Stats" },
   { key: "birthdate", header: "Birth Date" },
+  {
+    key: "minutes",
+    header: "Minutes",
+    render: (row) => (
+      <span className="font-mono text-sm">{row.minutes ?? 0}</span>
+    ),
+  },
   {
     key: "gender",
     header: "Gender",
