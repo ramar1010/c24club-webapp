@@ -47,6 +47,9 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [loading, setLoading] = useState(false);
   const [analyticsPromoId, setAnalyticsPromoId] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [totalLinkClicks, setTotalLinkClicks] = useState(0);
+  const [linkClicksClaimed, setLinkClicksClaimed] = useState(0);
+  const [claimingReward, setClaimingReward] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
