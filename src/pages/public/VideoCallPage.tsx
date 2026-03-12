@@ -386,8 +386,20 @@ const VideoCallPage = () => {
           )}
 
           <video ref={localVideoRef} autoPlay muted playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
+           className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
 
+          {/* Black screen mirror overlay */}
+          {partnerBlackScreen && isActive && (
+            <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center gap-2 pointer-events-none">
+              <span className="text-3xl">📵</span>
+              <p className="text-white font-black text-sm text-center px-4">
+                YOUR CAMERA IS HIDDEN
+              </p>
+              <p className="text-neutral-400 text-xs text-center px-6">
+                Your partner can't see you because their camera is off. Show your face to restore video.
+              </p>
+            </div>
+          )}
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd && (
             <PromoAdOverlay
