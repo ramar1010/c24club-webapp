@@ -91,6 +91,61 @@ Deno.serve(async (req) => {
       return session;
     };
 
+    // ─── ACTION: cashout-legendary (Premium VIP wins legendary & chooses cash) ───
+    if (action === "cashout-legendary") {
+      const reward = await getReward(rewardId);
+      
+      if (reward.rarity !== "legendary") {
+        throw new Error("Only legendary items can be cashed out");
+      }
+      
+      const cashoutValue = Number(reward.cashout_value) || 0;
+      if (cashoutValue <= 0) {
+        throw new Error("This item has no cashout value");
+      }
+
+      const { isVip, vipTier } = await getVipStatus();
+      if (!isVip || vipTier !== "premium") {
+        throw new Error("Only Premium VIP members can cash out legendary items");
+      }
+
+      // Deduct minutes
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes").eq("user_id", user.id).maybeSingle();
+      const totalMinutes = memberData?.total_minutes ?? 0;
+      if (totalMinutes < reward.minutes_cost) {
+        throw new Error("Not enough minutes");
+      }
+      await supabase.from("member_minutes").update({ total_minutes: totalMinutes - reward.minutes_cost, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+
+      // Create redemption with cashout info
+      const { error: insertErr } = await supabase.from("member_redemptions").insert({
+        user_id: user.id,
+        reward_id: reward.id,
+        reward_title: reward.title,
+        reward_image_url: reward.image_url,
+        reward_rarity: "legendary",
+        reward_type: reward.delivery === "digital" ? "giftcard" : "product",
+        minutes_cost: reward.minutes_cost,
+        status: "processing",
+        cashout_amount: cashoutValue,
+        cashout_status: "pending",
+        notes: `Legendary cashout: $${cashoutValue.toFixed(2)}`,
+      });
+
+      if (insertErr) {
+        // Refund minutes
+        await supabase.from("member_minutes").update({ total_minutes: totalMinutes, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+        throw insertErr;
+      }
+
+      // Reset the cashout value on the reward to $0
+      await supabase.from("rewards").update({ cashout_value: 0 }).eq("id", reward.id);
+
+      return new Response(JSON.stringify({ success: true, cashoutAmount: cashoutValue }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ─── ACTION: create-redemption (standard, costs minutes) ───
     if (action === "create-redemption") {
       const reward = await getReward(rewardId);

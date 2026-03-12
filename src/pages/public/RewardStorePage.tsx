@@ -270,6 +270,11 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
             <p className="text-green-400 font-black text-xl">🎉 YOU WON!</p>
             <p className="text-neutral-300 text-sm mt-1">Click below to claim your prize</p>
+            {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
+              <p className="text-green-300 text-xs mt-2">
+                💰 You can also cash out <span className="font-black text-green-400">${Number(targetReward.cashout_value).toFixed(2)}</span> instead!
+              </p>
+            )}
           </div>
         )}
         {spinState === "lost" && !canRespin && landedItem && (
@@ -309,17 +314,44 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </button>
           )}
           {spinState === "won" && (
-            <button
-              onClick={() => {
-                setShowSpinToWin(null);
-                setSpinReelItems([]);
-                setSelectedReward(targetReward);
-                setShowShipping(true);
-              }}
-              className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
-            >
-              🎁 REDEEM NOW
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setShowSpinToWin(null);
+                  setSpinReelItems([]);
+                  setSelectedReward(targetReward);
+                  setShowShipping(true);
+                }}
+                className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
+              >
+                🎁 REDEEM ITEM
+              </button>
+              {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase.functions.invoke("redeem-reward", {
+                        body: {
+                          action: "cashout-legendary",
+                          rewardId: targetReward.id,
+                        },
+                      });
+                      if (error) throw error;
+                      toast.success(`💰 Cashed out $${Number(targetReward.cashout_value).toFixed(2)}!`);
+                      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+                      queryClient.invalidateQueries({ queryKey: ["public-rewards"] });
+                      setShowSpinToWin(null);
+                      setSpinReelItems([]);
+                    } catch (e: any) {
+                      toast.error(e.message || "Cashout failed");
+                    }
+                  }}
+                  className="w-full py-4 rounded-full font-black text-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg"
+                >
+                  💰 CASH OUT ${Number(targetReward.cashout_value).toFixed(2)}
+                </button>
+              )}
+            </>
           )}
           {canRespin && (
             <button
@@ -533,6 +565,16 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           {isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
             <p className="text-purple-400 text-xs font-bold mt-1">👑 FREE SHIPPING (Premium VIP)</p>
           )}
+          {selectedReward.rarity === "legendary" && Number(selectedReward.cashout_value) > 0 && (
+            <div className="mt-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+              <p className="text-green-400 font-black text-sm">
+                💰 Or Cash Out 🔺${Number(selectedReward.cashout_value).toFixed(2)}!
+              </p>
+              <p className="text-neutral-400 text-[10px] mt-1">
+                Legendary items have real monetary value that can be cashed out if you win! The value increases the more it sits unredeemed.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto px-4 pb-2">
@@ -650,11 +692,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="font-black text-sm leading-tight text-white drop-shadow-lg">{reward.title}</p>
+                      <p className="font-black text-sm leading-tight text-white drop-shadow-lg">
+                        {reward.title}
+                        {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 && (
+                          <span className="text-green-400"> Or 🔺${Number(reward.cashout_value).toFixed(0)} Cash Out!</span>
+                        )}
+                      </p>
                       <p className="text-xs text-neutral-300 mt-0.5">🪙 {reward.minutes_cost} min</p>
-                      {(reward.rarity === "rare" || reward.rarity === "legendary") && (
+                      {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 ? (
+                        <span className="text-[9px] text-green-400 font-bold">💰 Real Cash Value!</span>
+                      ) : (reward.rarity === "rare" || reward.rarity === "legendary") ? (
                         <span className="text-[9px] text-yellow-400 font-bold">🎰 Spin to Win</span>
-                      )}
+                      ) : null}
                     </div>
                     <span className={`absolute top-2 right-2 ${rarity.bg} ${rarity.text} px-2 py-0.5 rounded-md font-bold text-[10px]`}>
                       {reward.rarity}
@@ -719,11 +768,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <p className="font-black text-sm leading-tight text-white drop-shadow-lg">{reward.title}</p>
+                          <p className="font-black text-sm leading-tight text-white drop-shadow-lg">
+                            {reward.title}
+                            {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 && (
+                              <span className="text-green-400"> Or 🔺${Number(reward.cashout_value).toFixed(0)} Cash Out!</span>
+                            )}
+                          </p>
                           <p className="text-xs text-neutral-300 mt-0.5">🪙 {reward.minutes_cost} min</p>
-                          {(reward.rarity === "rare" || reward.rarity === "legendary") && (
+                          {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 ? (
+                            <span className="text-[9px] text-green-400 font-bold">💰 Real Cash Value!</span>
+                          ) : (reward.rarity === "rare" || reward.rarity === "legendary") ? (
                             <span className="text-[9px] text-yellow-400 font-bold">🎰 Spin to Win</span>
-                          )}
+                          ) : null}
                         </div>
                         <span className={`absolute top-2 right-2 ${rarity.bg} ${rarity.text} px-2 py-0.5 rounded-md font-bold text-[10px]`}>
                           {reward.rarity}

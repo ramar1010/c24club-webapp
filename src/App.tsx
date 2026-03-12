@@ -26,6 +26,7 @@ import AdminChallengesPage from "@/pages/admin/AdminChallengesPage";
 import AdminMemberChallengesPage from "@/pages/admin/AdminMemberChallengesPage";
 import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
 import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
+import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -101,7 +102,7 @@ const App = () => (
               <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
               <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
               <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
-              <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />
+              <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
               <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
               <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
               <Route path="anchor-rewards/cashouts" element={<PlaceholderPage title="Idle Minutes - Cashouts" />} />
