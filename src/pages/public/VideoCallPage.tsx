@@ -365,6 +365,18 @@ const VideoCallPage = () => {
             </div>
           )}
 
+          {/* Frozen icon - mobile, below socials/report */}
+          {isMobile && callState === "connected" && partnerIsFrozen && currentPartnerId && (
+            <button
+              onClick={() => setShowUnfreezePartnerPopup(true)}
+              className="absolute left-2 z-20 w-10 h-10 hover:scale-110 transition-transform drop-shadow-lg"
+              style={{ top: partnerPinnedSocials.length > 0 ? "calc(5.5rem + 2.5rem)" : "5.5rem" }}
+              title="This user is frozen"
+            >
+              <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
+            </button>
+          )}
+
           {/* Gift icon - shows when partner is VIP */}
           {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
             <button
