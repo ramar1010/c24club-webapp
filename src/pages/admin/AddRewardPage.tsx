@@ -26,7 +26,7 @@ const rewardSchema = z.object({
   brief: z.string().optional(),
   info: z.string().optional(),
   image_url: z.string().optional(),
-  feature_image_url: z.string().optional(),
+  
   minutes_cost: z.coerce.number().min(0).default(0),
   shipping_fee: z.coerce.number().min(0).default(0),
 });
@@ -85,7 +85,7 @@ const AddRewardPage = () => {
         brief: existingReward.brief || "",
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
-        feature_image_url: existingReward.feature_image_url || "",
+        
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
       });
@@ -100,7 +100,7 @@ const AddRewardPage = () => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
-      feature_image_url: values.feature_image_url || null,
+      
       variation_images: variationImages,
       color_options: colorOptions,
       ...(isEdit ? { id } : {}),
@@ -287,17 +287,6 @@ const AddRewardPage = () => {
                 </FormItem>
               )} />
 
-              {/* Feature image */}
-              <FormField control={form.control} name="feature_image_url" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Feature Image URL <span className="text-xs text-muted-foreground">(hero/banner image)</span></FormLabel>
-                  <FormControl><Input placeholder="https://..." {...field} /></FormControl>
-                  {field.value && (
-                    <img src={field.value} alt="Feature Preview" className="w-32 h-20 object-cover rounded-lg mt-2 border" />
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )} />
 
               {/* Variation images */}
               <div>
