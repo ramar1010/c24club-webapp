@@ -312,6 +312,18 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
             Every spin guarantees a reward!
           </p>
 
+          {/* Chance Enhancer display */}
+          {ceData && (
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 mb-3 flex items-center gap-2">
+              <span className="text-orange-400 text-xs font-black">
+                🔥 Chance Enhancer: +{Math.round(ceData.chance_enhancer)}%
+              </span>
+              {ceData.is_vip && (
+                <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold">VIP</span>
+              )}
+            </div>
+          )}
+
           {/* Purchased spins badge */}
           {hasPurchasedSpins && (
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-full px-4 py-1 mb-3">
