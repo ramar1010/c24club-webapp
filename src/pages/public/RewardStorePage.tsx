@@ -178,7 +178,11 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-1">
           <span>⚡</span> Reward Store <span>⚡</span>
         </h1>
-        <div className="w-8" />
+        {/* Minutes Balance */}
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wide">Balance</span>
+          <span className="text-green-400 font-black text-lg">🪙 {userMinutes ?? 0}</span>
+        </div>
       </div>
 
       {/* Categories Grid */}
