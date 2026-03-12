@@ -159,6 +159,20 @@ const VideoCallPage = () => {
     },
   });
 
+  // Check if partner is frozen
+  const { data: partnerIsFrozen } = useQuery({
+    queryKey: ["partner_is_frozen", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("is_frozen")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      return mm?.is_frozen ?? false;
+    },
+  });
+
   // Fetch partner's pinned socials
   const { data: partnerPinnedSocials = [] } = useQuery({
     queryKey: ["partner_pinned_socials", currentPartnerId],
