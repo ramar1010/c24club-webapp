@@ -721,7 +721,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </button>
           )}
 
-          {(selectedReward.type === "Spins" || selectedReward.type === "Ad Points") && (
+          {isInstantType && (
             <button
               onClick={() => handleInstantRedeem(selectedReward)}
               disabled={instantRedeeming || (userMinutes ?? 0) < selectedReward.minutes_cost}
