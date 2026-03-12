@@ -55,7 +55,7 @@ const LinkClicksRewardPicker = ({ userId, onBack, onClaimed }: LinkClicksRewardP
     const fetchData = async () => {
       // Fetch rewards and VIP status in parallel
       const [{ data: rewardsData }, { data: vipData }] = await Promise.all([
-        supabase.from("rewards").select("id, title, image_url, rarity, delivery, shipping_fee, minutes_cost, brief").eq("visible", true).order("minutes_cost"),
+        supabase.from("rewards").select("id, title, image_url, rarity, delivery, shipping_fee, minutes_cost, brief").eq("visible", true).eq("rarity", "common").order("minutes_cost"),
         supabase.from("member_minutes").select("is_vip, vip_tier").eq("user_id", userId).maybeSingle(),
       ]);
       setRewards((rewardsData as RewardItem[]) ?? []);
