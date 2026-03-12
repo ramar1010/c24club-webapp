@@ -145,12 +145,13 @@ Deno.serve(async (req) => {
 
       const { data: memberData } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points")
-        .eq("user_id", userId)
-        .maybeSingle();
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points")
+         .eq("user_id", userId)
+         .maybeSingle();
 
-      const isVip = memberData?.is_vip ?? false;
-      const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
+       const isVip = memberData?.is_vip ?? false;
+       const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
+       const frozenCapPopupAlreadyShown = memberData?.frozen_cap_popup_shown ?? false;
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
