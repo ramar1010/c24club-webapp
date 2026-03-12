@@ -150,12 +150,22 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
           </div>
         </button>
 
-        {/* Dismiss */}
-        <button
-          onClick={onDismiss}
-          className="text-neutral-600 text-xs font-bold hover:text-neutral-400 transition-colors"
-        >
-          Dismiss
+        {/* Bottom links */}
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={onDismiss}
+            className="text-neutral-600 text-xs font-bold hover:text-neutral-400 transition-colors"
+          >
+            Dismiss
+          </button>
+          {onSnooze && (
+            <button
+              onClick={onSnooze}
+              className="text-neutral-600 text-xs font-bold hover:text-yellow-400 transition-colors"
+            >
+              Don't show for 24h
+            </button>
+          )}
         </button>
       </div>
     </div>
