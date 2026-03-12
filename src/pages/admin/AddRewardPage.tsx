@@ -33,7 +33,7 @@ const rewardSchema = z.object({
 
 type RewardForm = z.infer<typeof rewardSchema>;
 
-const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus"];
+const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus", "Spins", "Ad Points"];
 const RARITIES = ["common", "rare", "legendary"];
 const DELIVERIES = ["digital", "physical", "both"];
 
