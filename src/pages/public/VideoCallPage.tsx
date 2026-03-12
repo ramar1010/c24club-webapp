@@ -300,6 +300,16 @@ const VideoCallPage = () => {
             </div>
           </div>
 
+          {/* Gift icon - shows when partner has gifting enabled */}
+          {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
+            <button
+              onClick={() => setShowGiftOverlay(true)}
+              className="absolute bottom-3 left-3 z-20 animate-bounce"
+            >
+              <img src={giftIcon} alt="Send Gift" className="w-12 h-12 drop-shadow-lg" />
+            </button>
+          )}
+
           {isActive && (
             <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
