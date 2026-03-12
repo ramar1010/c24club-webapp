@@ -154,5 +154,6 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     dismissCapPopup,
     flushMinutes,
     freezeInfo,
+    refreshBalance: fetchBalance,
   };
 }
