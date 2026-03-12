@@ -14,6 +14,78 @@ function computeAdPoints(elapsedSeconds: number): number {
   return 0;
 }
 
+// Check if user should be frozen
+async function checkFreezeStatus(supabase: any, userId: string) {
+  const { data: mm } = await supabase
+    .from("member_minutes")
+    .select("total_minutes, is_vip, is_frozen, freeze_free_until, vip_tier")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!mm) return { isFrozen: false, earnRate: 10 };
+
+  const { data: settings } = await supabase
+    .from("freeze_settings")
+    .select("minute_threshold, frozen_earn_rate")
+    .limit(1)
+    .maybeSingle();
+
+  const threshold = settings?.minute_threshold ?? 400;
+  const frozenRate = settings?.frozen_earn_rate ?? 2;
+
+  // If below threshold, never frozen
+  if (mm.total_minutes < threshold) {
+    return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+  }
+
+  // If freeze_free_until is in the future, not frozen
+  if (mm.freeze_free_until && new Date(mm.freeze_free_until) > new Date()) {
+    return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+  }
+
+  // Check if user completed a challenge in the last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const { data: approvedChallenges } = await supabase
+    .from("challenge_submissions")
+    .select("id, created_at")
+    .eq("user_id", userId)
+    .eq("status", "approved")
+    .gte("created_at", sevenDaysAgo.toISOString())
+    .order("created_at", { ascending: false });
+
+  const challengeCount = approvedChallenges?.length ?? 0;
+
+  if (challengeCount > 0) {
+    // Calculate freeze-free period: 7 days per completed challenge
+    const freezeFreeDays = challengeCount * 7;
+    const earliestChallenge = approvedChallenges[approvedChallenges.length - 1].created_at;
+    const freezeFreeUntil = new Date(earliestChallenge);
+    freezeFreeUntil.setDate(freezeFreeUntil.getDate() + freezeFreeDays);
+
+    if (freezeFreeUntil > new Date()) {
+      // Update freeze_free_until in DB
+      await supabase
+        .from("member_minutes")
+        .update({ is_frozen: false, freeze_free_until: freezeFreeUntil.toISOString() })
+        .eq("user_id", userId);
+
+      return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+    }
+  }
+
+  // User is frozen - update DB if not already
+  if (!mm.is_frozen) {
+    await supabase
+      .from("member_minutes")
+      .update({ is_frozen: true, frozen_at: new Date().toISOString() })
+      .eq("user_id", userId);
+  }
+
+  return { isFrozen: true, earnRate: frozenRate };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,13 +99,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds } = body;
 
-    // GET_BALANCE: Return current minutes + ad points + VIP status
+    // GET_BALANCE: Return current minutes + ad points + VIP status + freeze status
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier")
         .eq("user_id", userId)
         .maybeSingle();
+
+      // Also check freeze dynamically
+      const freezeInfo = await checkFreezeStatus(supabase, userId);
 
       return new Response(
         JSON.stringify({
@@ -41,7 +116,10 @@ Deno.serve(async (req) => {
           totalMinutes: data?.total_minutes ?? 0,
           adPoints: data?.ad_points ?? 0,
           isVip: data?.is_vip ?? false,
+          vipTier: data?.vip_tier ?? null,
           capPopupShown: data?.cap_popup_shown ?? false,
+          isFrozen: freezeInfo.isFrozen,
+          earnRate: freezeInfo.earnRate,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -64,7 +142,10 @@ Deno.serve(async (req) => {
 
       const isVip = memberData?.is_vip ?? false;
       const capPopupAlreadyShown = memberData?.cap_popup_shown ?? false;
-      const cap = isVip ? 30 : 10;
+
+      // Check freeze status to determine earn cap
+      const freezeInfo = await checkFreezeStatus(supabase, userId);
+      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
 
       const today = new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
@@ -86,6 +167,7 @@ Deno.serve(async (req) => {
             message: "cap_reached",
             cap,
             isVip,
+            isFrozen: freezeInfo.isFrozen,
             earned: 0,
             totalEarnedWithPartner: alreadyEarned,
           }),
@@ -134,6 +216,7 @@ Deno.serve(async (req) => {
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
           isVip,
+          isFrozen: freezeInfo.isFrozen,
           showCapPopup: shouldShowCapPopup,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -258,7 +341,8 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       const isVip = memberData?.is_vip ?? false;
-      const cap = isVip ? 30 : 10;
+      const freezeInfo = await checkFreezeStatus(supabase, userId);
+      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
 
       const today = new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
@@ -278,6 +362,7 @@ Deno.serve(async (req) => {
           remaining: Math.max(0, cap - alreadyEarned),
           cap,
           isVip,
+          isFrozen: freezeInfo.isFrozen,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
