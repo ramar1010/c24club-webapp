@@ -1,6 +1,7 @@
 import { X, Settings } from "lucide-react";
 import { VIP_TIERS, VipFeature } from "@/config/vip-tiers";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface VipFeaturesOverlayProps {
   onClose: () => void;
@@ -10,7 +11,7 @@ interface VipFeaturesOverlayProps {
 }
 
 const FeatureCard = ({ feature }: { feature: VipFeature }) => (
-  <div className="bg-neutral-900 rounded-2xl p-3 text-center border border-neutral-700/60 flex flex-col items-center gap-1.5">
+  <div className="bg-neutral-900 rounded-2xl p-3 text-center border border-neutral-700/60 flex flex-col items-center gap-1.5 relative">
     {feature.icon && (
       <img src={feature.icon} alt="" className="w-14 h-14 object-contain" />
     )}
@@ -19,6 +20,8 @@ const FeatureCard = ({ feature }: { feature: VipFeature }) => (
 );
 
 const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipFeaturesOverlayProps) => {
+  const [viewingTier, setViewingTier] = useState<"basic" | "premium">(currentTier || "basic");
+
   const handlePurchase = async (priceId: string) => {
     try {
       await onPurchase(priceId);
@@ -27,6 +30,9 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
     }
   };
 
+  const displayedFeatures = viewingTier === "premium"
+    ? VIP_TIERS.premium.features
+    : VIP_TIERS.basic.features;
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
@@ -53,61 +59,57 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
           </button>
         )}
 
-        {/* Tier Buttons */}
+        {/* Tier Toggle Buttons */}
         <div className="flex gap-3 mb-6 w-full max-w-sm">
+          {/* Basic Button */}
           <button
-            onClick={() => handlePurchase(VIP_TIERS.basic.price_id)}
+            onClick={() => {
+              setViewingTier("basic");
+              if (!currentTier) handlePurchase(VIP_TIERS.basic.price_id);
+            }}
             className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all border-2 ${
-              currentTier === "basic"
+              viewingTier === "basic"
                 ? "bg-green-600 border-green-400 text-white"
-                : "bg-gradient-to-b from-green-600 to-green-800 border-green-600/50 text-white hover:opacity-90"
+                : "bg-neutral-800 border-neutral-600 text-neutral-400"
             }`}
           >
             <div className="flex items-baseline gap-1 justify-center">
               <span className="text-xl">{VIP_TIERS.basic.price}</span>
-              <span className="text-[8px] opacity-70">TAP TO BUY</span>
+              {!currentTier && <span className="text-[8px] opacity-70">TAP TO BUY</span>}
             </div>
             <div className="text-[9px] opacity-70 tracking-wider">A WEEK BASIC PLAN</div>
             {currentTier === "basic" && <div className="text-[9px] mt-0.5 text-green-200">✓ YOUR PLAN</div>}
           </button>
 
+          {/* Premium Button */}
           <button
-            onClick={() => handlePurchase(VIP_TIERS.premium.price_id)}
+            onClick={() => {
+              setViewingTier("premium");
+              if (!currentTier) handlePurchase(VIP_TIERS.premium.price_id);
+            }}
             className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all border-2 ${
-              currentTier === "premium"
-                ? "bg-yellow-600 border-yellow-400 text-white"
-                : "bg-gradient-to-b from-yellow-500 to-orange-700 border-yellow-500/50 text-white hover:opacity-90"
+              viewingTier === "premium"
+                ? "bg-gradient-to-b from-yellow-500 to-orange-700 border-yellow-400 text-white"
+                : "bg-neutral-800 border-neutral-600 text-neutral-400"
             }`}
           >
             <div className="flex items-baseline gap-1 justify-center">
               <span className="text-xl">{VIP_TIERS.premium.price}</span>
-              <span className="text-[8px] opacity-70">TAP TO BUY</span>
+              {!currentTier && <span className="text-[8px] opacity-70">TAP TO BUY</span>}
             </div>
             <div className="text-[9px] opacity-70 tracking-wider">A MONTH PREMIUM PLAN</div>
             {currentTier === "premium" && <div className="text-[9px] mt-0.5 text-yellow-200">✓ YOUR PLAN</div>}
           </button>
         </div>
 
-        {/* Features Grid - show based on selected/active tier */}
-        {/* Features Grid */}
-        <div className="w-full max-w-sm mb-6">
+        {/* Features Grid - switches based on selected tier */}
+        <div className="w-full max-w-sm mb-8">
           <div className="grid grid-cols-2 gap-3">
-            {(currentTier === "premium" ? VIP_TIERS.premium : VIP_TIERS.basic).features.map((f, i) => (
-              <FeatureCard key={i} feature={f} />
+            {displayedFeatures.map((f, i) => (
+              <FeatureCard key={`${viewingTier}-${i}`} feature={f} />
             ))}
           </div>
         </div>
-
-        {!currentTier && (
-          <div className="w-full max-w-sm mb-8">
-            <div className="border-t border-neutral-700 my-4" />
-            <div className="grid grid-cols-2 gap-3">
-              {VIP_TIERS.premium.features.map((f, i) => (
-                <FeatureCard key={`p-${i}`} feature={f} />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Bottom CTA */}
         {currentTier ? (
@@ -119,10 +121,14 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
           </button>
         ) : (
           <button
-            onClick={() => handlePurchase(VIP_TIERS.premium.price_id)}
+            onClick={() => handlePurchase(
+              viewingTier === "premium" ? VIP_TIERS.premium.price_id : VIP_TIERS.basic.price_id
+            )}
             className="w-full max-w-sm bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-xl py-4 rounded-2xl hover:opacity-90 transition-opacity shadow-xl tracking-wider mb-8"
           >
-            <div className="text-[10px] opacity-80">4.99 A Month</div>
+            <div className="text-[10px] opacity-80">
+              {viewingTier === "premium" ? "9.99 A Month" : "2.49 A Week"}
+            </div>
             <div>PURCHASE</div>
           </button>
         )}
