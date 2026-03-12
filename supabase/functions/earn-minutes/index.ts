@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = isVip ? 30 : 10;
+      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
 
       // Use sessionId to track cap per-session (not per-day)
       // If no sessionId provided, fall back to date-based tracking
