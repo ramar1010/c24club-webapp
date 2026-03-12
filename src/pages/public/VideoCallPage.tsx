@@ -33,7 +33,7 @@ import topicsIcon from "@/assets/videocall/topics-bubble.png";
 import promoIcon from "@/assets/videocall/promo-star.png";
 import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
-import giftIcon from "@/assets/videocall/gift-icon.png";
+import giftIcon from "@/assets/videocall/gift-icon.svg";
 
 type GenderFilter = "girls" | "both" | "guys";
 
