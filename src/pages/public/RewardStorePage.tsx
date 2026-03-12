@@ -18,6 +18,26 @@ const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
 
 const SPIN_SLOT_COLORS = ["#FF6B35", "#2EC4B6", "#9B5DE5", "#E71D36"];
 
+// Build a long reel of items for the spin animation
+function buildSpinReel(commons: any[], target: any, won: boolean, totalSlots = 28): { items: any[]; winnerIndex: number } {
+  // We'll place the winning item near the end so the reel scrolls a good distance
+  const winnerIndex = totalSlots - 4; // lands 4 from end
+  const items: any[] = [];
+  for (let i = 0; i < totalSlots; i++) {
+    if (i === winnerIndex) {
+      items.push(won ? { ...target, isTarget: true } : { ...commons[i % commons.length], isTarget: false });
+    } else {
+      // Mix commons and target randomly, but target appears occasionally to tease
+      if (Math.random() < 0.2 && i < winnerIndex - 1) {
+        items.push({ ...target, isTarget: true });
+      } else {
+        items.push({ ...commons[i % commons.length], isTarget: false });
+      }
+    }
+  }
+  return { items, winnerIndex };
+}
+
 const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
