@@ -94,9 +94,9 @@ const App = () => (
               <Route path="contests" element={<PlaceholderPage title="Contests" />} />
               <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
               <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
-              <Route path="challenges" element={<PlaceholderPage title="All Challenges" />} />
-              <Route path="challenges/new" element={<PlaceholderPage title="Add New Challenge" />} />
-              <Route path="member-challenges" element={<PlaceholderPage title="Member Challenges" />} />
+              <Route path="challenges" element={<AdminChallengesPage />} />
+              <Route path="challenges/new" element={<AdminChallengesPage />} />
+              <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
               <Route path="spin-to-win" element={<PlaceholderPage title="Manage Spin to Win" />} />
               <Route path="spin-to-win/winners" element={<PlaceholderPage title="Members Won (Spin to Win)" />} />
               <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />
