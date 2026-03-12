@@ -75,14 +75,16 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
   // Report earned minutes to the server
   const reportMinutes = useCallback(async (minutes: number) => {
     const pid = partnerIdRef.current;
-    if (!pid || !userId || userId === "anonymous" || minutes <= 0) return;
+    // Hard cap: never report more than 5 minutes at once (safety net against timer drift)
+    const safeMinutes = Math.min(minutes, 5);
+    if (!pid || !userId || userId === "anonymous" || safeMinutes <= 0) return;
 
     const { data } = await supabase.functions.invoke("earn-minutes", {
       body: {
         type: "earn",
         userId,
         partnerId: pid,
-        minutesEarned: minutes,
+        minutesEarned: safeMinutes,
         sessionId: sessionIdRef.current,
       },
     });

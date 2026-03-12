@@ -189,6 +189,9 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Hard server-side cap: never allow more than 30 minutes in a single request
+      const safeCapped = Math.min(actualEarned, 30);
+
       await supabase
         .from("call_minutes_log")
         .upsert(
@@ -196,36 +199,37 @@ Deno.serve(async (req) => {
             user_id: userId,
             partner_id: partnerId,
             session_date: trackingSessionId,
-            minutes_earned: alreadyEarned + actualEarned,
+            minutes_earned: alreadyEarned + safeCapped,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,partner_id,session_date" }
         );
 
-      const currentTotal = memberData?.total_minutes ?? 0;
-      const newTotal = currentTotal + actualEarned;
-      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShown;
+      // Use atomic increment to prevent read-then-write race conditions
+      const { data: newTotalResult } = await supabase.rpc("atomic_increment_minutes", {
+        p_user_id: userId,
+        p_amount: safeCapped,
+      });
 
-      await supabase
-        .from("member_minutes")
-        .upsert(
-          {
-            user_id: userId,
-            total_minutes: newTotal,
-            updated_at: new Date().toISOString(),
-            ...(shouldShowCapPopup ? { cap_popup_shown: true } : {}),
-          },
-          { onConflict: "user_id" }
-        );
+      const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
+      const capPopupAlreadyShownNow = memberData?.cap_popup_shown ?? false;
+      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShownNow;
 
-      const newTotalWithPartner = alreadyEarned + actualEarned;
+      if (shouldShowCapPopup) {
+        await supabase
+          .from("member_minutes")
+          .update({ cap_popup_shown: true })
+          .eq("user_id", userId);
+      }
+
+      const newTotalWithPartner = alreadyEarned + safeCapped;
       const partnerCapReached = newTotalWithPartner >= cap;
 
       return new Response(
         JSON.stringify({
           success: true,
           message: partnerCapReached ? "cap_reached" : "earned",
-          earned: actualEarned,
+          earned: safeCapped,
           totalMinutes: newTotal,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
