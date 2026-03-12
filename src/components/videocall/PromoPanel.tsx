@@ -602,6 +602,83 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     );
   }
 
+
+  // ─── LINK CLICKS VIEW ───
+  if (view === "link-clicks") {
+    const clicksTowardNext = totalLinkClicks - (linkClicksClaimed * LINK_CLICKS_THRESHOLD);
+    const progressPercent = Math.min(100, (clicksTowardNext / LINK_CLICKS_THRESHOLD) * 100);
+
+    return (
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="Link Clicks" backTo="main" />
+
+        <div className="max-w-md mx-auto space-y-6">
+          {/* Total link clicks */}
+          <div className="text-center">
+            <p className="text-sm font-black text-neutral-400 mb-1">YOUR TOTAL LINK CLICKS</p>
+            <p className="text-6xl font-black text-green-500">{totalLinkClicks}</p>
+          </div>
+
+          {/* Requirement info */}
+          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 text-center">
+            <p className="text-sm">
+              <span className="text-red-500 font-black">{LINK_CLICKS_THRESHOLD} Link Clicks Required</span>
+              <span className="font-black text-white"> from your Promos for a reward of your choice!</span>
+            </p>
+          </div>
+
+          {/* Progress toward next reward */}
+          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-neutral-400">Progress to next reward</span>
+              <span className="text-sm font-black text-green-400">{clicksTowardNext}/{LINK_CLICKS_THRESHOLD}</span>
+            </div>
+            <div className="h-3 bg-neutral-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Rewards claimed */}
+          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 text-center">
+            <p className="text-sm font-bold text-neutral-400 mb-1">REWARDS CLAIMED</p>
+            <p className="text-3xl font-black text-yellow-400">{linkClicksClaimed}</p>
+          </div>
+
+          {/* Create Promo CTA */}
+          <button onClick={() => { resetForm(); setView("create"); }}
+            className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black text-lg px-8 py-3 rounded-full w-full transition-colors flex items-center justify-center gap-2">
+            CREATE PROMO
+          </button>
+
+          {/* Unlock Reward Button */}
+          <button
+            onClick={handleClaimLinkClickReward}
+            disabled={availableRewards <= 0 || claimingReward}
+            className={`w-full font-black text-lg px-8 py-4 rounded-full transition-colors flex flex-col items-center gap-1 ${
+              availableRewards > 0
+                ? "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white"
+                : "bg-neutral-800 border border-neutral-700 text-neutral-500 cursor-not-allowed"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Gift className="w-5 h-5" />
+              {availableRewards > 0 ? "CLAIM FREE REWARD" : `REACH ${LINK_CLICKS_THRESHOLD} LINK CLICKS`}
+            </span>
+            <span className="text-xs font-bold opacity-75">
+              {availableRewards > 0
+                ? `You have ${availableRewards} reward${availableRewards > 1 ? "s" : ""} to claim!`
+                : "UNLOCK FREE PRODUCT"
+              }
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return null;
 };
 
