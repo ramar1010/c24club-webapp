@@ -220,8 +220,16 @@ const VideoCallPage = () => {
     await awardAdPoints(elapsedSeconds);
     await flushMinutes();
     next();
-    // Show a promo ad between skips
-    setShowPromoAd(true);
+    // Show a promo ad between skips — respect VIP setting
+    const { data: vipSettings } = await supabase
+      .from("vip_settings")
+      .select("show_promo_ads")
+      .eq("user_id", memberId)
+      .maybeSingle();
+    const promoAdsEnabled = vipSettings?.show_promo_ads ?? true;
+    if (promoAdsEnabled) {
+      setShowPromoAd(true);
+    }
   };
   const handleBack = () => {
     awardAdPoints(elapsedSeconds).catch(() => {});
