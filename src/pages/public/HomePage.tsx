@@ -296,6 +296,11 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
         setMemberName(hasProfile ? data.name : null);
         setNeedsOnboarding(!hasProfile);
         if (!hasProfile) setShowOnboarding(true);
+      } else {
+        // No member row yet — needs onboarding
+        setMemberName(null);
+        setNeedsOnboarding(true);
+        setShowOnboarding(true);
       }
     };
     fetchMember();
