@@ -410,9 +410,6 @@ const VideoCallPage = () => {
           onManage={openPortal}
         />
       )}
-  const isMobile = useIsMobile();
-
-  const isMobile = useIsMobile();
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
