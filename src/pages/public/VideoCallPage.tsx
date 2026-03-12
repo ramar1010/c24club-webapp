@@ -315,7 +315,7 @@ const VideoCallPage = () => {
           {callState === "connected" && currentPartnerId && isMobile && (
             <button
               onClick={() => setShowReportOverlay(true)}
-              className="absolute top-[5.5rem] left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+              className="absolute top-12 left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
               title="Report User"
             >
               <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
