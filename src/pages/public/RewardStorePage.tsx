@@ -17,7 +17,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { data: rewards, isLoading: loadingRewards } = usePublicRewards();
   const { data: categories } = usePublicCategories();
-  const { data: milestones } = usePublicMilestones();
+  
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedReward, setSelectedReward] = useState<any | null>(null);
   const [showShipping, setShowShipping] = useState(false);
