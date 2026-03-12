@@ -73,21 +73,7 @@ export function useBlackScreenDetection({
     return () => clearInterval(interval);
   }, [isConnected, checkIntervalMs, brightnessThreshold, consecutiveChecks, remoteVideoRef]);
 
-  // Disable/enable local video track based on partner black screen
-  useEffect(() => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-
-    const videoTrack = stream.getVideoTracks()[0];
-    if (!videoTrack) return;
-
-    videoTrack.enabled = !partnerBlackScreen;
-
-    return () => {
-      // Re-enable when unmounting
-      videoTrack.enabled = true;
-    };
-  }, [partnerBlackScreen, localStreamRef]);
+  // No longer disabling local video — the non-offender keeps their camera on.
 
   return { partnerBlackScreen };
 }
