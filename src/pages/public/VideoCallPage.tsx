@@ -363,7 +363,7 @@ const VideoCallPage = () => {
       )}
 
       {/* Video Area */}
-      <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0 md:justify-center md:items-center md:max-w-4xl md:mx-auto md:w-full">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0 md:justify-center md:items-center md:max-w-4xl md:mx-auto md:w-full md:flex-none">
         {/* Local Video */}
         <div className="flex-1 md:flex-none md:w-[420px] md:aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive && (
@@ -547,7 +547,7 @@ const VideoCallPage = () => {
         </div>
       ) : (
         <>
-          <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 md:-mt-8 pb-3 flex-wrap">
+          <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <NavIcon src={storeIcon} label="STORE" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} />
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
