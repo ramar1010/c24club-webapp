@@ -27,6 +27,7 @@ type Member = {
   birthdate: string | null;
   gender: string | null;
   membership: string | null;
+  minutes: number | null;
 };
 
 const BAN_REASONS = [
