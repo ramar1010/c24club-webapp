@@ -194,15 +194,16 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Get user data including CE
+      // Get user data including CE and VIP status
       const { data: mm } = await supabase
         .from("member_minutes")
-        .select("purchased_spins, chance_enhancer, last_login_at, ce_minutes_checkpoint, total_minutes, is_vip")
+        .select("purchased_spins, chance_enhancer, last_login_at, ce_minutes_checkpoint, total_minutes, is_vip, vip_tier")
         .eq("user_id", userId)
         .maybeSingle();
 
       const purchasedSpins = mm?.purchased_spins ?? 0;
       const usePurchased = body.use_purchased === true;
+      const isPremiumVip = mm?.is_vip && mm?.vip_tier === "premium";
 
       if (usePurchased) {
         if (purchasedSpins <= 0) {
@@ -229,18 +230,24 @@ Deno.serve(async (req) => {
       }
 
       // Get active prizes
-      const { data: prizes } = await supabase
+      const { data: allPrizes } = await supabase
         .from("spin_prizes")
         .select("*")
         .eq("is_active", true)
         .order("sort_order");
 
-      if (!prizes || prizes.length === 0) {
+      if (!allPrizes || allPrizes.length === 0) {
         return new Response(
           JSON.stringify({ success: false, message: "No prizes available" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Filter prizes by rarity based on VIP status
+      // Non-VIP: common + rare only; Premium VIP: common + rare + legendary
+      const prizes = isPremiumVip
+        ? allPrizes
+        : allPrizes.filter((p: any) => p.rarity !== "legendary");
 
       // Calculate current CE
       const { ce, newCheckpoint } = calculateChanceEnhancer(
