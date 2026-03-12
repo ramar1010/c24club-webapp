@@ -429,6 +429,7 @@ const VideoCallPage = () => {
             setOverlayPage("profile");
           }}
           isVip={subscribed}
+          onPurchaseVip={startCheckout}
         />
       )}
     </div>
