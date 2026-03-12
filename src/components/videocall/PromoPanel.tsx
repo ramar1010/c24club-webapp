@@ -62,8 +62,11 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("member_minutes").select("is_vip").eq("user_id", userId).maybeSingle()
-      .then(({ data }) => setIsVip(data?.is_vip ?? false));
+    supabase.from("member_minutes").select("is_vip, vip_tier").eq("user_id", userId).maybeSingle()
+      .then(({ data }) => {
+        setIsVip(data?.is_vip ?? false);
+        setIsPremiumVip(data?.is_vip === true && data?.vip_tier === "premium");
+      });
   }, [userId]);
 
   const fetchMyPromos = async () => {
