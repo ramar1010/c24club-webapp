@@ -175,6 +175,15 @@ Deno.serve(async (req) => {
 
       if (actualEarned <= 0) {
         const currentTotal = memberData?.total_minutes ?? 0;
+        // For frozen users, only show cap popup once ever
+        let showFrozenPopup = false;
+        if (freezeInfo.isFrozen && !frozenCapPopupAlreadyShown) {
+          showFrozenPopup = true;
+          await supabase
+            .from("member_minutes")
+            .update({ frozen_cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
         return new Response(
           JSON.stringify({
             success: true,
@@ -185,6 +194,7 @@ Deno.serve(async (req) => {
             earned: 0,
             totalMinutes: currentTotal,
             totalEarnedWithPartner: alreadyEarned,
+            showCapPopup: showFrozenPopup,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
