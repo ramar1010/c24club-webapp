@@ -32,6 +32,8 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinState, setSpinState] = useState<"idle" | "spinning" | "won" | "lost">("idle");
   const [spinResult, setSpinResult] = useState<any[]>([]);
   const [canRespin, setCanRespin] = useState(false);
+  const [selectedColor, setSelectedColorState] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const queryClient = useQueryClient();
 
   const isPremiumVip = subscribed && vipTier === "premium";
