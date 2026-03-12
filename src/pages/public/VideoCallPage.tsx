@@ -84,6 +84,8 @@ const VideoCallPage = () => {
   // Show frozen popup once when freeze is detected
   useEffect(() => {
     if (freezeInfo.isFrozen && !frozenPopupShownRef.current) {
+      const snoozedUntil = localStorage.getItem("freeze_popup_snoozed_until");
+      if (snoozedUntil && Date.now() < Number(snoozedUntil)) return;
       frozenPopupShownRef.current = true;
       setShowFrozenPopup(true);
     }
