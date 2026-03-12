@@ -33,6 +33,9 @@ const MyRewardsPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("Products");
 
+  const [showGifts, setShowGifts] = useState(false);
+  const { subscribed } = useVipStatus(user?.id ?? null);
+
   const { data: redemptions = [], isLoading } = useQuery({
     queryKey: ["my-redemptions", user?.id],
     enabled: !!user,
@@ -41,6 +44,21 @@ const MyRewardsPage = () => {
         .from("member_redemptions")
         .select("*")
         .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: giftsReceived = [], isLoading: giftsLoading } = useQuery({
+    queryKey: ["gifts-received", user?.id],
+    enabled: !!user && subscribed,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gift_transactions")
+        .select("*")
+        .eq("recipient_id", user!.id)
+        .eq("status", "completed")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
