@@ -224,13 +224,26 @@ Deno.serve(async (req) => {
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
       const capPopupAlreadyShownNow = memberData?.cap_popup_shown ?? false;
-      const shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShownNow;
+      let shouldShowCapPopup = false;
 
-      if (shouldShowCapPopup) {
-        await supabase
-          .from("member_minutes")
-          .update({ cap_popup_shown: true })
-          .eq("user_id", userId);
+      if (freezeInfo.isFrozen) {
+        // Frozen users: only show cap popup once ever
+        if (!frozenCapPopupAlreadyShown) {
+          shouldShowCapPopup = true;
+          await supabase
+            .from("member_minutes")
+            .update({ frozen_cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
+      } else {
+        // Normal/VIP users: show once when total reaches cap
+        shouldShowCapPopup = newTotal >= cap && !capPopupAlreadyShownNow;
+        if (shouldShowCapPopup) {
+          await supabase
+            .from("member_minutes")
+            .update({ cap_popup_shown: true })
+            .eq("user_id", userId);
+        }
       }
 
       const newTotalWithPartner = alreadyEarned + safeCapped;
