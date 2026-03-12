@@ -507,7 +507,8 @@ const VideoCallPage = () => {
               setGenderFilter("girls");
             }} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GIRLS
-              {!subscribed && <span className="text-[8px] block text-yellow-500 mt-0.5">🔒 VIP</span>}
+
+
             </button>
             <button onClick={() => setGenderFilter("both")} className={`uppercase transition-colors text-lg ${genderFilter === "both" ? "text-white font-extrabold" : "text-neutral-400 hover:text-white"}`}>
               BOTH
@@ -517,7 +518,7 @@ const VideoCallPage = () => {
               setGenderFilter("guys");
             }} className={`uppercase transition-colors ${genderFilter === "guys" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GUYS
-              {!subscribed && <span className="text-[8px] block text-yellow-500 mt-0.5">🔒 VIP</span>}
+              
             </button>
           </div>
         </>
