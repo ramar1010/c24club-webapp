@@ -230,18 +230,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     const rarity = RARITY_STYLES[targetReward?.rarity] || RARITY_STYLES.common;
     const rarityColor = targetReward?.rarity === "legendary" ? "text-amber-400" : "text-blue-400";
 
-    console.log("[SpinOverlay] targetReward:", targetReward?.title, "rarity:", targetReward?.rarity, "commonRewards:", commonRewards.length);
-
-    if (!targetReward) {
-      console.error("[SpinOverlay] targetReward is null/undefined!");
-      return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center">
-          <p>Error: No reward selected</p>
-          <button onClick={() => setShowSpinToWin(null)} className="ml-4 text-red-400 underline">Go Back</button>
-        </div>
-      );
-    }
-
     return (
       <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8 overflow-hidden">
         {/* Header */}
