@@ -240,6 +240,69 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // ─── ACTION: redeem-instant (spins or ad points, no shipping) ───
+    if (action === "redeem-instant") {
+      const reward = await getReward(rewardId);
+      
+      const rewardType = reward.type;
+      if (rewardType !== "Spins" && rewardType !== "Ad Points") {
+        throw new Error("This reward type cannot be redeemed instantly");
+      }
+
+      const grantAmount = reward.grant_amount || 0;
+      if (grantAmount <= 0) {
+        throw new Error("This reward has no grant amount configured");
+      }
+
+      // Check user has enough minutes
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, purchased_spins, ad_points").eq("user_id", user.id).maybeSingle();
+      const totalMinutes = memberData?.total_minutes ?? 0;
+      if (totalMinutes < reward.minutes_cost) {
+        return new Response(JSON.stringify({ error: "Not enough minutes" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Deduct minutes and credit spins or ad points
+      const updatePayload: Record<string, any> = {
+        total_minutes: totalMinutes - reward.minutes_cost,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (rewardType === "Spins") {
+        updatePayload.purchased_spins = (memberData?.purchased_spins ?? 0) + grantAmount;
+      } else {
+        updatePayload.ad_points = (memberData?.ad_points ?? 0) + grantAmount;
+      }
+
+      const { error: updateErr } = await supabase.from("member_minutes").update(updatePayload).eq("user_id", user.id);
+      if (updateErr) throw updateErr;
+
+      // Create redemption record
+      const { error: insertErr } = await supabase.from("member_redemptions").insert({
+        user_id: user.id,
+        reward_id: reward.id,
+        reward_title: reward.title,
+        reward_image_url: reward.image_url,
+        reward_rarity: reward.rarity,
+        reward_type: rewardType === "Spins" ? "spins" : "ad_points",
+        minutes_cost: reward.minutes_cost,
+        status: "completed",
+        notes: `Instant: +${grantAmount} ${rewardType === "Spins" ? "spins" : "ad points"}`,
+      });
+
+      if (insertErr) {
+        // Refund on failure
+        const refundPayload: Record<string, any> = { total_minutes: totalMinutes, updated_at: new Date().toISOString() };
+        if (rewardType === "Spins") refundPayload.purchased_spins = memberData?.purchased_spins ?? 0;
+        else refundPayload.ad_points = memberData?.ad_points ?? 0;
+        await supabase.from("member_minutes").update(refundPayload).eq("user_id", user.id);
+        throw insertErr;
+      }
+
+      return new Response(JSON.stringify({ success: true, grantAmount, grantType: rewardType }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
