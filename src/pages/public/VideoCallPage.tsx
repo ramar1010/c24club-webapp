@@ -489,6 +489,14 @@ const VideoCallPage = () => {
           onPurchaseVip={startCheckout}
         />
       )}
+
+      {/* Send Gift Overlay */}
+      {showGiftOverlay && currentPartnerId && (
+        <SendGiftOverlay
+          recipientId={currentPartnerId}
+          onClose={() => setShowGiftOverlay(false)}
+        />
+      )}
     </div>
   );
 };
