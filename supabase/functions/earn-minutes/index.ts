@@ -241,7 +241,14 @@ Deno.serve(async (req) => {
         );
       }
 
-      const pointsToAward = computeAdPoints(elapsedSeconds);
+      // Check if user is premium VIP for 2x ad points
+      const { data: vipData } = await supabase
+        .from("member_minutes")
+        .select("ad_points, is_vip, vip_tier")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const isPremiumVip = vipData?.is_vip && vipData?.vip_tier === "premium";
+      const pointsToAward = computeAdPoints(elapsedSeconds, isPremiumVip);
       if (pointsToAward <= 0) {
         return new Response(
           JSON.stringify({ success: true, adPointsEarned: 0 }),
