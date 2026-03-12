@@ -18,6 +18,8 @@ import ProfilePage from "@/pages/public/ProfilePage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
+import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
+import { useVipStatus } from "@/hooks/useVipStatus";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
