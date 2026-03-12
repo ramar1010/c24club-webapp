@@ -301,7 +301,27 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     return (
       <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
         <Header title="My Promo Ads" />
-        <div className="flex flex-col items-center gap-4 mt-4">
+
+        {/* Link Clicks Summary Banner */}
+        {isPremiumVip && (
+          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 mb-6 text-center">
+            <p className="text-sm font-black text-neutral-300 mb-1">YOU HAVE TOTAL</p>
+            <p className="text-4xl font-black text-green-500">{totalLinkClicks} <span className="text-lg text-neutral-300">LINK CLICKS</span></p>
+            <p className="text-sm mt-2">
+              <span className="text-red-500 font-black">{LINK_CLICKS_THRESHOLD} Link Clicks Required</span>
+              <span className="font-black text-white"> from your Promos for a reward of your choice!</span>
+            </p>
+            <button
+              onClick={() => { fetchTotalLinkClicks(); setView("link-clicks"); }}
+              className="mt-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black px-6 py-2 rounded-full text-sm transition-colors inline-flex items-center gap-2"
+            >
+              <Link2 className="w-4 h-4" />
+              View Link Clicks Details
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col items-center gap-4">
           <button onClick={() => { resetForm(); setView("create"); }}
             className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black text-lg px-8 py-3 rounded-lg w-72 transition-colors">
             Create New Promo
