@@ -92,16 +92,20 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     if (data?.success) {
       setTotalMinutes(data.totalMinutes);
 
-      // Trigger popup when per-partner cap is reached
+      // For frozen users: only show popup when server explicitly says to (once ever)
+      // For normal users: show popup on first cap_reached per partner
       if (data.message === "cap_reached" && !capReachedRef.current) {
         capReachedRef.current = true;
         setCapReached(true);
         setCapInfo({ cap: data.cap, isVip: data.isVip });
-        setShowCapPopup(true);
+        // Only show the popup if server says so (frozen users: once ever; normal: first time)
+        if (data.showCapPopup) {
+          setShowCapPopup(true);
+        }
       }
 
       // Server tells us to show the one-time cap popup (first time reaching total cap)
-      if (data.showCapPopup && !capReachedRef.current) {
+      if (data.showCapPopup && !data.message?.includes("cap_reached") && !capReachedRef.current) {
         setCapInfo({ cap: data.cap, isVip: data.isVip });
         setShowCapPopup(true);
       }
