@@ -196,6 +196,13 @@ const VideoCallPage = () => {
           <video ref={localVideoRef} autoPlay muted playsInline
             className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
 
+          {/* Promo Ad - shown inside local video box between skips */}
+          {showPromoAd && (
+            <PromoAdOverlay
+              viewerId={memberId}
+              onDismiss={() => setShowPromoAd(false)}
+            />
+          )}
           {callState === "connected" && (
             <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -349,13 +356,6 @@ const VideoCallPage = () => {
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
 
-      {/* Promo Ad Overlay - shown between skips */}
-      {showPromoAd && (
-        <PromoAdOverlay
-          viewerId={memberId}
-          onDismiss={() => setShowPromoAd(false)}
-        />
-      )}
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
