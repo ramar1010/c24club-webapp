@@ -222,6 +222,33 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ADMIN_AD_POINTS: Add or set ad points for a user (admin)
+    if (type === "admin_ad_points") {
+      const { targetUserId, points, mode } = body;
+      const actualUserId = targetUserId || userId;
+
+      const { data: existing } = await supabase
+        .from("member_minutes")
+        .select("ad_points")
+        .eq("user_id", actualUserId)
+        .maybeSingle();
+
+      const current = existing?.ad_points ?? 0;
+      const newPoints = mode === "set" ? Math.max(0, points) : Math.max(0, current + points);
+
+      await supabase
+        .from("member_minutes")
+        .upsert(
+          { user_id: actualUserId, ad_points: newPoints, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
+
+      return new Response(
+        JSON.stringify({ success: true, previousAdPoints: current, totalAdPoints: newPoints }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // CHECK_CAP
     if (type === "check_cap") {
       const { data: memberData } = await supabase
