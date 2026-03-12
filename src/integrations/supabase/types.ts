@@ -752,6 +752,83 @@ export type Database = {
         }
         Relationships: []
       }
+      spin_prizes: {
+        Row: {
+          amount: number
+          chance_percent: number
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          prize_type: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          chance_percent?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          prize_type: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          chance_percent?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          prize_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spin_results: {
+        Row: {
+          awarded: boolean
+          created_at: string
+          id: string
+          prize_amount: number
+          prize_id: string | null
+          prize_label: string
+          prize_type: string
+          user_id: string
+        }
+        Insert: {
+          awarded?: boolean
+          created_at?: string
+          id?: string
+          prize_amount?: number
+          prize_id?: string | null
+          prize_label: string
+          prize_type: string
+          user_id: string
+        }
+        Update: {
+          awarded?: boolean
+          created_at?: string
+          id?: string
+          prize_amount?: number
+          prize_id?: string | null
+          prize_label?: string
+          prize_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spin_results_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "spin_prizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topic_categories: {
         Row: {
           created_at: string
