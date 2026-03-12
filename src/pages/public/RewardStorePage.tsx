@@ -734,7 +734,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                 />
               ))}
             </div>
-            </div>
           )}
         </div>
       ) : (
