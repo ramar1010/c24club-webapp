@@ -368,14 +368,21 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <>
               <button
                 onClick={() => {
-                  setShowSpinToWin(null);
-                  setSpinReelItems([]);
-                  setSelectedReward(targetReward);
-                  setShowShipping(true);
+                  const isSpinOrAd = targetReward.type === "Spins" || targetReward.type === "Ad Points";
+                  if (isSpinOrAd) {
+                    handleInstantRedeem(targetReward);
+                    setShowSpinToWin(null);
+                    setSpinReelItems([]);
+                  } else {
+                    setShowSpinToWin(null);
+                    setSpinReelItems([]);
+                    setSelectedReward(targetReward);
+                    setShowShipping(true);
+                  }
                 }}
                 className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
               >
-                🎁 REDEEM ITEM
+                {targetReward.type === "Spins" ? "🎰 CLAIM SPIN TOKENS" : targetReward.type === "Ad Points" ? "⚡ CLAIM AD POINTS" : "🎁 REDEEM ITEM"}
               </button>
               {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
                 <button
