@@ -77,6 +77,27 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Fetch chance enhancer
+  const { data: ceData } = useQuery({
+    queryKey: ["chance-enhancer", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("spin-wheel", {
+        body: { type: "get_chance_enhancer", userId: user!.id },
+      });
+      return data || { chance_enhancer: 10, is_vip: false };
+    },
+  });
+
+  // Update login tracking on mount
+  useEffect(() => {
+    if (user) {
+      supabase.functions.invoke("spin-wheel", {
+        body: { type: "update_login", userId: user.id },
+      });
+    }
+  }, [user]);
+
   const { data: todaySpin } = useQuery({
     queryKey: ["spin-today", user?.id],
     enabled: !!user,
