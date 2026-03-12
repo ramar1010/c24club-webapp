@@ -41,8 +41,8 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     partnerIdRef.current = partnerId;
   }, [partnerId]);
 
-  // Fetch initial balance
-  useEffect(() => {
+  // Fetch balance (initial + on-demand refresh)
+  const fetchBalance = useCallback(() => {
     if (!userId || userId === "anonymous") return;
 
     supabase.functions
@@ -56,6 +56,10 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
         }
       });
   }, [userId]);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
 
   // Reset when partner changes — new session
   useEffect(() => {
