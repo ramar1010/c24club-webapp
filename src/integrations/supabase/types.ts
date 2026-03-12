@@ -166,6 +166,7 @@ export type Database = {
           is_frozen: boolean
           is_vip: boolean
           last_login_at: string | null
+          nsfw_strikes: number
           purchased_spins: number
           stripe_customer_id: string | null
           subscription_end: string | null
@@ -187,6 +188,7 @@ export type Database = {
           is_frozen?: boolean
           is_vip?: boolean
           last_login_at?: string | null
+          nsfw_strikes?: number
           purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           is_frozen?: boolean
           is_vip?: boolean
           last_login_at?: string | null
+          nsfw_strikes?: number
           purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
