@@ -22,7 +22,8 @@ import TopicsPage from "@/pages/admin/TopicsPage";
 import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
 import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
 import FreezeSettingsPage from "@/pages/admin/FreezeSettingsPage";
-
+import AdminChallengesPage from "@/pages/admin/AdminChallengesPage";
+import AdminMemberChallengesPage from "@/pages/admin/AdminMemberChallengesPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -93,9 +94,9 @@ const App = () => (
               <Route path="contests" element={<PlaceholderPage title="Contests" />} />
               <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
               <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
-              <Route path="challenges" element={<PlaceholderPage title="All Challenges" />} />
-              <Route path="challenges/new" element={<PlaceholderPage title="Add New Challenge" />} />
-              <Route path="member-challenges" element={<PlaceholderPage title="Member Challenges" />} />
+              <Route path="challenges" element={<AdminChallengesPage />} />
+              <Route path="challenges/new" element={<AdminChallengesPage />} />
+              <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
               <Route path="spin-to-win" element={<PlaceholderPage title="Manage Spin to Win" />} />
               <Route path="spin-to-win/winners" element={<PlaceholderPage title="Members Won (Spin to Win)" />} />
               <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />

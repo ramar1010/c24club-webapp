@@ -3,7 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import WeeklyChallengesPage from "@/pages/public/WeeklyChallengesPage";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -19,6 +20,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showChallenges, setShowChallenges] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -50,6 +52,10 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     await signOut();
     navigate("/");
   };
+
+  if (showChallenges) {
+    return <WeeklyChallengesPage onClose={() => setShowChallenges(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
@@ -91,7 +97,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
-        <IconButton src={eventsIcon} label="EVENTS" />
+        <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowChallenges(true)} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
         <IconButton src={vipSettingsIcon} label="VIP SETTINGS" />
       </div>
