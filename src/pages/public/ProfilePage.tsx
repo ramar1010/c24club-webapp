@@ -20,8 +20,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [showChallenges, setShowChallenges] = useState(false);
-  const [showSpin, setShowSpin] = useState(false);
+  const [showEvents, setShowEvents] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -54,12 +53,8 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     navigate("/");
   };
 
-  if (showSpin) {
-    return <SpinToWinPage onClose={() => setShowSpin(false)} />;
-  }
-
-  if (showChallenges) {
-    return <WeeklyChallengesPage onClose={() => setShowChallenges(false)} />;
+  if (showEvents) {
+    return <EventsPage onClose={() => setShowEvents(false)} />;
   }
 
   return (
