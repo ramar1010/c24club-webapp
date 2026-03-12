@@ -660,6 +660,7 @@ export type Database = {
           created_at: string
           delivery: string | null
           feature_image_url: string | null
+          grant_amount: number
           id: string
           image_url: string | null
           info: string | null
@@ -684,6 +685,7 @@ export type Database = {
           created_at?: string
           delivery?: string | null
           feature_image_url?: string | null
+          grant_amount?: number
           id?: string
           image_url?: string | null
           info?: string | null
@@ -708,6 +710,7 @@ export type Database = {
           created_at?: string
           delivery?: string | null
           feature_image_url?: string | null
+          grant_amount?: number
           id?: string
           image_url?: string | null
           info?: string | null
