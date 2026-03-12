@@ -61,10 +61,10 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5a623] text-black font-['Antigone',sans-serif] flex flex-col overflow-y-auto">
+    <div className="min-h-screen bg-[#1a1a1a] text-white font-['Antigone',sans-serif] flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4">
-        <button onClick={onBack} className="flex items-center gap-1 font-black text-sm">
+        <button onClick={onBack} className="flex items-center gap-1 font-black text-sm text-white/90 hover:text-white">
           <ChevronLeft className="w-5 h-5" />
           Back
         </button>
@@ -79,20 +79,20 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           placeholder="First name"
           value={form.firstName}
           onChange={(e) => update("firstName", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
         <input
           placeholder="Last name"
           value={form.lastName}
           onChange={(e) => update("lastName", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <input
           placeholder="Mobile"
           value={form.mobile}
           onChange={(e) => update("mobile", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <textarea
@@ -100,16 +100,16 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           value={form.notes}
           onChange={(e) => update("notes", e.target.value)}
           rows={3}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none resize-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60 resize-none"
         />
 
-        <h2 className="font-black text-lg text-center mt-4">Address</h2>
+        <h2 className="font-black text-lg text-center mt-4 text-white/90">Address</h2>
 
         <input
           placeholder="Country/Region"
           value={form.country}
           onChange={(e) => update("country", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <textarea
@@ -117,27 +117,27 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           value={form.address}
           onChange={(e) => update("address", e.target.value)}
           rows={2}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none resize-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60 resize-none"
         />
 
         <input
           placeholder="City"
           value={form.city}
           onChange={(e) => update("city", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <input
           placeholder="State"
           value={form.state}
           onChange={(e) => update("state", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
         <input
           placeholder="Zip"
           value={form.zip}
           onChange={(e) => update("zip", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         {/* Confirm button */}
@@ -145,7 +145,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           <button
             onClick={handleConfirm}
             disabled={loading}
-            className="bg-green-700 text-white font-black text-xl px-10 py-3 rounded-full hover:bg-green-800 transition-colors disabled:opacity-50"
+            className="bg-primary text-primary-foreground font-black text-xl px-10 py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading
               ? "Processing..."
@@ -157,7 +157,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
 
         {/* Disclaimer */}
         {shippingFee > 0 && (
-          <p className="text-center text-sm font-bold text-black/70 mt-4 px-4">
+          <p className="text-center text-sm font-bold text-white/60 mt-4 px-4">
             By clicking confirm you acknowledge and accept the responsibility to
             cover the shipping fees associated with this product, estimated to be
             approximately ${shippingFee.toFixed(2)} depending on your region.
