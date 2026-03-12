@@ -18,6 +18,8 @@ import ProfilePage from "@/pages/public/ProfilePage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
+import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
+import { useVipStatus } from "@/hooks/useVipStatus";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -44,7 +46,7 @@ const VideoCallPage = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -80,6 +82,8 @@ const VideoCallPage = () => {
     elapsedSeconds,
   });
 
+  const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
+
   const isMobile = useIsMobile();
 
   const fetchPinnedTopics = async (userId: string) => {
@@ -108,14 +112,18 @@ const VideoCallPage = () => {
     queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
-  // Check for unban success in URL
+  // Check for unban/checkout success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("unban") === "success" && banInfo) {
       recheckBan();
       window.history.replaceState({}, "", "/videocall");
     }
-  }, [banInfo, recheckBan]);
+    if (params.get("checkout") === "success") {
+      checkSubscription();
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, [banInfo, recheckBan, checkSubscription]);
 
   if (!loading && !user) {
     return <Navigate to="/" replace />;
@@ -315,7 +323,7 @@ const VideoCallPage = () => {
           <div className="flex justify-center gap-8 px-4 pb-4">
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
-            <NavIcon src={vipIcon} label="VIP" />
+            <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
           </div>
           <div className="flex justify-center items-center gap-8 pb-6 text-sm font-bold tracking-wider">
             <button onClick={() => setGenderFilter("girls")} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
@@ -354,6 +362,14 @@ const VideoCallPage = () => {
       )}
       {overlayPage === "topics" && (
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
+      )}
+      {overlayPage === "vip" && (
+        <VipFeaturesOverlay
+          onClose={() => setOverlayPage(null)}
+          currentTier={vipTier}
+          onPurchase={startCheckout}
+          onManage={openPortal}
+        />
       )}
 
 

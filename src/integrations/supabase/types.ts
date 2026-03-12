@@ -50,27 +50,36 @@ export type Database = {
           cap_popup_shown: boolean
           id: string
           is_vip: boolean
+          stripe_customer_id: string | null
+          subscription_end: string | null
           total_minutes: number
           updated_at: string
           user_id: string
+          vip_tier: string | null
         }
         Insert: {
           ad_points?: number
           cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
           total_minutes?: number
           updated_at?: string
           user_id: string
+          vip_tier?: string | null
         }
         Update: {
           ad_points?: number
           cap_popup_shown?: boolean
           id?: string
           is_vip?: boolean
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
           total_minutes?: number
           updated_at?: string
           user_id?: string
+          vip_tier?: string | null
         }
         Relationships: []
       }
