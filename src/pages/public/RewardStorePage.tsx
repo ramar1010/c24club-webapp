@@ -639,16 +639,23 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           {isRareOrLegendary && canSpinThis && commonRewards.length >= 3 && (
             <button
               onClick={() => handleSpinToWin(selectedReward)}
+              disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
               className={`w-full font-black text-lg py-4 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 ${
-                selectedReward.rarity === "legendary"
-                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-amber-900/30"
-                  : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-900/30"
+                (userMinutes ?? 0) < selectedReward.minutes_cost
+                  ? "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+                  : selectedReward.rarity === "legendary"
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-amber-900/30"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-900/30"
               }`}
             >
-              🎰 Spin to Win
-              {isPremiumVip && selectedReward.rarity === "legendary" && (
-                <span className="text-xs bg-black/20 px-2 py-0.5 rounded-full">+ Re-spin</span>
-              )}
+              {(userMinutes ?? 0) < selectedReward.minutes_cost
+                ? `🪙 Need ${selectedReward.minutes_cost} Minutes to Spin`
+                : <>🎰 Spin to Win
+                  {isPremiumVip && selectedReward.rarity === "legendary" && (
+                    <span className="text-xs bg-black/20 px-2 py-0.5 rounded-full">+ Re-spin</span>
+                  )}
+                </>
+              }
             </button>
           )}
           {isRareOrLegendary && !canSpinThis && selectedReward.rarity === "legendary" && (
