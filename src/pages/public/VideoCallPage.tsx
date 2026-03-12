@@ -76,12 +76,19 @@ const VideoCallPage = () => {
     currentPartnerId,
     localVideoRef,
     remoteVideoRef,
+    localStreamRef,
     startCall,
     next,
     stop,
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
+  });
+
+  const { partnerBlackScreen } = useBlackScreenDetection({
+    remoteVideoRef,
+    localStreamRef,
+    isConnected: callState === "connected",
   });
 
   const {
