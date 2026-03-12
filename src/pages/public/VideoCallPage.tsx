@@ -428,6 +428,11 @@ const VideoCallPage = () => {
             </button>
           )}
 
+  const { localBlackScreen } = useLocalBlackScreenDetection({
+    localVideoRef,
+    isActive: callState !== "idle",
+  });
+
 
           <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
             <div className="flex flex-col items-center gap-3">
