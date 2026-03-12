@@ -493,6 +493,13 @@ const VideoCallPage = () => {
                   <p className="text-red-400 text-[7px] font-bold">{nsfwStrikes}/5</p>
                 </div>
               )}
+              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl">📵</span>
+                  <p className="text-white font-black text-[8px] text-center px-1">FACELESS</p>
+                  <p className="text-neutral-400 text-[7px] text-center px-1">Tap Next to skip</p>
+                </div>
+              )}
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-neutral-600 text-[10px] text-center px-1">
