@@ -565,6 +565,16 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           {isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
             <p className="text-purple-400 text-xs font-bold mt-1">👑 FREE SHIPPING (Premium VIP)</p>
           )}
+          {selectedReward.rarity === "legendary" && Number(selectedReward.cashout_value) > 0 && (
+            <div className="mt-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+              <p className="text-green-400 font-black text-sm">
+                💰 Or Cash Out 🔺${Number(selectedReward.cashout_value).toFixed(2)}!
+              </p>
+              <p className="text-neutral-400 text-[10px] mt-1">
+                Legendary items have real monetary value that can be cashed out if you win! The value increases the more it sits unredeemed.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto px-4 pb-2">

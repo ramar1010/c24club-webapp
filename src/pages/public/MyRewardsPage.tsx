@@ -163,15 +163,18 @@ const MyRewardsPage = () => {
 
                     {isLegendaryCashout ? (
                       <>
+                        <p className="text-green-400 font-black text-xs mt-1">
+                          💰 You cashed out ${item.cashout_amount}
+                        </p>
                         {item.cashout_paypal && (
                           <p className="text-[10px] text-neutral-400 mt-1">
                             PayPal: {item.cashout_paypal}
                           </p>
                         )}
                         <p className="text-xs font-bold text-neutral-300 mt-1">
-                          {item.cashout_status || item.status === "processing"
+                          {item.cashout_status === "pending" || item.status === "processing"
                             ? "Under Process"
-                            : item.status}
+                            : item.cashout_status || item.status}
                         </p>
                         <p className="text-[10px] text-neutral-500 font-bold mt-1 uppercase">
                           CASHOUT REWARD
@@ -183,7 +186,7 @@ const MyRewardsPage = () => {
                     ) : (
                       <>
                         <p className="text-[10px] text-neutral-400 mt-1">
-                          We're Preparing Your Product. Be Patient. This may take up to 24 hours!
+                          {item.reward_rarity === "legendary" ? "You redeemed the item only" : "We're Preparing Your Product. Be Patient. This may take up to 24 hours!"}
                         </p>
                         <button className="text-red-500 font-bold text-xs mt-2 hover:underline">
                           Edit Shipping Details
