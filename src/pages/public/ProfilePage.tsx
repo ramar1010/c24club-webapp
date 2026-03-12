@@ -4,8 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
-import WeeklyChallengesPage from "@/pages/public/WeeklyChallengesPage";
-import SpinToWinPage from "@/pages/public/SpinToWinPage";
+import EventsPage from "@/pages/public/EventsPage";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -21,8 +20,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [showChallenges, setShowChallenges] = useState(false);
-  const [showSpin, setShowSpin] = useState(false);
+  const [showEvents, setShowEvents] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -55,12 +53,8 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     navigate("/");
   };
 
-  if (showSpin) {
-    return <SpinToWinPage onClose={() => setShowSpin(false)} />;
-  }
-
-  if (showChallenges) {
-    return <WeeklyChallengesPage onClose={() => setShowChallenges(false)} />;
+  if (showEvents) {
+    return <EventsPage onClose={() => setShowEvents(false)} />;
   }
 
   return (
@@ -103,7 +97,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
-        <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowSpin(true)} />
+        <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowEvents(true)} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
         <IconButton src={vipSettingsIcon} label="VIP SETTINGS" />
       </div>
