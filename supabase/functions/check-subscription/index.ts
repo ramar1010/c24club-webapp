@@ -35,7 +35,7 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       logStep("No authorization header, returning not subscribed");
       return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -43,14 +43,23 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData.user?.email) {
-      logStep("Auth failed, returning not subscribed", { error: userError?.message });
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      logStep("Auth failed, returning not subscribed", { error: claimsError?.message });
       return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const user = userData.user;
+
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    if (!userEmail) {
+      logStep("No email in claims, returning not subscribed");
+      return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const user = { id: userId, email: userEmail };
     logStep("User authenticated", { userId: user.id });
 
     // First check if user has admin-granted VIP (no stripe_customer_id but is_vip = true)
