@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, ExternalLink, Pause, Play } from "lucide-react";
+import { ExternalLink, Pause, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PromoAd {
@@ -29,7 +29,6 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   // Fetch a random active promo, respecting sameuser setting
   useEffect(() => {
     const fetchPromo = async () => {
-      // Get all active promos not owned by the viewer
       const { data: promos } = await supabase
         .from("promos")
         .select("id, title, description, url, url_text, image_thumb_url, sameuser")
@@ -43,7 +42,6 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
         return;
       }
 
-      // Get promo IDs this viewer has already seen
       const { data: seenData } = await supabase
         .from("promo_analytics")
         .select("promo_id")
@@ -51,7 +49,6 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
 
       const seenPromoIds = new Set((seenData ?? []).map((r) => r.promo_id));
 
-      // Filter out promos where sameuser is false and viewer already saw them
       const eligible = promos.filter((p) => {
         if (!p.sameuser && seenPromoIds.has(p.id)) return false;
         return true;
@@ -96,7 +93,6 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   const reportAndDismiss = useCallback(async () => {
     if (!promoIdRef.current) { onDismiss(); return; }
     const watchTime = Math.round((Date.now() - startTimeRef.current) / 1000);
-    // Fire and forget analytics insert
     supabase.from("promo_analytics").insert({
       promo_id: promoIdRef.current,
       viewer_id: viewerId,
@@ -123,64 +119,63 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   if (!promo) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
-      <div className="bg-neutral-900 border border-neutral-700 rounded-2xl max-w-md w-full p-6 relative">
-        {/* Skip button */}
+    <div className="absolute inset-0 z-30 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+      {/* Top bar: countdown + skip */}
+      <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-40">
+        <span className="bg-white/10 rounded-full px-3 py-1 text-xs font-bold text-white">
+          {countdown > 0 ? `${countdown}s` : "Done"}
+        </span>
         <button
           onClick={handleSkip}
-          className="absolute top-3 right-3 bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-colors"
+          className="bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 text-xs font-bold text-white transition-colors"
         >
-          <X className="w-5 h-5 text-white" />
+          Skip
         </button>
+      </div>
 
-        {/* Countdown */}
-        <div className="absolute top-3 left-3 bg-white/10 rounded-full px-3 py-1 text-xs font-bold text-white">
-          {countdown > 0 ? `${countdown}s` : "Done"}
-        </div>
+      {/* Promo content */}
+      <div className="flex flex-col items-center text-center max-w-[90%]">
+        {promo.image_thumb_url && (
+          <img
+            src={promo.image_thumb_url}
+            alt={promo.title}
+            className="w-full max-h-32 md:max-h-44 object-cover rounded-xl mb-3"
+          />
+        )}
 
-        {/* Promo content */}
-        <div className="mt-8 text-center">
-          {promo.image_thumb_url && (
-            <img
-              src={promo.image_thumb_url}
-              alt={promo.title}
-              className="w-full max-h-48 object-cover rounded-xl mb-4"
-            />
-          )}
+        {promo.title && (
+          <h3 className="text-lg md:text-xl font-black text-white mb-1">{promo.title}</h3>
+        )}
 
-          {promo.title && (
-            <h3 className="text-xl font-black text-white mb-2">{promo.title}</h3>
-          )}
+        {promo.description && (
+          <p className="text-xs md:text-sm text-neutral-300 mb-3 line-clamp-2">{promo.description}</p>
+        )}
 
-          {promo.description && (
-            <p className="text-sm text-neutral-300 mb-4">{promo.description}</p>
-          )}
-
-          <div className="flex items-center justify-center gap-3 mt-4">
-            {promo.url && (
-              <button
-                onClick={() => handleLinkClick(promo.url!)}
-                className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-black font-black px-6 py-2.5 rounded-full transition-colors"
-              >
-                <ExternalLink className="w-4 h-4" />
-                {promo.url_text || "Join Now"}
-              </button>
-            )}
-            <button onClick={togglePause} className="bg-white/10 hover:bg-white/20 rounded-full p-2.5 transition-colors">
-              {paused ? <Play className="w-5 h-5 text-white" /> : <Pause className="w-5 h-5 text-white" />}
+        <div className="flex items-center gap-3">
+          {promo.url && (
+            <button
+              onClick={() => handleLinkClick(promo.url!)}
+              className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-300 text-black font-black px-5 py-2 rounded-full text-sm transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              {promo.url_text || "Join Now"}
             </button>
-          </div>
+          )}
+          <button onClick={togglePause} className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+            {paused ? <Play className="w-4 h-4 text-white" /> : <Pause className="w-4 h-4 text-white" />}
+          </button>
         </div>
+      </div>
 
-        {/* Progress bar */}
-        <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
+      {/* Progress bar */}
+      <div className="absolute bottom-6 left-4 right-4">
+        <div className="h-1 bg-white/10 rounded-full overflow-hidden">
           <div
             className="h-full bg-yellow-400 transition-all duration-1000 ease-linear"
             style={{ width: `${((5 - countdown) / 5) * 100}%` }}
           />
         </div>
-
-        <p className="text-center text-[10px] text-neutral-500 mt-2 font-bold">SPONSORED</p>
+        <p className="text-center text-[9px] text-neutral-500 mt-1 font-bold">SPONSORED</p>
       </div>
     </div>
   );
