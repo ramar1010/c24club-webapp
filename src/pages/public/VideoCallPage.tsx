@@ -84,6 +84,8 @@ const VideoCallPage = () => {
   // Show frozen popup once when freeze is detected
   useEffect(() => {
     if (freezeInfo.isFrozen && !frozenPopupShownRef.current) {
+      const snoozedUntil = localStorage.getItem("freeze_popup_snoozed_until");
+      if (snoozedUntil && Date.now() < Number(snoozedUntil)) return;
       frozenPopupShownRef.current = true;
       setShowFrozenPopup(true);
     }
@@ -404,6 +406,10 @@ const VideoCallPage = () => {
       {showFrozenPopup && (
         <MinutesFrozenPopup
           onDismiss={() => setShowFrozenPopup(false)}
+          onSnooze={() => {
+            localStorage.setItem("freeze_popup_snoozed_until", String(Date.now() + 24 * 60 * 60 * 1000));
+            setShowFrozenPopup(false);
+          }}
           onGoToChallenges={() => {
             setShowFrozenPopup(false);
             setOverlayPage("profile");
