@@ -456,17 +456,19 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </div>
           )}
 
-          <button
-            onClick={() => setShowShipping(true)}
-            disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
-            className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
-              (userMinutes ?? 0) >= selectedReward.minutes_cost
-                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-900/30"
-                : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
-            }`}
-          >
-            Redeem This Product
-          </button>
+          {!isRareOrLegendary && (
+            <button
+              onClick={() => setShowShipping(true)}
+              disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
+              className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
+                (userMinutes ?? 0) >= selectedReward.minutes_cost
+                  ? "bg-green-600 hover:bg-green-700 text-white shadow-green-900/30"
+                  : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+              }`}
+            >
+              Redeem This Product
+            </button>
+          )}
         </div>
       </div>
     );
