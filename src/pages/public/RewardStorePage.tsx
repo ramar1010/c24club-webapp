@@ -297,9 +297,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     const colors: { name: string; hex: string; image_url: string }[] = 
       Array.isArray(selectedReward.color_options) ? selectedReward.color_options : [];
 
-    // Track selected color and displayed image
-    const [selectedColor, setSelectedColorState] = useState<number | null>(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    // Use top-level state for selected color and image index
 
     // When a color is selected, show its image if available
     const displayImage = selectedColor !== null && colors[selectedColor]?.image_url
