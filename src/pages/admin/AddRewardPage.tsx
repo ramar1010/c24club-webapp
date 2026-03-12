@@ -11,7 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, Link, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const rewardSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -49,6 +51,44 @@ const AddRewardPage = () => {
   const { data: allRewards } = useRewards();
 
   const existingReward = isEdit ? allRewards?.find((r: any) => r.id === id) : null;
+
+  // AliExpress import
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-product", {
+        body: { url: importUrl.trim() },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Import failed");
+
+      // Fill form fields
+      if (data.title) form.setValue("title", data.title);
+      if (data.description) form.setValue("brief", data.description);
+      if (data.images?.length > 0) {
+        form.setValue("image_url", data.images[0]);
+        setVariationImages(data.images.slice(1));
+      }
+      if (data.sizes?.length > 0) {
+        form.setValue("sizes", data.sizes.join(", "));
+      }
+      if (data.colors?.length > 0) {
+        setColorOptions(data.colors);
+      }
+      form.setValue("type", "Product / Giftcard");
+      form.setValue("delivery", "physical");
+
+      toast.success(`Imported "${data.title}" with ${data.images?.length || 0} images`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to import product");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   // Variation images (array of URLs)
   const [variationImages, setVariationImages] = useState<string[]>([]);
@@ -143,6 +183,34 @@ const AddRewardPage = () => {
       <h2 className="text-2xl font-bold tracking-tight text-foreground">
         {isEdit ? "Edit Reward" : "Add New Reward"}
       </h2>
+
+      {!isEdit && (
+        <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-primary flex items-center gap-2">
+              <Link className="w-4 h-4" /> QUICK IMPORT FROM URL
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground mb-3">
+              Paste an AliExpress (or any product) link to auto-fill title, images, sizes, colors & description.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="https://www.aliexpress.com/item/..."
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleImport())}
+                disabled={importing}
+              />
+              <Button type="button" onClick={handleImport} disabled={importing || !importUrl.trim()} className="gap-2 shrink-0">
+                {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link className="w-4 h-4" />}
+                {importing ? "Importing..." : "Import"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
