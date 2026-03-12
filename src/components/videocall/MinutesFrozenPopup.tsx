@@ -166,7 +166,7 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
               Don't show for 24h
             </button>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );
