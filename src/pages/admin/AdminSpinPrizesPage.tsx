@@ -80,7 +80,7 @@ const AdminSpinPrizesPage = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div>
                     <label className="text-xs text-muted-foreground">Type</label>
                     <p className="text-sm font-medium capitalize">
@@ -121,6 +121,31 @@ const AdminSpinPrizesPage = () => {
                       />
                     ) : (
                       <p className="text-sm font-medium">{prize.chance_percent}%</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Rarity</label>
+                    {isEditing ? (
+                      <select
+                        defaultValue={prize.rarity || "common"}
+                        className="h-8 text-sm border rounded px-2 w-full bg-background"
+                        onChange={(e) =>
+                          setEditing((prev) => ({
+                            ...prev,
+                            [prize.id]: { ...prev[prize.id], rarity: e.target.value },
+                          }))
+                        }
+                      >
+                        <option value="common">Common</option>
+                        <option value="rare">Rare</option>
+                        <option value="legendary">Legendary</option>
+                      </select>
+                    ) : (
+                      <p className={`text-sm font-medium capitalize ${
+                        prize.rarity === "legendary" ? "text-amber-500" : prize.rarity === "rare" ? "text-blue-500" : ""
+                      }`}>
+                        {prize.rarity || "common"}
+                      </p>
                     )}
                   </div>
                 </div>
