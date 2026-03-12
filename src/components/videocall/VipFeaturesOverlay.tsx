@@ -92,24 +92,21 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
         </div>
 
         {/* Features Grid - show based on selected/active tier */}
-        {(showBasic && (!currentTier || currentTier === "basic")) && (
-          <div className="w-full max-w-sm mb-6">
-            <div className="grid grid-cols-2 gap-3">
-              {VIP_TIERS.basic.features.map((f, i) => (
-                <FeatureCard key={i} feature={f} />
-              ))}
-            </div>
+        {/* Features Grid */}
+        <div className="w-full max-w-sm mb-6">
+          <div className="grid grid-cols-2 gap-3">
+            {(currentTier === "premium" ? VIP_TIERS.premium : VIP_TIERS.basic).features.map((f, i) => (
+              <FeatureCard key={i} feature={f} />
+            ))}
           </div>
-        )}
+        </div>
 
-        {(showPremium || currentTier === "premium" || !currentTier) && (
+        {!currentTier && (
           <div className="w-full max-w-sm mb-8">
-            {!currentTier && (
-              <div className="border-t border-neutral-700 my-4" />
-            )}
+            <div className="border-t border-neutral-700 my-4" />
             <div className="grid grid-cols-2 gap-3">
               {VIP_TIERS.premium.features.map((f, i) => (
-                <FeatureCard key={i} feature={f} />
+                <FeatureCard key={`p-${i}`} feature={f} />
               ))}
             </div>
           </div>
