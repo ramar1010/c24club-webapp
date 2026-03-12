@@ -363,6 +363,14 @@ const VideoCallPage = () => {
       {overlayPage === "topics" && (
         <PinTopicsOverlay userId={memberId} onClose={() => { setOverlayPage(null); queryClient.invalidateQueries({ queryKey: ["my_pinned_topics"] }); }} />
       )}
+      {overlayPage === "vip" && (
+        <VipFeaturesOverlay
+          onClose={() => setOverlayPage(null)}
+          currentTier={vipTier}
+          onPurchase={startCheckout}
+          onManage={openPortal}
+        />
+      )}
 
 
       {/* Cap Reached Popup */}
