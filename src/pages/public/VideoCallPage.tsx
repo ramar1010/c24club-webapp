@@ -439,7 +439,7 @@ const VideoCallPage = () => {
               <span className="text-4xl md:text-5xl">📵</span>
               <p className="text-white font-black text-sm md:text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
               <p className="text-yellow-400 text-xs md:text-sm text-center px-6 mt-1 animate-pulse font-bold">
-                Turn on your camera or you'll appear faceless
+                Turn on your camera to see your partner
               </p>
             </div>
           )}
