@@ -44,10 +44,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     const count = rewards?.filter((r: any) => r.category_id === cat.id).length ?? 0;
     return { ...cat, count };
   });
-  const [canRespin, setCanRespin] = useState(false);
-  const queryClient = useQueryClient();
-
-  const isPremiumVip = subscribed && vipTier === "premium";
 
   // Fetch user's current minute balance
   const { data: userMinutes } = useQuery({
