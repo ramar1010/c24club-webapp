@@ -12,11 +12,60 @@ import { toast } from "sonner";
 import fireRed from "@/assets/rewards/fire-red.png";
 import fireBlue from "@/assets/rewards/fire-blue.png";
 
-const RARITY_STYLES: Record<string, { bg: string; text: string }> = {
-  common: { bg: "bg-neutral-700", text: "text-white" },
-  rare: { bg: "bg-blue-600", text: "text-white" },
-  legendary: { bg: "bg-amber-500", text: "text-black" },
+const RARITY_STYLES: Record<string, { bg: string; text: string; labelColor: string }> = {
+  common: { bg: "bg-neutral-700", text: "text-white", labelColor: "text-green-500" },
+  rare: { bg: "bg-blue-600", text: "text-white", labelColor: "text-red-500" },
+  legendary: { bg: "bg-amber-500", text: "text-black", labelColor: "text-cyan-400" },
 };
+
+function RarityLabel({ rarity, cashoutValue }: { rarity: string; cashoutValue?: number }) {
+  const style = RARITY_STYLES[rarity] || RARITY_STYLES.common;
+  const label = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+  const fireIcon = rarity === "rare" ? fireRed : rarity === "legendary" ? fireBlue : null;
+  const hasCashout = rarity === "legendary" && cashoutValue && cashoutValue > 0;
+
+  return (
+    <div className="absolute top-2 left-2 z-10 flex flex-col items-start">
+      <div className="flex items-center gap-0.5">
+        <span className={`font-black text-base drop-shadow-lg ${style.labelColor}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+          {label}
+        </span>
+        {fireIcon && (
+          <img src={fireIcon} alt="" className="w-5 h-5 -mt-0.5" />
+        )}
+      </div>
+      {hasCashout && (
+        <span className="font-black text-xs text-yellow-400 drop-shadow-lg" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}>
+          Cash Out ${cashoutValue.toFixed(0)}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function RewardCard({ reward, onClick, isPremiumVip }: { reward: any; onClick: () => void; isPremiumVip?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className="relative rounded-2xl overflow-hidden bg-neutral-900 aspect-square group text-left border border-neutral-700/50 hover:border-neutral-600 transition-all"
+    >
+      {reward.image_url ? (
+        <img src={reward.image_url} alt={reward.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-neutral-800">
+          <span className="text-4xl">🎁</span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/20" />
+      <RarityLabel rarity={reward.rarity} cashoutValue={Number(reward.cashout_value) || 0} />
+      <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
+        <p className="font-black text-sm leading-tight text-white drop-shadow-lg">
+          {reward.title}
+        </p>
+      </div>
+    </button>
+  );
+}
 
 const SPIN_SLOT_COLORS = ["#FF6B35", "#2EC4B6", "#9B5DE5", "#E71D36"];
 
