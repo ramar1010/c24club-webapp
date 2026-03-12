@@ -71,7 +71,7 @@ const AdminSpinWinnersPage = () => {
           <TableBody>
             {results.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   No spin results yet.
                 </TableCell>
               </TableRow>
