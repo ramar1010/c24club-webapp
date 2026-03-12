@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Gift } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useVipStatus } from "@/hooks/useVipStatus";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "text-white",
@@ -32,6 +33,9 @@ const MyRewardsPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("Products");
 
+  const [showGifts, setShowGifts] = useState(false);
+  const { subscribed } = useVipStatus(user?.id ?? null);
+
   const { data: redemptions = [], isLoading } = useQuery({
     queryKey: ["my-redemptions", user?.id],
     enabled: !!user,
@@ -40,6 +44,21 @@ const MyRewardsPage = () => {
         .from("member_redemptions")
         .select("*")
         .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: giftsReceived = [], isLoading: giftsLoading } = useQuery({
+    queryKey: ["gifts-received", user?.id],
+    enabled: !!user && subscribed,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gift_transactions")
+        .select("*")
+        .eq("recipient_id", user!.id)
+        .eq("status", "completed")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -200,6 +219,56 @@ const MyRewardsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Gifts Received - VIP only */}
+      {subscribed && (
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => setShowGifts(!showGifts)}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600/20 border border-purple-500/30 rounded-2xl font-black text-sm tracking-wide text-purple-300 hover:bg-purple-600/30 transition-colors"
+          >
+            <Gift className="w-5 h-5" />
+            GIFTS RECEIVED ({giftsReceived.length})
+            {showGifts ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showGifts && (
+            <div className="mt-3 space-y-2">
+              {giftsLoading ? (
+                <div className="flex justify-center py-6">
+                  <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                </div>
+              ) : giftsReceived.length === 0 ? (
+                <p className="text-neutral-500 text-center py-6 font-bold text-sm">
+                  No gifts received yet.
+                </p>
+              ) : (
+                giftsReceived.map((gift: any) => (
+                  <div
+                    key={gift.id}
+                    className="flex items-center justify-between bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                        <Gift className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="font-black text-sm">+{gift.minutes_amount} Minutes</p>
+                        <p className="text-[10px] text-neutral-500">
+                          From: {gift.sender_id.slice(0, 8)}...
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 font-bold">
+                      {new Date(gift.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Unlock Rewards Early */}
       <div className="px-6 pb-8 pt-4">
