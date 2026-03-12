@@ -157,7 +157,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
 
         {/* Disclaimer */}
         {shippingFee > 0 && (
-          <p className="text-center text-sm font-bold text-black/70 mt-4 px-4">
+          <p className="text-center text-sm font-bold text-white/60 mt-4 px-4">
             By clicking confirm you acknowledge and accept the responsibility to
             cover the shipping fees associated with this product, estimated to be
             approximately ${shippingFee.toFixed(2)} depending on your region.
