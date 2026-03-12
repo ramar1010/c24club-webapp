@@ -163,6 +163,7 @@ export type Database = {
           id: string
           is_frozen: boolean
           is_vip: boolean
+          purchased_spins: number
           stripe_customer_id: string | null
           subscription_end: string | null
           total_minutes: number
@@ -180,6 +181,7 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
+          purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
           total_minutes?: number
@@ -197,6 +199,7 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
+          purchased_spins?: number
           stripe_customer_id?: string | null
           subscription_end?: string | null
           total_minutes?: number
