@@ -378,6 +378,36 @@ Deno.serve(async (req) => {
       );
     }
 
+    // DEDUCT: Remove minutes (e.g., spin-to-win loss penalty)
+    if (type === "deduct") {
+      const { amount } = body;
+      if (!userId || !amount || amount <= 0) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Invalid parameters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: existing } = await supabase
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const currentTotal = existing?.total_minutes ?? 0;
+      const newTotal = Math.max(0, currentTotal - amount);
+
+      await supabase
+        .from("member_minutes")
+        .update({ total_minutes: newTotal, updated_at: new Date().toISOString() })
+        .eq("user_id", userId);
+
+      return new Response(
+        JSON.stringify({ success: true, previousMinutes: currentTotal, newMinutes: newTotal }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ADMIN_ADD_MINUTES
     if (type === "admin_add_minutes") {
       const actualTargetUserId = targetUserId || userId;

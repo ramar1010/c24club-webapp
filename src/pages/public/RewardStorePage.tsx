@@ -101,11 +101,14 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   // Get common rewards for the spin mechanic
   const commonRewards = rewards?.filter((r: any) => r.rarity === "common") || [];
 
+  const [landedItem, setLandedItem] = useState<any | null>(null);
+
   const handleSpinToWin = (reward: any) => {
     setShowSpinToWin(reward);
     setSpinState("idle");
     setSpinResult([]);
     setCanRespin(false);
+    setLandedItem(null);
   };
 
   const executeItemSpin = (targetReward: any, isRespin = false) => {
@@ -148,6 +151,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     
     setTimeout(() => {
       setSpinAnimating(false);
+      // The item at winnerIndex is what they landed on
+      const landed = items[winnerIndex];
+      setLandedItem(landed);
       if (won) {
         setSpinState("won");
         toast.success(`🎉 You won ${targetReward.title}!`);
@@ -266,10 +272,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <p className="text-neutral-300 text-sm mt-1">Click below to claim your prize</p>
           </div>
         )}
-        {spinState === "lost" && !canRespin && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 mb-4 text-center animate-scale-in">
-            <p className="text-red-400 font-black text-lg">😔 Not this time!</p>
-            <p className="text-neutral-400 text-sm">Keep chatting to boost your Chance Enhancer</p>
+        {spinState === "lost" && !canRespin && landedItem && (
+          <div className="bg-neutral-800 border border-neutral-700 rounded-2xl p-4 mb-4 text-center animate-scale-in">
+            <p className="text-neutral-300 font-black text-sm mb-2">You landed on:</p>
+            <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-700 mx-auto mb-2 border-2 border-neutral-500">
+              {landedItem.image_url ? (
+                <img src={landedItem.image_url} alt={landedItem.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-2xl">🎁</div>
+              )}
+            </div>
+            <p className="text-white font-bold text-sm">{landedItem.title}</p>
+            <p className="text-neutral-500 text-xs mt-1">🪙 {landedItem.minutes_cost} Minutes</p>
           </div>
         )}
         {spinState === "lost" && canRespin && (
@@ -315,13 +329,45 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
               <RotateCw className="w-5 h-5" /> SPIN AGAIN (VIP)
             </button>
           )}
-          {(spinState === "lost" && !canRespin) && (
-            <button
-              onClick={() => { setShowSpinToWin(null); setSpinReelItems([]); }}
-              className="w-full py-3 rounded-full font-black text-sm bg-neutral-800 text-neutral-400 hover:bg-neutral-700 transition-all"
-            >
-              Back to Store
-            </button>
+          {spinState === "lost" && !canRespin && landedItem && (
+            <>
+              <button
+                onClick={() => {
+                  setShowSpinToWin(null);
+                  setSpinReelItems([]);
+                  setSelectedReward(landedItem);
+                  setShowShipping(true);
+                }}
+                disabled={(userMinutes ?? 0) < landedItem.minutes_cost}
+                className={`w-full py-4 rounded-full font-black text-lg transition-all shadow-lg ${
+                  (userMinutes ?? 0) >= landedItem.minutes_cost
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+                }`}
+              >
+                🎁 Redeem {landedItem.title}
+              </button>
+              <button
+                onClick={async () => {
+                  // Deduct the target item's minutes as the loss penalty
+                  try {
+                    const { error } = await supabase.functions.invoke("earn-minutes", {
+                      body: { type: "deduct", userId: user!.id, amount: targetReward.minutes_cost },
+                    });
+                    if (error) throw error;
+                    toast("😔 You lost 🪙 " + targetReward.minutes_cost + " minutes");
+                    queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+                  } catch (e) {
+                    toast.error("Failed to process loss");
+                  }
+                  setShowSpinToWin(null);
+                  setSpinReelItems([]);
+                }}
+                className="w-full py-3 rounded-full font-black text-sm bg-red-900/40 border border-red-500/30 text-red-400 hover:bg-red-900/60 transition-all"
+              >
+                Take the Loss (−🪙 {targetReward.minutes_cost} Minutes)
+              </button>
+            </>
           )}
         </div>
       </div>
