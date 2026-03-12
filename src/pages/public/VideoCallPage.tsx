@@ -19,6 +19,7 @@ import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
+import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import { useVipStatus } from "@/hooks/useVipStatus";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
