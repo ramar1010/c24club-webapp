@@ -42,7 +42,7 @@ const VideoCallPage = () => {
   const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
+  
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | null>(null);
   const memberId = user?.id ?? "anonymous";
