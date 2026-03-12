@@ -14,8 +14,6 @@ import RewardsPage from "@/pages/admin/RewardsPage";
 import AddRewardPage from "@/pages/admin/AddRewardPage";
 import CategoriesPage from "@/pages/admin/CategoriesPage";
 import AddCategoryPage from "@/pages/admin/AddCategoryPage";
-import MilestonesPage from "@/pages/admin/MilestonesPage";
-import AddMilestonePage from "@/pages/admin/AddMilestonePage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
@@ -53,7 +51,7 @@ const App = () => (
               <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
               <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
               <Route path="blog" element={<PlaceholderPage title="Blog" />} />
-              <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
+              
             </Route>
 
             {/* Video call (full-screen, no public layout) */}
@@ -74,8 +72,6 @@ const App = () => (
               <Route path="rewards" element={<RewardsPage />} />
               <Route path="rewards/new" element={<AddRewardPage />} />
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
-              <Route path="milestones" element={<MilestonesPage />} />
-              <Route path="milestones/new" element={<AddMilestonePage />} />
               <Route path="member-rewards" element={<MemberRewardsPage />} />
               <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />

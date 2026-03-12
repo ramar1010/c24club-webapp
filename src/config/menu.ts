@@ -67,15 +67,6 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
-    key: "milestones",
-    icon: Target,
-    title: "Milestones",
-    submenu: [
-      { key: "milestones", label: "All Milestones", path: "/admin/milestones" },
-      { key: "milestone-form", label: "Add New Milestone", path: "/admin/milestones/new" },
-    ],
-  },
-  {
     key: "member-rewards",
     icon: Award,
     title: "Member Rewards",
