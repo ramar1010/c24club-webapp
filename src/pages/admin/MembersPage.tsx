@@ -224,6 +224,19 @@ const MembersPage = () => {
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8 text-yellow-500 hover:text-yellow-400"
+              title="Manage VIP"
+              onClick={() => {
+                setVipTarget(row);
+                setVipTier("basic");
+                setCurrentVipInfo(null);
+              }}
+            >
+              <Crown className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-8 w-8 text-destructive hover:text-destructive"
               title="Ban user"
               onClick={() => {
