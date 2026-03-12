@@ -631,7 +631,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           {!filteredRewards?.length ? (
             <p className="text-neutral-500 text-center py-10">No rewards in this category yet.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {filteredRewards.map((reward: any) => {
                 const rarity = RARITY_STYLES[reward.rarity] || RARITY_STYLES.common;
                 const isSpinnable = (reward.rarity === "rare") || (reward.rarity === "legendary" && isPremiumVip);
