@@ -29,191 +29,164 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, rewardId, shipping, sessionId } = await req.json();
+    const { action, rewardId, shipping } = await req.json();
 
-    // ACTION: create-redemption — initiate a redemption
-    if (action === "create-redemption") {
-      // Get reward details
-      const { data: reward, error: rErr } = await supabase
-        .from("rewards")
-        .select("*")
-        .eq("id", rewardId)
-        .single();
-      if (rErr || !reward) {
-        return new Response(JSON.stringify({ error: "Reward not found" }), {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // ─── Shared helpers ───
+    const getReward = async (id: string) => {
+      const { data, error } = await supabase.from("rewards").select("*").eq("id", id).single();
+      if (error || !data) throw new Error("Reward not found");
+      return data;
+    };
+
+    const checkDuplicateAddress = async (shipping: any) => {
+      if (!shipping?.address || shipping.address.trim() === "") return;
+      const normalizedAddress = shipping.address.trim().toLowerCase();
+      const normalizedCity = (shipping.city || "").trim().toLowerCase();
+      const normalizedZip = (shipping.zip || "").trim().toLowerCase();
+      const normalizedCountry = (shipping.country || "").trim().toLowerCase();
+
+      const { data: existingAddresses } = await supabase
+        .from("member_redemptions")
+        .select("id, user_id, shipping_address, shipping_city, shipping_zip, shipping_country")
+        .neq("user_id", user!.id)
+        .not("shipping_address", "is", null);
+
+      if (existingAddresses && existingAddresses.length > 0) {
+        const duplicate = existingAddresses.find((r) => {
+          return (r.shipping_address || "").trim().toLowerCase() === normalizedAddress &&
+            (r.shipping_city || "").trim().toLowerCase() === normalizedCity &&
+            (r.shipping_zip || "").trim().toLowerCase() === normalizedZip &&
+            (r.shipping_country || "").trim().toLowerCase() === normalizedCountry;
         });
-      }
-
-      // --- Duplicate address detection ---
-      if (shipping?.address && shipping.address.trim() !== "") {
-        const normalizedAddress = shipping.address.trim().toLowerCase();
-        const normalizedCity = (shipping.city || "").trim().toLowerCase();
-        const normalizedZip = (shipping.zip || "").trim().toLowerCase();
-        const normalizedCountry = (shipping.country || "").trim().toLowerCase();
-
-        // Find any redemptions from OTHER users with the same address combo
-        const { data: existingAddresses } = await supabase
-          .from("member_redemptions")
-          .select("id, user_id, shipping_address, shipping_city, shipping_zip, shipping_country")
-          .neq("user_id", user.id)
-          .not("shipping_address", "is", null);
-
-        if (existingAddresses && existingAddresses.length > 0) {
-          const duplicate = existingAddresses.find((r) => {
-            const addr = (r.shipping_address || "").trim().toLowerCase();
-            const city = (r.shipping_city || "").trim().toLowerCase();
-            const zip = (r.shipping_zip || "").trim().toLowerCase();
-            const country = (r.shipping_country || "").trim().toLowerCase();
-            return addr === normalizedAddress && city === normalizedCity && zip === normalizedZip && country === normalizedCountry;
-          });
-
-          if (duplicate) {
-            return new Response(
-              JSON.stringify({ error: "Address Taken — this shipping address is already registered to another account." }),
-              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
+        if (duplicate) {
+          throw new Error("Address Taken — this shipping address is already registered to another account.");
         }
       }
+    };
+
+    const getVipStatus = async () => {
+      const { data } = await supabase.from("member_minutes").select("is_vip, vip_tier").eq("user_id", user!.id).maybeSingle();
+      return { isVip: data?.is_vip ?? false, vipTier: data?.vip_tier ?? null };
+    };
+
+    const createStripeCheckout = async (shippingFee: number, rewardTitle: string, redemptionId: string) => {
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+      const customers = await stripe.customers.list({ email: user!.email!, limit: 1 });
+      const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user!.email!,
+        line_items: [{
+          price_data: { currency: "usd", product_data: { name: `Shipping Fee - ${rewardTitle}` }, unit_amount: Math.round(shippingFee * 100) },
+          quantity: 1,
+        }],
+        mode: "payment",
+        metadata: { redemption_id: redemptionId },
+        success_url: `${req.headers.get("origin")}/my-rewards?payment=success`,
+        cancel_url: `${req.headers.get("origin")}/store?payment=canceled`,
+      });
+
+      await supabase.from("member_redemptions").update({ status: "pending_payment", notes: `stripe_session:${session.id}` }).eq("id", redemptionId);
+      return session;
+    };
+
+    // ─── ACTION: create-redemption (standard, costs minutes) ───
+    if (action === "create-redemption") {
+      const reward = await getReward(rewardId);
+      await checkDuplicateAddress(shipping);
 
       // Check user has enough minutes
-      const { data: memberData } = await supabase
-        .from("member_minutes")
-        .select("total_minutes")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;
       if (totalMinutes < reward.minutes_cost) {
-        return new Response(JSON.stringify({ error: "Not enough minutes" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(JSON.stringify({ error: "Not enough minutes" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Deduct minutes
-      await supabase
-        .from("member_minutes")
-        .update({
-          total_minutes: totalMinutes - reward.minutes_cost,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+      await supabase.from("member_minutes").update({ total_minutes: totalMinutes - reward.minutes_cost, updated_at: new Date().toISOString() }).eq("user_id", user.id);
 
-      // Create redemption record
-      const { data: redemption, error: insertErr } = await supabase
-        .from("member_redemptions")
-        .insert({
-          user_id: user.id,
-          reward_id: reward.id,
-          reward_title: reward.title,
-          reward_image_url: reward.image_url,
-          reward_rarity: reward.rarity,
-          reward_type: reward.delivery === "digital" ? "giftcard" : "product",
-          minutes_cost: reward.minutes_cost,
-          status: "pending_shipping",
-          shipping_name: shipping?.firstName && shipping?.lastName
-            ? `${shipping.firstName} ${shipping.lastName}`
-            : null,
-          shipping_address: shipping?.address || null,
-          shipping_city: shipping?.city || null,
-          shipping_state: shipping?.state || null,
-          shipping_zip: shipping?.zip || null,
-          shipping_country: shipping?.country || null,
-          notes: shipping?.notes || null,
-        })
-        .select()
-        .single();
+      // Create redemption
+      const { data: redemption, error: insertErr } = await supabase.from("member_redemptions").insert({
+        user_id: user.id, reward_id: reward.id, reward_title: reward.title, reward_image_url: reward.image_url,
+        reward_rarity: reward.rarity, reward_type: reward.delivery === "digital" ? "giftcard" : "product",
+        minutes_cost: reward.minutes_cost, status: "pending_shipping",
+        shipping_name: shipping?.firstName && shipping?.lastName ? `${shipping.firstName} ${shipping.lastName}` : null,
+        shipping_address: shipping?.address || null, shipping_city: shipping?.city || null,
+        shipping_state: shipping?.state || null, shipping_zip: shipping?.zip || null,
+        shipping_country: shipping?.country || null, notes: shipping?.notes || null,
+      }).select().single();
 
       if (insertErr) {
-        // Refund minutes on failure
-        await supabase
-          .from("member_minutes")
-          .update({
-            total_minutes: totalMinutes,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", user.id);
+        await supabase.from("member_minutes").update({ total_minutes: totalMinutes, updated_at: new Date().toISOString() }).eq("user_id", user.id);
         throw insertErr;
       }
 
       let shippingFee = Number(reward.shipping_fee) || 0;
+      const { isVip, vipTier } = await getVipStatus();
+      if (isVip && vipTier === "premium") shippingFee = 0;
 
-      // Premium VIP gets free shipping
-      const { data: vipCheck } = await supabase
-        .from("member_minutes")
-        .select("is_vip, vip_tier")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (vipCheck?.is_vip && vipCheck?.vip_tier === "premium") {
-        shippingFee = 0;
-      }
-
-      // If shipping fee > 0, create Stripe checkout session
       if (shippingFee > 0) {
-        const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-          apiVersion: "2025-08-27.basil",
-        });
-
-        const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
-        const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
-
-        const session = await stripe.checkout.sessions.create({
-          customer: customerId,
-          customer_email: customerId ? undefined : user.email!,
-          line_items: [
-            {
-              price_data: {
-                currency: "usd",
-                product_data: {
-                  name: `Shipping Fee - ${reward.title}`,
-                },
-                unit_amount: Math.round(shippingFee * 100),
-              },
-              quantity: 1,
-            },
-          ],
-          mode: "payment",
-          metadata: {
-            redemption_id: redemption.id,
-          },
-          success_url: `${req.headers.get("origin")}/my-rewards?payment=success`,
-          cancel_url: `${req.headers.get("origin")}/store?payment=canceled`,
-        });
-
-        // Update redemption with payment session
-        await supabase
-          .from("member_redemptions")
-          .update({ status: "pending_payment", notes: `stripe_session:${session.id}` })
-          .eq("id", redemption.id);
-
-        return new Response(
-          JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        const session = await createStripeCheckout(shippingFee, reward.title, redemption.id);
+        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // No shipping fee — mark as processing
-      await supabase
-        .from("member_redemptions")
-        .update({ status: "processing" })
-        .eq("id", redemption.id);
-
-      return new Response(
-        JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      await supabase.from("member_redemptions").update({ status: "processing" }).eq("id", redemption.id);
+      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // ─── ACTION: create-free-redemption (link clicks reward, no minutes cost) ───
+    if (action === "create-free-redemption") {
+      const reward = await getReward(rewardId);
+      await checkDuplicateAddress(shipping);
+
+      // Verify user actually has unclaimed link-click rewards
+      const { data: userPromos } = await supabase.from("promos").select("id").eq("member_id", user.id);
+      if (!userPromos || userPromos.length === 0) {
+        return new Response(JSON.stringify({ error: "No promos found" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const promoIds = userPromos.map((p) => p.id);
+      const { data: clickData } = await supabase.from("promo_analytics").select("id").in("promo_id", promoIds).eq("link_clicked", true);
+      const totalClicks = clickData?.length ?? 0;
+
+      const { data: claimedData } = await supabase.from("member_redemptions").select("id").eq("user_id", user.id).eq("reward_type", "promo_link_clicks");
+      const claimed = claimedData?.length ?? 0;
+
+      const THRESHOLD = 200;
+      const available = Math.floor(totalClicks / THRESHOLD) - claimed;
+      if (available <= 0) {
+        return new Response(JSON.stringify({ error: "Not enough link clicks to claim a reward" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Create redemption — no minutes deducted
+      const { data: redemption, error: insertErr } = await supabase.from("member_redemptions").insert({
+        user_id: user.id, reward_id: reward.id, reward_title: reward.title, reward_image_url: reward.image_url,
+        reward_rarity: reward.rarity, reward_type: "promo_link_clicks",
+        minutes_cost: 0, status: "pending_shipping",
+        shipping_name: shipping?.firstName && shipping?.lastName ? `${shipping.firstName} ${shipping.lastName}` : null,
+        shipping_address: shipping?.address || null, shipping_city: shipping?.city || null,
+        shipping_state: shipping?.state || null, shipping_zip: shipping?.zip || null,
+        shipping_country: shipping?.country || null, notes: shipping?.notes ? `${shipping.notes} | Link clicks reward` : "Link clicks reward",
+      }).select().single();
+
+      if (insertErr) throw insertErr;
+
+      let shippingFee = Number(reward.shipping_fee) || 0;
+      const { isVip, vipTier } = await getVipStatus();
+      if (isVip && vipTier === "premium") shippingFee = 0;
+
+      if (shippingFee > 0) {
+        const session = await createStripeCheckout(shippingFee, reward.title, redemption.id);
+        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      await supabase.from("member_redemptions").update({ status: "processing" }).eq("id", redemption.id);
+      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
