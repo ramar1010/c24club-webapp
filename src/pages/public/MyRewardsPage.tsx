@@ -79,7 +79,7 @@ const MyRewardsPage = () => {
       {/* Back button */}
       <div className="w-full flex items-center pt-3 pb-2 px-4">
         <button
-          onClick={() => navigate("/profile")}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
         >
           <ChevronLeft className="w-7 h-7" />
