@@ -70,6 +70,11 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
         setIsVip(data?.is_vip ?? false);
         setIsPremiumVip(data?.is_vip === true && data?.vip_tier === "premium");
       });
+
+  // Fetch link clicks on mount for Premium VIP banner
+  useEffect(() => {
+    if (isPremiumVip) fetchTotalLinkClicks();
+  }, [isPremiumVip, fetchTotalLinkClicks]);
   }, [userId]);
 
   const fetchMyPromos = async () => {
