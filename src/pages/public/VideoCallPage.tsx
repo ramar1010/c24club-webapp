@@ -546,6 +546,13 @@ const VideoCallPage = () => {
                 )}
               </div>
             )}
+            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+              <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">📵</span>
+                <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
+                <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
+              </div>
+            )}
             {callState !== "connected" && (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
