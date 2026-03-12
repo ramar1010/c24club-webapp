@@ -184,6 +184,34 @@ const AddRewardPage = () => {
         {isEdit ? "Edit Reward" : "Add New Reward"}
       </h2>
 
+      {!isEdit && (
+        <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-primary flex items-center gap-2">
+              <Link className="w-4 h-4" /> QUICK IMPORT FROM URL
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground mb-3">
+              Paste an AliExpress (or any product) link to auto-fill title, images, sizes, colors & description.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="https://www.aliexpress.com/item/..."
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleImport())}
+                disabled={importing}
+              />
+              <Button type="button" onClick={handleImport} disabled={importing || !importUrl.trim()} className="gap-2 shrink-0">
+                {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link className="w-4 h-4" />}
+                {importing ? "Importing..." : "Import"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
