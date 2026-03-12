@@ -654,6 +654,7 @@ export type Database = {
       rewards: {
         Row: {
           brief: string | null
+          cashout_value: number
           category_id: string | null
           color_options: Json | null
           created_at: string
@@ -677,6 +678,7 @@ export type Database = {
         }
         Insert: {
           brief?: string | null
+          cashout_value?: number
           category_id?: string | null
           color_options?: Json | null
           created_at?: string
@@ -700,6 +702,7 @@ export type Database = {
         }
         Update: {
           brief?: string | null
+          cashout_value?: number
           category_id?: string | null
           color_options?: Json | null
           created_at?: string
