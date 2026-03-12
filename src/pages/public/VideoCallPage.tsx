@@ -183,7 +183,11 @@ const VideoCallPage = () => {
         <div className="text-right">
           <div className="flex items-center justify-end gap-1.5 text-2xl font-black">
             <span>⏱️</span>
-            <span>{totalMinutes} Minutes</span>
+            {freezeInfo.isFrozen ? (
+              <span className="text-blue-300">🥶 {totalMinutes} Frozen</span>
+            ) : (
+              <span>{totalMinutes} Minutes</span>
+            )}
           </div>
           <div className="flex items-center justify-end gap-1 text-sm text-yellow-400 font-bold">
             <span>⭐</span>
