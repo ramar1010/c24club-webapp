@@ -41,6 +41,7 @@ interface AnalyticsData {
 const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelProps) => {
   const [view, setView] = useState<PromoView>("main");
   const [isVip, setIsVip] = useState(false);
+  const [isPremiumVip, setIsPremiumVip] = useState(false);
   const [myPromos, setMyPromos] = useState<PromoData[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
