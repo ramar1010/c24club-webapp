@@ -539,7 +539,17 @@ const VideoCallPage = () => {
         {!isMobile && (
           <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             <video ref={remoteVideoRef} autoPlay playsInline
-              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
+              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+            {isNsfwBlurred && callState === "connected" && (
+              <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">🚫</span>
+                <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
+                <p className="text-red-400 text-xs font-bold mt-1">Strike {nsfwStrikes}/5 — nudity detected</p>
+                {nsfwStrikes >= 3 && (
+                  <p className="text-yellow-400 text-xs font-bold mt-1 animate-pulse">⚠️ Warning: Ban at 5 strikes</p>
+                )}
+              </div>
+            )}
             {callState !== "connected" && (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
