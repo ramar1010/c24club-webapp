@@ -48,8 +48,8 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
         </h1>
         <p className="text-white text-sm font-black tracking-wider mb-4">INCLUDED</p>
 
-        {/* VIP Settings Link */}
-        {onManage && (
+        {/* VIP Settings Link - only visible for VIP users */}
+        {onManage && currentTier && (
           <button
             onClick={() => onManage()}
             className="flex items-center gap-2 text-neutral-400 text-sm font-black tracking-wide mb-5 hover:text-white transition-colors"
