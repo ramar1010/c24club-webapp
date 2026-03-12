@@ -314,17 +314,44 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </button>
           )}
           {spinState === "won" && (
-            <button
-              onClick={() => {
-                setShowSpinToWin(null);
-                setSpinReelItems([]);
-                setSelectedReward(targetReward);
-                setShowShipping(true);
-              }}
-              className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
-            >
-              🎁 REDEEM NOW
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setShowSpinToWin(null);
+                  setSpinReelItems([]);
+                  setSelectedReward(targetReward);
+                  setShowShipping(true);
+                }}
+                className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
+              >
+                🎁 REDEEM ITEM
+              </button>
+              {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase.functions.invoke("redeem-reward", {
+                        body: {
+                          action: "cashout-legendary",
+                          rewardId: targetReward.id,
+                        },
+                      });
+                      if (error) throw error;
+                      toast.success(`💰 Cashed out $${Number(targetReward.cashout_value).toFixed(2)}!`);
+                      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+                      queryClient.invalidateQueries({ queryKey: ["public-rewards"] });
+                      setShowSpinToWin(null);
+                      setSpinReelItems([]);
+                    } catch (e: any) {
+                      toast.error(e.message || "Cashout failed");
+                    }
+                  }}
+                  className="w-full py-4 rounded-full font-black text-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg"
+                >
+                  💰 CASH OUT ${Number(targetReward.cashout_value).toFixed(2)}
+                </button>
+              )}
+            </>
           )}
           {canRespin && (
             <button
