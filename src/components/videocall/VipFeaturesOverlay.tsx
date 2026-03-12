@@ -27,9 +27,6 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
     }
   };
 
-  const activeTier = currentTier || "basic";
-  const showBasic = !currentTier || currentTier === "basic";
-  const showPremium = !currentTier || currentTier === "premium";
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
