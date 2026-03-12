@@ -457,6 +457,27 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     );
   }
 
+  // Instant redeem handler for Spins / Ad Points
+  const [instantRedeeming, setInstantRedeeming] = useState(false);
+  const handleInstantRedeem = async (reward: any) => {
+    setInstantRedeeming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-reward", {
+        body: { action: "redeem-instant", rewardId: reward.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const label = reward.type === "Spins" ? "spin tokens" : "ad points";
+      toast.success(`🎉 +${data.grantAmount} ${label} added to your account!`);
+      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+      setSelectedReward(null);
+    } catch (e: any) {
+      toast.error(e.message || "Redemption failed");
+    } finally {
+      setInstantRedeeming(false);
+    }
+  };
+
   // Shipping form view
   if (selectedReward && showShipping) {
     return (
