@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { usePublicRewards, usePublicCategories, usePublicMilestones } from "@/hooks/useCrud";
+import { usePublicRewards, usePublicCategories } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
-import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, Target } from "lucide-react";
+import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
