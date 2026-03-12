@@ -58,6 +58,13 @@ const memberColumns: DataTableColumn<Member>[] = [
   { key: "stats", header: "Stats" },
   { key: "birthdate", header: "Birth Date" },
   {
+    key: "minutes",
+    header: "Minutes",
+    render: (row) => (
+      <span className="font-mono text-sm">{row.minutes ?? 0}</span>
+    ),
+  },
+  {
     key: "gender",
     header: "Gender",
     render: (row) => row.gender ? (
