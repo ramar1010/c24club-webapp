@@ -7,11 +7,20 @@ const corsHeaders = {
 };
 
 // Ad points tiers based on call duration
-function computeAdPoints(elapsedSeconds: number): number {
-  if (elapsedSeconds >= 300) return 4;
-  if (elapsedSeconds >= 120) return 2;
-  if (elapsedSeconds >= 30) return 1;
-  return 0;
+// Premium VIP gets 2x ad points
+function computeAdPoints(elapsedSeconds: number, isPremiumVip: boolean): number {
+  let points = 0;
+  if (elapsedSeconds >= 300) points = 4;
+  else if (elapsedSeconds >= 120) points = 2;
+  else if (elapsedSeconds >= 30) points = 1;
+  
+  // Premium VIP: 30s=2, 2min=4, 5min=6 (which is base * 2 capped differently)
+  if (isPremiumVip && points > 0) {
+    if (elapsedSeconds >= 300) return 6;
+    if (elapsedSeconds >= 120) return 4;
+    return 2;
+  }
+  return points;
 }
 
 // Check if user should be frozen
