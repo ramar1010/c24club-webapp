@@ -377,16 +377,14 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
             </div>
           )}
 
-          {/* Same user toggle */}
-          <div className="flex justify-center pt-1">
-            <button onClick={() => setSameuser(!sameuser)}
-              className={`px-5 py-2 rounded-lg font-bold text-sm transition-colors ${
-                sameuser
-                  ? "bg-white text-black"
-                  : "bg-neutral-800 border border-neutral-600 text-neutral-300 hover:bg-neutral-700"
-              }`}>
-              Show promo to same user (more than once)
-            </button>
+          {/* Same user visibility */}
+          <div className="text-center pt-1">
+            <select value={sameuser ? "multiple" : "once"}
+              onChange={(e) => setSameuser(e.target.value === "multiple")}
+              className="bg-neutral-800 border border-neutral-600 text-white font-bold rounded-lg px-4 py-2.5 text-sm w-72">
+              <option value="multiple">Show promo to same user (more than once)</option>
+              <option value="once">Show promo only once to a user</option>
+            </select>
           </div>
 
           {/* Actions */}
