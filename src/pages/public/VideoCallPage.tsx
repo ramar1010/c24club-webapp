@@ -21,7 +21,9 @@ import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
 import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
+import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import { toast } from "sonner";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -31,6 +33,7 @@ import topicsIcon from "@/assets/videocall/topics-bubble.png";
 import promoIcon from "@/assets/videocall/promo-star.png";
 import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
+import giftIcon from "@/assets/videocall/gift-icon.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
@@ -46,6 +49,7 @@ const VideoCallPage = () => {
   const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
+  const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
@@ -135,7 +139,28 @@ const VideoCallPage = () => {
     queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
-  // Check for unban/checkout success in URL
+  // Check if partner has gifting enabled (VIP with get_gifted = true)
+  const { data: partnerGiftEnabled } = useQuery({
+    queryKey: ["partner_gift_enabled", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("vip_settings")
+        .select("get_gifted")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      if (!data?.get_gifted) return false;
+      // Also verify they're actually VIP
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("is_vip")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      return mm?.is_vip ?? false;
+    },
+  });
+
+  // Check for unban/checkout/gift success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("unban") === "success" && banInfo) {
@@ -147,8 +172,20 @@ const VideoCallPage = () => {
       window.history.replaceState({}, "", "/videocall");
     }
     if (params.get("unfreeze") === "success") {
-      // Apply the unfreeze after successful payment
       supabase.functions.invoke("unfreeze-purchase", { body: { action: "apply" } });
+      window.history.replaceState({}, "", "/videocall");
+    }
+    if (params.get("gift") === "success") {
+      const sessionId = params.get("session_id");
+      if (sessionId) {
+        supabase.functions.invoke("gift-minutes", {
+          body: { action: "verify", session_id: sessionId },
+        }).then(({ data }) => {
+          if (data?.success) {
+            toast.success(`Gift sent! ${data.minutes_gifted} minutes gifted.${data.sender_bonus > 0 ? ` You got +${data.sender_bonus} minutes bonus!` : ""}`);
+          }
+        });
+      }
       window.history.replaceState({}, "", "/videocall");
     }
   }, [banInfo, recheckBan, checkSubscription]);
@@ -262,6 +299,16 @@ const VideoCallPage = () => {
               <p className="text-sm text-neutral-300">Finding a partner...</p>
             </div>
           </div>
+
+          {/* Gift icon - shows when partner has gifting enabled */}
+          {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
+            <button
+              onClick={() => setShowGiftOverlay(true)}
+              className="absolute bottom-3 left-3 z-20 animate-bounce"
+            >
+              <img src={giftIcon} alt="Send Gift" className="w-12 h-12 drop-shadow-lg" />
+            </button>
+          )}
 
           {isActive && (
             <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
@@ -440,6 +487,14 @@ const VideoCallPage = () => {
           }}
           isVip={subscribed}
           onPurchaseVip={startCheckout}
+        />
+      )}
+
+      {/* Send Gift Overlay */}
+      {showGiftOverlay && currentPartnerId && (
+        <SendGiftOverlay
+          recipientId={currentPartnerId}
+          onClose={() => setShowGiftOverlay(false)}
         />
       )}
     </div>

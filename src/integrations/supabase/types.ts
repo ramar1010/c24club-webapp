@@ -118,6 +118,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          minutes_amount: number
+          price_cents: number
+          recipient_id: string
+          sender_id: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          minutes_amount: number
+          price_cents: number
+          recipient_id: string
+          sender_id: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minutes_amount?: number
+          price_cents?: number
+          recipient_id?: string
+          sender_id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       member_minutes: {
         Row: {
           ad_points: number
