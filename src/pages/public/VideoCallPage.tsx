@@ -317,8 +317,8 @@ const VideoCallPage = () => {
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
       {/* Top Stats Bar */}
-      <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between px-3 py-2 md:relative">
+        <div className="flex items-center gap-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
           <button
             onClick={handleBack}
             className="p-1 hover:bg-white/10 rounded-full transition-colors"
@@ -327,8 +327,8 @@ const VideoCallPage = () => {
           </button>
         </div>
 
-<div className="text-right">
-          <div className="flex items-center justify-end gap-1.5 text-2xl font-black">
+        <div className="text-right md:text-center md:flex-1">
+          <div className="flex items-center justify-end md:justify-center gap-1.5 text-2xl md:text-3xl font-black">
             <span>⏱️</span>
             {freezeInfo.isFrozen ? (
               <span className="text-blue-300">🥶 {totalMinutes} Frozen</span>
@@ -343,12 +343,12 @@ const VideoCallPage = () => {
             </div>
           )}
           {callState === "connected" && (
-            <div className="flex items-center justify-end gap-1 text-[10px] text-green-400 font-mono font-bold">
+            <div className="flex items-center justify-end md:justify-center gap-1 text-[10px] text-green-400 font-mono font-bold">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span>{timerDisplay}</span>
             </div>
           )}
-          <div className="flex items-center justify-end gap-1 text-sm text-yellow-400 font-bold">
+          <div className="flex items-center justify-end md:justify-center gap-1 text-sm md:text-lg text-yellow-400 font-bold">
             <span>⭐</span>
             <span>{adPoints} Ad Points</span>
           </div>
