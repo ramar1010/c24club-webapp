@@ -99,6 +99,13 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
+  // Reset gender filter if not VIP
+  useEffect(() => {
+    if (!subscribed && genderFilter !== "both") {
+      setGenderFilter("both");
+    }
+  }, [subscribed, genderFilter]);
+
   const isMobile = useIsMobile();
 
   const fetchPinnedTopics = async (userId: string) => {
@@ -350,14 +357,22 @@ const VideoCallPage = () => {
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
           </div>
           <div className="flex justify-center items-center gap-8 pb-6 text-sm font-bold tracking-wider">
-            <button onClick={() => setGenderFilter("girls")} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
+            <button onClick={() => {
+              if (!subscribed) { setOverlayPage("vip"); return; }
+              setGenderFilter("girls");
+            }} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GIRLS
+              {!subscribed && <span className="text-[8px] block text-yellow-500 mt-0.5">🔒 VIP</span>}
             </button>
             <button onClick={() => setGenderFilter("both")} className={`uppercase transition-colors text-lg ${genderFilter === "both" ? "text-white font-extrabold" : "text-neutral-400 hover:text-white"}`}>
               BOTH
             </button>
-            <button onClick={() => setGenderFilter("guys")} className={`uppercase transition-colors ${genderFilter === "guys" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
+            <button onClick={() => {
+              if (!subscribed) { setOverlayPage("vip"); return; }
+              setGenderFilter("guys");
+            }} className={`uppercase transition-colors ${genderFilter === "guys" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GUYS
+              {!subscribed && <span className="text-[8px] block text-yellow-500 mt-0.5">🔒 VIP</span>}
             </button>
           </div>
         </>
@@ -395,7 +410,9 @@ const VideoCallPage = () => {
           onManage={openPortal}
         />
       )}
+  const isMobile = useIsMobile();
 
+  const isMobile = useIsMobile();
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
