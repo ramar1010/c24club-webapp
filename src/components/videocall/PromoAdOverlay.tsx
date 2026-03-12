@@ -9,6 +9,7 @@ interface PromoAd {
   url: string | null;
   url_text: string | null;
   image_thumb_url: string | null;
+  sameuser: boolean | null;
 }
 
 interface PromoAdOverlayProps {
@@ -25,25 +26,45 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   const pausedRef = useRef(false);
   const promoIdRef = useRef<string | null>(null);
 
-  // Fetch a random active promo
+  // Fetch a random active promo, respecting sameuser setting
   useEffect(() => {
     const fetchPromo = async () => {
-      const { data } = await supabase
+      // Get all active promos not owned by the viewer
+      const { data: promos } = await supabase
         .from("promos")
-        .select("id, title, description, url, url_text, image_thumb_url")
+        .select("id, title, description, url, url_text, image_thumb_url, sameuser")
         .eq("is_active", true)
         .eq("status", "Active")
         .neq("member_id", viewerId)
-        .limit(20);
+        .limit(50);
 
-      if (data && data.length > 0) {
-        const randomPromo = data[Math.floor(Math.random() * data.length)];
-        setPromo(randomPromo as PromoAd);
-        promoIdRef.current = randomPromo.id;
-      } else {
-        // No promos available, just dismiss
+      if (!promos || promos.length === 0) {
         onDismiss();
+        return;
       }
+
+      // Get promo IDs this viewer has already seen
+      const { data: seenData } = await supabase
+        .from("promo_analytics")
+        .select("promo_id")
+        .eq("viewer_id", viewerId);
+
+      const seenPromoIds = new Set((seenData ?? []).map((r) => r.promo_id));
+
+      // Filter out promos where sameuser is false and viewer already saw them
+      const eligible = promos.filter((p) => {
+        if (!p.sameuser && seenPromoIds.has(p.id)) return false;
+        return true;
+      });
+
+      if (eligible.length === 0) {
+        onDismiss();
+        return;
+      }
+
+      const randomPromo = eligible[Math.floor(Math.random() * eligible.length)];
+      setPromo(randomPromo as PromoAd);
+      promoIdRef.current = randomPromo.id;
     };
     fetchPromo();
   }, [viewerId, onDismiss]);
