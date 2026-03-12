@@ -240,6 +240,7 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
         queryClient.invalidateQueries({ queryKey: ["spin-balance"] });
         queryClient.invalidateQueries({ queryKey: ["profile-balance"] });
         queryClient.invalidateQueries({ queryKey: ["spin-history"] });
+        queryClient.invalidateQueries({ queryKey: ["chance-enhancer"] });
       }
     };
 
