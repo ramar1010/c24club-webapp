@@ -67,6 +67,7 @@ const AddRewardPage = () => {
       visible: true,
       minutes_cost: 0,
       shipping_fee: 0,
+      grant_amount: 0,
     },
   });
 
