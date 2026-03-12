@@ -754,8 +754,8 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         <button onClick={() => onClose ? onClose() : navigate(-1)} className="text-red-500 hover:text-red-400 transition-colors">
           <X className="w-8 h-8" strokeWidth={3} />
         </button>
-        <h1 className="text-3xl font-black tracking-tight flex items-center gap-1">
-          <span>⚡</span> Reward Store <span>⚡</span>
+        <h1 className="text-2xl font-black tracking-widest uppercase" style={{ letterSpacing: '0.15em' }}>
+          REWARD STORE
         </h1>
         <div className="flex flex-col items-end">
           <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wide">Balance</span>
