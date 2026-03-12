@@ -87,6 +87,10 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
   };
 
   const handleTogglePromos = async (val: boolean) => {
+    if (!isPremium && !val) {
+      toast.error("Premium VIP required to disable promo ads");
+      return;
+    }
     setShowPromoAds(val);
     await saveSettings({ show_promo_ads: val });
     toast.success(val ? "Promo ads enabled" : "Promo ads disabled");
