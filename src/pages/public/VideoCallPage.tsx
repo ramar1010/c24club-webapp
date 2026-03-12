@@ -547,7 +547,7 @@ const VideoCallPage = () => {
         </div>
       ) : (
         <>
-          <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 md:-mt-4 pb-3 flex-wrap">
+          <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 md:-mt-8 pb-3 flex-wrap">
             <NavIcon src={storeIcon} label="STORE" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} />
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
