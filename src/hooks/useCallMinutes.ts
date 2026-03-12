@@ -47,6 +47,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
       .then(({ data }) => {
         if (data?.success) {
           setTotalMinutes(data.totalMinutes);
+          setFreezeInfo({ isFrozen: data.isFrozen ?? false, earnRate: data.earnRate ?? 10 });
         }
       });
   }, [userId]);
