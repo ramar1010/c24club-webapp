@@ -340,7 +340,7 @@ const VideoCallPage = () => {
           )}
 
           {isActive && (
-            <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
+            <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
               <img src={nextBtn} alt="Next" className="w-9 h-9" />
             </button>
