@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { useMembers, useDeleteMember } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, User, ShieldX } from "lucide-react";
+import { Pencil, Trash2, User, ShieldX, Crown } from "lucide-react";
 import DeleteDialog from "@/components/admin/DeleteDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,6 +100,64 @@ const MembersPage = () => {
   const [customReason, setCustomReason] = useState("");
   const [banning, setBanning] = useState(false);
 
+  // VIP management
+  const [vipTarget, setVipTarget] = useState<Member | null>(null);
+  const [vipTier, setVipTier] = useState<string>("basic");
+  const [savingVip, setSavingVip] = useState(false);
+  const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
+
+  // Load current VIP status when dialog opens
+  useEffect(() => {
+    if (!vipTarget) return;
+    (async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("is_vip, vip_tier")
+        .eq("user_id", vipTarget.id)
+        .maybeSingle();
+      setCurrentVipInfo(data ? { is_vip: data.is_vip, vip_tier: data.vip_tier } : null);
+      if (data?.vip_tier) setVipTier(data.vip_tier);
+    })();
+  }, [vipTarget]);
+
+  const handleSetVip = async (enable: boolean) => {
+    if (!vipTarget) return;
+    setSavingVip(true);
+    try {
+      const { data: existing } = await supabase
+        .from("member_minutes")
+        .select("id")
+        .eq("user_id", vipTarget.id)
+        .maybeSingle();
+
+      const updates = {
+        is_vip: enable,
+        vip_tier: enable ? vipTier : null,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existing) {
+        const { error } = await supabase
+          .from("member_minutes")
+          .update(updates)
+          .eq("user_id", vipTarget.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("member_minutes")
+          .insert({ user_id: vipTarget.id, ...updates } as any);
+        if (error) throw error;
+      }
+
+      toast.success(enable ? `${vipTarget.name} is now VIP (${vipTier})` : `${vipTarget.name} VIP removed`);
+      setVipTarget(null);
+    } catch (err: any) {
+      toast.error("Failed to update VIP status", { description: err.message });
+    } finally {
+      setSavingVip(false);
+    }
+  };
+
   const handleBan = async () => {
     if (!banTarget || !user) return;
     setBanning(true);
@@ -163,6 +221,19 @@ const MembersPage = () => {
         )}
         actions={(row) => (
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-yellow-500 hover:text-yellow-400"
+              title="Manage VIP"
+              onClick={() => {
+                setVipTarget(row);
+                setVipTier("basic");
+                setCurrentVipInfo(null);
+              }}
+            >
+              <Crown className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -262,6 +333,55 @@ const MembersPage = () => {
             <Button variant="outline" onClick={() => setBanTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleBan} disabled={banning}>
               {banning ? "Banning..." : "Confirm Ban"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* VIP Management Dialog */}
+      <Dialog open={!!vipTarget} onOpenChange={(open) => !open && setVipTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              Manage VIP — {vipTarget?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {currentVipInfo && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Current status: </span>
+                {currentVipInfo.is_vip ? (
+                  <Badge className="bg-yellow-500/10 text-yellow-500">{currentVipInfo.vip_tier ?? "VIP"}</Badge>
+                ) : (
+                  <Badge variant="secondary">Not VIP</Badge>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>VIP Tier</Label>
+              <Select value={vipTier} onValueChange={setVipTier}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic VIP ($2.49/week)</SelectItem>
+                  <SelectItem value="premium">Premium VIP ($9.99/month)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            {currentVipInfo?.is_vip && (
+              <Button variant="destructive" onClick={() => handleSetVip(false)} disabled={savingVip}>
+                {savingVip ? "Saving..." : "Remove VIP"}
+              </Button>
+            )}
+            <Button onClick={() => handleSetVip(true)} disabled={savingVip} className="bg-yellow-500 hover:bg-yellow-400 text-black">
+              {savingVip ? "Saving..." : currentVipInfo?.is_vip ? "Update Tier" : "Make VIP"}
             </Button>
           </DialogFooter>
         </DialogContent>
