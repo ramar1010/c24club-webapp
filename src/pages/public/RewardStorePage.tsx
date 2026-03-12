@@ -773,42 +773,15 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
 
               {(!categoryCards || categoryCards.length === 0) && rewards && rewards.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {rewards.map((reward: any) => {
-                    const rarity = RARITY_STYLES[reward.rarity] || RARITY_STYLES.common;
-                    return (
-                      <button
-                        key={reward.id}
-                        onClick={() => setSelectedReward(reward)}
-                        className="relative rounded-2xl overflow-hidden bg-neutral-800 aspect-square group text-left"
-                      >
-                        {reward.image_url ? (
-                          <img src={reward.image_url} alt={reward.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-neutral-800">
-                            <span className="text-4xl">🎁</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <p className="font-black text-sm leading-tight text-white drop-shadow-lg">
-                            {reward.title}
-                            {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 && (
-                              <span className="text-green-400"> Or 🔺${Number(reward.cashout_value).toFixed(0)} Cash Out!</span>
-                            )}
-                          </p>
-                          <p className="text-xs text-neutral-300 mt-0.5">🪙 {reward.minutes_cost} min</p>
-                          {reward.rarity === "legendary" && Number(reward.cashout_value) > 0 ? (
-                            <span className="text-[9px] text-green-400 font-bold">💰 Real Cash Value!</span>
-                          ) : (reward.rarity === "rare" || reward.rarity === "legendary") ? (
-                            <span className="text-[9px] text-yellow-400 font-bold">🎰 Spin to Win</span>
-                          ) : null}
-                        </div>
-                        <span className={`absolute top-2 right-2 ${rarity.bg} ${rarity.text} px-2 py-0.5 rounded-md font-bold text-[10px]`}>
-                          {reward.rarity}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {rewards.map((reward: any) => (
+                    <RewardCard
+                      key={reward.id}
+                      reward={reward}
+                      onClick={() => setSelectedReward(reward)}
+                      isPremiumVip={isPremiumVip}
+                    />
+                  ))}
+                </div>
                 </div>
               )}
             </>
