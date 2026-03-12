@@ -394,6 +394,17 @@ const VideoCallPage = () => {
       {showCapPopup && capInfo && (
         <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
       )}
+
+      {/* Minutes Frozen Popup */}
+      {showFrozenPopup && (
+        <MinutesFrozenPopup
+          onDismiss={() => setShowFrozenPopup(false)}
+          onGoToChallenges={() => {
+            setShowFrozenPopup(false);
+            setOverlayPage("profile");
+          }}
+        />
+      )}
     </div>
   );
 };
