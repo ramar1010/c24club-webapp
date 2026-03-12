@@ -41,6 +41,7 @@ interface AnalyticsData {
 const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelProps) => {
   const [view, setView] = useState<PromoView>("main");
   const [isVip, setIsVip] = useState(false);
+  const [isPremiumVip, setIsPremiumVip] = useState(false);
   const [myPromos, setMyPromos] = useState<PromoData[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,8 +62,11 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("member_minutes").select("is_vip").eq("user_id", userId).maybeSingle()
-      .then(({ data }) => setIsVip(data?.is_vip ?? false));
+    supabase.from("member_minutes").select("is_vip, vip_tier").eq("user_id", userId).maybeSingle()
+      .then(({ data }) => {
+        setIsVip(data?.is_vip ?? false);
+        setIsPremiumVip(data?.is_vip === true && data?.vip_tier === "premium");
+      });
   }, [userId]);
 
   const fetchMyPromos = async () => {
@@ -139,8 +143,8 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     const { error } = await supabase.from("promos").insert({
       title: title || "Untitled Promo",
       description: description || null,
-      url: isVip ? (url || null) : null,
-      url_text: isVip ? urlText : null,
+      url: isPremiumVip ? (url || null) : null,
+      url_text: isPremiumVip ? urlText : null,
       image_thumb_url: imageUrl,
       member_id: userId,
       gender: isVip ? gender : "Both",
@@ -301,27 +305,31 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
             className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold min-h-[80px]"
           />
 
-          {isVip && (
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <p className="text-xs font-bold text-neutral-400 mb-1">Target URL Link (optional)</p>
-                <Input
-                  placeholder="Enter url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
-                />
-              </div>
-              <div className="w-32">
-                <p className="text-xs font-bold text-neutral-400 mb-1">CTA Text</p>
-                <Input
-                  value={urlText}
-                  onChange={(e) => setUrlText(e.target.value)}
-                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
-                />
-              </div>
+          {/* URL Link - Premium VIP only */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <p className="text-xs font-bold text-neutral-400 mb-1">Target URL Link {!isPremiumVip && "🔒 Premium VIP"}</p>
+              <Input
+                placeholder="Enter url"
+                value={url}
+                disabled={!isPremiumVip}
+                onChange={(e) => setUrl(e.target.value)}
+                className={`bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold ${!isPremiumVip ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (!isPremiumVip) toast("👑 Premium VIP Feature", { description: "Upgrade to Premium VIP to add clickable links to your promos!" });
+                }}
+              />
             </div>
-          )}
+            <div className="w-32">
+              <p className="text-xs font-bold text-neutral-400 mb-1">CTA Text</p>
+              <Input
+                value={urlText}
+                disabled={!isPremiumVip}
+                onChange={(e) => setUrlText(e.target.value)}
+                className={`bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold ${!isPremiumVip ? "opacity-50 cursor-not-allowed" : ""}`}
+              />
+            </div>
+          </div>
 
           {/* Ad Points */}
           <div className="flex items-center justify-center gap-3 pt-2">
