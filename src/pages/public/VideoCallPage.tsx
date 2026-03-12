@@ -21,7 +21,9 @@ import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
 import VipFeaturesOverlay from "@/components/videocall/VipFeaturesOverlay";
 import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
+import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import { toast } from "sonner";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -31,6 +33,7 @@ import topicsIcon from "@/assets/videocall/topics-bubble.png";
 import promoIcon from "@/assets/videocall/promo-star.png";
 import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
+import giftIcon from "@/assets/videocall/gift-icon.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
