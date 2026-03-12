@@ -294,16 +294,7 @@ const VideoCallPage = () => {
       )}
 
       {/* Panels */}
-      {showPromo ? (
-        <div className="px-3 pb-4">
-          <PromoPanel
-            userId={memberId}
-            adPoints={adPoints}
-            onClose={() => setShowPromo(false)}
-            onAdPointsChange={refreshBalance}
-          />
-        </div>
-      ) : showRedeem ? (
+      {showRedeem ? (
         <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div>

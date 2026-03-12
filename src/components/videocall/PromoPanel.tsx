@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { X, Eye, EyeOff, BarChart3, Trash2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -62,7 +61,6 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check VIP
     supabase.from("member_minutes").select("is_vip").eq("user_id", userId).maybeSingle()
       .then(({ data }) => setIsVip(data?.is_vip ?? false));
   }, [userId]);
@@ -157,7 +155,6 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
 
     if (error) { toast.error("Failed to create promo"); return; }
 
-    // Deduct ad points
     if (pointsToUse > 0) {
       await supabase.functions.invoke("earn-minutes", {
         body: { type: "spend_ad_points", userId, points: pointsToUse },
@@ -206,34 +203,51 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     fetchMyPromos();
   };
 
-  const reachEstimate = Math.max(0, pointsToUse * 5); // rough: 1 point ≈ 5 views
+  const reachEstimate = Math.max(0, pointsToUse * 5);
+
+  // Shared header
+  const Header = ({ title: headerTitle, backTo }: { title: string; backTo?: PromoView }) => (
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
+        {backTo && (
+          <button onClick={() => { setView(backTo); if (backTo === "my-promos") fetchMyPromos(); }} className="text-neutral-400 hover:text-white font-bold text-sm">
+            ← Back
+          </button>
+        )}
+        <h2 className="text-2xl font-black tracking-wide">{headerTitle}</h2>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <span className="text-2xl font-black text-yellow-400">{adPoints}</span>
+          <p className="text-[10px] font-bold text-neutral-400">Ad Points</p>
+        </div>
+        <button onClick={onClose} className="p-1.5 hover:bg-neutral-800 rounded-full transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+    </div>
+  );
 
   // ─── MAIN VIEW ───
   if (view === "main") {
     return (
-      <div className="bg-orange-500 text-white p-5 rounded-2xl w-full font-['Antigone',sans-serif]">
-        <div className="flex items-start justify-between mb-6">
-          <h2 className="text-2xl font-black">My Promo Ads</h2>
-          <div className="text-right flex items-center gap-2">
-            <div>
-              <span className="text-3xl font-black text-yellow-300">{adPoints}</span>
-              <p className="text-xs font-bold">Ad Points</p>
-            </div>
-            <button onClick={onClose}><X className="w-6 h-6" /></button>
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-4">
-          <button onClick={() => { resetForm(); setView("create"); }} className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-lg px-8 py-3 rounded-full border-2 border-yellow-600 shadow-lg w-64">
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="My Promo Ads" />
+        <div className="flex flex-col items-center gap-4 mt-4">
+          <button onClick={() => { resetForm(); setView("create"); }}
+            className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black text-lg px-8 py-3 rounded-lg w-72 transition-colors">
             Create New Promo
           </button>
-          <button onClick={() => { fetchTemplates(); setView("templates"); }} className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-lg px-8 py-3 rounded-full border-2 border-yellow-600 shadow-lg w-64">
+          <button onClick={() => { fetchTemplates(); setView("templates"); }}
+            className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black text-lg px-8 py-3 rounded-lg w-72 transition-colors">
             Use Saved Templates
           </button>
-          <h3 className="text-xl font-black mt-2">Created Promos</h3>
-          <button onClick={() => { fetchMyPromos(); setView("my-promos"); }} className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-lg px-8 py-3 rounded-full border-2 border-yellow-600 shadow-lg w-64">
+          <h3 className="text-xl font-black mt-4 text-neutral-300">Created Promos</h3>
+          <button onClick={() => { fetchMyPromos(); setView("my-promos"); }}
+            className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-black text-lg px-8 py-3 rounded-lg w-72 transition-colors">
             Show My Promos
           </button>
-          <button className="bg-orange-600 hover:bg-orange-700 text-white font-black text-lg px-8 py-3 rounded-full border-2 border-orange-800 shadow-lg w-64 mt-2">
+          <button className="bg-yellow-400 hover:bg-yellow-300 text-black font-black text-lg px-8 py-3 rounded-lg w-72 mt-4 transition-colors">
             Buy Ad Points
           </button>
         </div>
@@ -244,36 +258,28 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   // ─── CREATE VIEW ───
   if (view === "create") {
     return (
-      <div className="bg-orange-500 text-white p-5 rounded-2xl w-full font-['Antigone',sans-serif] max-h-[80vh] overflow-y-auto">
-        <div className="flex items-start justify-between mb-4">
-          <h2 className="text-2xl font-black">My Promo Ads</h2>
-          <div className="text-right flex items-center gap-2">
-            <div>
-              <span className="text-3xl font-black text-yellow-300">{adPoints}</span>
-              <p className="text-xs font-bold">Ad Points</p>
-            </div>
-            <button onClick={() => setView("main")}><X className="w-6 h-6" /></button>
-          </div>
-        </div>
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="Create Promo" backTo="main" />
 
-        <div className="flex justify-center mb-4">
-          <button onClick={() => { fetchMyPromos(); setView("my-promos"); }} className="bg-yellow-400 text-black font-black px-6 py-2 rounded-full border-2 border-yellow-600">
+        <div className="flex justify-center mb-5">
+          <button onClick={() => { fetchMyPromos(); setView("my-promos"); }}
+            className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors">
             Show My Promos
           </button>
         </div>
 
-        {isVip && <p className="text-center text-sm font-bold mb-2">vip: Yes</p>}
+        {isVip && <p className="text-center text-sm font-bold text-yellow-400 mb-3">⭐ VIP Member</p>}
 
         {/* Image upload (VIP only) */}
         {isVip && (
-          <div className="flex justify-center mb-4">
-            <label className="bg-yellow-400 rounded-lg w-40 h-32 flex items-center justify-center cursor-pointer border-2 border-yellow-600 overflow-hidden">
+          <div className="flex justify-center mb-5">
+            <label className="bg-neutral-800 border border-neutral-600 rounded-xl w-44 h-32 flex items-center justify-center cursor-pointer overflow-hidden hover:border-neutral-500 transition-colors">
               {imagePreview ? (
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
               ) : (
-                <div className="text-black font-bold text-center">
+                <div className="text-neutral-400 text-center">
                   <ImageIcon className="w-8 h-8 mx-auto mb-1" />
-                  Add Photo
+                  <span className="text-sm font-bold">Add Photo</span>
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
@@ -281,72 +287,71 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-4 max-w-md mx-auto">
           <Input
             placeholder="Promo Title (optional)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-yellow-400 border-yellow-600 text-black placeholder:text-black/60 font-bold rounded-full"
+            className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
           />
           <Textarea
             placeholder="Promo brief description (optional)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="bg-yellow-400 border-yellow-600 text-black placeholder:text-black/60 font-bold rounded-xl min-h-[80px]"
+            className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold min-h-[80px]"
           />
 
-          {/* URL fields (VIP only) */}
           {isVip && (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <div className="flex-1">
-                <p className="text-xs font-bold mb-1">Target Url Link (optional)</p>
+                <p className="text-xs font-bold text-neutral-400 mb-1">Target URL Link (optional)</p>
                 <Input
                   placeholder="Enter url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="bg-yellow-400 border-yellow-600 text-black placeholder:text-black/60 font-bold rounded-full"
+                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
                 />
               </div>
               <div className="w-32">
-                <p className="text-xs font-bold mb-1">Url Link Text (optional)</p>
+                <p className="text-xs font-bold text-neutral-400 mb-1">CTA Text</p>
                 <Input
                   value={urlText}
                   onChange={(e) => setUrlText(e.target.value)}
-                  className="bg-yellow-400 border-yellow-600 text-black placeholder:text-black/60 font-bold rounded-full"
+                  className="bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-500 font-bold"
                 />
               </div>
             </div>
           )}
 
           {/* Ad Points */}
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="font-bold">Use</span>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <span className="font-bold text-neutral-300">Use</span>
             <Input
               type="number"
               min={0}
               max={adPoints}
               value={pointsToUse}
               onChange={(e) => setPointsToUse(Math.min(adPoints, Math.max(0, Number(e.target.value))))}
-              className="bg-white text-black font-bold w-20 text-center rounded-md"
+              className="bg-neutral-800 border-neutral-600 text-white font-bold w-20 text-center"
             />
-            <span className="font-bold">Ad Points</span>
+            <span className="font-bold text-neutral-300">Ad Points</span>
           </div>
-          <p className="text-center text-sm font-bold text-yellow-200">To reach ~{reachEstimate} users</p>
+          <p className="text-center text-sm font-bold text-yellow-400">To reach ~{reachEstimate} users</p>
 
           {/* Targeting */}
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-6 justify-center">
             <div>
-              <p className="text-xs font-bold text-center mb-1">Country</p>
+              <p className="text-xs font-bold text-neutral-400 text-center mb-1">Country</p>
               <select value={country} onChange={(e) => setCountry(e.target.value)}
-                className="bg-yellow-400 border-2 border-yellow-600 text-black font-bold rounded-full px-4 py-2">
+                className="bg-neutral-800 border border-neutral-600 text-white font-bold rounded-lg px-4 py-2 text-sm">
                 <option>All Countries</option>
                 <option>US</option><option>UK</option><option>CA</option><option>AU</option>
               </select>
             </div>
             <div>
-              <p className="text-xs font-bold text-center mb-1">Interest</p>
+              <p className="text-xs font-bold text-neutral-400 text-center mb-1">Interest</p>
               <select value={interest} onChange={(e) => setInterest(e.target.value)}
-                className="bg-yellow-400 border-2 border-yellow-600 text-black font-bold rounded-full px-4 py-2">
+                className="bg-neutral-800 border border-neutral-600 text-white font-bold rounded-lg px-4 py-2 text-sm">
                 <option>All Interests</option>
                 <option>Gaming</option><option>Music</option><option>Sports</option><option>Tech</option>
               </select>
@@ -355,12 +360,16 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
 
           {/* Gender (VIP only) */}
           {isVip && (
-            <div className="text-center mt-2">
-              <p className="text-xs font-bold mb-1">Gender</p>
+            <div className="text-center pt-2">
+              <p className="text-xs font-bold text-neutral-400 mb-2">Gender Targeting</p>
               <div className="flex justify-center gap-2">
                 {["Male", "Female", "Both"].map((g) => (
                   <button key={g} onClick={() => setGender(g)}
-                    className={`px-4 py-1.5 rounded-full font-bold text-sm ${gender === g ? "bg-black text-white" : "bg-yellow-400 text-black border-2 border-yellow-600"}`}>
+                    className={`px-5 py-1.5 rounded-lg font-bold text-sm transition-colors ${
+                      gender === g
+                        ? "bg-white text-black"
+                        : "bg-neutral-800 border border-neutral-600 text-neutral-300 hover:bg-neutral-700"
+                    }`}>
                     {g}
                   </button>
                 ))}
@@ -369,28 +378,29 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
           )}
 
           {/* Same user toggle */}
-          <div className="flex justify-center mt-2">
+          <div className="flex justify-center pt-1">
             <button onClick={() => setSameuser(!sameuser)}
-              className={`px-4 py-2 rounded-full font-bold text-sm ${sameuser ? "bg-yellow-400 text-black border-2 border-yellow-600" : "bg-orange-600 text-white border-2 border-orange-800"}`}>
+              className={`px-5 py-2 rounded-lg font-bold text-sm transition-colors ${
+                sameuser
+                  ? "bg-white text-black"
+                  : "bg-neutral-800 border border-neutral-600 text-neutral-300 hover:bg-neutral-700"
+              }`}>
               Show promo to same user (more than once)
             </button>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <button onClick={handlePost} className="bg-green-600 hover:bg-green-700 text-white font-black px-6 py-2 rounded-full">
+          <div className="flex items-center justify-center gap-3 pt-4">
+            <button onClick={handlePost} className="bg-green-600 hover:bg-green-700 text-white font-black px-8 py-2.5 rounded-lg transition-colors">
               Post
             </button>
-            <button onClick={handleSaveTemplate} className="bg-red-700 hover:bg-red-800 text-white font-black px-6 py-2 rounded-full border-2 border-yellow-400">
+            <button onClick={handleSaveTemplate} className="bg-neutral-700 hover:bg-neutral-600 border border-neutral-500 text-white font-black px-6 py-2.5 rounded-lg transition-colors">
               Save as Template
-            </button>
-            <button onClick={() => setView("main")} className="text-white/80 hover:text-white text-sm font-bold">
-              Preview Promo
             </button>
           </div>
 
-          <div className="flex justify-center mt-3">
-            <button className="bg-orange-600 hover:bg-orange-700 text-white font-black px-8 py-2 rounded-full border-2 border-orange-800">
+          <div className="flex justify-center pt-3 pb-8">
+            <button className="bg-yellow-400 hover:bg-yellow-300 text-black font-black px-8 py-2.5 rounded-lg transition-colors">
               Buy Ad Points
             </button>
           </div>
@@ -402,40 +412,36 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   // ─── MY PROMOS VIEW ───
   if (view === "my-promos") {
     return (
-      <div className="bg-orange-500 text-white p-5 rounded-2xl w-full font-['Antigone',sans-serif]">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setView("main")} className="text-white font-bold">← Back</button>
-          <h2 className="text-xl font-black">My Promos</h2>
-          <button onClick={onClose}><X className="w-6 h-6" /></button>
-        </div>
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="My Promos" backTo="main" />
         {loading ? (
-          <p className="text-center">Loading...</p>
+          <p className="text-center text-neutral-400">Loading...</p>
         ) : myPromos.length === 0 ? (
-          <p className="text-center text-white/70">No promos yet. Create one!</p>
+          <p className="text-center text-neutral-500 mt-8">No promos yet. Create one!</p>
         ) : (
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-3 max-w-md mx-auto">
             {myPromos.map((p) => (
-              <div key={p.id} className="bg-orange-600 rounded-xl p-3 flex items-center gap-3">
+              <div key={p.id} className="bg-neutral-900 border border-neutral-700 rounded-xl p-3 flex items-center gap-3">
                 {p.image_thumb_url ? (
-                  <img src={p.image_thumb_url} className="w-12 h-12 rounded object-cover" />
+                  <img src={p.image_thumb_url} className="w-12 h-12 rounded-lg object-cover" />
                 ) : (
-                  <div className="w-12 h-12 rounded bg-orange-700 flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-orange-300" />
+                  <div className="w-12 h-12 rounded-lg bg-neutral-800 flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-neutral-600" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold truncate">{p.title}</p>
-                  <p className="text-xs text-white/70">⭐ {p.ad_points_balance ?? 0} pts • {p.status}</p>
+                  <p className="text-xs text-neutral-400">⭐ {p.ad_points_balance ?? 0} pts • {p.status}</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => togglePromoActive(p)} className="p-1.5 hover:bg-white/10 rounded-full">
-                    {p.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-white/50" />}
+                  <button onClick={() => togglePromoActive(p)} className="p-1.5 hover:bg-neutral-800 rounded-full transition-colors">
+                    {p.is_active ? <Eye className="w-4 h-4 text-green-400" /> : <EyeOff className="w-4 h-4 text-neutral-600" />}
                   </button>
-                  <button onClick={() => fetchAnalytics(p.id)} className="p-1.5 hover:bg-white/10 rounded-full">
-                    <BarChart3 className="w-4 h-4" />
+                  <button onClick={() => fetchAnalytics(p.id)} className="p-1.5 hover:bg-neutral-800 rounded-full transition-colors">
+                    <BarChart3 className="w-4 h-4 text-neutral-400" />
                   </button>
-                  <button onClick={() => deletePromo(p.id)} className="p-1.5 hover:bg-white/10 rounded-full text-red-300">
-                    <Trash2 className="w-4 h-4" />
+                  <button onClick={() => deletePromo(p.id)} className="p-1.5 hover:bg-neutral-800 rounded-full transition-colors">
+                    <Trash2 className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>
@@ -449,23 +455,19 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   // ─── TEMPLATES VIEW ───
   if (view === "templates") {
     return (
-      <div className="bg-orange-500 text-white p-5 rounded-2xl w-full font-['Antigone',sans-serif]">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setView("main")} className="text-white font-bold">← Back</button>
-          <h2 className="text-xl font-black">Saved Templates</h2>
-          <button onClick={onClose}><X className="w-6 h-6" /></button>
-        </div>
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="Saved Templates" backTo="main" />
         {loading ? (
-          <p className="text-center">Loading...</p>
+          <p className="text-center text-neutral-400">Loading...</p>
         ) : templates.length === 0 ? (
-          <p className="text-center text-white/70">No templates saved yet.</p>
+          <p className="text-center text-neutral-500 mt-8">No templates saved yet.</p>
         ) : (
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-3 max-w-md mx-auto">
             {templates.map((t: any) => (
               <button key={t.id} onClick={() => loadTemplate(t)}
-                className="w-full bg-yellow-400 text-black rounded-xl p-3 text-left hover:bg-yellow-300">
+                className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl p-4 text-left transition-colors">
                 <p className="font-bold">{t.title || "Untitled"}</p>
-                <p className="text-xs text-black/60">⭐ {t.ad_points_balance ?? 0} pts • {t.gender}</p>
+                <p className="text-xs text-neutral-400 mt-1">⭐ {t.ad_points_balance ?? 0} pts • {t.gender}</p>
               </button>
             ))}
           </div>
@@ -477,28 +479,24 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   // ─── ANALYTICS VIEW ───
   if (view === "analytics" && analytics) {
     return (
-      <div className="bg-orange-500 text-white p-5 rounded-2xl w-full font-['Antigone',sans-serif]">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => { setView("my-promos"); fetchMyPromos(); }} className="text-white font-bold">← Back</button>
-          <h2 className="text-xl font-black">Promo Analytics</h2>
-          <button onClick={onClose}><X className="w-6 h-6" /></button>
-        </div>
-        <div className="space-y-4">
-          <div className="bg-orange-600 rounded-xl p-4 text-center">
-            <p className="text-3xl font-black">{analytics.totalViews}</p>
-            <p className="text-sm font-bold text-white/80">People Viewed Your Promo</p>
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] p-5 overflow-y-auto">
+        <Header title="Promo Analytics" backTo="my-promos" />
+        <div className="space-y-4 max-w-md mx-auto">
+          <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-5 text-center">
+            <p className="text-4xl font-black">{analytics.totalViews}</p>
+            <p className="text-sm font-bold text-neutral-400 mt-1">People Viewed Your Promo</p>
           </div>
-          <div className="bg-orange-600 rounded-xl p-4 text-center">
-            <p className="text-3xl font-black">{analytics.avgWatchTime}s</p>
-            <p className="text-sm font-bold text-white/80">Average Watch Time</p>
+          <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-5 text-center">
+            <p className="text-4xl font-black">{analytics.avgWatchTime}s</p>
+            <p className="text-sm font-bold text-neutral-400 mt-1">Average Watch Time</p>
           </div>
-          <div className="bg-orange-600 rounded-xl p-4 text-center">
-            <p className="text-3xl font-black">{analytics.pauseRate}%</p>
-            <p className="text-sm font-bold text-white/80">Average Pause Rate</p>
+          <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-5 text-center">
+            <p className="text-4xl font-black">{analytics.pauseRate}%</p>
+            <p className="text-sm font-bold text-neutral-400 mt-1">Average Pause Rate</p>
           </div>
-          <div className="bg-orange-600 rounded-xl p-4 text-center">
-            <p className="text-3xl font-black">{analytics.linkClicks}</p>
-            <p className="text-sm font-bold text-white/80">Link Clicks</p>
+          <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-5 text-center">
+            <p className="text-4xl font-black">{analytics.linkClicks}</p>
+            <p className="text-sm font-bold text-neutral-400 mt-1">Link Clicks</p>
           </div>
         </div>
       </div>
