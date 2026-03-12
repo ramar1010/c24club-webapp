@@ -156,13 +156,16 @@ Deno.serve(async (req) => {
       const freezeInfo = await checkFreezeStatus(supabase, userId);
       const cap = isVip ? 30 : 10;
 
-      const today = new Date().toISOString().split("T")[0];
+      // Use sessionId to track cap per-session (not per-day)
+      // If no sessionId provided, fall back to date-based tracking
+      const trackingSessionId = sessionId || new Date().toISOString().split("T")[0];
+      
       const { data: logData } = await supabase
         .from("call_minutes_log")
         .select("minutes_earned")
         .eq("user_id", userId)
         .eq("partner_id", partnerId)
-        .eq("session_date", today)
+        .eq("session_date", trackingSessionId)
         .maybeSingle();
 
       const alreadyEarned = logData?.minutes_earned ?? 0;
@@ -192,7 +195,7 @@ Deno.serve(async (req) => {
           {
             user_id: userId,
             partner_id: partnerId,
-            session_date: today,
+            session_date: trackingSessionId,
             minutes_earned: alreadyEarned + actualEarned,
             updated_at: new Date().toISOString(),
           },
