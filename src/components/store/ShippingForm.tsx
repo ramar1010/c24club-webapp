@@ -79,20 +79,20 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           placeholder="First name"
           value={form.firstName}
           onChange={(e) => update("firstName", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
         <input
           placeholder="Last name"
           value={form.lastName}
           onChange={(e) => update("lastName", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <input
           placeholder="Mobile"
           value={form.mobile}
           onChange={(e) => update("mobile", e.target.value)}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60"
         />
 
         <textarea
@@ -100,7 +100,7 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
           value={form.notes}
           onChange={(e) => update("notes", e.target.value)}
           rows={3}
-          className="w-full bg-transparent border-2 border-black rounded-xl px-4 py-3 font-bold placeholder:text-black/50 focus:outline-none resize-none"
+          className="w-full bg-white/10 border-2 border-white/30 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/50 focus:outline-none focus:border-white/60 resize-none"
         />
 
         <h2 className="font-black text-lg text-center mt-4">Address</h2>
