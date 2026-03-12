@@ -5,6 +5,7 @@ import { useState } from "react";
 
 interface MinutesFrozenPopupProps {
   onDismiss: () => void;
+  onSnooze?: () => void;
   onGoToChallenges: () => void;
   isVip?: boolean;
 }
