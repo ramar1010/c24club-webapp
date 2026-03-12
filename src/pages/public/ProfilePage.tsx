@@ -55,6 +55,10 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     navigate("/");
   };
 
+  if (showSpin) {
+    return <SpinToWinPage onClose={() => setShowSpin(false)} />;
+  }
+
   if (showChallenges) {
     return <WeeklyChallengesPage onClose={() => setShowChallenges(false)} />;
   }
