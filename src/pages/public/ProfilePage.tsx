@@ -130,7 +130,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Row 2: Settings, Rulebook, Logout */}
       <div className="flex justify-center gap-8 mb-8">
-        <IconButton src={settingsIcon} label="SETTINGS" />
+        <IconButton src={settingsIcon} label="SETTINGS" onClick={() => navigate("/settings")} />
         <IconButton src={rulebookIcon} label="RULEBOOK" onClick={() => navigate("/rules")} />
         <IconButton src={logoutIcon} label="LOGOUT" onClick={handleLogout} />
       </div>

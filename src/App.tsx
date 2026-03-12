@@ -60,6 +60,7 @@ const App = () => (
             <Route path="/store" element={<RewardStorePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/my-rewards" element={<MyRewardsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
