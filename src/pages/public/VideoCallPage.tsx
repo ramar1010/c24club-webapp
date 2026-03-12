@@ -10,6 +10,8 @@ import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
+import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
+import MinuteLossToast from "@/components/videocall/MinuteLossToast";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
 import NavIcon from "@/components/videocall/NavIcon";
 import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
