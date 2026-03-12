@@ -51,7 +51,7 @@ const App = () => (
               <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
               <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
               <Route path="blog" element={<PlaceholderPage title="Blog" />} />
-              <Route path="milestones-page" element={<PlaceholderPage title="Milestones" />} />
+              
             </Route>
 
             {/* Video call (full-screen, no public layout) */}
