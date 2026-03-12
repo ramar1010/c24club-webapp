@@ -620,6 +620,23 @@ const VideoCallPage = () => {
         />
       )}
 
+      {/* Skip Penalty Popup (first 3 times) */}
+      {showSkipPenaltyPopup && (
+        <SkipPenaltyPopup
+          minutesLost={2}
+          onDismiss={() => setShowSkipPenaltyPopup(false)}
+          onUpgrade={() => {
+            setShowSkipPenaltyPopup(false);
+            setOverlayPage("vip");
+          }}
+        />
+      )}
+
+      {/* Floating minute loss toast (after 3 times) */}
+      {showMinuteLossToast && (
+        <MinuteLossToast minutesLost={2} onDone={() => setShowMinuteLossToast(false)} />
+      )}
+
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
         <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
