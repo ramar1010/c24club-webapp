@@ -23,6 +23,7 @@ import MinutesFrozenPopup from "@/components/videocall/MinutesFrozenPopup";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
+import ReportUserOverlay from "@/components/videocall/ReportUserOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 
