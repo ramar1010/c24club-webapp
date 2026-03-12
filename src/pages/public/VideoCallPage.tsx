@@ -58,7 +58,13 @@ const VideoCallPage = () => {
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
-  
+
+  // Skip penalty state
+  const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
+  const [showMinuteLossToast, setShowMinuteLossToast] = useState(false);
+  const skipPenaltyCountRef = useRef(0); // tracks how many times penalty shown
+  const connectionStartRef = useRef<number | null>(null); // track when connection started
+
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
   const memberId = user?.id ?? "anonymous";
