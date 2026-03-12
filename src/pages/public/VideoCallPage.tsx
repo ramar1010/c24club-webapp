@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
+import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
@@ -90,6 +91,11 @@ const VideoCallPage = () => {
     remoteVideoRef,
     localStreamRef,
     isConnected: callState === "connected",
+  });
+
+  const { localBlackScreen } = useLocalBlackScreenDetection({
+    localVideoRef,
+    isActive: callState !== "idle",
   });
 
   const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
@@ -425,6 +431,17 @@ const VideoCallPage = () => {
             <button onClick={stop} className="absolute top-2 left-2 z-20 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full p-1.5 transition-colors">
               <X className="w-5 h-5" />
             </button>
+          )}
+
+          {/* Warning to local user when their camera is black */}
+          {localBlackScreen && isActive && callState === "connected" && (
+            <div className="absolute inset-0 z-30 bg-black/80 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-4xl md:text-5xl">📵</span>
+              <p className="text-white font-black text-sm md:text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
+              <p className="text-yellow-400 text-xs md:text-sm text-center px-6 mt-1 animate-pulse font-bold">
+                Turn on your camera or you'll appear faceless
+              </p>
+            </div>
           )}
 
 
