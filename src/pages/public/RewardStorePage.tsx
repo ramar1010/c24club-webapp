@@ -368,14 +368,21 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <>
               <button
                 onClick={() => {
-                  setShowSpinToWin(null);
-                  setSpinReelItems([]);
-                  setSelectedReward(targetReward);
-                  setShowShipping(true);
+                  const isSpinOrAd = targetReward.type === "Spins" || targetReward.type === "Ad Points";
+                  if (isSpinOrAd) {
+                    handleInstantRedeem(targetReward);
+                    setShowSpinToWin(null);
+                    setSpinReelItems([]);
+                  } else {
+                    setShowSpinToWin(null);
+                    setSpinReelItems([]);
+                    setSelectedReward(targetReward);
+                    setShowShipping(true);
+                  }
                 }}
                 className="w-full py-4 rounded-full font-black text-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-lg"
               >
-                🎁 REDEEM ITEM
+                {targetReward.type === "Spins" ? "🎰 CLAIM SPIN TOKENS" : targetReward.type === "Ad Points" ? "⚡ CLAIM AD POINTS" : "🎁 REDEEM ITEM"}
               </button>
               {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
                 <button
@@ -497,7 +504,8 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   if (selectedReward) {
     const rarity = RARITY_STYLES[selectedReward.rarity] || RARITY_STYLES.common;
     const sizes = selectedReward.sizes?.split(",").map((s: string) => s.trim()).filter(Boolean) || [];
-    const isInstantType = selectedReward.type === "Spins" || selectedReward.type === "Ad Points";
+    const isSpinsOrAdPoints = selectedReward.type === "Spins" || selectedReward.type === "Ad Points";
+    const isInstantType = isSpinsOrAdPoints && selectedReward.rarity === "common";
     const isRareOrLegendary = !isInstantType && (selectedReward.rarity === "rare" || selectedReward.rarity === "legendary");
     const canSpinThis = !isInstantType && (selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip));
     const displayShippingFee = isPremiumVip ? 0 : (Number(selectedReward.shipping_fee) || 0);
@@ -713,7 +721,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </button>
           )}
 
-          {(selectedReward.type === "Spins" || selectedReward.type === "Ad Points") && (
+          {isInstantType && (
             <button
               onClick={() => handleInstantRedeem(selectedReward)}
               disabled={instantRedeeming || (userMinutes ?? 0) < selectedReward.minutes_cost}
