@@ -256,13 +256,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { data: memberData } = await supabase
-        .from("member_minutes")
-        .select("ad_points")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      const currentAdPoints = memberData?.ad_points ?? 0;
+      const currentAdPoints = vipData?.ad_points ?? 0;
       const newAdPoints = currentAdPoints + pointsToAward;
 
       await supabase
