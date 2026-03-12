@@ -99,7 +99,12 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
-  const isMobile = useIsMobile();
+  // Reset gender filter if not VIP
+  useEffect(() => {
+    if (!subscribed && genderFilter !== "both") {
+      setGenderFilter("both");
+    }
+  }, [subscribed, genderFilter]);
 
   const fetchPinnedTopics = async (userId: string) => {
     const { data: pins } = await supabase
