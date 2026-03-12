@@ -577,6 +577,14 @@ const VideoCallPage = () => {
                 <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
               </div>
             )}
+            {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred && (
+              <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">🙈</span>
+                <p className="text-white font-black text-sm mt-2">PARTNER HIDDEN</p>
+                <p className="text-yellow-400 text-xs text-center px-6 mt-1">Since you're faceless, we won't show you the opposing user's face.</p>
+                <p className="text-neutral-400 text-xs text-center px-6 mt-1">Turn on your camera to see them.</p>
+              </div>
+            )}
             {callState !== "connected" && (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
