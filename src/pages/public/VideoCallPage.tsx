@@ -414,18 +414,6 @@ const VideoCallPage = () => {
           <video ref={localVideoRef} autoPlay muted playsInline
            className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
 
-          {/* Black screen mirror overlay */}
-          {partnerBlackScreen && isActive && (
-            <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center gap-2 pointer-events-none">
-              <span className="text-3xl">📵</span>
-              <p className="text-white font-black text-sm text-center px-4">
-                YOUR CAMERA IS HIDDEN
-              </p>
-              <p className="text-neutral-400 text-xs text-center px-6">
-                Your partner can't see you because their camera is off. Show your face to restore video.
-              </p>
-            </div>
-          )}
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd && (
             <PromoAdOverlay
@@ -505,6 +493,13 @@ const VideoCallPage = () => {
                   <p className="text-red-400 text-[7px] font-bold">{nsfwStrikes}/5</p>
                 </div>
               )}
+              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl">📵</span>
+                  <p className="text-white font-black text-[8px] text-center px-1">FACELESS</p>
+                  <p className="text-neutral-400 text-[7px] text-center px-1">Tap Next to skip</p>
+                </div>
+              )}
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-neutral-600 text-[10px] text-center px-1">
@@ -549,6 +544,13 @@ const VideoCallPage = () => {
                 {nsfwStrikes >= 3 && (
                   <p className="text-yellow-400 text-xs font-bold mt-1 animate-pulse">⚠️ Warning: Ban at 5 strikes</p>
                 )}
+              </div>
+            )}
+            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+              <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-4xl">📵</span>
+                <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
+                <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
               </div>
             )}
             {callState !== "connected" && (
