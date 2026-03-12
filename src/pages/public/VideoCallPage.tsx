@@ -252,6 +252,12 @@ const VideoCallPage = () => {
               <span>{totalMinutes} Minutes</span>
             )}
           </div>
+          {callState === "connected" && (
+            <div className="flex items-center justify-end gap-1 text-[10px] text-green-400 font-mono font-bold">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span>{timerDisplay}</span>
+            </div>
+          )}
           <div className="flex items-center justify-end gap-1 text-sm text-yellow-400 font-bold">
             <span>⭐</span>
             <span>{adPoints} Ad Points</span>
