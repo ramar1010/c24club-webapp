@@ -42,9 +42,9 @@ const VideoCallPage = () => {
   const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
+  
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -294,16 +294,7 @@ const VideoCallPage = () => {
       )}
 
       {/* Panels */}
-      {showPromo ? (
-        <div className="px-3 pb-4">
-          <PromoPanel
-            userId={memberId}
-            adPoints={adPoints}
-            onClose={() => setShowPromo(false)}
-            onAdPointsChange={refreshBalance}
-          />
-        </div>
-      ) : showRedeem ? (
+      {showRedeem ? (
         <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div>
@@ -315,7 +306,7 @@ const VideoCallPage = () => {
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
           </div>
           <div className="flex justify-center gap-8 px-4 pb-4">
-            <NavIcon src={promoIcon} label="PROMO" onClick={() => setShowPromo(true)} />
+            <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label="VIP" />
           </div>
@@ -342,6 +333,16 @@ const VideoCallPage = () => {
       {overlayPage === "profile" && (
         <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <ProfilePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
+      {overlayPage === "promo" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <PromoPanel
+            userId={memberId}
+            adPoints={adPoints}
+            onClose={() => setOverlayPage(null)}
+            onAdPointsChange={refreshBalance}
+          />
         </FullScreenOverlay>
       )}
       {overlayPage === "topics" && (
