@@ -82,6 +82,8 @@ const VideoCallPage = () => {
     elapsedSeconds,
   });
 
+  const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
+
   const isMobile = useIsMobile();
 
   const fetchPinnedTopics = async (userId: string) => {
