@@ -7,11 +7,20 @@ const corsHeaders = {
 };
 
 // Ad points tiers based on call duration
-function computeAdPoints(elapsedSeconds: number): number {
-  if (elapsedSeconds >= 300) return 4;
-  if (elapsedSeconds >= 120) return 2;
-  if (elapsedSeconds >= 30) return 1;
-  return 0;
+// Premium VIP gets 2x ad points
+function computeAdPoints(elapsedSeconds: number, isPremiumVip: boolean): number {
+  let points = 0;
+  if (elapsedSeconds >= 300) points = 4;
+  else if (elapsedSeconds >= 120) points = 2;
+  else if (elapsedSeconds >= 30) points = 1;
+  
+  // Premium VIP: 30s=2, 2min=4, 5min=6 (which is base * 2 capped differently)
+  if (isPremiumVip && points > 0) {
+    if (elapsedSeconds >= 300) return 6;
+    if (elapsedSeconds >= 120) return 4;
+    return 2;
+  }
+  return points;
 }
 
 // Check if user should be frozen
@@ -232,7 +241,14 @@ Deno.serve(async (req) => {
         );
       }
 
-      const pointsToAward = computeAdPoints(elapsedSeconds);
+      // Check if user is premium VIP for 2x ad points
+      const { data: vipData } = await supabase
+        .from("member_minutes")
+        .select("ad_points, is_vip, vip_tier")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const isPremiumVip = vipData?.is_vip && vipData?.vip_tier === "premium";
+      const pointsToAward = computeAdPoints(elapsedSeconds, isPremiumVip);
       if (pointsToAward <= 0) {
         return new Response(
           JSON.stringify({ success: true, adPointsEarned: 0 }),
@@ -240,13 +256,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { data: memberData } = await supabase
-        .from("member_minutes")
-        .select("ad_points")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      const currentAdPoints = memberData?.ad_points ?? 0;
+      const currentAdPoints = vipData?.ad_points ?? 0;
       const newAdPoints = currentAdPoints + pointsToAward;
 
       await supabase

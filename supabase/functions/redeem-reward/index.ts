@@ -138,7 +138,17 @@ Deno.serve(async (req) => {
         throw insertErr;
       }
 
-      const shippingFee = Number(reward.shipping_fee) || 0;
+      let shippingFee = Number(reward.shipping_fee) || 0;
+
+      // Premium VIP gets free shipping
+      const { data: vipCheck } = await supabase
+        .from("member_minutes")
+        .select("is_vip, vip_tier")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (vipCheck?.is_vip && vipCheck?.vip_tier === "premium") {
+        shippingFee = 0;
+      }
 
       // If shipping fee > 0, create Stripe checkout session
       if (shippingFee > 0) {

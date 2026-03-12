@@ -48,6 +48,20 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Fetch real chance enhancer
+  const { data: ceData } = useQuery({
+    queryKey: ["profile-chance-enhancer", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("spin-wheel", {
+        body: { type: "get_chance_enhancer", userId: user!.id },
+      });
+      return data || { chance_enhancer: 10, is_vip: false };
+    },
+  });
+
+  const chanceEnhancer = ceData?.chance_enhancer ?? 10;
+
   const handleLogout = async () => {
     await signOut();
     navigate("/");
@@ -85,9 +99,14 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Title / Enhancer */}
       <div className="text-center mb-2">
-        <p className="text-lg font-black">
-          🔥 10% Chance Enhancer
-        </p>
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 inline-flex items-center gap-2">
+          <span className="text-orange-400 text-sm font-black">
+            🔥 {Math.round(chanceEnhancer)}% Chance Enhancer
+          </span>
+          {ceData?.is_vip && (
+            <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold">VIP</span>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
