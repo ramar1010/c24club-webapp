@@ -37,6 +37,7 @@ import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
 import giftIcon from "@/assets/videocall/gift-icon.svg";
 import reportIconImg from "@/assets/videocall/report-icon.png";
+import frozenEmoji from "@/assets/videocall/frozen-emoji.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
