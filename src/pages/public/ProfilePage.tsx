@@ -20,6 +20,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showChallenges, setShowChallenges] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
