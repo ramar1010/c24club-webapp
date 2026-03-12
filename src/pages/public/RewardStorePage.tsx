@@ -686,7 +686,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </div>
           )}
 
-          {!isRareOrLegendary && (
+          {!isRareOrLegendary && selectedReward.type !== "Spins" && selectedReward.type !== "Ad Points" && (
             <button
               onClick={() => setShowShipping(true)}
               disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}
@@ -697,6 +697,27 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
               }`}
             >
               Redeem This Product
+            </button>
+          )}
+
+          {(selectedReward.type === "Spins" || selectedReward.type === "Ad Points") && (
+            <button
+              onClick={() => handleInstantRedeem(selectedReward)}
+              disabled={instantRedeeming || (userMinutes ?? 0) < selectedReward.minutes_cost}
+              className={`w-full font-black text-xl py-4 rounded-xl transition-colors shadow-lg ${
+                (userMinutes ?? 0) >= selectedReward.minutes_cost
+                  ? selectedReward.type === "Spins"
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/30 hover:scale-105 active:scale-95"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-900/30 hover:scale-105 active:scale-95"
+                  : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+              }`}
+            >
+              {instantRedeeming
+                ? "Redeeming..."
+                : selectedReward.type === "Spins"
+                  ? `🎰 Redeem ${selectedReward.grant_amount || 0} Spin${(selectedReward.grant_amount || 0) !== 1 ? "s" : ""}`
+                  : `⚡ Redeem ${selectedReward.grant_amount || 0} Ad Points`
+              }
             </button>
           )}
         </div>
