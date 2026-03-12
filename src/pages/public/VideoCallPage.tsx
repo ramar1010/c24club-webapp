@@ -154,6 +154,20 @@ const VideoCallPage = () => {
     },
   });
 
+  // Fetch partner's pinned socials
+  const { data: partnerPinnedSocials = [] } = useQuery({
+    queryKey: ["partner_pinned_socials", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("vip_settings")
+        .select("pinned_socials")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      return (data?.pinned_socials as string[]) ?? [];
+    },
+  });
+
   // Check for unban/checkout/gift success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
