@@ -162,6 +162,7 @@ export type Database = {
           chance_enhancer: number
           freeze_free_until: string | null
           frozen_at: string | null
+          frozen_cap_popup_shown: boolean
           id: string
           is_frozen: boolean
           is_vip: boolean
@@ -184,6 +185,7 @@ export type Database = {
           chance_enhancer?: number
           freeze_free_until?: string | null
           frozen_at?: string | null
+          frozen_cap_popup_shown?: boolean
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
@@ -206,6 +208,7 @@ export type Database = {
           chance_enhancer?: number
           freeze_free_until?: string | null
           frozen_at?: string | null
+          frozen_cap_popup_shown?: boolean
           id?: string
           is_frozen?: boolean
           is_vip?: boolean
