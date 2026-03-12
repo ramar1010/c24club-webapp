@@ -10,6 +10,8 @@ import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
+import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
+import MinuteLossToast from "@/components/videocall/MinuteLossToast";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
 import NavIcon from "@/components/videocall/NavIcon";
 import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
@@ -56,7 +58,13 @@ const VideoCallPage = () => {
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
-  
+
+  // Skip penalty state
+  const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
+  const [showMinuteLossToast, setShowMinuteLossToast] = useState(false);
+  const skipPenaltyCountRef = useRef(0); // tracks how many times penalty shown
+  const connectionStartRef = useRef<number | null>(null); // track when connection started
+
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
   const memberId = user?.id ?? "anonymous";
@@ -83,6 +91,7 @@ const VideoCallPage = () => {
     dismissCapPopup,
     flushMinutes,
     freezeInfo,
+    refreshBalance: refreshMinutesBalance,
   } = useCallMinutes({
     userId: memberId,
     partnerId: currentPartnerId,
@@ -116,6 +125,15 @@ const VideoCallPage = () => {
       setGenderFilter("both");
     }
   }, [subscribed, genderFilter]);
+
+  // Track when connection starts for skip penalty
+  useEffect(() => {
+    if (callState === "connected") {
+      connectionStartRef.current = Date.now();
+    } else {
+      connectionStartRef.current = null;
+    }
+  }, [callState]);
 
   const isMobile = useIsMobile();
 
@@ -244,6 +262,36 @@ const VideoCallPage = () => {
 
   const handleStart = () => startCall();
   const handleNext = async () => {
+    // --- Skip Penalty Logic ---
+    const connectedDurationMs = connectionStartRef.current
+      ? Date.now() - connectionStartRef.current
+      : Infinity;
+    const connectedDurationSec = connectedDurationMs / 1000;
+    const isQuickSkip = connectedDurationSec < 5;
+
+    // Only penalize non-VIP users
+    if (isQuickSkip && !subscribed && totalMinutes > 0) {
+      // Deduct 2 minutes server-side
+      const { data: penaltyData } = await supabase.functions.invoke("earn-minutes", {
+        body: { type: "deduct", userId: memberId, amount: 2 },
+      });
+
+      // Refresh the displayed balance
+      if (penaltyData?.success) {
+        refreshMinutesBalance();
+      }
+
+      skipPenaltyCountRef.current += 1;
+
+      if (skipPenaltyCountRef.current <= 3) {
+        // Show full popup for first 3 times
+        setShowSkipPenaltyPopup(true);
+      } else {
+        // After 3 times, just show floating text
+        setShowMinuteLossToast(true);
+      }
+    }
+
     // Award ad points for this call before moving to next
     await awardAdPoints(elapsedSeconds);
     await flushMinutes();
@@ -570,6 +618,23 @@ const VideoCallPage = () => {
           genderFilter={genderFilter}
           onGenderFilterChange={(g) => setGenderFilter(g as GenderFilter)}
         />
+      )}
+
+      {/* Skip Penalty Popup (first 3 times) */}
+      {showSkipPenaltyPopup && (
+        <SkipPenaltyPopup
+          minutesLost={2}
+          onDismiss={() => setShowSkipPenaltyPopup(false)}
+          onUpgrade={() => {
+            setShowSkipPenaltyPopup(false);
+            setOverlayPage("vip");
+          }}
+        />
+      )}
+
+      {/* Floating minute loss toast (after 3 times) */}
+      {showMinuteLossToast && (
+        <MinuteLossToast minutesLost={2} onDone={() => setShowMinuteLossToast(false)} />
       )}
 
       {/* Cap Reached Popup */}
