@@ -77,6 +77,27 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Fetch chance enhancer
+  const { data: ceData } = useQuery({
+    queryKey: ["chance-enhancer", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("spin-wheel", {
+        body: { type: "get_chance_enhancer", userId: user!.id },
+      });
+      return data || { chance_enhancer: 10, is_vip: false };
+    },
+  });
+
+  // Update login tracking on mount
+  useEffect(() => {
+    if (user) {
+      supabase.functions.invoke("spin-wheel", {
+        body: { type: "update_login", userId: user.id },
+      });
+    }
+  }, [user]);
+
   const { data: todaySpin } = useQuery({
     queryKey: ["spin-today", user?.id],
     enabled: !!user,
@@ -219,6 +240,7 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
         queryClient.invalidateQueries({ queryKey: ["spin-balance"] });
         queryClient.invalidateQueries({ queryKey: ["profile-balance"] });
         queryClient.invalidateQueries({ queryKey: ["spin-history"] });
+        queryClient.invalidateQueries({ queryKey: ["chance-enhancer"] });
       }
     };
 
@@ -290,6 +312,18 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
           <p className="text-neutral-400 text-xs mb-2 text-center">
             Every spin guarantees a reward!
           </p>
+
+          {/* Chance Enhancer display */}
+          {ceData && (
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 mb-3 flex items-center gap-2">
+              <span className="text-orange-400 text-xs font-black">
+                🔥 Chance Enhancer: +{Math.round(ceData.chance_enhancer)}%
+              </span>
+              {ceData.is_vip && (
+                <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold">VIP</span>
+              )}
+            </div>
+          )}
 
           {/* Purchased spins badge */}
           {hasPurchasedSpins && (
