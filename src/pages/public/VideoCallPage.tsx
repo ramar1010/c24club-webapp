@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ChevronLeft, X } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
+import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import RedeemPanel from "@/components/videocall/RedeemPanel";
