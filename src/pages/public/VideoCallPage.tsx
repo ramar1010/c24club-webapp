@@ -37,6 +37,7 @@ import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
 import giftIcon from "@/assets/videocall/gift-icon.svg";
 import reportIconImg from "@/assets/videocall/report-icon.png";
+import frozenEmoji from "@/assets/videocall/frozen-emoji.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
@@ -54,6 +55,7 @@ const VideoCallPage = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
+  const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
@@ -157,6 +159,20 @@ const VideoCallPage = () => {
     },
   });
 
+  // Check if partner is frozen
+  const { data: partnerIsFrozen } = useQuery({
+    queryKey: ["partner_is_frozen", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("is_frozen")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      return mm?.is_frozen ?? false;
+    },
+  });
+
   // Fetch partner's pinned socials
   const { data: partnerPinnedSocials = [] } = useQuery({
     queryKey: ["partner_pinned_socials", currentPartnerId],
@@ -184,6 +200,18 @@ const VideoCallPage = () => {
     }
     if (params.get("unfreeze") === "success") {
       supabase.functions.invoke("unfreeze-purchase", { body: { action: "apply" } });
+      window.history.replaceState({}, "", "/videocall");
+    }
+    if (params.get("unfreeze_partner") === "success") {
+      const partnerId = params.get("partner_id");
+      if (partnerId) {
+        supabase.functions.invoke("unfreeze-purchase", {
+          body: { action: "apply_for_partner", partner_id: partnerId },
+        }).then(() => {
+          toast.success("🥶 You unfroze their minutes! What a hero!");
+          queryClient.invalidateQueries({ queryKey: ["partner_is_frozen"] });
+        });
+      }
       window.history.replaceState({}, "", "/videocall");
     }
     if (params.get("gift") === "success") {
@@ -337,6 +365,18 @@ const VideoCallPage = () => {
             </div>
           )}
 
+          {/* Frozen icon - mobile, below socials/report */}
+          {isMobile && callState === "connected" && partnerIsFrozen && currentPartnerId && (
+            <button
+              onClick={() => setShowUnfreezePartnerPopup(true)}
+              className="absolute left-2 z-20 w-10 h-10 hover:scale-110 transition-transform drop-shadow-lg"
+              style={{ top: partnerPinnedSocials.length > 0 ? "calc(5.5rem + 2.5rem)" : "5.5rem" }}
+              title="This user is frozen"
+            >
+              <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
+            </button>
+          )}
+
           {/* Gift icon - shows when partner is VIP */}
           {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
             <button
@@ -423,6 +463,16 @@ const VideoCallPage = () => {
                 title="Report User"
               >
                 <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
+              </button>
+            )}
+            {/* Frozen icon - desktop, below report icon */}
+            {callState === "connected" && partnerIsFrozen && currentPartnerId && (
+              <button
+                onClick={() => setShowUnfreezePartnerPopup(true)}
+                className="absolute top-14 left-2 z-20 w-10 h-10 hover:scale-110 transition-transform drop-shadow-lg"
+                title="This user is frozen"
+              >
+                <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
               </button>
             )}
             {/* NEXT Button - inside partner box, bottom-right */}
@@ -552,6 +602,52 @@ const VideoCallPage = () => {
           reportedUserId={currentPartnerId}
           onClose={() => setShowReportOverlay(false)}
         />
+      )}
+
+      {/* Unfreeze Partner Popup */}
+      {showUnfreezePartnerPopup && currentPartnerId && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-6">
+          <div className="bg-neutral-900 rounded-2xl p-6 max-w-sm w-full text-center relative">
+            <button
+              onClick={() => setShowUnfreezePartnerPopup(false)}
+              className="absolute top-3 left-3 text-white hover:text-neutral-300"
+            >
+              <ChevronLeft className="w-7 h-7" />
+            </button>
+
+            <img src={frozenEmoji} alt="Frozen" className="w-20 h-20 mx-auto mb-4" />
+
+            <h2 className="text-white font-black text-2xl leading-tight mb-3">
+              The user is frozen<br />they need your help!
+            </h2>
+
+            <p className="text-neutral-300 text-sm mb-6">
+              Their earning rate is reduced to{" "}
+              <span className="text-blue-400 font-black">2 minutes</span> per user instead of 10 or 30 minutes.
+            </p>
+
+            <button
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("unfreeze-purchase", {
+                    body: { action: "purchase_for_partner", partner_id: currentPartnerId },
+                  });
+                  if (error) throw error;
+                  if (data?.url) {
+                    window.open(data.url, "_blank");
+                  }
+                  setShowUnfreezePartnerPopup(false);
+                } catch (e: any) {
+                  toast.error(e.message || "Failed to start checkout");
+                }
+              }}
+              className="w-full py-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+            >
+              <span className="text-white font-black text-2xl block">Unfreeze Them</span>
+              <span className="text-blue-300 font-bold text-lg">$1.99</span>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
