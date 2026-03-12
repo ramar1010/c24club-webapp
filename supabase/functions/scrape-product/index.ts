@@ -76,7 +76,8 @@ Deno.serve(async (req) => {
           prompt:
             "Extract the product title, description, all product image URLs (not thumbnails — full size images), available sizes, available colors with their variant image URLs, and the price. For images, get ALL product gallery images.",
         },
-        waitFor: 3000,
+        waitFor: 5000,
+        timeout: 60000,
       }),
     });
 
