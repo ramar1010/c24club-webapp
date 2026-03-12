@@ -2,8 +2,9 @@ import { X, Plus, Trash2, Pencil, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import maleIcon from "@/assets/profile/male-shades.png";
-import femaleIcon from "@/assets/profile/girl-shades.png";
+import maleIcon from "@/assets/profile/male-emoji.png";
+import femaleIcon from "@/assets/profile/female-emoji.svg";
+import greenCheck from "@/assets/profile/green-check.png";
 import chanceEnhancerIcon from "@/assets/vip/chance-enhancer.png";
 import getGiftedIcon from "@/assets/vip/get-gifted.png";
 import pinSocialsIcon from "@/assets/vip/pin-socials.png";
@@ -171,28 +172,51 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
 
         <div className="w-full max-w-sm space-y-6">
           {/* Connect With */}
-          <div className="bg-neutral-900 border border-neutral-700/60 rounded-2xl p-4">
-            <p className="text-neutral-400 text-xs font-black tracking-wider text-center mb-3">Connect With</p>
-            <div className="flex justify-center gap-6">
-              {["guys", "both", "girls"].map((g) => (
-                <button
-                  key={g}
-                  onClick={() => onGenderFilterChange(g)}
-                  className={`flex flex-col items-center gap-1 transition-all ${
-                    genderFilter === g ? "opacity-100 scale-110" : "opacity-40"
-                  }`}
-                >
-                  {g === "guys" && <img src={maleIcon} alt="Male" className="w-12 h-12 object-contain" />}
-                  {g === "girls" && <img src={femaleIcon} alt="Female" className="w-12 h-12 object-contain" />}
-                  {g === "both" && (
-                    <div className="flex -space-x-2">
-                      <img src={maleIcon} alt="Male" className="w-10 h-10 object-contain" />
-                      <img src={femaleIcon} alt="Female" className="w-10 h-10 object-contain" />
-                    </div>
+          <div className="bg-neutral-900 border border-neutral-700/60 rounded-2xl p-5">
+            <h2 className="text-white text-lg font-black tracking-wide text-center mb-5">Connect With</h2>
+            <div className="flex justify-center items-end gap-8">
+              {/* Male */}
+              <button
+                onClick={() => onGenderFilterChange("guys")}
+                className="flex flex-col items-center gap-1.5 transition-all"
+              >
+                <div className="relative">
+                  <img src={maleIcon} alt="Male" className="w-16 h-16 object-contain" />
+                  {genderFilter === "guys" && (
+                    <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
                   )}
-                  <span className="text-white text-[10px] font-black tracking-wider uppercase">{g === "guys" ? "Male" : g === "girls" ? "Female" : "Both"}</span>
-                </button>
-              ))}
+                </div>
+                <span className="text-white text-xs font-black tracking-wider">Male</span>
+              </button>
+
+              {/* Both */}
+              <button
+                onClick={() => onGenderFilterChange("both")}
+                className="flex flex-col items-center gap-1.5 transition-all"
+              >
+                <div className="relative flex -space-x-3">
+                  <img src={maleIcon} alt="Male" className="w-12 h-12 object-contain" />
+                  <img src={femaleIcon} alt="Female" className="w-12 h-12 object-contain" />
+                  {genderFilter === "both" && (
+                    <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
+                  )}
+                </div>
+                <span className="text-neutral-400 text-[10px] font-black tracking-wider">Both</span>
+              </button>
+
+              {/* Female */}
+              <button
+                onClick={() => onGenderFilterChange("girls")}
+                className="flex flex-col items-center gap-1.5 transition-all"
+              >
+                <div className="relative">
+                  <img src={femaleIcon} alt="Female" className="w-16 h-16 object-contain" />
+                  {genderFilter === "girls" && (
+                    <img src={greenCheck} alt="Selected" className="absolute -bottom-1 -left-1 w-6 h-6" />
+                  )}
+                </div>
+                <span className="text-white text-xs font-black tracking-wider">Female</span>
+              </button>
             </div>
           </div>
 
