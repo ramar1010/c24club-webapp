@@ -39,6 +39,14 @@ const AdminSpinWinnersPage = () => {
   const getMember = (userId: string) =>
     members.find((m: any) => m.id === userId);
 
+  // Calculate spin counts per user
+  const spinCounts = results.reduce((acc: Record<string, number>, r: any) => {
+    acc[r.user_id] = (acc[r.user_id] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const getSpinCount = (userId: string) => spinCounts[userId] || 0;
+
   if (isLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
 
   return (
@@ -53,6 +61,7 @@ const AdminSpinWinnersPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Member</TableHead>
+              <TableHead>Total Spins</TableHead>
               <TableHead>Prize</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Amount</TableHead>
@@ -62,7 +71,7 @@ const AdminSpinWinnersPage = () => {
           <TableBody>
             {results.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   No spin results yet.
                 </TableCell>
               </TableRow>
@@ -76,6 +85,11 @@ const AdminSpinWinnersPage = () => {
                       {member?.email && (
                         <span className="text-xs text-muted-foreground block">{member.email}</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                        {getSpinCount(r.user_id)}
+                      </span>
                     </TableCell>
                     <TableCell>{r.prize_label}</TableCell>
                     <TableCell className="capitalize">{r.prize_type.replace("_", " ")}</TableCell>
