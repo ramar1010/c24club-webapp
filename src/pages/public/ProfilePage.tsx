@@ -53,6 +53,10 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     navigate("/");
   };
 
+  if (showChallenges) {
+    return <WeeklyChallengesPage onClose={() => setShowChallenges(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
       {/* Back button */}
