@@ -160,7 +160,7 @@ const VideoCallPage = () => {
     },
   });
 
-  // Check for unban/checkout success in URL
+  // Check for unban/checkout/gift success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("unban") === "success" && banInfo) {
@@ -172,8 +172,20 @@ const VideoCallPage = () => {
       window.history.replaceState({}, "", "/videocall");
     }
     if (params.get("unfreeze") === "success") {
-      // Apply the unfreeze after successful payment
       supabase.functions.invoke("unfreeze-purchase", { body: { action: "apply" } });
+      window.history.replaceState({}, "", "/videocall");
+    }
+    if (params.get("gift") === "success") {
+      const sessionId = params.get("session_id");
+      if (sessionId) {
+        supabase.functions.invoke("gift-minutes", {
+          body: { action: "verify", session_id: sessionId },
+        }).then(({ data }) => {
+          if (data?.success) {
+            toast.success(`Gift sent! ${data.minutes_gifted} minutes gifted.${data.sender_bonus > 0 ? ` You got +${data.sender_bonus} minutes bonus!` : ""}`);
+          }
+        });
+      }
       window.history.replaceState({}, "", "/videocall");
     }
   }, [banInfo, recheckBan, checkSubscription]);
