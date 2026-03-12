@@ -111,7 +111,10 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         </button>
 
         {/* Become VIP */}
-        <button className="flex-1 bg-gradient-to-b from-blue-600 to-blue-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-blue-500/30">
+        <button 
+          onClick={() => navigate("/videocall")}
+          className="flex-1 bg-gradient-to-b from-blue-600 to-blue-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-blue-500/30"
+        >
           <span className="font-black text-sm tracking-wide text-center leading-tight">
             BECOME VIP
           </span>
