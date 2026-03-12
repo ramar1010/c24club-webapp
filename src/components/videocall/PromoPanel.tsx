@@ -358,24 +358,28 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
             </div>
           </div>
 
-          {/* Gender (VIP only) */}
-          {isVip && (
-            <div className="text-center pt-2">
-              <p className="text-xs font-bold text-neutral-400 mb-2">Gender Targeting</p>
-              <div className="flex justify-center gap-2">
-                {["Male", "Female", "Both"].map((g) => (
-                  <button key={g} onClick={() => setGender(g)}
-                    className={`px-5 py-1.5 rounded-lg font-bold text-sm transition-colors ${
-                      gender === g
-                        ? "bg-white text-black"
-                        : "bg-neutral-800 border border-neutral-600 text-neutral-300 hover:bg-neutral-700"
-                    }`}>
-                    {g}
-                  </button>
-                ))}
-              </div>
+          {/* Gender Targeting */}
+          <div className="text-center pt-2">
+            <p className="text-xs font-bold text-neutral-400 mb-2">Gender Targeting {!isVip && "🔒"}</p>
+            <div className="flex justify-center gap-2">
+              {["Male", "Female", "Both"].map((g) => (
+                <button key={g} onClick={() => {
+                  if (!isVip) {
+                    toast("🚀 VIP Feature", { description: "Upgrade to VIP to target promos by gender!" });
+                    return;
+                  }
+                  setGender(g);
+                }}
+                  className={`px-5 py-1.5 rounded-lg font-bold text-sm transition-colors ${
+                    gender === g
+                      ? "bg-white text-black"
+                      : "bg-neutral-800 border border-neutral-600 text-neutral-300 hover:bg-neutral-700"
+                  } ${!isVip && g !== "Both" ? "opacity-50" : ""}`}>
+                  {g}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Same user visibility */}
           <div className="text-center pt-1">
