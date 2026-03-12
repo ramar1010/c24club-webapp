@@ -276,10 +276,9 @@ const VideoCallPage = () => {
         body: { type: "deduct", userId: memberId, amount: 2 },
       });
 
-      // Update local balance
+      // Refresh the displayed balance
       if (penaltyData?.success) {
-        // The useCallMinutes hook will be stale, but we need to force refresh
-        // We'll rely on the next get_balance or earn call to sync
+        refreshMinutesBalance();
       }
 
       skipPenaltyCountRef.current += 1;
