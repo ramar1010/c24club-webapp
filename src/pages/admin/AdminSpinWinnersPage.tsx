@@ -39,6 +39,14 @@ const AdminSpinWinnersPage = () => {
   const getMember = (userId: string) =>
     members.find((m: any) => m.id === userId);
 
+  // Calculate spin counts per user
+  const spinCounts = results.reduce((acc: Record<string, number>, r: any) => {
+    acc[r.user_id] = (acc[r.user_id] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const getSpinCount = (userId: string) => spinCounts[userId] || 0;
+
   if (isLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
 
   return (
