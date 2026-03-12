@@ -311,7 +311,18 @@ const VideoCallPage = () => {
             </div>
           </div>
 
-          {/* Gift icon - shows when partner has gifting enabled */}
+          {/* Report button - mobile, on local video top-right area below partner overlay */}
+          {callState === "connected" && currentPartnerId && isMobile && (
+            <button
+              onClick={() => setShowReportOverlay(true)}
+              className="absolute top-2 left-2 z-20 w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition-transform shadow-lg"
+              title="Report User"
+            >
+              <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
+            </button>
+          )}
+
+          {/* Gift icon - shows when partner is VIP */}
           {callState === "connected" && partnerGiftEnabled && currentPartnerId && (
             <button
               onClick={() => setShowGiftOverlay(true)}
