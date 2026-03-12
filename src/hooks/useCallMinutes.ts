@@ -142,5 +142,6 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
     showCapPopup,
     dismissCapPopup,
     flushMinutes,
+    freezeInfo,
   };
 }
