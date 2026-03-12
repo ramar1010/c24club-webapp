@@ -359,13 +359,13 @@ Deno.serve(async (req) => {
       const freezeInfo = await checkFreezeStatus(supabase, userId);
       const cap = isVip ? 30 : 10;
 
-      const today = new Date().toISOString().split("T")[0];
+      const trackingId = sessionId || new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
         .from("call_minutes_log")
         .select("minutes_earned")
         .eq("user_id", userId)
         .eq("partner_id", partnerId)
-        .eq("session_date", today)
+        .eq("session_date", trackingId)
         .maybeSingle();
 
       const alreadyEarned = logData?.minutes_earned ?? 0;
