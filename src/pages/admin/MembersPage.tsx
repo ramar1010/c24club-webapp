@@ -337,6 +337,55 @@ const MembersPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* VIP Management Dialog */}
+      <Dialog open={!!vipTarget} onOpenChange={(open) => !open && setVipTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              Manage VIP — {vipTarget?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {currentVipInfo && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Current status: </span>
+                {currentVipInfo.is_vip ? (
+                  <Badge className="bg-yellow-500/10 text-yellow-500">{currentVipInfo.vip_tier ?? "VIP"}</Badge>
+                ) : (
+                  <Badge variant="secondary">Not VIP</Badge>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>VIP Tier</Label>
+              <Select value={vipTier} onValueChange={setVipTier}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic VIP ($2.49/week)</SelectItem>
+                  <SelectItem value="premium">Premium VIP ($9.99/month)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            {currentVipInfo?.is_vip && (
+              <Button variant="destructive" onClick={() => handleSetVip(false)} disabled={savingVip}>
+                {savingVip ? "Saving..." : "Remove VIP"}
+              </Button>
+            )}
+            <Button onClick={() => handleSetVip(true)} disabled={savingVip} className="bg-yellow-500 hover:bg-yellow-400 text-black">
+              {savingVip ? "Saving..." : currentVipInfo?.is_vip ? "Update Tier" : "Make VIP"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
