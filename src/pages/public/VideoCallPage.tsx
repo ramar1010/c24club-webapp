@@ -408,6 +408,7 @@ const VideoCallPage = () => {
             setShowFrozenPopup(false);
             setOverlayPage("profile");
           }}
+          isVip={subscribed}
         />
       )}
     </div>
