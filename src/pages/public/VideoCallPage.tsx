@@ -555,7 +555,7 @@ const VideoCallPage = () => {
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
           </div>
-          <div className="flex justify-center items-center gap-8 pb-6 text-sm font-bold tracking-wider">
+          <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
               if (!subscribed) { setOverlayPage("vip"); return; }
               setGenderFilter("girls");
