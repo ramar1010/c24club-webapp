@@ -635,7 +635,19 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           <p className="text-neutral-400 text-sm">
             Cost: <span className="text-white font-bold">🪙 {selectedReward.minutes_cost} Minutes</span>
           </p>
-          {isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
+          {isInstantType && (
+            <div className="mt-3 bg-purple-500/10 border border-purple-500/30 rounded-xl px-4 py-3">
+              <p className="text-purple-400 font-black text-sm">
+                {selectedReward.type === "Spins" ? "🎰" : "⚡"} You'll receive: <span className="text-white">{selectedReward.grant_amount || 0} {selectedReward.type === "Spins" ? "Spin Tokens" : "Ad Points"}</span>
+              </p>
+              <p className="text-neutral-400 text-[10px] mt-1">
+                {selectedReward.type === "Spins"
+                  ? "Spin tokens can be used in Spin to Win (Events). They bypass the daily limit!"
+                  : "Ad points let you promote your content to other users."}
+              </p>
+            </div>
+          )}
+          {!isInstantType && isPremiumVip && displayShippingFee === 0 && Number(selectedReward.shipping_fee) > 0 && (
             <p className="text-purple-400 text-xs font-bold mt-1">👑 FREE SHIPPING (Premium VIP)</p>
           )}
           {selectedReward.rarity === "legendary" && Number(selectedReward.cashout_value) > 0 && (
