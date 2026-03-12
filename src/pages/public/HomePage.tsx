@@ -81,6 +81,11 @@ const SideCard = ({ image }: { image: string }) => (
 
 /* ─── Sign-In Popup ─── */
 const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   if (!open) return null;
 
   const handleGoogle = async () => {
@@ -91,6 +96,31 @@ const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) 
   const handleApple = async () => {
     const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
     if (error) toast.error("Sign in failed", { description: String(error) });
+  };
+
+  const handleEmailAuth = async () => {
+    if (!email.trim() || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+    setLoading(true);
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+      if (error) {
+        toast.error("Sign up failed", { description: error.message });
+      } else {
+        toast.success("Account created!");
+        onClose();
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        toast.error("Sign in failed", { description: error.message });
+      } else {
+        onClose();
+      }
+    }
+    setLoading(false);
   };
 
   return (
@@ -115,6 +145,40 @@ const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) 
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
             Sign in with Apple
+          </button>
+
+          <div className="flex items-center gap-3 my-1">
+            <div className="flex-1 h-px bg-white/20" />
+            <span className="text-xs text-white/40 uppercase font-bold">or</span>
+            <div className="flex-1 h-px bg-white/20" />
+          </div>
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition-colors text-sm"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition-colors text-sm"
+          />
+          <button
+            onClick={handleEmailAuth}
+            disabled={loading}
+            className="w-full px-6 py-3.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-base shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50"
+          >
+            {loading ? "..." : isSignUp ? "Create Account" : "Sign In with Email"}
+          </button>
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-xs text-white/50 hover:text-white/80 transition-colors text-center"
+          >
+            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
           </button>
         </div>
       </div>
