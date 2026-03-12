@@ -603,6 +603,52 @@ const VideoCallPage = () => {
           onClose={() => setShowReportOverlay(false)}
         />
       )}
+
+      {/* Unfreeze Partner Popup */}
+      {showUnfreezePartnerPopup && currentPartnerId && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-6">
+          <div className="bg-neutral-900 rounded-2xl p-6 max-w-sm w-full text-center relative">
+            <button
+              onClick={() => setShowUnfreezePartnerPopup(false)}
+              className="absolute top-3 left-3 text-white hover:text-neutral-300"
+            >
+              <ChevronLeft className="w-7 h-7" />
+            </button>
+
+            <img src={frozenEmoji} alt="Frozen" className="w-20 h-20 mx-auto mb-4" />
+
+            <h2 className="text-white font-black text-2xl leading-tight mb-3">
+              The user is frozen<br />they need your help!
+            </h2>
+
+            <p className="text-neutral-300 text-sm mb-6">
+              Their earning rate is reduced to{" "}
+              <span className="text-blue-400 font-black">2 minutes</span> per user instead of 10 or 30 minutes.
+            </p>
+
+            <button
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("unfreeze-purchase", {
+                    body: { action: "purchase_for_partner", partner_id: currentPartnerId },
+                  });
+                  if (error) throw error;
+                  if (data?.url) {
+                    window.open(data.url, "_blank");
+                  }
+                  setShowUnfreezePartnerPopup(false);
+                } catch (e: any) {
+                  toast.error(e.message || "Failed to start checkout");
+                }
+              }}
+              className="w-full py-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+            >
+              <span className="text-white font-black text-2xl block">Unfreeze Them</span>
+              <span className="text-blue-300 font-bold text-lg">$1.99</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
