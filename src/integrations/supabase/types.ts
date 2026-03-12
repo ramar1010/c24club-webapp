@@ -655,8 +655,10 @@ export type Database = {
         Row: {
           brief: string | null
           category_id: string | null
+          color_options: Json | null
           created_at: string
           delivery: string | null
+          feature_image_url: string | null
           id: string
           image_url: string | null
           info: string | null
@@ -670,13 +672,16 @@ export type Database = {
           title: string
           type: string
           updated_at: string
+          variation_images: string[] | null
           visible: boolean
         }
         Insert: {
           brief?: string | null
           category_id?: string | null
+          color_options?: Json | null
           created_at?: string
           delivery?: string | null
+          feature_image_url?: string | null
           id?: string
           image_url?: string | null
           info?: string | null
@@ -690,13 +695,16 @@ export type Database = {
           title: string
           type: string
           updated_at?: string
+          variation_images?: string[] | null
           visible?: boolean
         }
         Update: {
           brief?: string | null
           category_id?: string | null
+          color_options?: Json | null
           created_at?: string
           delivery?: string | null
+          feature_image_url?: string | null
           id?: string
           image_url?: string | null
           info?: string | null
@@ -710,6 +718,7 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+          variation_images?: string[] | null
           visible?: boolean
         }
         Relationships: [

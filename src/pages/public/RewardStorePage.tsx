@@ -32,6 +32,8 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinState, setSpinState] = useState<"idle" | "spinning" | "won" | "lost">("idle");
   const [spinResult, setSpinResult] = useState<any[]>([]);
   const [canRespin, setCanRespin] = useState(false);
+  const [selectedColor, setSelectedColorState] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const queryClient = useQueryClient();
 
   const isPremiumVip = subscribed && vipTier === "premium";
@@ -283,15 +285,33 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     const rarity = RARITY_STYLES[selectedReward.rarity] || RARITY_STYLES.common;
     const sizes = selectedReward.sizes?.split(",").map((s: string) => s.trim()).filter(Boolean) || [];
     const isRareOrLegendary = selectedReward.rarity === "rare" || selectedReward.rarity === "legendary";
-    // Non-VIP can't spin legendary
     const canSpinThis = selectedReward.rarity === "rare" || (selectedReward.rarity === "legendary" && isPremiumVip);
     const displayShippingFee = isPremiumVip ? 0 : (Number(selectedReward.shipping_fee) || 0);
+
+    // Build image gallery: main + feature + variations + color images
+    const allImages: string[] = [];
+    if (selectedReward.image_url) allImages.push(selectedReward.image_url);
+    if (selectedReward.feature_image_url) allImages.push(selectedReward.feature_image_url);
+    if (selectedReward.variation_images?.length) allImages.push(...selectedReward.variation_images);
+
+    const colors: { name: string; hex: string; image_url: string }[] = 
+      Array.isArray(selectedReward.color_options) ? selectedReward.color_options : [];
+
+    // Use top-level state for selected color and image index
+
+    // When a color is selected, show its image if available
+    const displayImage = selectedColor !== null && colors[selectedColor]?.image_url
+      ? colors[selectedColor].image_url
+      : allImages[currentImageIndex] || null;
+
+    const prevImage = () => setCurrentImageIndex((i) => Math.max(0, i - 1));
+    const nextImage = () => setCurrentImageIndex((i) => Math.min(allImages.length - 1, i + 1));
 
     return (
       <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-4">
-          <button onClick={() => setSelectedReward(null)} className="flex items-center gap-1 text-white hover:text-neutral-300 transition-colors">
+          <button onClick={() => { setSelectedReward(null); setSelectedColorState(null); setCurrentImageIndex(0); }} className="flex items-center gap-1 text-white hover:text-neutral-300 transition-colors">
             <ArrowLeft className="w-6 h-6" />
             <span className="font-bold text-sm">BACK</span>
           </button>
@@ -303,25 +323,71 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         {/* Product Image */}
         <div className="px-4 mb-4">
           <div className="relative rounded-2xl overflow-hidden bg-neutral-800 aspect-square">
-            {selectedReward.image_url ? (
-              <img src={selectedReward.image_url} alt={selectedReward.title} className="w-full h-full object-cover" />
+            {displayImage ? (
+              <img src={displayImage} alt={selectedReward.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-6xl">🎁</span>
               </div>
             )}
-            {/* Rarity badge */}
             <span className={`absolute bottom-3 right-3 ${rarity.bg} ${rarity.text} px-4 py-1.5 rounded-lg font-black text-sm`}>
               {selectedReward.rarity.charAt(0).toUpperCase() + selectedReward.rarity.slice(1)}
             </span>
-            <button className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 transition-colors">
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            {allImages.length > 1 && selectedColor === null && (
+              <>
+                <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 transition-colors">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Image thumbnails */}
+          {allImages.length > 1 && (
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+              {allImages.map((url, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setCurrentImageIndex(i); setSelectedColorState(null); }}
+                  className={`w-14 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    currentImageIndex === i && selectedColor === null ? "border-yellow-500" : "border-neutral-700"
+                  }`}
+                >
+                  <img src={url} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Color Options */}
+        {colors.length > 0 && (
+          <div className="px-4 mb-4">
+            <h3 className="text-yellow-400 font-black text-lg mb-2">Colors</h3>
+            <div className="flex gap-3 flex-wrap">
+              {colors.map((color: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedColorState(selectedColor === i ? null : i)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all ${
+                    selectedColor === i
+                      ? "border-yellow-500 bg-neutral-800"
+                      : "border-neutral-700 hover:border-neutral-500"
+                  }`}
+                >
+                  <div
+                    className="w-6 h-6 rounded-full border border-neutral-500"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  <span className="text-sm font-bold">{color.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Sizes */}
         {sizes.length > 0 && (
@@ -341,20 +407,16 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         {selectedReward.delivery !== "digital" && (
           <div className="px-4 mb-4">
             <h3 className="text-yellow-400 font-black text-lg mb-1">Ships only to:</h3>
-            <div className="flex gap-2 text-2xl">
-              🇺🇸 🇬🇧
-            </div>
+            <div className="flex gap-2 text-2xl">🇺🇸 🇬🇧</div>
           </div>
         )}
 
-        {/* Brief */}
         {selectedReward.brief && (
           <div className="px-4 mb-4">
             <p className="text-neutral-400 text-sm">{selectedReward.brief}</p>
           </div>
         )}
 
-        {/* Minutes cost */}
         <div className="px-4 mb-4">
           <p className="text-neutral-400 text-sm">
             Cost: <span className="text-white font-bold">🪙 {selectedReward.minutes_cost} Minutes</span>
@@ -364,7 +426,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           )}
         </div>
 
-        {/* User's current balance */}
         <div className="mt-auto px-4 pb-2">
           <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center">
             <p className="text-neutral-400 text-sm">Your Balance</p>
@@ -372,9 +433,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="px-4 pb-6 pt-2 space-y-2">
-          {/* Spin to Win for rare/legendary */}
           {isRareOrLegendary && canSpinThis && commonRewards.length >= 3 && (
             <button
               onClick={() => handleSpinToWin(selectedReward)}
@@ -397,7 +456,6 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </div>
           )}
 
-          {/* Redeem button */}
           <button
             onClick={() => setShowShipping(true)}
             disabled={(userMinutes ?? 0) < selectedReward.minutes_cost}

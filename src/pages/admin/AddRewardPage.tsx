@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateReward, useUpdateReward, useRewardCategories, useRewards } from "@/hooks/useCrud";
@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Plus, Trash2, X } from "lucide-react";
 
 const rewardSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -25,6 +26,7 @@ const rewardSchema = z.object({
   brief: z.string().optional(),
   info: z.string().optional(),
   image_url: z.string().optional(),
+  feature_image_url: z.string().optional(),
   minutes_cost: z.coerce.number().min(0).default(0),
   shipping_fee: z.coerce.number().min(0).default(0),
 });
@@ -46,6 +48,13 @@ const AddRewardPage = () => {
   const { data: allRewards } = useRewards();
 
   const existingReward = isEdit ? allRewards?.find((r: any) => r.id === id) : null;
+
+  // Variation images (array of URLs)
+  const [variationImages, setVariationImages] = useState<string[]>([]);
+  const [newVariationUrl, setNewVariationUrl] = useState("");
+
+  // Color options: { name, hex, image_url }
+  const [colorOptions, setColorOptions] = useState<{ name: string; hex: string; image_url: string }[]>([]);
 
   const form = useForm<RewardForm>({
     resolver: zodResolver(rewardSchema),
@@ -76,9 +85,12 @@ const AddRewardPage = () => {
         brief: existingReward.brief || "",
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
+        feature_image_url: existingReward.feature_image_url || "",
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
       });
+      setVariationImages(existingReward.variation_images || []);
+      setColorOptions(Array.isArray(existingReward.color_options) ? existingReward.color_options as any[] : []);
     }
   }, [existingReward, form]);
 
@@ -88,11 +100,39 @@ const AddRewardPage = () => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
+      feature_image_url: values.feature_image_url || null,
+      variation_images: variationImages,
+      color_options: colorOptions,
       ...(isEdit ? { id } : {}),
     };
     mutation.mutate(payload, {
       onSuccess: () => navigate("/admin/rewards"),
     });
+  };
+
+  const addVariationImage = () => {
+    if (newVariationUrl.trim()) {
+      setVariationImages((prev) => [...prev, newVariationUrl.trim()]);
+      setNewVariationUrl("");
+    }
+  };
+
+  const removeVariationImage = (index: number) => {
+    setVariationImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addColorOption = () => {
+    setColorOptions((prev) => [...prev, { name: "", hex: "#000000", image_url: "" }]);
+  };
+
+  const updateColorOption = (index: number, field: string, value: string) => {
+    setColorOptions((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, [field]: value } : c))
+    );
+  };
+
+  const removeColorOption = (index: number) => {
+    setColorOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -219,14 +259,6 @@ const AddRewardPage = () => {
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="image_url" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl><Input placeholder="https://..." {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
               <FormField control={form.control} name="info" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Info</FormLabel>
@@ -237,6 +269,123 @@ const AddRewardPage = () => {
             </CardContent>
           </Card>
 
+          {/* Images Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base text-primary border-b border-primary pb-2">IMAGES</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Main image */}
+              <FormField control={form.control} name="image_url" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Main Image URL</FormLabel>
+                  <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                  {field.value && (
+                    <img src={field.value} alt="Preview" className="w-20 h-20 object-cover rounded-lg mt-2 border" />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* Feature image */}
+              <FormField control={form.control} name="feature_image_url" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Feature Image URL <span className="text-xs text-muted-foreground">(hero/banner image)</span></FormLabel>
+                  <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                  {field.value && (
+                    <img src={field.value} alt="Feature Preview" className="w-32 h-20 object-cover rounded-lg mt-2 border" />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* Variation images */}
+              <div>
+                <label className="text-sm font-medium">Variation Images</label>
+                <p className="text-xs text-muted-foreground mb-2">Additional product photos users can browse</p>
+                <div className="flex gap-2 mb-2">
+                  <Input
+                    placeholder="https://..."
+                    value={newVariationUrl}
+                    onChange={(e) => setNewVariationUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addVariationImage())}
+                  />
+                  <Button type="button" size="sm" onClick={addVariationImage}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                {variationImages.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {variationImages.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} alt={`Variation ${i + 1}`} className="w-16 h-16 object-cover rounded-lg border" />
+                        <button
+                          type="button"
+                          onClick={() => removeVariationImage(i)}
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Color Options Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base text-primary border-b border-primary pb-2">COLOR OPTIONS</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">Add colors users can choose from. Each color can have its own product image.</p>
+              {colorOptions.map((color, i) => (
+                <div key={i} className="flex items-end gap-3 p-3 rounded-lg border bg-muted/30">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs font-medium">Color Name</label>
+                    <Input
+                      placeholder="e.g. Midnight Black"
+                      value={color.name}
+                      onChange={(e) => updateColorOption(i, "name", e.target.value)}
+                    />
+                  </div>
+                  <div className="w-20 space-y-1">
+                    <label className="text-xs font-medium">Hex</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={color.hex}
+                        onChange={(e) => updateColorOption(i, "hex", e.target.value)}
+                        className="w-8 h-8 rounded cursor-pointer border-0"
+                      />
+                      <span className="text-xs text-muted-foreground">{color.hex}</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs font-medium">Image URL <span className="text-muted-foreground">(optional)</span></label>
+                    <Input
+                      placeholder="https://..."
+                      value={color.image_url}
+                      onChange={(e) => updateColorOption(i, "image_url", e.target.value)}
+                    />
+                  </div>
+                  {color.image_url && (
+                    <img src={color.image_url} alt={color.name} className="w-10 h-10 object-cover rounded border" />
+                  )}
+                  <Button type="button" size="icon" variant="ghost" onClick={() => removeColorOption(i)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={addColorOption} className="gap-1">
+                <Plus className="w-4 h-4" /> Add Color
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Brief */}
           <Card>
             <CardContent className="pt-6">
               <FormField control={form.control} name="brief" render={({ field }) => (
