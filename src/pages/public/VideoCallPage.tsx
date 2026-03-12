@@ -485,7 +485,7 @@ const VideoCallPage = () => {
 
         {/* Partner Video - desktop */}
         {!isMobile && (
-          <div className="flex flex-1 rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden items-center justify-center">
+          <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             <video ref={remoteVideoRef} autoPlay playsInline
               className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"}`} />
             {callState !== "connected" && (
