@@ -95,6 +95,7 @@ const VideoCallPage = () => {
   const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
     remoteVideoRef,
     isConnected: callState === "connected",
+    userId: memberId,
   });
 
   // Auto-ban when NSFW strikes reach threshold
