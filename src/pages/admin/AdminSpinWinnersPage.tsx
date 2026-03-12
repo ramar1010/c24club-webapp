@@ -61,6 +61,7 @@ const AdminSpinWinnersPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Member</TableHead>
+              <TableHead>Total Spins</TableHead>
               <TableHead>Prize</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Amount</TableHead>
