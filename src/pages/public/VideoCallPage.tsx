@@ -417,19 +417,16 @@ const VideoCallPage = () => {
                 <img src={reportIconImg} alt="Report" className="w-full h-full object-cover" />
               </button>
             )}
+            {/* NEXT Button - inside partner box, bottom-right */}
+            {isActive && (
+              <button onClick={handleNext} className="absolute bottom-3 right-3 z-20 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-5 py-2 transition-colors">
+                <span className="font-bold text-sm">NEXT</span>
+                <img src={nextBtn} alt="Next" className="w-8 h-8" />
+              </button>
+            )}
           </div>
         )}
       </div>
-
-      {/* NEXT Button - desktop */}
-      {isActive && (
-        <div className="hidden md:flex justify-center mb-4">
-          <button onClick={handleNext} className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg px-6 py-2 transition-colors">
-            <span className="font-bold">NEXT</span>
-            <img src={nextBtn} alt="Next" className="w-8 h-8" />
-          </button>
-        </div>
-      )}
 
       {/* Panels */}
       {showRedeem ? (
