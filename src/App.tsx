@@ -99,8 +99,8 @@ const App = () => (
               <Route path="challenges" element={<AdminChallengesPage />} />
               <Route path="challenges/new" element={<AdminChallengesPage />} />
               <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
-              <Route path="spin-to-win" element={<PlaceholderPage title="Manage Spin to Win" />} />
-              <Route path="spin-to-win/winners" element={<PlaceholderPage title="Members Won (Spin to Win)" />} />
+              <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
+              <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
               <Route path="legendary-cashout" element={<PlaceholderPage title="Legendary Items Cashout" />} />
               <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
               <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
