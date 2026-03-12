@@ -93,6 +93,11 @@ const VideoCallPage = () => {
     isConnected: callState === "connected",
   });
 
+  const { localBlackScreen } = useLocalBlackScreenDetection({
+    localVideoRef,
+    isActive: callState !== "idle",
+  });
+
   const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
     remoteVideoRef,
     isConnected: callState === "connected",
