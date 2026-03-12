@@ -79,6 +79,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
         userId,
         partnerId: pid,
         minutesEarned: minutes,
+        sessionId: sessionIdRef.current,
       },
     });
 
