@@ -106,6 +106,8 @@ const VideoCallPage = () => {
     }
   }, [subscribed, genderFilter]);
 
+  const isMobile = useIsMobile();
+
   const fetchPinnedTopics = async (userId: string) => {
     const { data: pins } = await supabase
       .from("pinned_topics")
