@@ -112,14 +112,18 @@ const VideoCallPage = () => {
     queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
-  // Check for unban success in URL
+  // Check for unban/checkout success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("unban") === "success" && banInfo) {
       recheckBan();
       window.history.replaceState({}, "", "/videocall");
     }
-  }, [banInfo, recheckBan]);
+    if (params.get("checkout") === "success") {
+      checkSubscription();
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, [banInfo, recheckBan, checkSubscription]);
 
   if (!loading && !user) {
     return <Navigate to="/" replace />;
