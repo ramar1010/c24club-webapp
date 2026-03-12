@@ -59,7 +59,10 @@ const SettingsPage = () => {
       </div>
 
       {/* Earn History */}
-      <button className="w-64 bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-4 tracking-wide border border-green-400/40">
+      <button
+        onClick={() => navigate("/earn-history")}
+        className="w-64 bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-4 tracking-wide border border-green-400/40"
+      >
         EARN HISTORY
       </button>
 
