@@ -291,7 +291,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     // Build image gallery: main + feature + variations + color images
     const allImages: string[] = [];
     if (selectedReward.image_url) allImages.push(selectedReward.image_url);
-    if (selectedReward.feature_image_url) allImages.push(selectedReward.feature_image_url);
+    
     if (selectedReward.variation_images?.length) allImages.push(...selectedReward.variation_images);
 
     const colors: { name: string; hex: string; image_url: string }[] = 

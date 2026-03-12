@@ -287,17 +287,6 @@ const AddRewardPage = () => {
                 </FormItem>
               )} />
 
-              {/* Feature image */}
-              <FormField control={form.control} name="feature_image_url" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Feature Image URL <span className="text-xs text-muted-foreground">(hero/banner image)</span></FormLabel>
-                  <FormControl><Input placeholder="https://..." {...field} /></FormControl>
-                  {field.value && (
-                    <img src={field.value} alt="Feature Preview" className="w-32 h-20 object-cover rounded-lg mt-2 border" />
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )} />
 
               {/* Variation images */}
               <div>
