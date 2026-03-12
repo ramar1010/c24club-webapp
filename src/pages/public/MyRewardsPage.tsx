@@ -220,6 +220,56 @@ const MyRewardsPage = () => {
         )}
       </div>
 
+      {/* Gifts Received - VIP only */}
+      {subscribed && (
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => setShowGifts(!showGifts)}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600/20 border border-purple-500/30 rounded-2xl font-black text-sm tracking-wide text-purple-300 hover:bg-purple-600/30 transition-colors"
+          >
+            <Gift className="w-5 h-5" />
+            GIFTS RECEIVED ({giftsReceived.length})
+            {showGifts ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showGifts && (
+            <div className="mt-3 space-y-2">
+              {giftsLoading ? (
+                <div className="flex justify-center py-6">
+                  <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                </div>
+              ) : giftsReceived.length === 0 ? (
+                <p className="text-neutral-500 text-center py-6 font-bold text-sm">
+                  No gifts received yet.
+                </p>
+              ) : (
+                giftsReceived.map((gift: any) => (
+                  <div
+                    key={gift.id}
+                    className="flex items-center justify-between bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                        <Gift className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="font-black text-sm">+{gift.minutes_amount} Minutes</p>
+                        <p className="text-[10px] text-neutral-500">
+                          From: {gift.sender_id.slice(0, 8)}...
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 font-bold">
+                      {new Date(gift.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Unlock Rewards Early */}
       <div className="px-6 pb-8 pt-4">
         <button className="w-full bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide">
