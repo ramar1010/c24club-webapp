@@ -125,6 +125,15 @@ const VideoCallPage = () => {
     }
   }, [subscribed, genderFilter]);
 
+  // Track when connection starts for skip penalty
+  useEffect(() => {
+    if (callState === "connected") {
+      connectionStartRef.current = Date.now();
+    } else {
+      connectionStartRef.current = null;
+    }
+  }, [callState]);
+
   const isMobile = useIsMobile();
 
   const fetchPinnedTopics = async (userId: string) => {
