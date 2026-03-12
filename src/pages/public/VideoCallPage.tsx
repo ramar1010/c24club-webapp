@@ -139,18 +139,11 @@ const VideoCallPage = () => {
     queryFn: () => fetchPinnedTopics(currentPartnerId!),
   });
 
-  // Check if partner has gifting enabled (VIP with get_gifted = true)
+  // Check if partner is VIP (gift icon shows for all VIP users)
   const { data: partnerGiftEnabled } = useQuery({
-    queryKey: ["partner_gift_enabled", currentPartnerId],
+    queryKey: ["partner_is_vip", currentPartnerId],
     enabled: !!currentPartnerId && callState === "connected",
     queryFn: async () => {
-      const { data } = await supabase
-        .from("vip_settings")
-        .select("get_gifted")
-        .eq("user_id", currentPartnerId!)
-        .maybeSingle();
-      if (!data?.get_gifted) return false;
-      // Also verify they're actually VIP
       const { data: mm } = await supabase
         .from("member_minutes")
         .select("is_vip")
