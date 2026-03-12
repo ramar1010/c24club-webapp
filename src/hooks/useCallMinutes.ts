@@ -12,6 +12,11 @@ interface CapInfo {
   isVip: boolean;
 }
 
+interface FreezeInfo {
+  isFrozen: boolean;
+  earnRate: number;
+}
+
 export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
