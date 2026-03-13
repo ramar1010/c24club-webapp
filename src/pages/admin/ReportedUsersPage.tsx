@@ -18,6 +18,7 @@ type Report = {
 
 const ReportedUsersPage = () => {
   const [tab, setTab] = useState<"help" | "reports">("help");
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-reports"],
@@ -30,6 +31,28 @@ const ReportedUsersPage = () => {
       return data as Report[];
     },
   });
+
+  // Generate signed URLs for screenshots
+  useEffect(() => {
+    const reportsWithScreenshots = reports.filter((r) => r.screenshot_url);
+    if (reportsWithScreenshots.length === 0) return;
+
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const r of reportsWithScreenshots) {
+        if (r.screenshot_url && !signedUrls[r.id]) {
+          const { data } = await supabase.storage
+            .from("report-screenshots")
+            .createSignedUrl(r.screenshot_url, 3600);
+          if (data?.signedUrl) urls[r.id] = data.signedUrl;
+        }
+      }
+      if (Object.keys(urls).length > 0) {
+        setSignedUrls((prev) => ({ ...prev, ...urls }));
+      }
+    };
+    generateUrls();
+  }, [reports]);
 
   const helpRequests = reports.filter((r) => r.reason.startsWith("[HELP]"));
   const userReports = reports.filter((r) => !r.reason.startsWith("[HELP]"));
