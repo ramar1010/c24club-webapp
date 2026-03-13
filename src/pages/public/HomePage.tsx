@@ -86,10 +86,54 @@ const RewardCarousel = () => {
 };
 
 const SideCard = ({ image }: { image: string }) => (
-  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md">
+  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md border border-white/10">
     <img src={image} alt="Reward" className="w-full h-full object-cover" />
   </div>
 );
+
+const MobileRewardSlider = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let pos = 0;
+    let animId: number;
+    const speed = 0.4;
+    const totalWidth = el.scrollWidth / 2;
+
+    const animate = () => {
+      pos -= speed;
+      if (pos <= -totalWidth) pos += totalWidth;
+      el.style.transform = `translateX(${pos}px)`;
+      animId = requestAnimationFrame(animate);
+    };
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  const allRewardImages = [...leftSideRewards, ...rightSideRewards];
+  const items = [...allRewardImages, ...allRewardImages];
+
+  return (
+    <div className="sm:hidden mt-5">
+      <p className="text-center text-sm font-black text-yellow-300 uppercase tracking-wider mb-3">
+        Rewards You Earn For Chatting
+      </p>
+      <div className="overflow-hidden rounded-xl">
+        <div ref={scrollRef} className="flex w-max will-change-transform">
+          {items.map((img, i) => (
+            <div key={i} className="flex-shrink-0 mx-1.5">
+              <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                <img src={img} alt="Reward" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ─── Sign-In Popup ─── */
 const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
