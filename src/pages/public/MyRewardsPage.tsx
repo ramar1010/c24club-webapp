@@ -27,7 +27,7 @@ const filterToType: Record<FilterType, string> = {
   Perks: "perk",
 };
 
-const MyRewardsPage = () => {
+const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -79,7 +79,7 @@ const MyRewardsPage = () => {
       {/* Back button */}
       <div className="w-full flex items-center pt-3 pb-2 px-4">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => onClose ? onClose() : navigate(-1)}
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
         >
           <ChevronLeft className="w-7 h-7" />

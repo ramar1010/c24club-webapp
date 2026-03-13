@@ -20,6 +20,7 @@ import NavIcon from "@/components/videocall/NavIcon";
 import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
+import MyRewardsPage from "@/pages/public/MyRewardsPage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
@@ -74,7 +75,7 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
 
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | null>(null);
   const memberId = user?.id ?? "anonymous";
 
   const {
@@ -673,7 +674,7 @@ const VideoCallPage = () => {
         <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <NavIcon src={storeIcon} label="REDEEM" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} shake />
-            <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} highlight />
+            <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => isActive ? setOverlayPage("my-rewards") : navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
@@ -703,6 +704,11 @@ const VideoCallPage = () => {
       {overlayPage === "store" && (
         <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <RewardStorePage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
+      {overlayPage === "my-rewards" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <MyRewardsPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       )}
       {overlayPage === "profile" && (
