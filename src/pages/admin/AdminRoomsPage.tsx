@@ -20,6 +20,23 @@ const AdminRoomsPage = () => {
     refetchInterval: 5000,
   });
 
+  const { data: members } = useQuery({
+    queryKey: ["admin-members-lookup"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const memberName = (id: string | null) => {
+    if (!id) return "—";
+    const m = members?.find((m) => m.id === id);
+    return m?.name || id.slice(0, 8) + "…";
+  };
+
   const connectedRooms = rooms?.filter((r) => r.status === "connected") ?? [];
   const disconnectedRooms = rooms?.filter((r) => r.status === "disconnected") ?? [];
 
