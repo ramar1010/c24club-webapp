@@ -447,7 +447,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
         ) : (
           <>
             <button
-              onClick={() => setShowSignIn(true)}
+              onClick={() => { setSignInDefaultSignUp(true); setShowSignIn(true); }}
               className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
             >
               <span className="flex items-center gap-2">
