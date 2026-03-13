@@ -49,16 +49,16 @@ const sections = [
     title: "🎰 Spin to Win",
     items: [
       {
-        q: "How does Spin to Win work?",
-        a: "When you redeem a Rare or Legendary reward, you enter the Spin to Win mechanic. The wheel contains your target reward plus filler items. Spin the wheel and hope it lands on your prize! The Chance Enhancer stat improves your odds.",
+        q: "Are there different types of Spin to Win?",
+        a: "Yes — there are two separate Spin to Win mechanics:\n\n1. **Reward Spin** — When you redeem a Rare or Legendary reward from the store, you enter a spin mechanic. The wheel contains your target reward plus filler items. If it lands on your prize, you win it! Your Chance Enhancer stat improves your odds.\n\n2. **Daily Spin (Events)** — In the Events section (accessible from your profile), there's a separate Spin to Win wheel. You get 1 free spin every day and can purchase additional spin tokens. This wheel has its own set of prizes like minutes, ad points, and other items.",
       },
       {
         q: "What is the Chance Enhancer?",
-        a: "The Chance Enhancer is a stat that increases your probability of winning on the Spin to Win wheel. It builds up as you use the platform. Higher Chance Enhancer = better odds of landing on the reward you want.",
+        a: "The Chance Enhancer is a stat that increases your probability of winning on the Reward Spin wheel (when redeeming Rare/Legendary items). It builds up as you use the platform. Higher Chance Enhancer = better odds of landing on the reward you want.",
       },
       {
         q: "Can I buy extra spins?",
-        a: "Yes! You can purchase additional spins using your minutes. If you're a Premium VIP member, you also get one free re-spin when you lose on a Legendary item spin.",
+        a: "For the Daily Spin in Events, you can purchase spin tokens ($0.99 for 1, $1.99 for 2, $2.50 for 3). Purchased spins don't count against your daily free spin. For the Reward Spin, if you're a Premium VIP member, you get one free re-spin when you lose on a Legendary item spin.",
       },
     ],
   },
