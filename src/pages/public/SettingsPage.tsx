@@ -118,10 +118,8 @@ const SettingsPage = () => {
         EARN HISTORY
       </button>
 
-      {/* Change Interest */}
-      <button className="w-64 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-6 tracking-wide border border-yellow-400/40">
-        CHANGE INTEREST
-      </button>
+
+
 
 
 
