@@ -283,7 +283,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Step label */}
         {slide.step && (
-          <p className="font-black text-sm text-white text-center whitespace-pre-line leading-tight mb-2">
+          <p className="font-black text-base text-white text-center whitespace-pre-line leading-tight mb-2">
             {slide.step}
           </p>
         )}
