@@ -42,6 +42,7 @@ const AnchorEarningPanel = ({
   queuePosition,
   rewardEarned,
   cashEarned,
+  settings,
   onJoin,
   onLeave,
   onCashout,
