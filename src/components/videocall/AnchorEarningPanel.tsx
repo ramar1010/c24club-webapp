@@ -242,7 +242,7 @@ const AnchorEarningPanel = ({
 
   // Active earning panel
   return (
-    <div className={`mx-3 mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
+    <div className={`w-full mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
       {/* Hide button */}
       <div className="flex justify-end mb-1">
         <button
