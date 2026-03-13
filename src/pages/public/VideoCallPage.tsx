@@ -695,24 +695,43 @@ const VideoCallPage = () => {
         </button>
       )}
 
-      {/* Anchor Earning Panel (female users only) */}
-      {anchor.status !== "not_eligible" && anchor.status !== "loading" && isActive && (
-        <AnchorEarningPanel
-          status={anchor.status}
-          mode={anchor.mode}
-          elapsedSeconds={anchor.elapsedSeconds}
-          thresholdSeconds={anchor.thresholdSeconds}
-          cashBalance={anchor.cashBalance}
-          queuePosition={anchor.queuePosition}
-          rewardEarned={anchor.rewardEarned}
-          cashEarned={anchor.cashEarned}
-          settings={anchor.settings}
-          onJoin={anchor.joinAnchor}
-          onLeave={anchor.leaveAnchor}
-          onCashout={anchor.cashout}
-          onDismissReward={anchor.dismissReward}
-          onDismissCash={anchor.dismissCashEarned}
-        />
+      {/* Anchor "Tap Me" Banner (female users only) */}
+      {anchor.status !== "not_eligible" && anchor.status !== "loading" && (
+        <>
+          <button
+            onClick={() => setShowAnchorPanel(!showAnchorPanel)}
+            className="mx-3 mb-1 py-2 text-center animate-pulse hover:opacity-80 transition-opacity"
+          >
+            <span className="text-sm font-black">
+              🎉💰 <span className="text-pink-400">TAP ME!</span>
+            </span>
+            <br />
+            <span className="text-pink-400 font-black text-sm">
+              Female Only Earning Bonus!{" "}
+              <span className="text-green-400">
+                ${anchor.cashBalance.toFixed(0)}
+              </span>
+            </span>
+          </button>
+          {showAnchorPanel && (
+            <AnchorEarningPanel
+              status={anchor.status}
+              mode={anchor.mode}
+              elapsedSeconds={anchor.elapsedSeconds}
+              thresholdSeconds={anchor.thresholdSeconds}
+              cashBalance={anchor.cashBalance}
+              queuePosition={anchor.queuePosition}
+              rewardEarned={anchor.rewardEarned}
+              cashEarned={anchor.cashEarned}
+              settings={anchor.settings}
+              onJoin={anchor.joinAnchor}
+              onLeave={anchor.leaveAnchor}
+              onCashout={anchor.cashout}
+              onDismissReward={anchor.dismissReward}
+              onDismissCash={anchor.dismissCashEarned}
+            />
+          )}
+        </>
       )}
 
       {/* Panels */}
