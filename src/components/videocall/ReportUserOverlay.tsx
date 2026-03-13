@@ -50,12 +50,30 @@ const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("user_reports" as any).insert({
+
+    // Capture screenshot of reported user's video
+    let screenshotUrl: string | null = null;
+    const blob = captureVideoFrame(remoteVideoRef);
+    if (blob) {
+      const fileName = `${reporterId}/${Date.now()}.jpg`;
+      const { error: uploadErr } = await supabase.storage
+        .from("report-screenshots")
+        .upload(fileName, blob, { contentType: "image/jpeg" });
+      if (!uploadErr) {
+        const { data: urlData } = supabase.storage
+          .from("report-screenshots")
+          .getPublicUrl(fileName);
+        screenshotUrl = urlData?.publicUrl || null;
+      }
+    }
+
+    const { error } = await supabase.from("user_reports").insert({
       reporter_id: reporterId,
       reported_user_id: reportedUserId,
       reason: selectedReason,
       details: details.trim() || null,
-    } as any);
+      screenshot_url: screenshotUrl,
+    });
 
     if (error) {
       toast.error("Failed to submit report");
