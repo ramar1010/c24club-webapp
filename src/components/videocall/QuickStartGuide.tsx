@@ -255,7 +255,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
   const slide = slides[current];
 
   return (
-    <div className="absolute inset-0 z-40 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
       {/* Inline keyframes */}
       <style>{`
         @keyframes floatUp {
