@@ -65,6 +65,7 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
+  const [showAnchorBanner, setShowAnchorBanner] = useState(true);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
@@ -696,8 +697,18 @@ const VideoCallPage = () => {
       )}
 
       {/* Anchor "Tap Me" Banner (female users only) */}
-      {anchor.status !== "not_eligible" && anchor.status !== "loading" && (
+      {showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" && (
         <>
+          {/* Hide button - positioned above the banner */}
+          <div className="mx-3 mb-1 flex justify-end">
+            <button
+              onClick={() => setShowAnchorBanner(false)}
+              className="text-neutral-500 hover:text-neutral-300 text-xs px-2 py-1 flex items-center gap-1"
+              title="Hide earning banner"
+            >
+              👁‍🗨 Hide Earning Banner
+            </button>
+          </div>
           <button
             onClick={() => setShowAnchorPanel(!showAnchorPanel)}
             className="mx-3 mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
@@ -759,6 +770,16 @@ const VideoCallPage = () => {
             />
           )}
         </>
+      )}
+
+      {/* Show Earning Banner button (when hidden) */}
+      {!showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" && (
+        <button
+          onClick={() => setShowAnchorBanner(true)}
+          className="mx-3 mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+        >
+          <span>👁</span> Show Earning Dashboard
+        </button>
       )}
 
       {/* Panels */}
