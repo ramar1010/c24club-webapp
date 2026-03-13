@@ -65,6 +65,7 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
+  const [showAnchorBanner, setShowAnchorBanner] = useState(true);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
