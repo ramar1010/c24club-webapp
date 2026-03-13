@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import EventsPage from "@/pages/public/EventsPage";
+import LoginStreakDisplay from "@/components/profile/LoginStreakDisplay";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
