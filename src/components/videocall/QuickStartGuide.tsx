@@ -5,6 +5,9 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import boySelfie from "@/assets/quickstart/boy-selfie.jpg";
 import girlSelfie from "@/assets/quickstart/girl-selfie.jpg";
 import moneyBag from "@/assets/quickstart/money-bag.png";
+import topicBubble from "@/assets/quickstart/topic-bubble.png";
+import giftEmoji from "@/assets/quickstart/gift-emoji.png";
+import shoppingBags2 from "@/assets/quickstart/shopping-bags2.png";
 
 // Slide 2 - Earn Minutes
 import stopwatch from "@/assets/quickstart/stopwatch.png";
@@ -28,21 +31,35 @@ import fastForward from "@/assets/quickstart/fast-forward.png";
 /* ── Slide visual components ── */
 
 const Slide1Visual = () => (
-  <div className="relative w-56 h-56 flex items-center justify-center">
+  <div className="relative w-60 h-60 flex items-center justify-center">
     {/* Two video feeds side by side */}
-    <div className="flex gap-2 items-center animate-fade-in">
-      <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shadow-emerald-400/30 animate-[pulse_3s_ease-in-out_infinite]">
-        <img src={boySelfie} alt="Boy" className="w-full h-full object-cover" />
+    <div className="flex gap-2 items-end animate-fade-in">
+      <div className="relative">
+        <div className="w-22 h-30 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shadow-emerald-400/30 animate-[pulse_3s_ease-in-out_infinite]">
+          <img src={boySelfie} alt="Boy" className="w-full h-full object-cover" />
+        </div>
+        {/* Boy's chat bubble - top left */}
+        <div className="absolute -top-10 -left-3" style={{ animation: "floatUp 3s ease-in-out 0s infinite" }}>
+          <img src={topicBubble} alt="" className="w-12 h-10 object-contain" />
+          <img src={giftEmoji} alt="" className="absolute top-1.5 left-2.5 w-5 h-5" />
+        </div>
       </div>
-      <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
-        <img src={girlSelfie} alt="Girl" className="w-full h-full object-cover" />
+      <div className="relative">
+        <div className="w-22 h-30 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
+          <img src={girlSelfie} alt="Girl" className="w-full h-full object-cover" />
+        </div>
+        {/* Girl's chat bubble - top right */}
+        <div className="absolute -top-10 -right-3" style={{ animation: "floatUp 3s ease-in-out 1s infinite" }}>
+          <img src={topicBubble} alt="" className="w-12 h-10 object-contain" />
+          <img src={shoppingBags2} alt="" className="absolute top-1.5 left-2.5 w-5 h-5" />
+        </div>
       </div>
     </div>
     {/* Floating money bag */}
     <img
       src={moneyBag}
       alt="Earn"
-      className="absolute -bottom-2 right-2 w-12 h-12 animate-[bounce_2s_ease-in-out_infinite]"
+      className="absolute -bottom-1 right-1 w-11 h-11 animate-[bounce_2s_ease-in-out_infinite]"
     />
     {/* Connection line */}
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-emerald-400/20 animate-[ping_2s_ease-in-out_infinite]" />
