@@ -12,6 +12,7 @@ type Report = {
   reason: string;
   details: string | null;
   room_id: string | null;
+  screenshot_url: string | null;
   created_at: string;
 };
 
