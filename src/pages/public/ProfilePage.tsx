@@ -22,6 +22,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEvents, setShowEvents] = useState(false);
+  const [showVipSettings, setShowVipSettings] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
