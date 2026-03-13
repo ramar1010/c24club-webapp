@@ -3,14 +3,15 @@ interface NavIconProps {
   label: string;
   onClick?: () => void;
   highlight?: boolean;
+  shake?: boolean;
 }
 
-const NavIcon = ({ src, label, onClick, highlight }: NavIconProps) => (
+const NavIcon = ({ src, label, onClick, highlight, shake }: NavIconProps) => (
   <button
     onClick={onClick}
     className={`flex flex-col items-center gap-1 hover:scale-110 transition-transform ${
       highlight ? "scale-105" : ""
-    }`}
+    } ${shake ? "animate-shake" : ""}`}
   >
     <img src={src} alt={label} className="w-14 h-14 md:w-20 md:h-20 object-contain" />
     <span
