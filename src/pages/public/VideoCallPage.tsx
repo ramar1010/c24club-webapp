@@ -31,6 +31,7 @@ import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
 import ReportUserOverlay from "@/components/videocall/ReportUserOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
