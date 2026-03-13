@@ -156,12 +156,12 @@ const Slide3Visual = () => (
 const Slide4Visual = () => {
   const [frame, setFrame] = useState(0);
 
-  useState(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setFrame((f) => (f === 0 ? 1 : 0));
     }, 600);
     return () => clearInterval(interval);
-  });
+  }, []);
 
   return (
     <div className="relative w-56 h-56 flex items-center justify-center">
