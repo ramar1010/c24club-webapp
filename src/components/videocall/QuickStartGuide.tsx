@@ -25,7 +25,8 @@ import rewardShorts from "@/assets/quickstart/reward-shorts.jpg";
 import paypalLogo from "@/assets/quickstart/paypal-logo.png";
 
 // Slide 4 - Beware
-import noFinger from "@/assets/quickstart/no-finger.png";
+import noFrame1 from "@/assets/quickstart/no-frame1.jpg";
+import noFrame2 from "@/assets/quickstart/no-frame2.png";
 import fastForward from "@/assets/quickstart/fast-forward.png";
 
 /* ── Slide visual components ── */
