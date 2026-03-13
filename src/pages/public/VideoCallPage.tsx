@@ -31,6 +31,7 @@ import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
 import ReportUserOverlay from "@/components/videocall/ReportUserOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -61,6 +62,9 @@ const VideoCallPage = () => {
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(() => {
+    return !sessionStorage.getItem("c24_quickstart_seen");
+  });
 
   // Skip penalty state
   const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
@@ -415,6 +419,14 @@ const VideoCallPage = () => {
               </button>
               <span className="text-neutral-500 text-[10px] tracking-wide font-bold">C24CLUB.COM</span>
             </div>
+          )}
+
+          {/* Quick Start Guide overlay */}
+          {!isActive && showQuickStart && (
+            <QuickStartGuide onDismiss={() => {
+              setShowQuickStart(false);
+              sessionStorage.setItem("c24_quickstart_seen", "1");
+            }} />
           )}
 
           <video ref={localVideoRef} autoPlay muted playsInline
