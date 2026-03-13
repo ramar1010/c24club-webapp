@@ -28,6 +28,24 @@ const filterToType: Record<FilterType, string> = {
   Perks: "perk",
 };
 
+// Statuses that mean the item is already shipped/completed — no editing allowed
+const SHIPPED_STATUSES = ["Order shipped", "Gift Card Sent on Email", "completed", "delivered"];
+
+const STATUS_LABELS: Record<string, { text: string; color: string }> = {
+  "processing": { text: "🔄 Processing your order...", color: "text-blue-400" },
+  "pending_shipping": { text: "📦 Preparing to ship — please wait!", color: "text-yellow-400" },
+  "pending_payment": { text: "💳 Awaiting shipping payment", color: "text-orange-400" },
+  "Order placed": { text: "✅ Order has been placed — please wait!", color: "text-cyan-400" },
+  "Order shipped": { text: "🚚 Your order has been shipped!", color: "text-green-400" },
+  "Item Out of stock": { text: "❌ Item is currently out of stock", color: "text-red-400" },
+  "Gift Card Form Filled by user": { text: "📝 Gift card form received — processing!", color: "text-indigo-400" },
+  "Gift Card Sent on Email": { text: "✉️ Gift card sent to your email!", color: "text-emerald-400" },
+  "Redeemed Milestone Reward": { text: "🏆 Milestone reward redeemed!", color: "text-purple-400" },
+  "Redeemed Product Point Reward": { text: "🎯 Point reward redeemed!", color: "text-violet-400" },
+  "Redeemed VIP Gift Reward": { text: "⭐ VIP gift reward redeemed!", color: "text-amber-400" },
+  "Redeemed as Anchor User Reward": { text: "⚓ Anchor reward redeemed!", color: "text-teal-400" },
+};
+
 const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
