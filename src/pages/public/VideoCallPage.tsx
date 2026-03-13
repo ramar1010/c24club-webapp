@@ -799,6 +799,7 @@ const VideoCallPage = () => {
         <ReportUserOverlay
           reporterId={memberId}
           reportedUserId={currentPartnerId}
+          remoteVideoRef={remoteVideoRef}
           onClose={() => setShowReportOverlay(false)}
         />
       )}

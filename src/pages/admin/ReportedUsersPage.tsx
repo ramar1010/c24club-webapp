@@ -107,7 +107,16 @@ const ReportedUsersPage = () => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 space-y-1">
+              <CardContent className="pt-0 space-y-2">
+                {r.screenshot_url && (
+                  <a href={r.screenshot_url} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={r.screenshot_url}
+                      alt="Report screenshot"
+                      className="w-48 h-auto rounded-lg border border-border object-cover"
+                    />
+                  </a>
+                )}
                 {r.details && (
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {r.details}
