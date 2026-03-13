@@ -705,6 +705,11 @@ const VideoCallPage = () => {
           <RewardStorePage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       )}
+      {overlayPage === "my-rewards" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <MyRewardsPage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
       {overlayPage === "profile" && (
         <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <ProfilePage onClose={() => setOverlayPage(null)} />
