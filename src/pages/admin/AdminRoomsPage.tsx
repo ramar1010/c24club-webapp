@@ -89,7 +89,7 @@ const AdminRoomsPage = () => {
           </div>
           <div>
             <p className="text-muted-foreground text-xs">Member 2</p>
-            <p className="font-mono text-xs truncate">{room.member2 || "—"}</p>
+            <p className="text-xs font-medium truncate">{memberName(room.member2)}</p>
             {room.member2_gender && (
               <Badge variant="outline" className="text-[10px] mt-1">
                 {room.member2_gender}
