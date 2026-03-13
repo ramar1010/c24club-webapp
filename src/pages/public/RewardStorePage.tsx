@@ -109,6 +109,10 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
   const [spinAnimating, setSpinAnimating] = useState(false);
   const [instantRedeeming, setInstantRedeeming] = useState(false);
+  const [showGiftCards, setShowGiftCards] = useState(false);
+  const [redeemingGiftCard, setRedeemingGiftCard] = useState<string | null>(null);
+  const [redeemedCode, setRedeemedCode] = useState<{ code: string; brand: string; value: number } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
