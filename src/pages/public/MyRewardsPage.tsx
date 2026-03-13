@@ -105,6 +105,56 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
     setDropdownOpen(false);
   };
 
+  const canEditShipping = (status: string) => !SHIPPED_STATUSES.includes(status);
+
+  const getStatusDisplay = (item: any) => {
+    const mapped = STATUS_LABELS[item.status];
+    if (mapped) return mapped;
+    return { text: item.status, color: "text-neutral-300" };
+  };
+
+  const openEditShipping = (item: any) => {
+    setEditForm({
+      shipping_name: item.shipping_name || "",
+      shipping_address: item.shipping_address || "",
+      shipping_city: item.shipping_city || "",
+      shipping_state: item.shipping_state || "",
+      shipping_zip: item.shipping_zip || "",
+      shipping_country: item.shipping_country || "",
+    });
+    setEditingItem(item);
+  };
+
+  const handleSaveShipping = async () => {
+    if (!editingItem) return;
+    if (!editForm.shipping_name || !editForm.shipping_address || !editForm.shipping_country) {
+      toast.error("Please fill in name, address, and country");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("member_redemptions")
+        .update({
+          shipping_name: editForm.shipping_name,
+          shipping_address: editForm.shipping_address,
+          shipping_city: editForm.shipping_city,
+          shipping_state: editForm.shipping_state,
+          shipping_zip: editForm.shipping_zip,
+          shipping_country: editForm.shipping_country,
+        })
+        .eq("id", editingItem.id)
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      toast.success("Shipping details updated!");
+      setEditingItem(null);
+      queryClient.invalidateQueries({ queryKey: ["my-redemptions"] });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    }
+    setSaving(false);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
       {/* Back button */}
@@ -170,6 +220,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
               const rarityColor = RARITY_COLORS[item.reward_rarity] || "text-white";
               const rarityEmoji = RARITY_EMOJI[item.reward_rarity] || "";
               const isLegendaryCashout = item.cashout_amount && item.cashout_amount > 0;
+              const statusDisplay = getStatusDisplay(item);
 
               return (
                 <div
@@ -221,26 +272,42 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
                             PayPal: {item.cashout_paypal}
                           </p>
                         )}
-                        <p className="text-xs font-bold text-neutral-300 mt-1">
-                          {item.cashout_status === "pending" || item.status === "processing"
-                            ? "Under Process"
-                            : item.cashout_status || item.status}
+                        <p className={`text-xs font-bold mt-1 ${statusDisplay.color}`}>
+                          {statusDisplay.text}
                         </p>
                         <p className="text-[10px] text-neutral-500 font-bold mt-1 uppercase">
                           CASHOUT REWARD
                         </p>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">
-                          You chose to cashout ${item.cashout_amount} in place of product
-                        </p>
                       </>
                     ) : (
                       <>
-                        <p className="text-[10px] text-neutral-400 mt-1">
-                          {item.reward_rarity === "legendary" ? "You redeemed the item only" : "We're Preparing Your Product. Be Patient. This may take up to 24 hours!"}
+                        {/* Dynamic status from admin */}
+                        <p className={`text-[10px] font-bold mt-1 ${statusDisplay.color}`}>
+                          {statusDisplay.text}
                         </p>
-                        <button className="text-red-500 font-bold text-xs mt-2 hover:underline">
-                          Edit Shipping Details
-                        </button>
+
+                        {/* Tracking link if shipped */}
+                        {item.shipping_tracking_url && (
+                          <a
+                            href={item.shipping_tracking_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 font-bold text-[10px] mt-1 hover:underline inline-block"
+                          >
+                            📍 Track Shipment
+                          </a>
+                        )}
+
+                        {/* Edit shipping - only if not shipped yet */}
+                        {canEditShipping(item.status) && item.reward_type === "product" && (
+                          <button
+                            onClick={() => openEditShipping(item)}
+                            className="text-red-500 font-bold text-xs mt-2 hover:underline flex items-center justify-center gap-1 mx-auto"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Edit Shipping Details
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
@@ -250,6 +317,68 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         )}
       </div>
+
+      {/* Edit Shipping Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center">
+          <div className="bg-neutral-900 w-full max-w-md rounded-t-3xl p-6 space-y-3 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-black text-lg">Edit Shipping Details</h2>
+              <button onClick={() => setEditingItem(null)} className="text-neutral-400 font-bold text-sm">
+                ✕
+              </button>
+            </div>
+
+            <input
+              placeholder="Full Name *"
+              value={editForm.shipping_name}
+              onChange={(e) => setEditForm(f => ({ ...f, shipping_name: e.target.value }))}
+              className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+            />
+            <input
+              placeholder="Country/Region *"
+              value={editForm.shipping_country}
+              onChange={(e) => setEditForm(f => ({ ...f, shipping_country: e.target.value }))}
+              className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+            />
+            <textarea
+              placeholder="Address *"
+              value={editForm.shipping_address}
+              onChange={(e) => setEditForm(f => ({ ...f, shipping_address: e.target.value }))}
+              rows={2}
+              className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50 resize-none"
+            />
+            <input
+              placeholder="City"
+              value={editForm.shipping_city}
+              onChange={(e) => setEditForm(f => ({ ...f, shipping_city: e.target.value }))}
+              className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+            />
+            <div className="flex gap-3">
+              <input
+                placeholder="State"
+                value={editForm.shipping_state}
+                onChange={(e) => setEditForm(f => ({ ...f, shipping_state: e.target.value }))}
+                className="flex-1 bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+              />
+              <input
+                placeholder="Zip"
+                value={editForm.shipping_zip}
+                onChange={(e) => setEditForm(f => ({ ...f, shipping_zip: e.target.value }))}
+                className="flex-1 bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+              />
+            </div>
+
+            <button
+              onClick={handleSaveShipping}
+              disabled={saving}
+              className="w-full bg-white text-black font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50 mt-4"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Gifts Received - VIP only */}
       {subscribed && (
