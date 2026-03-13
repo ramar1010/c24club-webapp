@@ -673,7 +673,7 @@ const VideoCallPage = () => {
         <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <NavIcon src={storeIcon} label="REDEEM" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} shake />
-            <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} highlight />
+            <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => isActive ? setOverlayPage("my-rewards") : navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />

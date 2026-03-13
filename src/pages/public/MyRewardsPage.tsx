@@ -27,7 +27,7 @@ const filterToType: Record<FilterType, string> = {
   Perks: "perk",
 };
 
-const MyRewardsPage = () => {
+const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
