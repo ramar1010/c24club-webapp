@@ -52,8 +52,20 @@ const AnchorEarningPanel = ({
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   if (status === "not_eligible" || status === "loading") return null;
+
+  if (isHidden) {
+    return (
+      <button
+        onClick={() => setIsHidden(false)}
+        className="mx-3 mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+      >
+        <span>👁</span> Show Earning Dashboard
+      </button>
+    );
+  }
 
   const remainingSeconds = Math.max(0, thresholdSeconds - elapsedSeconds);
   const remainingMin = Math.floor(remainingSeconds / 60);
@@ -200,6 +212,16 @@ const AnchorEarningPanel = ({
   if (status === "idle" || status === "slots_full") {
     return (
       <div className={`mx-3 mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
+        {/* Hide button */}
+        <div className="flex justify-end mb-1">
+          <button
+            onClick={() => setIsHidden(true)}
+            className="text-neutral-500 hover:text-neutral-300 text-xs p-1"
+            title="Hide dashboard"
+          >
+            👁‍🗨 Hide
+          </button>
+        </div>
         <div className="text-center">
           <p className="text-white font-black text-sm uppercase tracking-wide mb-2">
             🌟 Anchor Earning Available
