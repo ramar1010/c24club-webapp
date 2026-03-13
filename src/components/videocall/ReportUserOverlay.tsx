@@ -18,10 +18,28 @@ const REPORT_REASONS = [
 interface ReportUserOverlayProps {
   reporterId: string;
   reportedUserId: string;
+  remoteVideoRef?: RefObject<HTMLVideoElement>;
   onClose: () => void;
 }
 
-const ReportUserOverlay = ({ reporterId, reportedUserId, onClose }: ReportUserOverlayProps) => {
+const captureVideoFrame = (videoRef?: RefObject<HTMLVideoElement>): Blob | null => {
+  const video = videoRef?.current;
+  if (!video || video.readyState < 2) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  const byteString = atob(dataUrl.split(",")[1]);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+  return new Blob([ab], { type: "image/jpeg" });
+};
+
+const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose }: ReportUserOverlayProps) => {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
