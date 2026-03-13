@@ -201,7 +201,7 @@ export const adminMenu: MenuItem[] = [
     icon: Mail,
     title: "Emails",
     submenu: [
-      { key: "emails", label: "Email Queue", path: "/admin/emails" },
+      { key: "email-templates", label: "Email Templates", path: "/admin/emails" },
     ],
   },
   {

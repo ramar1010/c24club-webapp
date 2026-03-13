@@ -108,7 +108,7 @@ const App = () => (
               <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
               <Route path="anchor-rewards/cashouts" element={<PlaceholderPage title="Idle Minutes - Cashouts" />} />
               <Route path="anchor-rewards/queue" element={<PlaceholderPage title="Anchor Users Queue" />} />
-              <Route path="emails" element={<PlaceholderPage title="Email Queue" />} />
+              <Route path="emails" element={<AdminEmailTemplatesPage />} />
               <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
