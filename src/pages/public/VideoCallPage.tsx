@@ -62,6 +62,9 @@ const VideoCallPage = () => {
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(() => {
+    return !sessionStorage.getItem("c24_quickstart_seen");
+  });
 
   // Skip penalty state
   const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
