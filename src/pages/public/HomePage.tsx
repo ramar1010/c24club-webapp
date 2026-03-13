@@ -19,20 +19,32 @@ import reward6 from "@/assets/rewards/reward6.jpg";
 import reward7 from "@/assets/rewards/reward7.jpg";
 import bagImg from "@/assets/rewards/bag.png";
 import cashImg from "@/assets/rewards/cash.png";
+import paypal2 from "@/assets/rewards/paypal-2.png";
+import phonecase2 from "@/assets/rewards/phonecase-2.png";
+import bag3 from "@/assets/rewards/bag-3.png";
+import boots2 from "@/assets/rewards/boots-2.png";
+import cash2 from "@/assets/rewards/cash-2.png";
+import slippers from "@/assets/rewards/slippers.png";
+import shorts2 from "@/assets/rewards/shorts-2.jpg";
+import hat2 from "@/assets/rewards/hat-2.jpg";
+import redbag2 from "@/assets/rewards/redbag-2.jpg";
+import heartbag2 from "@/assets/rewards/heartbag-2.jpg";
 
 const rewards = [
-  { label: "PayPal", minutes: 400, image: reward1 },
-  { label: "Cash App", minutes: 400, image: cashImg },
-  { label: "Bucket Hat", minutes: 80, image: reward4 },
-  { label: "Bag", minutes: 150, image: bagImg },
-  { label: "Boots", minutes: 200, image: reward3 },
-  { label: "Dress", minutes: 100, image: reward5 },
-  { label: "Heart Bag", minutes: 95, image: reward6 },
-  { label: "Phone Cases", minutes: 90, image: reward7 },
+  { label: "PayPal", minutes: 400, image: paypal2 },
+  { label: "Cash App", minutes: 400, image: cash2 },
+  { label: "Bucket Hat", minutes: 80, image: hat2 },
+  { label: "Bag", minutes: 150, image: bag3 },
+  { label: "Boots", minutes: 200, image: boots2 },
+  { label: "Shorts", minutes: 100, image: shorts2 },
+  { label: "Heart Bag", minutes: 95, image: heartbag2 },
+  { label: "Phone Cases", minutes: 90, image: phonecase2 },
+  { label: "Red Bag", minutes: 120, image: redbag2 },
+  { label: "Slippers", minutes: 75, image: slippers },
 ];
 
-const leftSideRewards = [reward5, bagImg, reward1];
-const rightSideRewards = [reward6, cashImg, reward3];
+const leftSideRewards = [paypal2, bag3, boots2, shorts2, heartbag2];
+const rightSideRewards = [cash2, hat2, phonecase2, redbag2, slippers];
 
 const RewardCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
