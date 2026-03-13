@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import EventsPage from "@/pages/public/EventsPage";
+import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -21,6 +22,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEvents, setShowEvents] = useState(false);
+  const [showVipSettings, setShowVipSettings] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -66,6 +68,18 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     await signOut();
     navigate("/");
   };
+
+  if (showVipSettings && user) {
+    return (
+      <VipSettingsOverlay
+        onClose={() => setShowVipSettings(false)}
+        userId={user.id}
+        vipTier={ceData?.is_vip ? (ceData?.vip_tier === "premium" ? "premium" : "basic") : null}
+        genderFilter="everyone"
+        onGenderFilterChange={() => {}}
+      />
+    );
+  }
 
   if (showEvents) {
     return <EventsPage onClose={() => setShowEvents(false)} />;
@@ -118,7 +132,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex justify-center gap-8 mb-8">
         <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowEvents(true)} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
-        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" />
+        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={() => setShowVipSettings(true)} />
       </div>
 
       {/* Feature Cards */}
