@@ -369,6 +369,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [signInDefaultSignUp, setSignInDefaultSignUp] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [memberName, setMemberName] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
