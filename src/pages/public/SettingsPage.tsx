@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, X, Send } from "lucide-react";
+import { ChevronLeft, ChevronDown, X, Send, Mail, Key, Calendar, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
