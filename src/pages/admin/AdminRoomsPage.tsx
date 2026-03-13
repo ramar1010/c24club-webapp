@@ -20,6 +20,23 @@ const AdminRoomsPage = () => {
     refetchInterval: 5000,
   });
 
+  const { data: members } = useQuery({
+    queryKey: ["admin-members-lookup"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const memberName = (id: string | null) => {
+    if (!id) return "—";
+    const m = members?.find((m) => m.id === id);
+    return m?.name || id.slice(0, 8) + "…";
+  };
+
   const connectedRooms = rooms?.filter((r) => r.status === "connected") ?? [];
   const disconnectedRooms = rooms?.filter((r) => r.status === "disconnected") ?? [];
 
@@ -63,7 +80,7 @@ const AdminRoomsPage = () => {
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-muted-foreground text-xs">Member 1</p>
-            <p className="font-mono text-xs truncate">{room.member1}</p>
+            <p className="text-xs font-medium truncate">{memberName(room.member1)}</p>
             {room.member1_gender && (
               <Badge variant="outline" className="text-[10px] mt-1">
                 {room.member1_gender}
@@ -72,7 +89,7 @@ const AdminRoomsPage = () => {
           </div>
           <div>
             <p className="text-muted-foreground text-xs">Member 2</p>
-            <p className="font-mono text-xs truncate">{room.member2 || "—"}</p>
+            <p className="text-xs font-medium truncate">{memberName(room.member2)}</p>
             {room.member2_gender && (
               <Badge variant="outline" className="text-[10px] mt-1">
                 {room.member2_gender}
