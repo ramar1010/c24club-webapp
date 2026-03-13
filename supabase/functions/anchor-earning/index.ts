@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         .eq("id", userId)
         .maybeSingle();
 
-      if (!member || member.gender !== "Female") {
+      if (!member || member.gender?.toLowerCase() !== "female") {
         return new Response(
           JSON.stringify({ success: false, message: "not_eligible" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
