@@ -13,6 +13,13 @@ import stopwatch from "@/assets/quickstart/stopwatch.png";
 import shoppingBags from "@/assets/quickstart/shopping-bags.png";
 import rewardHat from "@/assets/quickstart/reward-hat.jpg";
 import rewardJeans from "@/assets/quickstart/reward-jeans.jpg";
+import rewardBag from "@/assets/quickstart/reward-bag.jpg";
+import rewardBoots from "@/assets/quickstart/reward-boots.png";
+import rewardPhonecase from "@/assets/quickstart/reward-phonecase.png";
+import rewardRedbag from "@/assets/quickstart/reward-redbag.jpg";
+import rewardHeartbag from "@/assets/quickstart/reward-heartbag.jpg";
+import rewardShorts from "@/assets/quickstart/reward-shorts.jpg";
+import paypalLogo from "@/assets/quickstart/paypal-logo.png";
 
 // Slide 4 - Beware
 import noFinger from "@/assets/quickstart/no-finger.png";
