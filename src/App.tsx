@@ -41,6 +41,7 @@ import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
 import RulesPage from "@/pages/public/RulesPage";
 
 import NotFound from "./pages/NotFound";
+import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
 
 const queryClient = new QueryClient();
 
