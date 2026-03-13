@@ -174,11 +174,13 @@ const MobileRewardSlider = () => {
 };
 
 /* ─── Sign-In Popup ─── */
-const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; onClose: () => void; defaultSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => { setIsSignUp(defaultSignUp); }, [defaultSignUp, open]);
 
   if (!open) return null;
 
@@ -223,8 +225,8 @@ const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) 
         <button onClick={onClose} className="absolute top-3 right-3 text-white/60 hover:text-white">
           <X className="h-5 w-5" />
         </button>
-        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">Sign In to C24 Club</h2>
-        <p className="text-sm text-white/60 text-center mb-6">Choose how you'd like to sign in</p>
+        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">{isSignUp ? "Sign Up for C24 Club" : "Sign In to C24 Club"}</h2>
+        <p className="text-sm text-white/60 text-center mb-6">{isSignUp ? "Create your account to start earning" : "Choose how you'd like to sign in"}</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={handleGoogle}
@@ -369,6 +371,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [signInDefaultSignUp, setSignInDefaultSignUp] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [memberName, setMemberName] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
@@ -416,7 +419,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
 
   return (
     <>
-      <SignInPopup open={showSignIn} onClose={() => setShowSignIn(false)} />
+      <SignInPopup open={showSignIn} onClose={() => setShowSignIn(false)} defaultSignUp={signInDefaultSignUp} />
       <OnboardingPopup open={showOnboarding} onComplete={handleOnboardingComplete} />
 
       <div className="flex flex-col items-center gap-3">
@@ -446,7 +449,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
         ) : (
           <>
             <button
-              onClick={() => setShowSignIn(true)}
+              onClick={() => { setSignInDefaultSignUp(true); setShowSignIn(true); }}
               className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-lg uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
             >
               <span className="flex items-center gap-2">
@@ -456,7 +459,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
               <span className="block text-sm font-bold text-yellow-300 mt-0.5">Sign Up Today</span>
             </button>
             <button
-              onClick={() => setShowSignIn(true)}
+              onClick={() => { setSignInDefaultSignUp(false); setShowSignIn(true); }}
               className="px-8 py-3 rounded-full bg-green-500 hover:bg-green-600 text-white font-black text-sm uppercase tracking-wide shadow-lg transition-all transform hover:scale-105"
             >
               Sign In
