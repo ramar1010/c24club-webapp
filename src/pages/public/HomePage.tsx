@@ -652,29 +652,29 @@ const HomePage = () => {
 
         {/* Step 3 */}
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
           <div className="relative bg-[#1a1a2e] rounded-3xl p-8 md:p-10 border border-white/10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl" />
             
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/30">
-                  <span className="text-purple-400 font-black text-sm">STEP 3</span>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 border border-red-500/30">
+                  <span className="text-red-400 font-black text-sm">STEP 3</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-                  Create Promos To <span className="text-purple-400">Reach More People!</span>
+                  Create Promos To <span className="text-orange-400">Reach More People!</span>
                 </h3>
                 <p className="text-white/60 text-base leading-relaxed">
                   Don't want to video chat? Create eye-catching promo posts that display between other users' sessions. Promote your brand, socials, or anything you want — reach thousands!
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <Megaphone className="h-4 w-4 text-purple-400" />
+                    <Megaphone className="h-4 w-4 text-orange-400" />
                     <span className="text-white/80 text-sm font-medium">Custom promos</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <MessageCircle className="h-4 w-4 text-purple-400" />
+                    <MessageCircle className="h-4 w-4 text-orange-400" />
                     <span className="text-white/80 text-sm font-medium">Thousands of viewers</span>
                   </div>
                 </div>
@@ -682,35 +682,33 @@ const HomePage = () => {
               
               {/* Promo visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/20 to-rose-600/20 border border-purple-500/20 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-600/20 border border-red-500/20 flex items-center justify-center">
                   <div className="relative">
-                    {/* Mock promo card */}
-                    <div className="w-44 bg-[#252545] rounded-2xl p-4 border border-purple-500/20 shadow-xl shadow-purple-500/10 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                      <div className="w-full h-20 rounded-lg bg-gradient-to-br from-purple-400/30 to-pink-400/30 mb-3 flex items-center justify-center">
-                        <Megaphone className="h-8 w-8 text-purple-300" />
+                    <div className="w-44 bg-[#252535] rounded-2xl p-4 border border-orange-500/20 shadow-xl shadow-orange-500/10 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                      <div className="w-full h-20 rounded-lg bg-gradient-to-br from-orange-400/30 to-red-400/30 mb-3 flex items-center justify-center">
+                        <Megaphone className="h-8 w-8 text-orange-300" />
                       </div>
                       <div className="h-2 w-3/4 bg-white/20 rounded-full mb-2" />
                       <div className="h-2 w-1/2 bg-white/10 rounded-full mb-3" />
                       <div className="flex gap-1">
-                        <div className="h-6 flex-1 rounded-md bg-purple-500/40 flex items-center justify-center">
+                        <div className="h-6 flex-1 rounded-md bg-orange-500/40 flex items-center justify-center">
                           <span className="text-[10px] text-white font-bold">Visit Link</span>
                         </div>
                       </div>
                     </div>
-                    {/* Floating engagement indicators */}
                     <div className="absolute -top-4 -right-4 animate-bounce" style={{ animationDelay: '0.3s' }}>
-                      <div className="px-2 py-1 rounded-full bg-rose-500/90 shadow-lg">
+                      <div className="px-2 py-1 rounded-full bg-red-500/90 shadow-lg">
                         <span className="text-[10px] text-white font-bold">❤️ 2.4k</span>
                       </div>
                     </div>
                     <div className="absolute -bottom-3 -left-3 animate-bounce" style={{ animationDelay: '0.8s' }}>
-                      <div className="px-2 py-1 rounded-full bg-blue-500/90 shadow-lg">
+                      <div className="px-2 py-1 rounded-full bg-orange-500/90 shadow-lg">
                         <span className="text-[10px] text-white font-bold">👁 5.1k</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
                   <span className="text-white font-black text-sm tracking-wide">CREATE 🚀</span>
                 </div>
               </div>
