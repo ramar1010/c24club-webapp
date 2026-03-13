@@ -132,7 +132,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex justify-center gap-8 mb-8">
         <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowEvents(true)} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
-        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={() => setShowVipSettings(true)} />
+        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={ceData?.is_vip ? () => setShowVipSettings(true) : undefined} disabled={!ceData?.is_vip} />
       </div>
 
       {/* Feature Cards */}
