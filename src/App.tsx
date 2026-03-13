@@ -29,6 +29,7 @@ import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
 import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
 import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
+import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -82,7 +83,7 @@ const App = () => (
               <Route index element={<DashboardPage />} />
               <Route path="members" element={<MembersPage />} />
               <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
-              <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
+              <Route path="rooms" element={<AdminRoomsPage />} />
               <Route path="rewards" element={<RewardsPage />} />
               <Route path="rewards/new" element={<AddRewardPage />} />
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
