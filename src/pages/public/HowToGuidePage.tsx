@@ -84,11 +84,11 @@ const sections = [
     items: [
       {
         q: "What are Ad Points?",
-        a: "Ad Points are earned by watching promo ads during video calls. You earn points for each ad you view. Premium VIP members earn 2x ad points (up to 6 points for 5 minutes). Ad Points can be redeemed as a reward type.",
+        a: "Ad Points are earned automatically while video chatting — no ads to watch! You accumulate points as you chat. Premium VIP members earn 2x ad points. Ad Points can be redeemed as a reward type in the store.",
       },
       {
         q: "How do promos work?",
-        a: "Users and brands can create promos that appear during video calls. When you see a promo, you can interact with it to earn Ad Points. VIP members have advanced promo controls including the ability to create their own promos and disable unwanted ads.",
+        a: "Users and brands can create promos that appear during video calls. VIP members have advanced promo controls including the ability to create their own promos and disable unwanted ads.",
       },
     ],
   },
