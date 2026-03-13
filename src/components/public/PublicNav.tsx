@@ -20,6 +20,9 @@ const PublicNav = () => {
   {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 no-underline">
         <img src="/src/assets/logo.png" alt="C24CLUB" className="h-10 w-auto" />
+        <span className="font-extrabold text-xl text-white uppercase tracking-wide drop-shadow-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          C24CLUB
+        </span>
       </Link>
 
       {/* Desktop nav */}
