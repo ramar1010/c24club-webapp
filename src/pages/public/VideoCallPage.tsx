@@ -421,6 +421,14 @@ const VideoCallPage = () => {
             </div>
           )}
 
+          {/* Quick Start Guide overlay */}
+          {!isActive && showQuickStart && (
+            <QuickStartGuide onDismiss={() => {
+              setShowQuickStart(false);
+              sessionStorage.setItem("c24_quickstart_seen", "1");
+            }} />
+          )}
+
           <video ref={localVideoRef} autoPlay muted playsInline
            className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
 
