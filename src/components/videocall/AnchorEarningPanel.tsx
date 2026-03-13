@@ -56,6 +56,17 @@ const AnchorEarningPanel = ({
 
   if (status === "not_eligible" || status === "loading") return null;
 
+  if (isHidden) {
+    return (
+      <button
+        onClick={() => setIsHidden(false)}
+        className="mx-3 mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+      >
+        <span>👁</span> Show Earning Dashboard
+      </button>
+    );
+  }
+
   const remainingSeconds = Math.max(0, thresholdSeconds - elapsedSeconds);
   const remainingMin = Math.floor(remainingSeconds / 60);
   const remainingSec = remainingSeconds % 60;
