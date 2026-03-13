@@ -111,9 +111,14 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Stats */}
-      <p className="text-sm font-bold text-neutral-300 mb-8">
+      <p className="text-sm font-bold text-neutral-300 mb-4">
         {balance?.minutes ?? 0} Minutes | {balance?.adPoints ?? 0} Ad Points | {balance?.productPoints ?? 0} Product Points
       </p>
+
+      {/* Login Streak */}
+      <div className="mb-8">
+        <LoginStreakDisplay />
+      </div>
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
