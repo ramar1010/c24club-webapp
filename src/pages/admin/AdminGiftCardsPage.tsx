@@ -86,6 +86,21 @@ const AdminGiftCardsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const editMutation = useMutation({
+    mutationFn: async (card: { id: string; brand: string; value_amount: number; code: string; minutes_cost: number; image_url?: string }) => {
+      const { id, ...updates } = card;
+      const { error } = await supabase.from("gift_cards" as any).update(updates as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-gift-cards"] });
+      toast.success("Gift card updated!");
+      setEditOpen(false);
+      setEditCard(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const handleAdd = () => {
     if (!brand || !code || !minutesCost) return toast.error("Fill in required fields");
     addMutation.mutate({
@@ -109,6 +124,23 @@ const AdminGiftCardsPage = () => {
       image_url: bulkImageUrl || undefined,
     }));
     bulkMutation.mutate(cards);
+  };
+
+  const handleEdit = () => {
+    if (!editCard?.brand || !editCard?.code || !editCard?.minutes_cost) return toast.error("Fill in required fields");
+    editMutation.mutate({
+      id: editCard.id,
+      brand: editCard.brand,
+      value_amount: parseFloat(editCard.value_amount) || 0,
+      code: editCard.code,
+      minutes_cost: parseInt(editCard.minutes_cost) || 0,
+      image_url: editCard.image_url || undefined,
+    });
+  };
+
+  const openEditDialog = (card: any) => {
+    setEditCard({ ...card });
+    setEditOpen(true);
   };
 
   const availableCount = giftCards?.filter((c: any) => c.status === "available").length ?? 0;
