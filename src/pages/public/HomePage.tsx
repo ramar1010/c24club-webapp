@@ -481,6 +481,8 @@ const HomePage = () => {
           </div>
         </div>
 
+        <MobileRewardSlider />
+
         {/* CTA Buttons */}
         <div className="mt-8">
           <CTAButtons />
