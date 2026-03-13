@@ -133,6 +133,7 @@ const MembersPage = () => {
       const updates = {
         is_vip: enable,
         vip_tier: enable ? vipTier : null,
+        stripe_customer_id: enable ? null : null,
         updated_at: new Date().toISOString(),
       };
 
