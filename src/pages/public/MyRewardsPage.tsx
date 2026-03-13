@@ -55,6 +55,18 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const [showGifts, setShowGifts] = useState(false);
   const { subscribed } = useVipStatus(user?.id ?? null);
 
+  const queryClient = useQueryClient();
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    shipping_name: "",
+    shipping_address: "",
+    shipping_city: "",
+    shipping_state: "",
+    shipping_zip: "",
+    shipping_country: "",
+  });
+  const [saving, setSaving] = useState(false);
+
   const { data: redemptions = [], isLoading } = useQuery({
     queryKey: ["my-redemptions", user?.id],
     enabled: !!user,
