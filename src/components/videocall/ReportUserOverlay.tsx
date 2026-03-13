@@ -1,5 +1,5 @@
 import { X, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useState, RefObject } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import reportIcon from "@/assets/videocall/report-icon.png";
@@ -18,10 +18,28 @@ const REPORT_REASONS = [
 interface ReportUserOverlayProps {
   reporterId: string;
   reportedUserId: string;
+  remoteVideoRef?: RefObject<HTMLVideoElement>;
   onClose: () => void;
 }
 
-const ReportUserOverlay = ({ reporterId, reportedUserId, onClose }: ReportUserOverlayProps) => {
+const captureVideoFrame = (videoRef?: RefObject<HTMLVideoElement>): Blob | null => {
+  const video = videoRef?.current;
+  if (!video || video.readyState < 2) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  const byteString = atob(dataUrl.split(",")[1]);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+  return new Blob([ab], { type: "image/jpeg" });
+};
+
+const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose }: ReportUserOverlayProps) => {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -32,12 +50,27 @@ const ReportUserOverlay = ({ reporterId, reportedUserId, onClose }: ReportUserOv
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("user_reports" as any).insert({
+
+    // Capture screenshot of reported user's video
+    let screenshotUrl: string | null = null;
+    const blob = captureVideoFrame(remoteVideoRef);
+    if (blob) {
+      const fileName = `${reporterId}/${Date.now()}.jpg`;
+      const { error: uploadErr } = await supabase.storage
+        .from("report-screenshots")
+        .upload(fileName, blob, { contentType: "image/jpeg" });
+      if (!uploadErr) {
+        screenshotUrl = fileName;
+      }
+    }
+
+    const { error } = await supabase.from("user_reports").insert({
       reporter_id: reporterId,
       reported_user_id: reportedUserId,
       reason: selectedReason,
       details: details.trim() || null,
-    } as any);
+      screenshot_url: screenshotUrl,
+    });
 
     if (error) {
       toast.error("Failed to submit report");

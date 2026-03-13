@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircleQuestion, AlertTriangle } from "lucide-react";
 
 type Report = {
@@ -12,11 +12,13 @@ type Report = {
   reason: string;
   details: string | null;
   room_id: string | null;
+  screenshot_url: string | null;
   created_at: string;
 };
 
 const ReportedUsersPage = () => {
   const [tab, setTab] = useState<"help" | "reports">("help");
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-reports"],
@@ -29,6 +31,28 @@ const ReportedUsersPage = () => {
       return data as Report[];
     },
   });
+
+  // Generate signed URLs for screenshots
+  useEffect(() => {
+    const reportsWithScreenshots = reports.filter((r) => r.screenshot_url);
+    if (reportsWithScreenshots.length === 0) return;
+
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const r of reportsWithScreenshots) {
+        if (r.screenshot_url && !signedUrls[r.id]) {
+          const { data } = await supabase.storage
+            .from("report-screenshots")
+            .createSignedUrl(r.screenshot_url, 3600);
+          if (data?.signedUrl) urls[r.id] = data.signedUrl;
+        }
+      }
+      if (Object.keys(urls).length > 0) {
+        setSignedUrls((prev) => ({ ...prev, ...urls }));
+      }
+    };
+    generateUrls();
+  }, [reports]);
 
   const helpRequests = reports.filter((r) => r.reason.startsWith("[HELP]"));
   const userReports = reports.filter((r) => !r.reason.startsWith("[HELP]"));
@@ -106,7 +130,16 @@ const ReportedUsersPage = () => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 space-y-1">
+              <CardContent className="pt-0 space-y-2">
+                {signedUrls[r.id] && (
+                  <a href={signedUrls[r.id]} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={signedUrls[r.id]}
+                      alt="Report screenshot"
+                      className="w-48 h-auto rounded-lg border border-border object-cover"
+                    />
+                  </a>
+                )}
                 {r.details && (
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {r.details}

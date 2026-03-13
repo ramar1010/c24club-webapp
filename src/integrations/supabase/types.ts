@@ -1062,6 +1062,7 @@ export type Database = {
           reported_user_id: string
           reporter_id: string
           room_id: string | null
+          screenshot_url: string | null
         }
         Insert: {
           created_at?: string
@@ -1071,6 +1072,7 @@ export type Database = {
           reported_user_id: string
           reporter_id: string
           room_id?: string | null
+          screenshot_url?: string | null
         }
         Update: {
           created_at?: string
@@ -1080,6 +1082,7 @@ export type Database = {
           reported_user_id?: string
           reporter_id?: string
           room_id?: string | null
+          screenshot_url?: string | null
         }
         Relationships: []
       }
