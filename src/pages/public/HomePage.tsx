@@ -417,7 +417,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
 
   return (
     <>
-      <SignInPopup open={showSignIn} onClose={() => setShowSignIn(false)} />
+      <SignInPopup open={showSignIn} onClose={() => setShowSignIn(false)} defaultSignUp={signInDefaultSignUp} />
       <OnboardingPopup open={showOnboarding} onComplete={handleOnboardingComplete} />
 
       <div className="flex flex-col items-center gap-3">
