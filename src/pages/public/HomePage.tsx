@@ -174,10 +174,10 @@ const MobileRewardSlider = () => {
 };
 
 /* ─── Sign-In Popup ─── */
-const SignInPopup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; onClose: () => void; defaultSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
