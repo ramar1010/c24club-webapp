@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MessageCircleQuestion, AlertTriangle } from "lucide-react";
 
 type Report = {
@@ -18,7 +18,6 @@ type Report = {
 
 const ReportedUsersPage = () => {
   const [tab, setTab] = useState<"help" | "reports">("help");
-  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-reports"],
@@ -32,40 +31,13 @@ const ReportedUsersPage = () => {
     },
   });
 
-  // Generate signed URLs for screenshots
-  useEffect(() => {
-    const reportsWithScreenshots = reports.filter((r) => r.screenshot_url);
-    if (reportsWithScreenshots.length === 0) return;
-
-    const generateUrls = async () => {
-      const urls: Record<string, string> = {};
-      for (const r of reportsWithScreenshots) {
-        if (r.screenshot_url && !signedUrls[r.id]) {
-          try {
-            const { data, error } = await supabase.storage
-              .from("report-screenshots")
-              .createSignedUrl(r.screenshot_url, 3600);
-            if (error) {
-              console.error("Signed URL error for", r.screenshot_url, error);
-              // Fallback: try getPublicUrl
-              const { data: pubData } = supabase.storage
-                .from("report-screenshots")
-                .getPublicUrl(r.screenshot_url);
-              if (pubData?.publicUrl) urls[r.id] = pubData.publicUrl;
-            } else if (data?.signedUrl) {
-              urls[r.id] = data.signedUrl;
-            }
-          } catch (e) {
-            console.error("Screenshot URL generation failed:", e);
-          }
-        }
-      }
-      if (Object.keys(urls).length > 0) {
-        setSignedUrls((prev) => ({ ...prev, ...urls }));
-      }
-    };
-    generateUrls();
-  }, [reports]);
+  const getScreenshotUrl = (screenshotPath: string | null) => {
+    if (!screenshotPath) return null;
+    const { data } = supabase.storage
+      .from("report-screenshots")
+      .getPublicUrl(screenshotPath);
+    return data?.publicUrl || null;
+  };
 
   const helpRequests = reports.filter((r) => r.reason.startsWith("[HELP]"));
   const userReports = reports.filter((r) => !r.reason.startsWith("[HELP]"));
@@ -123,51 +95,54 @@ const ReportedUsersPage = () => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {displayed.map((r) => (
-            <Card key={r.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm font-semibold">
-                    {tab === "help"
-                      ? r.reason.replace("[HELP] ", "")
-                      : r.reason}
-                  </CardTitle>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                    {new Date(r.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-2">
-                {signedUrls[r.id] && (
-                  <a href={signedUrls[r.id]} target="_blank" rel="noopener noreferrer">
-                    <img
-                      src={signedUrls[r.id]}
-                      alt="Report screenshot"
-                      className="w-48 h-auto rounded-lg border border-border object-cover"
-                    />
-                  </a>
-                )}
-                {r.details && (
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {r.details}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground/60 font-mono">
-                  From: {r.reporter_id.slice(0, 8)}...
-                  {tab === "reports" && r.reported_user_id !== r.reporter_id && (
-                    <> · Reported: {r.reported_user_id.slice(0, 8)}...</>
+          {displayed.map((r) => {
+            const screenshotUrl = getScreenshotUrl(r.screenshot_url);
+            return (
+              <Card key={r.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-sm font-semibold">
+                      {tab === "help"
+                        ? r.reason.replace("[HELP] ", "")
+                        : r.reason}
+                    </CardTitle>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                      {new Date(r.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-2">
+                  {screenshotUrl && (
+                    <a href={screenshotUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={screenshotUrl}
+                        alt="Report screenshot"
+                        className="w-48 h-auto rounded-lg border border-border object-cover"
+                      />
+                    </a>
                   )}
-                  {r.room_id && <> · Room: {r.room_id.slice(0, 8)}...</>}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                  {r.details && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {r.details}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground/60 font-mono">
+                    From: {r.reporter_id.slice(0, 8)}...
+                    {tab === "reports" && r.reported_user_id !== r.reporter_id && (
+                      <> · Reported: {r.reported_user_id.slice(0, 8)}...</>
+                    )}
+                    {r.room_id && <> · Room: {r.room_id.slice(0, 8)}...</>}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
