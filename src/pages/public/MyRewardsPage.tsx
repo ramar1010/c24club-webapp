@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp, Gift } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Gift, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import { toast } from "sonner";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "text-white",
