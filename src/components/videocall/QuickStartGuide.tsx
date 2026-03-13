@@ -232,7 +232,7 @@ const slides = [
     step: null,
     description:
       "An Omegle That Rewards It's Users Brings More Quality + The Guy To Girl Ratio is balanced because of incentives!\n\nWe want to minimize quick skip culture!",
-    footer: "READ MORE FAQ",
+    footer: null,
   },
 ];
 
