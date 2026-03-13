@@ -321,7 +321,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       {/* Edit Shipping Modal */}
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center">
-          <div className="bg-neutral-900 w-full max-w-md rounded-t-3xl p-6 space-y-3 max-h-[85vh] overflow-y-auto">
+          <div className="bg-neutral-900 w-full max-w-md rounded-t-3xl p-6 space-y-3 max-h-[85vh] overflow-y-auto pb-10">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-black text-lg">Edit Shipping Details</h2>
               <button onClick={() => setEditingItem(null)} className="text-neutral-400 font-bold text-sm">
