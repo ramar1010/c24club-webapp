@@ -8,6 +8,8 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
+import { useAnchorEarning } from "@/hooks/useAnchorEarning";
+import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
@@ -164,6 +166,33 @@ const VideoCallPage = () => {
   });
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
+
+  // Fetch member gender for anchor system
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
+  // Fetch partner gender for anchor system
+  const { data: partnerGenderData } = useQuery({
+    queryKey: ["partner_gender", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", currentPartnerId!).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
+  // Anchor earning system (female-only)
+  const anchor = useAnchorEarning({
+    userId: memberId,
+    isOnCall: callState === "waiting" || callState === "connected",
+    partnerGender: partnerGenderData,
+  });
 
   // Reset gender filter if not VIP
   useEffect(() => {
@@ -663,6 +692,26 @@ const VideoCallPage = () => {
         >
           <div className="w-10 h-1 rounded-full bg-neutral-600" />
         </button>
+      )}
+
+      {/* Anchor Earning Panel (female users only) */}
+      {anchor.status !== "not_eligible" && anchor.status !== "loading" && isActive && (
+        <AnchorEarningPanel
+          status={anchor.status}
+          mode={anchor.mode}
+          elapsedSeconds={anchor.elapsedSeconds}
+          thresholdSeconds={anchor.thresholdSeconds}
+          cashBalance={anchor.cashBalance}
+          queuePosition={anchor.queuePosition}
+          rewardEarned={anchor.rewardEarned}
+          cashEarned={anchor.cashEarned}
+          settings={anchor.settings}
+          onJoin={anchor.joinAnchor}
+          onLeave={anchor.leaveAnchor}
+          onCashout={anchor.cashout}
+          onDismissReward={anchor.dismissReward}
+          onDismissCash={anchor.dismissCashEarned}
+        />
       )}
 
       {/* Panels */}

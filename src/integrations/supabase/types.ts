@@ -14,6 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
+      anchor_earnings: {
+        Row: {
+          amount: number
+          created_at: string
+          earning_type: string
+          id: string
+          reward_id: string | null
+          reward_title: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          earning_type?: string
+          id?: string
+          reward_id?: string | null
+          reward_title?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          earning_type?: string
+          id?: string
+          reward_id?: string | null
+          reward_title?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anchor_earnings_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anchor_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paypal_email: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paypal_email?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paypal_email?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      anchor_queue: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      anchor_sessions: {
+        Row: {
+          cash_balance: number
+          created_at: string
+          current_mode: string
+          elapsed_seconds: number
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_balance?: number
+          created_at?: string
+          current_mode?: string
+          elapsed_seconds?: number
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_balance?: number
+          created_at?: string
+          current_mode?: string
+          elapsed_seconds?: number
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      anchor_settings: {
+        Row: {
+          chill_hour_start: string
+          chill_reward_time: number
+          id: string
+          max_anchor_cap: number
+          power_hour_end: string
+          power_hour_start: string
+          power_rate_cash: number
+          power_rate_time: number
+          updated_at: string
+        }
+        Insert: {
+          chill_hour_start?: string
+          chill_reward_time?: number
+          id?: string
+          max_anchor_cap?: number
+          power_hour_end?: string
+          power_hour_start?: string
+          power_rate_cash?: number
+          power_rate_time?: number
+          updated_at?: string
+        }
+        Update: {
+          chill_hour_start?: string
+          chill_reward_time?: number
+          id?: string
+          max_anchor_cap?: number
+          power_hour_end?: string
+          power_hour_start?: string
+          power_rate_cash?: number
+          power_rate_time?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_minutes_log: {
         Row: {
           created_at: string
