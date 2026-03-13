@@ -5,6 +5,9 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import boySelfie from "@/assets/quickstart/boy-selfie.jpg";
 import girlSelfie from "@/assets/quickstart/girl-selfie.jpg";
 import moneyBag from "@/assets/quickstart/money-bag.png";
+import topicBubble from "@/assets/quickstart/topic-bubble.png";
+import giftEmoji from "@/assets/quickstart/gift-emoji.png";
+import shoppingBags2 from "@/assets/quickstart/shopping-bags2.png";
 
 // Slide 2 - Earn Minutes
 import stopwatch from "@/assets/quickstart/stopwatch.png";
