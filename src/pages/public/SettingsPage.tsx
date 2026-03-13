@@ -234,7 +234,7 @@ const SettingsPage = () => {
         <span>|</span>
         <a href="/rules" className="hover:text-white transition-colors underline">Rules</a>
         <span>|</span>
-        <a href="/faq" className="hover:text-white transition-colors underline">FAQ</a>
+        <a href="/how-to-guide" className="hover:text-white transition-colors underline">How To Guide</a>
       </div>
     </div>
   );

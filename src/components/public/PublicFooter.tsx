@@ -4,7 +4,7 @@ const footerLinks = [
   { label: "Terms & Conditions", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Site Rules", href: "/rules" },
-  { label: "FAQ Help Center", href: "/faq" },
+  { label: "How To Guide", href: "/how-to-guide" },
   { label: "Safety Center", href: "/safety" },
 ];
 
