@@ -899,6 +899,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       )}
 
+      {/* Gift Cards Button */}
+      {giftCardsData && giftCardsData.length > 0 && (
+        <div className="px-4 mb-3">
+          <button
+            onClick={() => setShowGiftCards(true)}
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
+          >
+            <CreditCard className="w-5 h-5" />
+            🎁 GIFT CARDS ({giftCardsData.reduce((a: number, c: any) => a + c.count, 0)} Available)
+          </button>
+        </div>
+      )}
       {/* Categories Grid */}
       {loadingRewards ? (
         <div className="flex-1 flex items-center justify-center">
