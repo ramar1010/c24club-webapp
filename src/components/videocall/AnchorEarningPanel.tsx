@@ -60,7 +60,7 @@ const AnchorEarningPanel = ({
     return (
       <button
         onClick={() => setIsHidden(false)}
-        className="mx-3 mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+        className="w-full mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
       >
         <span>👁</span> Show Earning Dashboard
       </button>
@@ -189,7 +189,7 @@ const AnchorEarningPanel = ({
   // Queued state
   if (status === "queued") {
     return (
-      <div className={`mx-3 mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
+      <div className={`w-full mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
         <div className="text-center">
           <p className="text-yellow-400 font-black text-sm uppercase tracking-wide animate-pulse">
             ⏳ Slots Full — You're #{queuePosition} in Queue
@@ -211,7 +211,7 @@ const AnchorEarningPanel = ({
   // Idle — show join button
   if (status === "idle" || status === "slots_full") {
     return (
-      <div className={`mx-3 mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
+      <div className={`w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
         {/* Hide button */}
         <div className="flex justify-end mb-1">
           <button
@@ -242,7 +242,7 @@ const AnchorEarningPanel = ({
 
   // Active earning panel
   return (
-    <div className={`mx-3 mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
+    <div className={`w-full mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
       {/* Hide button */}
       <div className="flex justify-end mb-1">
         <button
