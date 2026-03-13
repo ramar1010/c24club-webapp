@@ -162,12 +162,12 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         </button>
       </div>
 
-      {/* FAQ */}
+      {/* How To Guide */}
       <button
-        onClick={() => navigate("/faq")}
+        onClick={() => navigate("/how-to-guide")}
         className="font-black text-base underline underline-offset-4 decoration-2 mb-8 hover:opacity-80 transition-opacity tracking-wide"
       >
-        Frequently Asked Questions
+        How To Guide
       </button>
 
       {/* Row 2: Settings, Rulebook, Logout */}
