@@ -259,11 +259,16 @@ const AnchorEarningPanel = ({
       {/* Leave button */}
       <div className="text-center mt-1">
         <button
-          onClick={onLeave}
+          onClick={() => {
+            if (confirm("⚠️ Stopping will reset your timer progress. Are you sure?")) {
+              onLeave();
+            }
+          }}
           className="text-neutral-600 text-[10px] hover:text-neutral-400 font-bold"
         >
           Stop Earning
         </button>
+        <p className="text-neutral-600 text-[9px] mt-0.5">⚠️ Timer resets if you stop</p>
       </div>
 
       {/* Settings badge */}
