@@ -189,7 +189,7 @@ const AnchorEarningPanel = ({
   // Queued state
   if (status === "queued") {
     return (
-      <div className={`mx-3 mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
+      <div className={`w-full mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
         <div className="text-center">
           <p className="text-yellow-400 font-black text-sm uppercase tracking-wide animate-pulse">
             ⏳ Slots Full — You're #{queuePosition} in Queue
