@@ -417,7 +417,7 @@ const VideoCallPage = () => {
               <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
                 START
               </button>
-              <span className="text-neutral-500 text-[10px] tracking-wide font-bold">C24CLUB.COM</span>
+              
             </div>
           )}
 
