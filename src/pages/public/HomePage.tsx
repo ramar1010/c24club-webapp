@@ -528,7 +528,7 @@ const HomePage = () => {
       </section>
 
       {/* ===== STEPS ===== */}
-      <section className="px-4 py-12 max-w-5xl mx-auto space-y-16">
+      <section className="px-4 py-16 max-w-5xl mx-auto space-y-16">
         <div className="text-center">
           <h4 className="text-xl md:text-2xl font-bold text-white leading-relaxed">
             Stop talking for free....<br />
@@ -537,28 +537,186 @@ const HomePage = () => {
           </h4>
         </div>
 
-        <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-            Step 1: Video Chat With Anyone & Earn Minutes!
-          </h3>
-          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
-            <img src={step1Img} alt="Video Chat & Earn Rewards" className="w-full h-auto" />
+        {/* Step 1 */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="relative bg-[#1a1a2e] rounded-3xl p-8 md:p-10 border border-white/10 overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+            
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-500/30">
+                  <span className="text-cyan-400 font-black text-sm">STEP 1</span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
+                  Video Chat With Anyone & <span className="text-cyan-400">Earn Minutes!</span>
+                </h3>
+                <p className="text-white/60 text-base leading-relaxed">
+                  Jump into random video chats with people worldwide. Every minute you talk, you earn. It's that simple — have fun, meet new people, stack minutes.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <Clock className="h-4 w-4 text-cyan-400" />
+                    <span className="text-white/80 text-sm font-medium">1 min chatting = 1 min earned</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <Users className="h-4 w-4 text-cyan-400" />
+                    <span className="text-white/80 text-sm font-medium">Random matching</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Animated visual */}
+              <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30 animate-pulse">
+                      <Video className="h-10 w-10 text-white" />
+                    </div>
+                    {/* Orbiting icons */}
+                    <div className="absolute -top-3 -right-6 animate-bounce" style={{ animationDelay: '0s' }}>
+                      <div className="w-10 h-10 rounded-full bg-green-500/90 flex items-center justify-center shadow-lg">
+                        <Zap className="h-5 w-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-4 -left-5 animate-bounce" style={{ animationDelay: '0.5s' }}>
+                      <div className="w-10 h-10 rounded-full bg-yellow-500/90 flex items-center justify-center shadow-lg">
+                        <Clock className="h-5 w-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute top-1/2 -right-10 animate-bounce" style={{ animationDelay: '1s' }}>
+                      <div className="w-8 h-8 rounded-full bg-purple-500/90 flex items-center justify-center shadow-lg">
+                        <Star className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Minute counter animation */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30">
+                  <span className="text-white font-black text-sm tracking-wide">+1 MIN ⏱️</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-            Step 2: Exchange your earned minutes for cash & rewards!
-          </h3>
-          <RewardCarousel />
+        {/* Step 2 */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-pink-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="relative bg-[#1a1a2e] rounded-3xl p-8 md:p-10 border border-white/10 overflow-hidden">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl" />
+            
+            <div className="flex flex-col md:flex-row-reverse items-center gap-8">
+              <div className="flex-1 space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-500/30">
+                  <span className="text-yellow-400 font-black text-sm">STEP 2</span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
+                  Exchange Minutes For <span className="text-yellow-400">Cash & Rewards!</span>
+                </h3>
+                <p className="text-white/60 text-base leading-relaxed">
+                  Head to the Reward Store and trade your earned minutes for real cash via PayPal, gift cards, designer bags, clothing, tech accessories, and way more.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <DollarSign className="h-4 w-4 text-yellow-400" />
+                    <span className="text-white/80 text-sm font-medium">PayPal & Cash App</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <Gift className="h-4 w-4 text-yellow-400" />
+                    <span className="text-white/80 text-sm font-medium">100+ rewards</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Reward grid visual */}
+              <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
+                <div className="grid grid-cols-3 gap-2 h-full">
+                  {[paypal2, bag3, boots2, cash2, hat2, phonecase2].map((img, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
+                      style={{ animationDelay: `${i * 0.1}s` }}
+                    >
+                      <img src={img} alt="Reward" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg shadow-yellow-500/30">
+                  <span className="text-white font-black text-sm tracking-wide">REDEEM 🎁</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-black text-white text-center" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-            Step 3. Don't want to video chat...Create post to reach more people to chat elsewhere!
-          </h3>
-          <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden">
-            <img src={step3Img} alt="Display Anything Between Chat Sessions" className="w-full h-auto" />
+        {/* Step 3 */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="relative bg-[#1a1a2e] rounded-3xl p-8 md:p-10 border border-white/10 overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl" />
+            
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/30">
+                  <span className="text-purple-400 font-black text-sm">STEP 3</span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
+                  Create Promos To <span className="text-purple-400">Reach More People!</span>
+                </h3>
+                <p className="text-white/60 text-base leading-relaxed">
+                  Don't want to video chat? Create eye-catching promo posts that display between other users' sessions. Promote your brand, socials, or anything you want — reach thousands!
+                </p>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <Megaphone className="h-4 w-4 text-purple-400" />
+                    <span className="text-white/80 text-sm font-medium">Custom promos</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <MessageCircle className="h-4 w-4 text-purple-400" />
+                    <span className="text-white/80 text-sm font-medium">Thousands of viewers</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Promo visual */}
+              <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/20 to-rose-600/20 border border-purple-500/20 flex items-center justify-center">
+                  <div className="relative">
+                    {/* Mock promo card */}
+                    <div className="w-44 bg-[#252545] rounded-2xl p-4 border border-purple-500/20 shadow-xl shadow-purple-500/10 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                      <div className="w-full h-20 rounded-lg bg-gradient-to-br from-purple-400/30 to-pink-400/30 mb-3 flex items-center justify-center">
+                        <Megaphone className="h-8 w-8 text-purple-300" />
+                      </div>
+                      <div className="h-2 w-3/4 bg-white/20 rounded-full mb-2" />
+                      <div className="h-2 w-1/2 bg-white/10 rounded-full mb-3" />
+                      <div className="flex gap-1">
+                        <div className="h-6 flex-1 rounded-md bg-purple-500/40 flex items-center justify-center">
+                          <span className="text-[10px] text-white font-bold">Visit Link</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Floating engagement indicators */}
+                    <div className="absolute -top-4 -right-4 animate-bounce" style={{ animationDelay: '0.3s' }}>
+                      <div className="px-2 py-1 rounded-full bg-rose-500/90 shadow-lg">
+                        <span className="text-[10px] text-white font-bold">❤️ 2.4k</span>
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-3 -left-3 animate-bounce" style={{ animationDelay: '0.8s' }}>
+                      <div className="px-2 py-1 rounded-full bg-blue-500/90 shadow-lg">
+                        <span className="text-[10px] text-white font-bold">👁 5.1k</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
+                  <span className="text-white font-black text-sm tracking-wide">CREATE 🚀</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
