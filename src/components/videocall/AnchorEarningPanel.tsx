@@ -52,6 +52,7 @@ const AnchorEarningPanel = ({
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   if (status === "not_eligible" || status === "loading") return null;
 
