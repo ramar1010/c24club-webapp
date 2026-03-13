@@ -17,14 +17,9 @@ const PublicNav = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3">
-      {/* Logo */}
+  {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 no-underline">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-lg font-black text-white shadow-lg">
-          🎁
-        </div>
-        <span className="font-extrabold text-xl text-white uppercase tracking-wide drop-shadow-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>
-          C24CLUB
-        </span>
+        <img src="/src/assets/logo.png" alt="C24CLUB" className="h-10 w-auto" />
       </Link>
 
       {/* Desktop nav */}
