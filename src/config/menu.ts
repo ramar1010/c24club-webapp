@@ -193,7 +193,7 @@ export const adminMenu: MenuItem[] = [
     icon: Anchor,
     title: "Anchor User Rewards",
     submenu: [
-      { key: "idleminutes-cashouts", label: "Idle Minutes - Cashouts", path: "/admin/anchor-rewards/cashouts" },
+      { key: "anchor-settings", label: "Anchor Settings", path: "/admin/anchor-rewards/cashouts" },
       { key: "anchor-user-queue", label: "Anchor Users Queue", path: "/admin/anchor-rewards/queue" },
     ],
   },
