@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, CreditCard, Upload } from "lucide-react";
+import { Plus, Trash2, CreditCard, Upload, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ const AdminGiftCardsPage = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editCard, setEditCard] = useState<any>(null);
   const [brand, setBrand] = useState("");
   const [valueAmount, setValueAmount] = useState("");
   const [code, setCode] = useState("");
@@ -84,6 +86,21 @@ const AdminGiftCardsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const editMutation = useMutation({
+    mutationFn: async (card: { id: string; brand: string; value_amount: number; code: string; minutes_cost: number; image_url?: string }) => {
+      const { id, ...updates } = card;
+      const { error } = await supabase.from("gift_cards" as any).update(updates as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-gift-cards"] });
+      toast.success("Gift card updated!");
+      setEditOpen(false);
+      setEditCard(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const handleAdd = () => {
     if (!brand || !code || !minutesCost) return toast.error("Fill in required fields");
     addMutation.mutate({
@@ -107,6 +124,23 @@ const AdminGiftCardsPage = () => {
       image_url: bulkImageUrl || undefined,
     }));
     bulkMutation.mutate(cards);
+  };
+
+  const handleEdit = () => {
+    if (!editCard?.brand || !editCard?.code || !editCard?.minutes_cost) return toast.error("Fill in required fields");
+    editMutation.mutate({
+      id: editCard.id,
+      brand: editCard.brand,
+      value_amount: parseFloat(editCard.value_amount) || 0,
+      code: editCard.code,
+      minutes_cost: parseInt(editCard.minutes_cost) || 0,
+      image_url: editCard.image_url || undefined,
+    });
+  };
+
+  const openEditDialog = (card: any) => {
+    setEditCard({ ...card });
+    setEditOpen(true);
   };
 
   const availableCount = giftCards?.filter((c: any) => c.status === "available").length ?? 0;
@@ -154,6 +188,25 @@ const AdminGiftCardsPage = () => {
                   {addMutation.isPending ? "Adding..." : "Add Gift Card"}
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Dialog */}
+          <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditCard(null); }}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Edit Gift Card</DialogTitle></DialogHeader>
+              {editCard && (
+                <div className="space-y-3">
+                  <div><Label>Brand *</Label><Input value={editCard.brand} onChange={e => setEditCard({ ...editCard, brand: e.target.value })} /></div>
+                  <div><Label>Card Value ($)</Label><Input type="number" value={editCard.value_amount} onChange={e => setEditCard({ ...editCard, value_amount: e.target.value })} /></div>
+                  <div><Label>Code *</Label><Input value={editCard.code} onChange={e => setEditCard({ ...editCard, code: e.target.value })} /></div>
+                  <div><Label>Minutes Cost *</Label><Input type="number" value={editCard.minutes_cost} onChange={e => setEditCard({ ...editCard, minutes_cost: e.target.value })} /></div>
+                  <div><Label>Image URL</Label><Input value={editCard.image_url || ""} onChange={e => setEditCard({ ...editCard, image_url: e.target.value })} /></div>
+                  <Button onClick={handleEdit} disabled={editMutation.isPending} className="w-full">
+                    {editMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -213,11 +266,16 @@ const AdminGiftCardsPage = () => {
                       {card.status}
                     </Badge>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 flex gap-1">
                     {card.status === "available" && (
-                      <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(card.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(card)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(card.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </>
                     )}
                   </td>
                 </tr>
