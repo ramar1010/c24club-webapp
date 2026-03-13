@@ -268,7 +268,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Tag */}
         {slide.tag && (
-          <p className="text-neutral-400 text-[11px] font-bold tracking-wide mb-1">
+          <p className="text-neutral-400 text-xs font-bold tracking-wide mb-1">
             {slide.tag}
           </p>
         )}
