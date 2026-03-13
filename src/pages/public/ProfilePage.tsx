@@ -190,7 +190,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         <span>|</span>
         <a href="/rules" className="hover:text-white transition-colors">Rules</a>
         <span>|</span>
-        <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
+        <a href="/how-to-guide" className="hover:text-white transition-colors">How To Guide</a>
       </div>
     </div>
   );
