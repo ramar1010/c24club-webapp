@@ -167,6 +167,33 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
+  // Fetch member gender for anchor system
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
+  // Fetch partner gender for anchor system
+  const { data: partnerGenderData } = useQuery({
+    queryKey: ["partner_gender", currentPartnerId],
+    enabled: !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", currentPartnerId!).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
+  // Anchor earning system (female-only)
+  const anchor = useAnchorEarning({
+    userId: memberId,
+    isOnCall: callState === "waiting" || callState === "connected",
+    partnerGender: partnerGenderData,
+  });
+
   // Reset gender filter if not VIP
   useEffect(() => {
     if (!subscribed && genderFilter !== "both") {
