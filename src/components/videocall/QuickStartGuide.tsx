@@ -45,7 +45,7 @@ const Slide1Visual = () => (
         </div>
       </div>
       <div className="relative">
-        <div className="w-22 h-30 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
+        <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
           <img src={girlSelfie} alt="Girl" className="w-full h-full object-cover" />
         </div>
         {/* Girl's chat bubble - top right */}
