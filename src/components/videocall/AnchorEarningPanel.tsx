@@ -25,6 +25,7 @@ interface AnchorEarningPanelProps {
   queuePosition: number;
   rewardEarned: AnchorReward | null;
   cashEarned: number;
+  settings: AnchorSettings | null;
   onJoin: () => void;
   onLeave: () => void;
   onCashout: (email: string) => Promise<number>;
