@@ -56,7 +56,7 @@ const App = () => (
             {/* Public site */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<HomePage />} />
-              <Route path="faq" element={<PlaceholderPage title="FAQ" />} />
+              <Route path="how-to-guide" element={<HowToGuidePage />} />
               <Route path="rules" element={<RulesPage />} />
               <Route path="terms" element={<PlaceholderPage title="Terms & Conditions" />} />
               <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />

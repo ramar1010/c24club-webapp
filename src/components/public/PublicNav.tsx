@@ -6,7 +6,7 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "About CEP", href: "#about" },
   { label: "Why Us?", href: "#why-us" },
-  { label: "FAQ", href: "/faq" },
+  { label: "How To Guide", href: "/how-to-guide" },
   { label: "Rules", href: "/rules" },
   { label: "Blog", href: "/blog" },
   { label: "Milestones", href: "/milestones-page" },
