@@ -11,6 +11,35 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedGender, setSelectedGender] = useState<"male" | "female">("male");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpSubject, setHelpSubject] = useState("");
+  const [helpMessage, setHelpMessage] = useState("");
+  const [helpSending, setHelpSending] = useState(false);
+
+  const handleSendHelp = async () => {
+    if (!helpSubject.trim() || !helpMessage.trim()) {
+      toast.error("Please fill in both subject and message.");
+      return;
+    }
+    setHelpSending(true);
+    try {
+      const { error } = await supabase.from("user_reports").insert({
+        reporter_id: user?.id ?? "anonymous",
+        reported_user_id: user?.id ?? "anonymous",
+        reason: `[HELP] ${helpSubject.trim()}`,
+        details: helpMessage.trim(),
+      });
+      if (error) throw error;
+      toast.success("Your message has been sent! We'll get back to you soon.");
+      setHelpSubject("");
+      setHelpMessage("");
+      setHelpOpen(false);
+    } catch {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setHelpSending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
