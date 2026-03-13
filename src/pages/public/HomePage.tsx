@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Video, X } from "lucide-react";
+import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import step1Img from "@/assets/index-step1.png";
-import step3Img from "@/assets/index-step3.png";
 import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
