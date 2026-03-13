@@ -457,7 +457,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
               <span className="block text-sm font-bold text-yellow-300 mt-0.5">Sign Up Today</span>
             </button>
             <button
-              onClick={() => setShowSignIn(true)}
+              onClick={() => { setSignInDefaultSignUp(false); setShowSignIn(true); }}
               className="px-8 py-3 rounded-full bg-green-500 hover:bg-green-600 text-white font-black text-sm uppercase tracking-wide shadow-lg transition-all transform hover:scale-105"
             >
               Sign In
