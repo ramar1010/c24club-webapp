@@ -88,7 +88,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* GIF */}
         {slide.gif && (
-          <div className="w-48 h-48 flex items-center justify-center mb-4">
+          <div className="w-56 h-56 flex items-center justify-center mb-4">
             <img
               src={slide.gif}
               alt={slide.step || slide.title}
