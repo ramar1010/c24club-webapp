@@ -1,43 +1,163 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import step1Gif from "@/assets/quickstart/step1.gif";
-import step2Gif from "@/assets/quickstart/step2.gif";
-import step3Gif from "@/assets/quickstart/step3.gif";
-import step4Gif from "@/assets/quickstart/step4.gif";
+
+// Slide 1 - Video Chat
+import boySelfie from "@/assets/quickstart/boy-selfie.jpg";
+import girlSelfie from "@/assets/quickstart/girl-selfie.jpg";
+import moneyBag from "@/assets/quickstart/money-bag.png";
+
+// Slide 2 - Earn Minutes
+import stopwatch from "@/assets/quickstart/stopwatch.png";
+
+// Slide 3 - Redeem
+import shoppingBags from "@/assets/quickstart/shopping-bags.png";
+import rewardHat from "@/assets/quickstart/reward-hat.jpg";
+import rewardJeans from "@/assets/quickstart/reward-jeans.jpg";
+
+// Slide 4 - Beware
+import noFinger from "@/assets/quickstart/no-finger.png";
+import fastForward from "@/assets/quickstart/fast-forward.png";
+
+/* ── Slide visual components ── */
+
+const Slide1Visual = () => (
+  <div className="relative w-56 h-56 flex items-center justify-center">
+    {/* Two video feeds side by side */}
+    <div className="flex gap-2 items-center animate-fade-in">
+      <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shadow-emerald-400/30 animate-[pulse_3s_ease-in-out_infinite]">
+        <img src={boySelfie} alt="Boy" className="w-full h-full object-cover" />
+      </div>
+      <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
+        <img src={girlSelfie} alt="Girl" className="w-full h-full object-cover" />
+      </div>
+    </div>
+    {/* Floating money bag */}
+    <img
+      src={moneyBag}
+      alt="Earn"
+      className="absolute -bottom-2 right-2 w-12 h-12 animate-[bounce_2s_ease-in-out_infinite]"
+    />
+    {/* Connection line */}
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-emerald-400/20 animate-[ping_2s_ease-in-out_infinite]" />
+  </div>
+);
+
+const Slide2Visual = () => (
+  <div className="relative w-56 h-56 flex items-center justify-center">
+    {/* Big stopwatch */}
+    <img
+      src={stopwatch}
+      alt="Timer"
+      className="w-28 h-28 animate-[pulse_2s_ease-in-out_infinite] drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+    />
+    {/* Floating +5 badges */}
+    {[
+      { cls: "top-4 right-6", delay: "0s" },
+      { cls: "top-10 left-4", delay: "1s" },
+      { cls: "bottom-10 right-4", delay: "2s" },
+    ].map((p, i) => (
+      <span
+        key={i}
+        className={`absolute ${p.cls} bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg`}
+        style={{
+          animation: `floatUp 2.5s ease-in-out ${p.delay} infinite`,
+        }}
+      >
+        +5 min
+      </span>
+    ))}
+  </div>
+);
+
+const Slide3Visual = () => (
+  <div className="relative w-56 h-56 flex items-center justify-center">
+    {/* Shopping bags center */}
+    <img
+      src={shoppingBags}
+      alt="Shop"
+      className="w-20 h-20 z-10 drop-shadow-lg animate-[bounce_3s_ease-in-out_infinite]"
+    />
+    {/* Reward cards orbiting */}
+    <div className="absolute top-2 left-4 w-16 h-16 rounded-lg overflow-hidden border border-neutral-600 shadow-md rotate-[-8deg] animate-[pulse_3s_ease-in-out_infinite]">
+      <img src={rewardHat} alt="Hat" className="w-full h-full object-cover" />
+    </div>
+    <div className="absolute bottom-4 right-4 w-16 h-16 rounded-lg overflow-hidden border border-neutral-600 shadow-md rotate-[8deg] animate-[pulse_3s_ease-in-out_infinite_1s]">
+      <img src={rewardJeans} alt="Jeans" className="w-full h-full object-cover" />
+    </div>
+    {/* Sparkles */}
+    {["top-0 right-8", "bottom-2 left-6", "top-8 right-0"].map((pos, i) => (
+      <span
+        key={i}
+        className={`absolute ${pos} text-yellow-400 text-lg`}
+        style={{ animation: `sparkle 1.5s ease-in-out ${i * 0.4}s infinite` }}
+      >
+        ✦
+      </span>
+    ))}
+  </div>
+);
+
+const Slide4Visual = () => (
+  <div className="relative w-56 h-56 flex items-center justify-center">
+    {/* Girl wagging finger */}
+    <div className="w-40 h-40 rounded-xl overflow-hidden border-2 border-red-500/60 shadow-lg shadow-red-500/20">
+      <img src={noFinger} alt="No" className="w-full h-full object-cover" />
+    </div>
+    {/* Fast forward icon bouncing */}
+    <img
+      src={fastForward}
+      alt="Skip"
+      className="absolute -top-1 -right-1 w-10 h-10 rounded-lg animate-[shake_0.8s_ease-in-out_infinite]"
+    />
+    {/* Red X marks */}
+    <span className="absolute bottom-4 left-4 text-red-500 text-2xl font-black animate-[pulse_1.5s_ease-in-out_infinite]">
+      ✕
+    </span>
+    <span className="absolute top-4 left-6 text-red-500 text-lg font-black animate-[pulse_1.5s_ease-in-out_infinite_0.5s]">
+      ✕
+    </span>
+  </div>
+);
+
+/* ── Slides data ── */
 
 const slides = [
   {
     tag: "Welcome To C24 Club",
     title: "HOW IT WORKS",
-    gif: step1Gif,
-    step: "1.VIDEO CHAT\n& EARN REWARDS",
+    visual: <Slide1Visual />,
+    step: "1. VIDEO CHAT\n& EARN REWARDS",
     description: null,
+    footer: null,
   },
   {
     tag: "Chat With Strangers",
     title: "EARN MINUTES",
-    gif: step2Gif,
-    step: "2.STOCK-UP\nON MINUTES!",
+    visual: <Slide2Visual />,
+    step: "2. STOCK-UP\nON MINUTES!",
     description: "⏱ 5 Minutes",
+    footer: null,
   },
   {
     tag: "Convert Minutes 4",
     title: "1k+ REWARDS!",
-    gif: step3Gif,
-    step: "3.REDEEM For CLOTHES",
+    visual: <Slide3Visual />,
+    step: "3. REDEEM For CLOTHES",
     description: "Giftcards, Cash, Accessories\n& More!",
+    footer: null,
   },
   {
     tag: "Minute Loss",
     title: "BEWARE!",
-    gif: step4Gif,
-    step: "4.QUICK SKIPS =\nLESS REWARDS",
+    visual: <Slide4Visual />,
+    step: "4. QUICK SKIPS =\nLESS REWARDS",
     description: null,
+    footer: null,
   },
   {
     tag: null,
     title: "WHY REWARDS?",
-    gif: null,
+    visual: null,
     step: null,
     description:
       "An Omegle That Rewards It's Users Brings More Quality + The Guy To Girl Ratio is balanced because of incentives!\n\nWe want to minimize quick skip culture!",
@@ -65,6 +185,23 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
   return (
     <div className="absolute inset-0 z-40 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Inline keyframes */}
+      <style>{`
+        @keyframes floatUp {
+          0%, 100% { opacity: 0; transform: translateY(8px) scale(0.8); }
+          30%, 70% { opacity: 1; transform: translateY(-12px) scale(1); }
+        }
+        @keyframes sparkle {
+          0%, 100% { opacity: 0.2; transform: scale(0.6) rotate(0deg); }
+          50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          25% { transform: translateX(-3px) rotate(-5deg); }
+          75% { transform: translateX(3px) rotate(5deg); }
+        }
+      `}</style>
+
       <div className="relative w-full max-w-[320px] bg-neutral-900 border border-neutral-700 rounded-2xl p-5 flex flex-col items-center min-h-[420px]">
         {/* Close */}
         <button
@@ -86,16 +223,8 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
           {slide.title}
         </h2>
 
-        {/* GIF */}
-        {slide.gif && (
-          <div className="w-56 h-56 flex items-center justify-center mb-4">
-            <img
-              src={slide.gif}
-              alt={slide.step || slide.title}
-              className="max-w-full max-h-full object-contain rounded-xl"
-            />
-          </div>
-        )}
+        {/* Visual */}
+        {slide.visual && <div className="mb-4">{slide.visual}</div>}
 
         {/* Step label */}
         {slide.step && (
@@ -112,13 +241,13 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
         )}
 
         {/* Footer link for last slide */}
-        {(slide as any).footer && (
+        {slide.footer && (
           <p className="text-neutral-500 text-[10px] font-bold underline mt-2">
-            {(slide as any).footer}
+            {slide.footer}
           </p>
         )}
 
-        {/* Spacer to push nav to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
         {/* Navigation */}
@@ -134,7 +263,6 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {/* Dots */}
           <div className="flex gap-1.5">
             {slides.map((_, i) => (
               <div
