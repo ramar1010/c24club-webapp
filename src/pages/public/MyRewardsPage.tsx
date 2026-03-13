@@ -354,18 +354,18 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
               onChange={(e) => setEditForm(f => ({ ...f, shipping_city: e.target.value }))}
               className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
             />
-            <div className="flex gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 placeholder="State"
                 value={editForm.shipping_state}
                 onChange={(e) => setEditForm(f => ({ ...f, shipping_state: e.target.value }))}
-                className="flex-1 bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+                className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
               />
               <input
                 placeholder="Zip"
                 value={editForm.shipping_zip}
                 onChange={(e) => setEditForm(f => ({ ...f, shipping_zip: e.target.value }))}
-                className="flex-1 bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
+                className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-white/50"
               />
             </div>
 
