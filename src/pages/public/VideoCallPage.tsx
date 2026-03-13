@@ -694,6 +694,26 @@ const VideoCallPage = () => {
         </button>
       )}
 
+      {/* Anchor Earning Panel (female users only) */}
+      {anchor.status !== "not_eligible" && anchor.status !== "loading" && isActive && (
+        <AnchorEarningPanel
+          status={anchor.status}
+          mode={anchor.mode}
+          elapsedSeconds={anchor.elapsedSeconds}
+          thresholdSeconds={anchor.thresholdSeconds}
+          cashBalance={anchor.cashBalance}
+          queuePosition={anchor.queuePosition}
+          rewardEarned={anchor.rewardEarned}
+          cashEarned={anchor.cashEarned}
+          settings={anchor.settings}
+          onJoin={anchor.joinAnchor}
+          onLeave={anchor.leaveAnchor}
+          onCashout={anchor.cashout}
+          onDismissReward={anchor.dismissReward}
+          onDismissCash={anchor.dismissCashEarned}
+        />
+      )}
+
       {/* Panels */}
       {showRedeem ? (
         <div className="px-3 pb-4">
