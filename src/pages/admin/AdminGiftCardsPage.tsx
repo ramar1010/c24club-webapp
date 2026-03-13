@@ -19,6 +19,8 @@ const AdminGiftCardsPage = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editCard, setEditCard] = useState<any>(null);
   const [brand, setBrand] = useState("");
   const [valueAmount, setValueAmount] = useState("");
   const [code, setCode] = useState("");
