@@ -225,8 +225,8 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
         <button onClick={onClose} className="absolute top-3 right-3 text-white/60 hover:text-white">
           <X className="h-5 w-5" />
         </button>
-        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">Sign In to C24 Club</h2>
-        <p className="text-sm text-white/60 text-center mb-6">Choose how you'd like to sign in</p>
+        <h2 className="text-xl font-black text-white text-center mb-2 uppercase">{isSignUp ? "Sign Up for C24 Club" : "Sign In to C24 Club"}</h2>
+        <p className="text-sm text-white/60 text-center mb-6">{isSignUp ? "Create your account to start earning" : "Choose how you'd like to sign in"}</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={handleGoogle}
