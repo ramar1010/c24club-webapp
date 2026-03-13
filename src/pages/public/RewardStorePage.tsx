@@ -154,6 +154,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
 
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
 
+  // Fetch available gift cards
+  const { data: giftCardsData } = useQuery({
+    queryKey: ["store-gift-cards"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("redeem-giftcard", {
+        body: { action: "list" },
+      });
+      if (error) throw error;
+      return data?.cards || [];
+    },
+  });
+
   // Get common rewards for the spin mechanic
   const commonRewards = rewards?.filter((r: any) => r.rarity === "common") || [];
 
