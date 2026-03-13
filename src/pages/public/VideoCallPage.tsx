@@ -714,27 +714,23 @@ const VideoCallPage = () => {
                 </span>
               </span>
             </div>
-            {/* Power Hour peek */}
-            {anchor.mode === "chill" && (
-              <div className="bg-gradient-to-r from-red-900/90 to-orange-800/90 py-1.5 px-3 flex items-center justify-between">
-                <span className="text-yellow-300 text-xs font-bold">
-                  ⚡ POWER HOUR: 7 PM – 12 AM EST
-                </span>
-                <span className="text-white text-xs font-bold">
-                  💵 ${anchor.settings?.power_rate_cash ?? 1.5}/{anchor.settings?.power_rate_time ?? 30}min
-                </span>
-              </div>
-            )}
-            {anchor.mode === "power" && (
-              <div className="bg-gradient-to-r from-red-600/90 to-orange-500/90 py-1.5 px-3 flex items-center justify-between">
-                <span className="text-yellow-200 text-xs font-bold animate-pulse">
-                  🔥 POWER HOUR IS LIVE NOW!
-                </span>
-                <span className="text-white text-xs font-bold">
-                  💵 ${anchor.settings?.power_rate_cash ?? 1.5} every {anchor.settings?.power_rate_time ?? 30}min
-                </span>
-              </div>
-            )}
+            {/* Schedule rows - always show both */}
+            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "chill" ? "bg-gradient-to-r from-purple-700/90 to-indigo-600/90" : "bg-gradient-to-r from-purple-900/60 to-indigo-800/60"}`}>
+              <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-purple-200 animate-pulse" : "text-purple-300/70"}`}>
+                {anchor.mode === "chill" ? "✨ CHILL HOURS (NOW)" : "✨ CHILL: 12 AM – 7 PM EST"}
+              </span>
+              <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-white" : "text-white/60"}`}>
+                🎁 Mystery Reward / {anchor.settings?.chill_reward_time ?? 45}min
+              </span>
+            </div>
+            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
+              <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-yellow-200 animate-pulse" : "text-yellow-300/70"}`}>
+                {anchor.mode === "power" ? "🔥 POWER HOUR (LIVE!)" : "⚡ POWER: 7 PM – 12 AM EST"}
+              </span>
+              <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-white" : "text-white/60"}`}>
+                💵 ${anchor.settings?.power_rate_cash ?? 1.5} / {anchor.settings?.power_rate_time ?? 30}min
+              </span>
+            </div>
           </button>
           {showAnchorPanel && (
             <AnchorEarningPanel
