@@ -157,6 +157,48 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_cards: {
+        Row: {
+          brand: string
+          claimed_at: string | null
+          claimed_by: string | null
+          code: string
+          created_at: string
+          id: string
+          image_url: string | null
+          minutes_cost: number
+          status: string
+          updated_at: string
+          value_amount: number
+        }
+        Insert: {
+          brand: string
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          minutes_cost?: number
+          status?: string
+          updated_at?: string
+          value_amount?: number
+        }
+        Update: {
+          brand?: string
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          minutes_cost?: number
+          status?: string
+          updated_at?: string
+          value_amount?: number
+        }
+        Relationships: []
+      }
       gift_transactions: {
         Row: {
           created_at: string

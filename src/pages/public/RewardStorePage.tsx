@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePublicRewards, usePublicCategories } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
-import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, RotateCw } from "lucide-react";
+import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, RotateCw, CreditCard, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,6 +109,10 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
   const [spinAnimating, setSpinAnimating] = useState(false);
   const [instantRedeeming, setInstantRedeeming] = useState(false);
+  const [showGiftCards, setShowGiftCards] = useState(false);
+  const [redeemingGiftCard, setRedeemingGiftCard] = useState<string | null>(null);
+  const [redeemedCode, setRedeemedCode] = useState<{ code: string; brand: string; value: number } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -149,6 +153,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   });
 
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
+
+  // Fetch available gift cards
+  const { data: giftCardsData } = useQuery({
+    queryKey: ["store-gift-cards"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("redeem-giftcard", {
+        body: { action: "list" },
+      });
+      if (error) throw error;
+      return data?.cards || [];
+    },
+  });
 
   // Get common rewards for the spin mechanic
   const commonRewards = rewards?.filter((r: any) => r.rarity === "common") || [];
@@ -485,6 +501,117 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     }
   };
 
+  const handleRedeemGiftCard = async (sampleId: string, brand: string) => {
+    setRedeemingGiftCard(sampleId);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-giftcard", {
+        body: { action: "redeem", giftCardId: sampleId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setRedeemedCode({ code: data.code, brand: data.brand, value: data.value_amount });
+      toast.success(`🎉 Gift card redeemed!`);
+      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["store-gift-cards"] });
+    } catch (e: any) {
+      toast.error(e.message || "Redemption failed");
+    } finally {
+      setRedeemingGiftCard(null);
+    }
+  };
+
+  // Redeemed code display
+  if (redeemedCode) {
+    return (
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center justify-center px-6">
+        <div className="text-6xl mb-4">🎉</div>
+        <h1 className="text-3xl font-black mb-2">GIFT CARD REDEEMED!</h1>
+        <p className="text-neutral-400 mb-6">{redeemedCode.brand} ${redeemedCode.value.toFixed(2)}</p>
+        <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 w-full max-w-xs text-center">
+          <p className="text-neutral-500 text-xs font-bold mb-2">YOUR CODE</p>
+          <p className="text-2xl font-mono font-black text-green-400 tracking-wider mb-4 break-all">{redeemedCode.code}</p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(redeemedCode.code);
+              setCopiedCode(true);
+              setTimeout(() => setCopiedCode(false), 2000);
+            }}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-neutral-800 hover:bg-neutral-700 font-bold text-sm transition-colors"
+          >
+            {copiedCode ? <><Check className="w-4 h-4 text-green-400" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Code</>}
+          </button>
+        </div>
+        <p className="text-red-500 text-[10px] font-bold mt-4">SAVE THIS CODE — IT WON'T BE SHOWN AGAIN</p>
+        <button
+          onClick={() => { setRedeemedCode(null); setShowGiftCards(true); }}
+          className="mt-6 text-neutral-400 hover:text-white text-sm font-bold transition-colors"
+        >
+          ← Back to Gift Cards
+        </button>
+      </div>
+    );
+  }
+
+  // Gift cards browse view
+  if (showGiftCards) {
+    return (
+      <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
+        <div className="flex items-center gap-3 px-4 py-4">
+          <button onClick={() => setShowGiftCards(false)} className="flex items-center gap-1 hover:opacity-80">
+            <ArrowLeft className="w-6 h-6" />
+            <span className="font-bold text-sm">BACK</span>
+          </button>
+          <h1 className="flex-1 text-xl font-black tracking-widest text-right">GIFT CARDS</h1>
+        </div>
+
+        <div className="px-4 mb-4">
+          <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center">
+            <p className="text-neutral-400 text-sm">Your Balance</p>
+            <p className="text-green-400 font-black text-2xl">🪙 {userMinutes ?? 0} Minutes</p>
+          </div>
+        </div>
+
+        <div className="flex-1 px-4 pb-6">
+          {!giftCardsData?.length ? (
+            <div className="text-center py-16">
+              <CreditCard className="w-16 h-16 mx-auto mb-3 text-neutral-600" />
+              <p className="text-neutral-500 font-bold">No gift cards available right now</p>
+              <p className="text-neutral-600 text-sm">Check back later!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {giftCardsData.map((card: any, i: number) => (
+                <div key={i} className="bg-neutral-900 border border-neutral-700 rounded-2xl p-4 flex items-center gap-4">
+                  {card.image_url ? (
+                    <img src={card.image_url} alt={card.brand} className="w-16 h-16 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl bg-neutral-800 flex items-center justify-center text-3xl">🎁</div>
+                  )}
+                  <div className="flex-1">
+                    <p className="font-black text-lg">{card.brand}</p>
+                    <p className="text-green-400 font-bold text-sm">${Number(card.value_amount).toFixed(2)} Gift Card</p>
+                    <p className="text-neutral-500 text-xs">🪙 {card.minutes_cost} Minutes • {card.count} left</p>
+                  </div>
+                  <button
+                    onClick={() => handleRedeemGiftCard(card.sample_id, card.brand)}
+                    disabled={redeemingGiftCard !== null || (userMinutes ?? 0) < card.minutes_cost}
+                    className={`px-4 py-2 rounded-full font-black text-sm transition-all ${
+                      (userMinutes ?? 0) >= card.minutes_cost
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+                    }`}
+                  >
+                    {redeemingGiftCard === card.sample_id ? "..." : "REDEEM"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // Shipping form view
   if (selectedReward && showShipping) {
     return (
@@ -772,6 +899,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       )}
 
+      {/* Gift Cards Button */}
+      {giftCardsData && giftCardsData.length > 0 && (
+        <div className="px-4 mb-3">
+          <button
+            onClick={() => setShowGiftCards(true)}
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
+          >
+            <CreditCard className="w-5 h-5" />
+            🎁 GIFT CARDS ({giftCardsData.reduce((a: number, c: any) => a + c.count, 0)} Available)
+          </button>
+        </div>
+      )}
       {/* Categories Grid */}
       {loadingRewards ? (
         <div className="flex-1 flex items-center justify-center">
