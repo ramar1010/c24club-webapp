@@ -38,6 +38,7 @@ import ProfilePage from "@/pages/public/ProfilePage";
 import MyRewardsPage from "@/pages/public/MyRewardsPage";
 import SettingsPage from "@/pages/public/SettingsPage";
 import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
+import RulesPage from "@/pages/public/RulesPage";
 
 import NotFound from "./pages/NotFound";
 
