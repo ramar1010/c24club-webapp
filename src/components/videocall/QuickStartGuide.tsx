@@ -76,26 +76,57 @@ const Slide2Visual = () => (
   </div>
 );
 
+const rewardImages = [
+  { src: rewardHat, alt: "Hat" },
+  { src: rewardBag, alt: "Bag" },
+  { src: rewardBoots, alt: "Boots" },
+  { src: rewardPhonecase, alt: "Phone Case" },
+  { src: rewardRedbag, alt: "Red Bag" },
+  { src: rewardHeartbag, alt: "Heart Bag" },
+  { src: rewardShorts, alt: "Shorts" },
+  { src: rewardJeans, alt: "Jeans" },
+];
+
 const Slide3Visual = () => (
-  <div className="relative w-56 h-56 flex items-center justify-center">
+  <div className="relative w-60 h-56 flex items-center justify-center">
     {/* Shopping bags center */}
     <img
       src={shoppingBags}
       alt="Shop"
-      className="w-20 h-20 z-10 drop-shadow-lg animate-[bounce_3s_ease-in-out_infinite]"
+      className="w-16 h-16 z-20 drop-shadow-lg animate-[bounce_3s_ease-in-out_infinite]"
     />
-    {/* Reward cards orbiting */}
-    <div className="absolute top-2 left-4 w-16 h-16 rounded-lg overflow-hidden border border-neutral-600 shadow-md rotate-[-8deg] animate-[pulse_3s_ease-in-out_infinite]">
-      <img src={rewardHat} alt="Hat" className="w-full h-full object-cover" />
-    </div>
-    <div className="absolute bottom-4 right-4 w-16 h-16 rounded-lg overflow-hidden border border-neutral-600 shadow-md rotate-[8deg] animate-[pulse_3s_ease-in-out_infinite_1s]">
-      <img src={rewardJeans} alt="Jeans" className="w-full h-full object-cover" />
-    </div>
+    {/* Orbiting reward images */}
+    {rewardImages.map((r, i) => {
+      const angle = (360 / rewardImages.length) * i;
+      const radius = 90;
+      const x = Math.cos((angle * Math.PI) / 180) * radius;
+      const y = Math.sin((angle * Math.PI) / 180) * radius;
+      return (
+        <div
+          key={i}
+          className="absolute w-12 h-12 rounded-lg overflow-hidden border border-neutral-600 shadow-md z-10"
+          style={{
+            left: `calc(50% + ${x}px - 24px)`,
+            top: `calc(50% + ${y}px - 24px)`,
+            animation: `pulse 3s ease-in-out ${i * 0.3}s infinite`,
+          }}
+        >
+          <img src={r.src} alt={r.alt} className="w-full h-full object-cover" />
+        </div>
+      );
+    })}
+    {/* PayPal logo */}
+    <img
+      src={paypalLogo}
+      alt="PayPal"
+      className="absolute -bottom-1 -right-1 w-9 h-9 z-20 rounded-md object-contain bg-white p-0.5"
+      style={{ animation: `sparkle 2s ease-in-out 0.5s infinite` }}
+    />
     {/* Sparkles */}
-    {["top-0 right-8", "bottom-2 left-6", "top-8 right-0"].map((pos, i) => (
+    {["top-0 right-4", "bottom-0 left-2", "top-6 left-0"].map((pos, i) => (
       <span
         key={i}
-        className={`absolute ${pos} text-yellow-400 text-lg`}
+        className={`absolute ${pos} text-yellow-400 text-base z-30`}
         style={{ animation: `sparkle 1.5s ease-in-out ${i * 0.4}s infinite` }}
       >
         ✦
