@@ -93,24 +93,62 @@ const SideCard = ({ image }: { image: string }) => (
 
 const MobileRewardSlider = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const dragOffset = useRef(0);
+  const posRef = useRef(0);
+  const animRef = useRef<number>(0);
+  const paused = useRef(false);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    let pos = 0;
-    let animId: number;
     const speed = 0.4;
-    const totalWidth = el.scrollWidth / 2;
+
+    const getTotal = () => el.scrollWidth / 2;
 
     const animate = () => {
-      pos -= speed;
-      if (pos <= -totalWidth) pos += totalWidth;
-      el.style.transform = `translateX(${pos}px)`;
-      animId = requestAnimationFrame(animate);
+      if (!paused.current) {
+        posRef.current -= speed;
+        const total = getTotal();
+        if (posRef.current <= -total) posRef.current += total;
+        if (posRef.current > 0) posRef.current -= total;
+        el.style.transform = `translateX(${posRef.current}px)`;
+      }
+      animRef.current = requestAnimationFrame(animate);
     };
-    animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
+    animRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animRef.current);
   }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    isDragging.current = true;
+    paused.current = true;
+    startX.current = e.touches[0].clientX;
+    dragOffset.current = 0;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    const dx = e.touches[0].clientX - startX.current;
+    dragOffset.current = dx;
+    const total = scrollRef.current.scrollWidth / 2;
+    let newPos = posRef.current + dx;
+    if (newPos <= -total) newPos += total;
+    if (newPos > 0) newPos -= total;
+    scrollRef.current.style.transform = `translateX(${newPos}px)`;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const total = scrollRef.current?.scrollWidth ? scrollRef.current.scrollWidth / 2 : 1;
+    posRef.current = posRef.current + dragOffset.current;
+    if (posRef.current <= -total) posRef.current += total;
+    if (posRef.current > 0) posRef.current -= total;
+    dragOffset.current = 0;
+    paused.current = false;
+  };
 
   const allRewardImages = [...leftSideRewards, ...rightSideRewards];
   const items = [...allRewardImages, ...allRewardImages];
@@ -120,12 +158,17 @@ const MobileRewardSlider = () => {
       <p className="text-center text-sm font-black text-yellow-300 uppercase tracking-wider mb-3">
         Rewards You Earn For Chatting
       </p>
-      <div className="overflow-hidden rounded-xl">
+      <div
+        className="overflow-hidden rounded-xl touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div ref={scrollRef} className="flex w-max will-change-transform">
           {items.map((img, i) => (
             <div key={i} className="flex-shrink-0 mx-1.5">
               <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <img src={img} alt="Reward" className="w-full h-full object-cover" />
+                <img src={img} alt="Reward" className="w-full h-full object-cover pointer-events-none" />
               </div>
             </div>
           ))}
