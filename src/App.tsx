@@ -28,6 +28,7 @@ import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
 import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
 import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
+import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
