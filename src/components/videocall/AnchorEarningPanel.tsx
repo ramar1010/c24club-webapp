@@ -243,6 +243,16 @@ const AnchorEarningPanel = ({
   // Active earning panel
   return (
     <div className={`mx-3 mb-2 rounded-xl border ${borderColor} ${bgColor} backdrop-blur-sm px-4 py-3`}>
+      {/* Hide button */}
+      <div className="flex justify-end mb-1">
+        <button
+          onClick={() => setIsHidden(true)}
+          className="text-neutral-500 hover:text-neutral-300 text-xs p-1"
+          title="Hide dashboard"
+        >
+          👁‍🗨 Hide
+        </button>
+      </div>
       {/* Mode indicator */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
