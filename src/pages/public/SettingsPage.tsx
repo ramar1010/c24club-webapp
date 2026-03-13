@@ -8,7 +8,6 @@ import { toast } from "sonner";
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedGender, setSelectedGender] = useState<"male" | "female">("male");
   const [helpOpen, setHelpOpen] = useState(false);
   const [accountInfoOpen, setAccountInfoOpen] = useState(false);
   const [helpSubject, setHelpSubject] = useState("");
