@@ -35,7 +35,7 @@ const Slide1Visual = () => (
     {/* Two video feeds side by side */}
     <div className="flex gap-2 items-end animate-fade-in">
       <div className="relative">
-        <div className="w-22 h-30 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shadow-emerald-400/30 animate-[pulse_3s_ease-in-out_infinite]">
+        <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shadow-emerald-400/30 animate-[pulse_3s_ease-in-out_infinite]">
           <img src={boySelfie} alt="Boy" className="w-full h-full object-cover" />
         </div>
         {/* Boy's chat bubble - top left */}
@@ -45,7 +45,7 @@ const Slide1Visual = () => (
         </div>
       </div>
       <div className="relative">
-        <div className="w-22 h-30 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
+        <div className="w-24 h-32 rounded-xl overflow-hidden border-2 border-pink-400 shadow-lg shadow-pink-400/30 animate-[pulse_3s_ease-in-out_infinite_0.5s]">
           <img src={girlSelfie} alt="Girl" className="w-full h-full object-cover" />
         </div>
         {/* Girl's chat bubble - top right */}
