@@ -41,10 +41,23 @@ const ReportedUsersPage = () => {
       const urls: Record<string, string> = {};
       for (const r of reportsWithScreenshots) {
         if (r.screenshot_url && !signedUrls[r.id]) {
-          const { data } = await supabase.storage
-            .from("report-screenshots")
-            .createSignedUrl(r.screenshot_url, 3600);
-          if (data?.signedUrl) urls[r.id] = data.signedUrl;
+          try {
+            const { data, error } = await supabase.storage
+              .from("report-screenshots")
+              .createSignedUrl(r.screenshot_url, 3600);
+            if (error) {
+              console.error("Signed URL error for", r.screenshot_url, error);
+              // Fallback: try getPublicUrl
+              const { data: pubData } = supabase.storage
+                .from("report-screenshots")
+                .getPublicUrl(r.screenshot_url);
+              if (pubData?.publicUrl) urls[r.id] = pubData.publicUrl;
+            } else if (data?.signedUrl) {
+              urls[r.id] = data.signedUrl;
+            }
+          } catch (e) {
+            console.error("Screenshot URL generation failed:", e);
+          }
         }
       }
       if (Object.keys(urls).length > 0) {
