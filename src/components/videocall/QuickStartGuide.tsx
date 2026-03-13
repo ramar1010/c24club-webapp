@@ -297,7 +297,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Footer link for last slide */}
         {slide.footer && (
-          <p className="text-neutral-500 text-[10px] font-bold underline mt-2">
+          <p className="text-neutral-500 text-xs font-bold underline mt-2">
             {slide.footer}
           </p>
         )}
