@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, X, Send } from "lucide-react";
+import { ChevronLeft, ChevronDown, X, Send, Mail, Key, Calendar, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,9 +12,30 @@ const SettingsPage = () => {
   const { user } = useAuth();
   const [selectedGender, setSelectedGender] = useState<"male" | "female">("male");
   const [helpOpen, setHelpOpen] = useState(false);
+  const [accountInfoOpen, setAccountInfoOpen] = useState(false);
   const [helpSubject, setHelpSubject] = useState("");
   const [helpMessage, setHelpMessage] = useState("");
   const [helpSending, setHelpSending] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+
+  const handleResetPassword = async () => {
+    if (!user?.email) {
+      toast.error("No email found on your account.");
+      return;
+    }
+    setResetSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/settings`,
+      });
+      if (error) throw error;
+      toast.success("Password reset link sent to your email!");
+    } catch {
+      toast.error("Failed to send reset link. Try again later.");
+    } finally {
+      setResetSending(false);
+    }
+  };
 
   const handleSendHelp = async () => {
     if (!helpSubject.trim() || !helpMessage.trim()) {
@@ -166,9 +187,79 @@ const SettingsPage = () => {
       )}
 
       {/* Account Info */}
-      <button className="w-48 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-black text-base py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-8 tracking-wide border border-orange-400/40">
+      <button
+        onClick={() => setAccountInfoOpen(true)}
+        className="w-48 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-black text-base py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-8 tracking-wide border border-orange-400/40"
+      >
         Account Info
       </button>
+
+      {/* Account Info Overlay */}
+      {accountInfoOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-neutral-900 rounded-2xl w-full max-w-md p-6 relative border border-neutral-700">
+            <button
+              onClick={() => setAccountInfoOpen(false)}
+              className="absolute top-3 right-3 bg-neutral-800 hover:bg-neutral-700 rounded-full p-1.5 transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            <h2 className="text-xl font-black tracking-wide mb-4">ACCOUNT INFO</h2>
+
+            {/* Email */}
+            <div className="flex items-center gap-3 bg-neutral-800 rounded-xl p-3 mb-3 border border-neutral-700">
+              <Mail className="w-5 h-5 text-yellow-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-400 font-bold">Email</p>
+                <p className="text-sm font-bold truncate">{user?.email || "Not set"}</p>
+              </div>
+            </div>
+
+            {/* User ID */}
+            <div className="flex items-center gap-3 bg-neutral-800 rounded-xl p-3 mb-3 border border-neutral-700">
+              <Shield className="w-5 h-5 text-blue-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-400 font-bold">User ID</p>
+                <p className="text-sm font-bold truncate">{user?.id ? `${user.id.slice(0, 8)}...` : "N/A"}</p>
+              </div>
+            </div>
+
+            {/* Member Since */}
+            <div className="flex items-center gap-3 bg-neutral-800 rounded-xl p-3 mb-3 border border-neutral-700">
+              <Calendar className="w-5 h-5 text-green-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-400 font-bold">Member Since</p>
+                <p className="text-sm font-bold">
+                  {user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* Auth Provider */}
+            <div className="flex items-center gap-3 bg-neutral-800 rounded-xl p-3 mb-4 border border-neutral-700">
+              <Key className="w-5 h-5 text-purple-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-400 font-bold">Sign-in Method</p>
+                <p className="text-sm font-bold capitalize">
+                  {user?.app_metadata?.provider || "email"}
+                </p>
+              </div>
+            </div>
+
+            {/* Reset Password */}
+            <button
+              onClick={handleResetPassword}
+              disabled={resetSending}
+              className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-black text-base py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide border border-red-400/40 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Key className="w-4 h-4" />
+              {resetSending ? "SENDING..." : "RESET PASSWORD"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Change Email Notifications */}
       <p className="text-base font-bold mb-8 underline underline-offset-4 decoration-2 cursor-pointer hover:opacity-80 transition-opacity">
