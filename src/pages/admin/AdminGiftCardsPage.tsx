@@ -190,10 +190,26 @@ const AdminGiftCardsPage = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
 
-      {/* Stats */}
+          {/* Edit Dialog */}
+          <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditCard(null); }}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Edit Gift Card</DialogTitle></DialogHeader>
+              {editCard && (
+                <div className="space-y-3">
+                  <div><Label>Brand *</Label><Input value={editCard.brand} onChange={e => setEditCard({ ...editCard, brand: e.target.value })} /></div>
+                  <div><Label>Card Value ($)</Label><Input type="number" value={editCard.value_amount} onChange={e => setEditCard({ ...editCard, value_amount: e.target.value })} /></div>
+                  <div><Label>Code *</Label><Input value={editCard.code} onChange={e => setEditCard({ ...editCard, code: e.target.value })} /></div>
+                  <div><Label>Minutes Cost *</Label><Input type="number" value={editCard.minutes_cost} onChange={e => setEditCard({ ...editCard, minutes_cost: e.target.value })} /></div>
+                  <div><Label>Image URL</Label><Input value={editCard.image_url || ""} onChange={e => setEditCard({ ...editCard, image_url: e.target.value })} /></div>
+                  <Button onClick={handleEdit} disabled={editMutation.isPending} className="w-full">
+                    {editMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
       <div className="flex gap-3">
         <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
           <span className="text-green-500 font-bold text-lg">{availableCount}</span>
