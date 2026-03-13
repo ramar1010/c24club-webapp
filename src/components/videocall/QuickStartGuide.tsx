@@ -290,7 +290,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Description */}
         {slide.description && (
-          <p className="text-neutral-300 text-xs text-center whitespace-pre-line leading-relaxed mb-2 px-2">
+          <p className="text-neutral-300 text-sm text-center whitespace-pre-line leading-relaxed mb-2 px-2">
             {slide.description}
           </p>
         )}
