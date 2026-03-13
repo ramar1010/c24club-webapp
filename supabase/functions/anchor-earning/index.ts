@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       const { secondsToAdd, partnerGender } = body;
 
       // Verify partner is male (only earn while chatting with males)
-      if (partnerGender && partnerGender !== "Male") {
+      if (partnerGender && partnerGender.toLowerCase() !== "male") {
         return new Response(
           JSON.stringify({ success: true, message: "partner_not_male", earned: false }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
