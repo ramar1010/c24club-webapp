@@ -153,27 +153,42 @@ const Slide3Visual = () => (
   </div>
 );
 
-const Slide4Visual = () => (
-  <div className="relative w-56 h-56 flex items-center justify-center">
-    {/* Girl wagging finger */}
-    <div className="w-40 h-40 rounded-xl overflow-hidden border-2 border-red-500/60 shadow-lg shadow-red-500/20">
-      <img src={noFinger} alt="No" className="w-full h-full object-cover" />
+const Slide4Visual = () => {
+  const [frame, setFrame] = useState(0);
+
+  useState(() => {
+    const interval = setInterval(() => {
+      setFrame((f) => (f === 0 ? 1 : 0));
+    }, 600);
+    return () => clearInterval(interval);
+  });
+
+  return (
+    <div className="relative w-56 h-56 flex items-center justify-center">
+      {/* Girl wagging finger - frame animation */}
+      <div className="w-40 h-40 rounded-xl overflow-hidden border-2 border-red-500/60 shadow-lg shadow-red-500/20">
+        <img
+          src={frame === 0 ? noFrame1 : noFrame2}
+          alt="No"
+          className="w-full h-full object-cover transition-opacity duration-150"
+        />
+      </div>
+      {/* Fast forward icon bouncing */}
+      <img
+        src={fastForward}
+        alt="Skip"
+        className="absolute -top-1 -right-1 w-10 h-10 rounded-lg animate-[shake_0.8s_ease-in-out_infinite]"
+      />
+      {/* Red X marks */}
+      <span className="absolute bottom-4 left-4 text-red-500 text-2xl font-black animate-[pulse_1.5s_ease-in-out_infinite]">
+        ✕
+      </span>
+      <span className="absolute top-4 left-6 text-red-500 text-lg font-black animate-[pulse_1.5s_ease-in-out_infinite_0.5s]">
+        ✕
+      </span>
     </div>
-    {/* Fast forward icon bouncing */}
-    <img
-      src={fastForward}
-      alt="Skip"
-      className="absolute -top-1 -right-1 w-10 h-10 rounded-lg animate-[shake_0.8s_ease-in-out_infinite]"
-    />
-    {/* Red X marks */}
-    <span className="absolute bottom-4 left-4 text-red-500 text-2xl font-black animate-[pulse_1.5s_ease-in-out_infinite]">
-      ✕
-    </span>
-    <span className="absolute top-4 left-6 text-red-500 text-lg font-black animate-[pulse_1.5s_ease-in-out_infinite_0.5s]">
-      ✕
-    </span>
-  </div>
-);
+  );
+};
 
 /* ── Slides data ── */
 
