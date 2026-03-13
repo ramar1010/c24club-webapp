@@ -211,7 +211,7 @@ const AnchorEarningPanel = ({
   // Idle — show join button
   if (status === "idle" || status === "slots_full") {
     return (
-      <div className={`mx-3 mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
+      <div className={`w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
         {/* Hide button */}
         <div className="flex justify-end mb-1">
           <button
