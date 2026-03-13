@@ -19,8 +19,8 @@ const sections = [
         a: "Quick skipping reduces your earning potential. If you skip a call within seconds of connecting, you lose potential minutes. The system is designed to reward quality conversations, not rapid clicking. Stay and chat to maximize your rewards!",
       },
       {
-        q: "Is there a daily earning cap?",
-        a: "Yes, there is a minute earning cap to keep things fair. Once you hit the cap, you'll see a notification. VIP members get higher earning caps. The cap resets periodically so you can keep earning.",
+        q: "Is there an earning cap?",
+        a: "Yes — the earning cap is per user you connect with, not a daily total. Standard members can earn up to 10 minutes per partner per session. VIP members get a higher cap of 30 minutes per partner per session. Once you hit the cap with one person, you'll see a notification — just connect with someone new to keep earning! The cap resets each time you reconnect with the same partner.",
       },
     ],
   },
