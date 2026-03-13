@@ -266,11 +266,16 @@ const AdminGiftCardsPage = () => {
                       {card.status}
                     </Badge>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 flex gap-1">
                     {card.status === "available" && (
-                      <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(card.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(card)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(card.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </>
                     )}
                   </td>
                 </tr>
