@@ -274,7 +274,7 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
         )}
 
         {/* Title */}
-        <h2 className="font-black text-xl tracking-wide text-white text-center mb-4">
+        <h2 className="font-black text-2xl tracking-wide text-white text-center mb-4">
           {slide.title}
         </h2>
 
