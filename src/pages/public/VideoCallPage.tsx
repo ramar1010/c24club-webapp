@@ -700,18 +700,41 @@ const VideoCallPage = () => {
         <>
           <button
             onClick={() => setShowAnchorPanel(!showAnchorPanel)}
-            className="mx-3 mb-1 py-2 text-center animate-pulse hover:opacity-80 transition-opacity"
+            className="mx-3 mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
           >
-            <span className="text-sm font-black">
-              🎉💰 <span className="text-pink-400">TAP ME!</span>
-            </span>
-            <br />
-            <span className="text-pink-400 font-black text-sm">
-              Female Only Earning Bonus!{" "}
-              <span className="text-green-400">
-                ${anchor.cashBalance.toFixed(0)}
+            {/* Main Tap Me row */}
+            <div className="bg-gradient-to-r from-pink-600 to-fuchsia-600 py-2 px-3 flex items-center justify-between animate-pulse">
+              <span className="text-white text-sm font-black">
+                🎉💰 TAP ME!
               </span>
-            </span>
+              <span className="text-white font-black text-sm">
+                Female Earning Bonus{" "}
+                <span className="text-green-300">
+                  ${anchor.cashBalance.toFixed(0)}
+                </span>
+              </span>
+            </div>
+            {/* Power Hour peek */}
+            {anchor.mode === "chill" && (
+              <div className="bg-gradient-to-r from-red-900/90 to-orange-800/90 py-1.5 px-3 flex items-center justify-between">
+                <span className="text-yellow-300 text-xs font-bold">
+                  ⚡ POWER HOUR: 7 PM – 12 AM EST
+                </span>
+                <span className="text-white text-xs font-bold">
+                  💵 ${anchor.settings?.power_rate_cash ?? 1.5}/{anchor.settings?.power_rate_time ?? 30}min
+                </span>
+              </div>
+            )}
+            {anchor.mode === "power" && (
+              <div className="bg-gradient-to-r from-red-600/90 to-orange-500/90 py-1.5 px-3 flex items-center justify-between">
+                <span className="text-yellow-200 text-xs font-bold animate-pulse">
+                  🔥 POWER HOUR IS LIVE NOW!
+                </span>
+                <span className="text-white text-xs font-bold">
+                  💵 ${anchor.settings?.power_rate_cash ?? 1.5} every {anchor.settings?.power_rate_time ?? 30}min
+                </span>
+              </div>
+            )}
           </button>
           {showAnchorPanel && (
             <AnchorEarningPanel
