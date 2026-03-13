@@ -123,11 +123,8 @@ const SettingsPage = () => {
         CHANGE INTEREST
       </button>
 
-      {/* Change Your Country */}
-      <p className="text-lg font-bold mb-3">Change Your Country</p>
-      <button className="w-64 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-black text-xl py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg mb-6 tracking-wide flex items-center justify-center gap-2 border border-yellow-300/40">
-        📍 Country <ChevronDown className="w-5 h-5" />
-      </button>
+
+
 
       {/* Referrals & Get Help */}
       <div className="flex gap-4 mb-6">
