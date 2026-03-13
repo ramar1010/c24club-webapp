@@ -59,6 +59,7 @@ const VideoCallPage = () => {
   const { user, loading, banInfo, recheckBan } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
+  const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
