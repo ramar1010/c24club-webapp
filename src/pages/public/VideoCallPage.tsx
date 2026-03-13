@@ -566,7 +566,7 @@ const VideoCallPage = () => {
             </div>
           )}
           {/* Watermark */}
-          <span className="absolute bottom-2 right-2 z-10 text-white/15 text-[10px] font-black tracking-widest pointer-events-none select-none">
+          <span className="absolute bottom-3 right-3 z-10 text-white/15 text-2xl md:text-3xl font-black tracking-widest pointer-events-none select-none">
             c24club
           </span>
         </div>
