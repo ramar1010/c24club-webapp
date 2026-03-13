@@ -539,29 +539,29 @@ const HomePage = () => {
 
         {/* Step 1 */}
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-3xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
           <div className="relative bg-[#1a1a2e] rounded-3xl p-8 md:p-10 border border-white/10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl" />
             
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-500/30">
-                  <span className="text-cyan-400 font-black text-sm">STEP 1</span>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30">
+                  <span className="text-orange-400 font-black text-sm">STEP 1</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-                  Video Chat With Anyone & <span className="text-cyan-400">Earn Minutes!</span>
+                  Video Chat With Anyone & <span className="text-yellow-400">Earn Minutes!</span>
                 </h3>
                 <p className="text-white/60 text-base leading-relaxed">
                   Jump into random video chats with people worldwide. Every minute you talk, you earn. It's that simple — have fun, meet new people, stack minutes.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <Clock className="h-4 w-4 text-cyan-400" />
+                    <Clock className="h-4 w-4 text-orange-400" />
                     <span className="text-white/80 text-sm font-medium">1 min chatting = 1 min earned</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <Users className="h-4 w-4 text-cyan-400" />
+                    <Users className="h-4 w-4 text-orange-400" />
                     <span className="text-white/80 text-sm font-medium">Random matching</span>
                   </div>
                 </div>
@@ -569,31 +569,29 @@ const HomePage = () => {
               
               {/* Animated visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/20 to-yellow-600/20 border border-orange-500/20 flex items-center justify-center">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30 animate-pulse">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/30 animate-pulse">
                       <Video className="h-10 w-10 text-white" />
                     </div>
-                    {/* Orbiting icons */}
                     <div className="absolute -top-3 -right-6 animate-bounce" style={{ animationDelay: '0s' }}>
-                      <div className="w-10 h-10 rounded-full bg-green-500/90 flex items-center justify-center shadow-lg">
+                      <div className="w-10 h-10 rounded-full bg-yellow-500/90 flex items-center justify-center shadow-lg">
                         <Zap className="h-5 w-5 text-white" />
                       </div>
                     </div>
                     <div className="absolute -bottom-4 -left-5 animate-bounce" style={{ animationDelay: '0.5s' }}>
-                      <div className="w-10 h-10 rounded-full bg-yellow-500/90 flex items-center justify-center shadow-lg">
+                      <div className="w-10 h-10 rounded-full bg-orange-500/90 flex items-center justify-center shadow-lg">
                         <Clock className="h-5 w-5 text-white" />
                       </div>
                     </div>
                     <div className="absolute top-1/2 -right-10 animate-bounce" style={{ animationDelay: '1s' }}>
-                      <div className="w-8 h-8 rounded-full bg-purple-500/90 flex items-center justify-center shadow-lg">
+                      <div className="w-8 h-8 rounded-full bg-red-500/90 flex items-center justify-center shadow-lg">
                         <Star className="h-4 w-4 text-white" />
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* Minute counter animation */}
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30">
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500 shadow-lg shadow-orange-500/30">
                   <span className="text-white font-black text-sm tracking-wide">+1 MIN ⏱️</span>
                 </div>
               </div>
