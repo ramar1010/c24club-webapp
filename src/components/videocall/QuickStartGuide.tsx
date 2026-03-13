@@ -268,13 +268,13 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Tag */}
         {slide.tag && (
-          <p className="text-neutral-400 text-[11px] font-bold tracking-wide mb-1">
+          <p className="text-neutral-400 text-xs font-bold tracking-wide mb-1">
             {slide.tag}
           </p>
         )}
 
         {/* Title */}
-        <h2 className="font-black text-xl tracking-wide text-white text-center mb-4">
+        <h2 className="font-black text-2xl tracking-wide text-white text-center mb-4">
           {slide.title}
         </h2>
 
@@ -283,21 +283,21 @@ const QuickStartGuide = ({ onDismiss }: QuickStartGuideProps) => {
 
         {/* Step label */}
         {slide.step && (
-          <p className="font-black text-sm text-white text-center whitespace-pre-line leading-tight mb-2">
+          <p className="font-black text-base text-white text-center whitespace-pre-line leading-tight mb-2">
             {slide.step}
           </p>
         )}
 
         {/* Description */}
         {slide.description && (
-          <p className="text-neutral-300 text-xs text-center whitespace-pre-line leading-relaxed mb-2 px-2">
+          <p className="text-neutral-300 text-sm text-center whitespace-pre-line leading-relaxed mb-2 px-2">
             {slide.description}
           </p>
         )}
 
         {/* Footer link for last slide */}
         {slide.footer && (
-          <p className="text-neutral-500 text-[10px] font-bold underline mt-2">
+          <p className="text-neutral-500 text-xs font-bold underline mt-2">
             {slide.footer}
           </p>
         )}
