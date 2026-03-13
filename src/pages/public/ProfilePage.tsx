@@ -200,14 +200,17 @@ const IconButton = ({
   src,
   label,
   onClick,
+  disabled,
 }: {
   src: string;
   label: string;
   onClick?: () => void;
+  disabled?: boolean;
 }) => (
   <button
     onClick={onClick}
-    className="flex flex-col items-center gap-1 hover:scale-110 transition-transform"
+    disabled={disabled}
+    className={`flex flex-col items-center gap-1 transition-transform ${disabled ? "opacity-40 cursor-not-allowed" : "hover:scale-110"}`}
   >
     <img src={src} alt={label} className="w-14 h-14 object-contain" />
     <span className="text-[10px] font-black tracking-wider text-center leading-tight">
