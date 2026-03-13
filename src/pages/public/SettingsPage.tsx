@@ -4,8 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import maleShades from "@/assets/profile/male-shades.png";
-import girlShades from "@/assets/profile/girl-shades.png";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
