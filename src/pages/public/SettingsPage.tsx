@@ -12,9 +12,30 @@ const SettingsPage = () => {
   const { user } = useAuth();
   const [selectedGender, setSelectedGender] = useState<"male" | "female">("male");
   const [helpOpen, setHelpOpen] = useState(false);
+  const [accountInfoOpen, setAccountInfoOpen] = useState(false);
   const [helpSubject, setHelpSubject] = useState("");
   const [helpMessage, setHelpMessage] = useState("");
   const [helpSending, setHelpSending] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+
+  const handleResetPassword = async () => {
+    if (!user?.email) {
+      toast.error("No email found on your account.");
+      return;
+    }
+    setResetSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/settings`,
+      });
+      if (error) throw error;
+      toast.success("Password reset link sent to your email!");
+    } catch {
+      toast.error("Failed to send reset link. Try again later.");
+    } finally {
+      setResetSending(false);
+    }
+  };
 
   const handleSendHelp = async () => {
     if (!helpSubject.trim() || !helpMessage.trim()) {
