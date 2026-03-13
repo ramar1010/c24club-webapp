@@ -59,10 +59,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       setLoading(false);
+
+      // Fire welcome email on first signup
+      if (event === "SIGNED_IN" && nextSession?.user) {
+        const createdAt = new Date(nextSession.user.created_at).getTime();
+        const now = Date.now();
+        // Only trigger if account was created in the last 30 seconds (fresh signup)
+        if (now - createdAt < 30_000) {
+          supabase.functions.invoke("welcome-email", {
+            body: { userId: nextSession.user.id },
+          }).catch((err) => console.warn("Welcome email failed:", err));
+        }
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {

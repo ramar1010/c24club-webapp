@@ -1,106 +1,10 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-interface EmailContent {
-  subject: string;
-  body: string;
-}
-
-function getEmailContent(
-  emailType: string,
-  userName: string,
-  rewardTitle: string,
-  trackingUrl: string | null,
-  orderDate: string
-): EmailContent {
-  switch (emailType) {
-    case "Order placed":
-      return {
-        subject: "We just placed your order! 📦",
-        body: `Hi ${userName},
-
-Great news! 🎉 Your reward has been placed — sit tight and expect another email that will provide the tracking link.
-
-Order Details:
-• Reward: ${rewardTitle}
-• Order Date: ${orderDate}
-
-Our team is awaiting the tracking link, and you'll be the first to know once the order is being shipped. We're excited for you to enjoy what you've earned on C24Club!
-
-Need any assistance with your order? Feel free to reply to this email or visit our Help Center.
-
-Thank you for being a valued member of C24Club,
-
-The C24Club Team`,
-      };
-
-    case "Order shipped":
-      return {
-        subject: "Your Reward Is on Its Way! 🚚",
-        body: `Hi ${userName},
-
-Your reward is on its way to you! 🎉 We've shipped your order, and it should be arriving soon. Keep an eye on your delivery, and get ready to enjoy the perks of being a C24Club member.
-
-Shipping Details:
-• Reward: ${rewardTitle}
-• Tracking: ${trackingUrl || "Tracking information will be updated shortly."}
-
-${trackingUrl ? "You can track your package with the above link or through the carrier's website with the tracking number provided." : ""}
-
-Thank you for being part of C24Club, and we hope you enjoy your reward!
-
-Best,
-The C24Club Team`,
-      };
-
-    case "Item Out of stock":
-      return {
-        subject: "Oh No! Item Out Of Stock 🚚",
-        body: `Hi ${userName},
-
-We searched our inventory and it seems we're all out of your current item. Please log into C24 Club > Go To Profile > My Rewards. Choose a new item.
-
-Reward That Is Out Of Stock:
-• Reward: ${rewardTitle}
-
-Once you choose a new item we can proceed with placing your order!
-
-Thank you for being part of C24Club, and we hope you enjoy your reward!
-
-Best,
-The C24Club Team`,
-      };
-
-    case "address_not_exist":
-      return {
-        subject: "Oh No! Your address does not exist! 🚚",
-        body: `Hi ${userName},
-
-We're trying to place your order but the address does not exist! 🥲 Please log into C24 Club > Go To Profile > My Rewards. Change Address.
-
-Reward Details:
-• Reward: ${rewardTitle}
-
-Once your address is updated we can proceed with placing your order!
-
-Thank you for being part of C24Club, and we hope you enjoy your reward!
-
-Best,
-The C24Club Team`,
-      };
-
-    default:
-      return {
-        subject: `C24Club: Your reward status has been updated`,
-        body: `Hi ${userName},\n\nYour reward "${rewardTitle}" status has been updated to: ${emailType}.\n\nBest,\nThe C24Club Team`,
-      };
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -119,51 +23,59 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabaseAnon.auth.getUser(token);
     if (!user) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check admin role
     const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+      .from("user_roles").select("role")
+      .eq("user_id", user.id).eq("role", "admin").maybeSingle();
     if (!roleData) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { redemptionId, emailType } = await req.json();
 
-    // Fetch redemption with member info
-    const { data: redemption, error: rErr } = await supabase
-      .from("member_redemptions")
+    // Map emailType to template_key
+    const templateKeyMap: Record<string, string> = {
+      "Order placed": "order_placed",
+      "Order shipped": "order_shipped",
+      "Item Out of stock": "item_out_of_stock",
+      "address_not_exist": "address_not_exist",
+    };
+    const templateKey = templateKeyMap[emailType] || emailType;
+
+    // Load template from DB
+    const { data: template } = await supabase
+      .from("email_templates")
       .select("*")
-      .eq("id", redemptionId)
-      .single();
-    if (rErr || !redemption) {
-      return new Response(JSON.stringify({ error: "Redemption not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      .eq("template_key", templateKey)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!template) {
+      return new Response(JSON.stringify({ error: `Email template "${templateKey}" not found or disabled` }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get member email
-    const { data: member } = await supabase
-      .from("members")
-      .select("name, email")
-      .eq("id", redemption.user_id)
-      .single();
+    // Fetch redemption
+    const { data: redemption, error: rErr } = await supabase
+      .from("member_redemptions").select("*").eq("id", redemptionId).single();
+    if (rErr || !redemption) {
+      return new Response(JSON.stringify({ error: "Redemption not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
+    // Get member
+    const { data: member } = await supabase
+      .from("members").select("name, email").eq("id", redemption.user_id).single();
     if (!member?.email) {
       return new Response(JSON.stringify({ error: "Member email not found" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -171,29 +83,17 @@ Deno.serve(async (req) => {
       year: "numeric", month: "long", day: "numeric",
     });
 
-    const emailContent = getEmailContent(
-      emailType,
-      member.name,
-      redemption.reward_title,
-      (redemption as any).shipping_tracking_url,
-      orderDate
-    );
+    // Replace template variables
+    const subject = template.subject;
+    const body = template.body
+      .replace(/\{\{user_name\}\}/g, member.name)
+      .replace(/\{\{reward_title\}\}/g, redemption.reward_title)
+      .replace(/\{\{tracking_url\}\}/g, (redemption as any).shipping_tracking_url || "Tracking info coming soon")
+      .replace(/\{\{order_date\}\}/g, orderDate);
 
-    // Send email via Lovable AI gateway
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
-      console.error("LOVABLE_API_KEY not set");
-      return new Response(JSON.stringify({ error: "Email service not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    console.log(`📧 Email to ${member.email}:`, { subject, body });
 
-    // Log the email that would be sent (using console for now, 
-    // actual email sending requires email domain setup)
-    console.log(`📧 Email to ${member.email}:`, emailContent);
-
-    // For now, store in notes that email was sent
+    // Log to notes
     const existingNotes = redemption.notes || "";
     const emailLog = `[${new Date().toISOString()}] Email sent: ${emailType}`;
     await supabase
@@ -207,8 +107,7 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

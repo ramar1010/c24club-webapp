@@ -91,6 +91,45 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          subject: string
+          template_key: string
+          trigger_info: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          subject: string
+          template_key: string
+          trigger_info?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject?: string
+          template_key?: string
+          trigger_info?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       freeze_settings: {
         Row: {
           frozen_earn_rate: number
