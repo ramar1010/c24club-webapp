@@ -1,12 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { Video, Wifi, WifiOff, Clock } from "lucide-react";
+import { Video, Wifi, WifiOff, Clock, Trash2, Zap } from "lucide-react";
+import { toast } from "sonner";
+
+const STALE_HOURS = 24;
 
 const AdminRoomsPage = () => {
+  const queryClient = useQueryClient();
+  const [disconnecting, setDisconnecting] = useState<string | null>(null);
+  const [cleaningUp, setCleaningUp] = useState(false);
+
   const { data: rooms, isLoading } = useQuery({
     queryKey: ["admin-rooms"],
     queryFn: async () => {
@@ -40,6 +49,13 @@ const AdminRoomsPage = () => {
   const connectedRooms = rooms?.filter((r) => r.status === "connected") ?? [];
   const disconnectedRooms = rooms?.filter((r) => r.status === "disconnected") ?? [];
 
+  const isStale = (connectedAt: string | null) => {
+    if (!connectedAt) return false;
+    return Date.now() - new Date(connectedAt).getTime() > STALE_HOURS * 60 * 60 * 1000;
+  };
+
+  const staleRooms = connectedRooms.filter((r) => isStale(r.connected_at));
+
   const formatTime = (ts: string | null) =>
     ts ? format(new Date(ts), "MMM d, yyyy h:mm a") : "—";
 
@@ -47,66 +63,126 @@ const AdminRoomsPage = () => {
     if (!connected) return "—";
     const start = new Date(connected).getTime();
     const end = disconnected ? new Date(disconnected).getTime() : Date.now();
-    const mins = Math.floor((end - start) / 60000);
+    const hrs = Math.floor((end - start) / 3600000);
+    const mins = Math.floor(((end - start) % 3600000) / 60000);
+    if (hrs > 0) return `${hrs}h ${mins}m`;
     const secs = Math.floor(((end - start) % 60000) / 1000);
     return `${mins}m ${secs}s`;
   };
 
-  const RoomCard = ({ room }: { room: (typeof rooms)[number] }) => (
-    <Card className="border-border/50">
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <Badge
-            variant={room.status === "connected" ? "default" : "secondary"}
-            className={
-              room.status === "connected"
-                ? "bg-green-600 hover:bg-green-700"
-                : ""
-            }
-          >
-            {room.status === "connected" ? (
-              <Wifi className="h-3 w-3 mr-1" />
-            ) : (
-              <WifiOff className="h-3 w-3 mr-1" />
-            )}
-            {room.status}
-          </Badge>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {getDuration(room.connected_at, room.disconnected_at)}
-          </div>
-        </div>
+  const forceDisconnect = async (roomId: string) => {
+    setDisconnecting(roomId);
+    try {
+      const { error } = await supabase
+        .from("rooms")
+        .update({ status: "disconnected", disconnected_at: new Date().toISOString() })
+        .eq("id", roomId);
+      if (error) throw error;
+      toast.success("Room force-disconnected");
+      queryClient.invalidateQueries({ queryKey: ["admin-rooms"] });
+    } catch {
+      toast.error("Failed to disconnect room");
+    } finally {
+      setDisconnecting(null);
+    }
+  };
 
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-muted-foreground text-xs">Member 1</p>
-            <p className="text-xs font-medium truncate">{memberName(room.member1)}</p>
-            {room.member1_gender && (
-              <Badge variant="outline" className="text-[10px] mt-1">
-                {room.member1_gender}
-              </Badge>
-            )}
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Member 2</p>
-            <p className="text-xs font-medium truncate">{memberName(room.member2)}</p>
-            {room.member2_gender && (
-              <Badge variant="outline" className="text-[10px] mt-1">
-                {room.member2_gender}
-              </Badge>
-            )}
-          </div>
-        </div>
+  const cleanupStaleRooms = async () => {
+    if (staleRooms.length === 0) {
+      toast.info("No stale rooms to clean up");
+      return;
+    }
+    setCleaningUp(true);
+    try {
+      const ids = staleRooms.map((r) => r.id);
+      const { error } = await supabase
+        .from("rooms")
+        .update({ status: "disconnected", disconnected_at: new Date().toISOString() })
+        .in("id", ids);
+      if (error) throw error;
+      toast.success(`Cleaned up ${ids.length} stale room(s)`);
+      queryClient.invalidateQueries({ queryKey: ["admin-rooms"] });
+    } catch {
+      toast.error("Failed to clean up stale rooms");
+    } finally {
+      setCleaningUp(false);
+    }
+  };
 
-        <div className="text-xs text-muted-foreground space-y-1">
-          <p>Connected: {formatTime(room.connected_at)}</p>
-          {room.disconnected_at && (
-            <p>Disconnected: {formatTime(room.disconnected_at)}</p>
+  const RoomCard = ({ room }: { room: NonNullable<typeof rooms>[number] }) => {
+    const stale = room.status === "connected" && isStale(room.connected_at);
+    return (
+      <Card className={`border-border/50 ${stale ? "border-destructive/50" : ""}`}>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={room.status === "connected" ? "default" : "secondary"}
+                className={room.status === "connected" ? "bg-green-600 hover:bg-green-700" : ""}
+              >
+                {room.status === "connected" ? (
+                  <Wifi className="h-3 w-3 mr-1" />
+                ) : (
+                  <WifiOff className="h-3 w-3 mr-1" />
+                )}
+                {room.status}
+              </Badge>
+              {stale && (
+                <Badge variant="destructive" className="text-[10px]">
+                  STALE
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {getDuration(room.connected_at, room.disconnected_at)}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Member 1</p>
+              <p className="text-xs font-medium truncate">{memberName(room.member1)}</p>
+              {room.member1_gender && (
+                <Badge variant="outline" className="text-[10px] mt-1">
+                  {room.member1_gender}
+                </Badge>
+              )}
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Member 2</p>
+              <p className="text-xs font-medium truncate">{memberName(room.member2)}</p>
+              {room.member2_gender && (
+                <Badge variant="outline" className="text-[10px] mt-1">
+                  {room.member2_gender}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>Connected: {formatTime(room.connected_at)}</p>
+            {room.disconnected_at && (
+              <p>Disconnected: {formatTime(room.disconnected_at)}</p>
+            )}
+          </div>
+
+          {room.status === "connected" && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full"
+              disabled={disconnecting === room.id}
+              onClick={() => forceDisconnect(room.id)}
+            >
+              <Zap className="h-3 w-3 mr-1" />
+              {disconnecting === room.id ? "Disconnecting…" : "Force Disconnect"}
+            </Button>
           )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -119,7 +195,18 @@ const AdminRoomsPage = () => {
             Live and past video call sessions.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          {staleRooms.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={cleanupStaleRooms}
+              disabled={cleaningUp}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {cleaningUp ? "Cleaning…" : `Clean ${staleRooms.length} Stale`}
+            </Button>
+          )}
           <Card className="px-4 py-2">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
