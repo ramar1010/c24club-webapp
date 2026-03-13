@@ -83,7 +83,7 @@ const App = () => (
               <Route index element={<DashboardPage />} />
               <Route path="members" element={<MembersPage />} />
               <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
-              <Route path="rooms" element={<PlaceholderPage title="All Chat Rooms" />} />
+              <Route path="rooms" element={<AdminRoomsPage />} />
               <Route path="rewards" element={<RewardsPage />} />
               <Route path="rewards/new" element={<AddRewardPage />} />
               <Route path="rewards/:id/edit" element={<AddRewardPage />} />
