@@ -2,6 +2,13 @@ import { useState } from "react";
 import { AnchorMode, AnchorStatus } from "@/hooks/useAnchorEarning";
 import { toast } from "sonner";
 
+interface AnchorSettings {
+  power_rate_cash: number;
+  power_rate_time: number;
+  chill_reward_time: number;
+  max_anchor_cap: number;
+}
+
 interface AnchorReward {
   id: string;
   title: string;
