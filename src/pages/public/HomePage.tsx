@@ -180,6 +180,8 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
   const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => { setIsSignUp(defaultSignUp); }, [defaultSignUp, open]);
+
   if (!open) return null;
 
   const handleGoogle = async () => {
