@@ -60,10 +60,7 @@ const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose
         .from("report-screenshots")
         .upload(fileName, blob, { contentType: "image/jpeg" });
       if (!uploadErr) {
-        const { data: urlData } = supabase.storage
-          .from("report-screenshots")
-          .getPublicUrl(fileName);
-        screenshotUrl = urlData?.publicUrl || null;
+        screenshotUrl = fileName;
       }
     }
 
