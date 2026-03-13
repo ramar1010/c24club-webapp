@@ -8,6 +8,8 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
+import { useAnchorEarning } from "@/hooks/useAnchorEarning";
+import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
