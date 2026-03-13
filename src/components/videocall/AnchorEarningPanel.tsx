@@ -212,6 +212,16 @@ const AnchorEarningPanel = ({
   if (status === "idle" || status === "slots_full") {
     return (
       <div className={`mx-3 mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
+        {/* Hide button */}
+        <div className="flex justify-end mb-1">
+          <button
+            onClick={() => setIsHidden(true)}
+            className="text-neutral-500 hover:text-neutral-300 text-xs p-1"
+            title="Hide dashboard"
+          >
+            👁‍🗨 Hide
+          </button>
+        </div>
         <div className="text-center">
           <p className="text-white font-black text-sm uppercase tracking-wide mb-2">
             🌟 Anchor Earning Available
