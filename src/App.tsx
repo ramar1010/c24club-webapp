@@ -55,7 +55,7 @@ const App = () => (
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<HomePage />} />
               <Route path="faq" element={<PlaceholderPage title="FAQ" />} />
-              <Route path="rules" element={<PlaceholderPage title="Site Rules" />} />
+              <Route path="rules" element={<RulesPage />} />
               <Route path="terms" element={<PlaceholderPage title="Terms & Conditions" />} />
               <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
               <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
