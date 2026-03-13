@@ -69,6 +69,18 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     navigate("/");
   };
 
+  if (showVipSettings && user) {
+    return (
+      <VipSettingsOverlay
+        onClose={() => setShowVipSettings(false)}
+        userId={user.id}
+        vipTier={ceData?.is_vip ? (ceData?.vip_tier === "premium" ? "premium" : "basic") : null}
+        genderFilter="everyone"
+        onGenderFilterChange={() => {}}
+      />
+    );
+  }
+
   if (showEvents) {
     return <EventsPage onClose={() => setShowEvents(false)} />;
   }
