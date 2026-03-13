@@ -441,6 +441,111 @@ Deno.serve(async (req) => {
       );
     }
 
+    // CHECK_STREAK: Record daily login, update streak, award milestones
+    if (type === "check_streak") {
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Missing userId" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("login_streak, last_streak_login_at, streak_rewards_claimed, total_minutes, purchased_spins")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      const lastLogin = mm?.last_streak_login_at ? new Date(mm.last_streak_login_at) : null;
+      const lastLoginStr = lastLogin ? lastLogin.toISOString().split("T")[0] : null;
+      const currentStreak = mm?.login_streak ?? 0;
+      const claimedRewards: number[] = mm?.streak_rewards_claimed as number[] ?? [];
+
+      // Already logged in today
+      if (lastLoginStr === todayStr) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            streak: currentStreak,
+            claimedRewards,
+            newRewards: [],
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Calculate new streak
+      let newStreak = 1;
+      if (lastLogin) {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split("T")[0];
+        if (lastLoginStr === yesterdayStr) {
+          newStreak = currentStreak + 1;
+        }
+        // else streak resets to 1
+      }
+
+      // Check milestone rewards: 3, 7, 14, 30 days
+      const milestones = [
+        { day: 3, minutesBonus: 5, spinsBonus: 0 },
+        { day: 7, minutesBonus: 10, spinsBonus: 1 },
+        { day: 14, minutesBonus: 20, spinsBonus: 2 },
+        { day: 30, minutesBonus: 50, spinsBonus: 3 },
+      ];
+
+      const newRewards: { day: number; minutesBonus: number; spinsBonus: number }[] = [];
+      const updatedClaimed = [...claimedRewards];
+
+      for (const m of milestones) {
+        if (newStreak >= m.day && !updatedClaimed.includes(m.day)) {
+          newRewards.push(m);
+          updatedClaimed.push(m.day);
+        }
+      }
+
+      // Award bonuses
+      let totalBonusMinutes = 0;
+      let totalBonusSpins = 0;
+      for (const r of newRewards) {
+        totalBonusMinutes += r.minutesBonus;
+        totalBonusSpins += r.spinsBonus;
+      }
+
+      const currentMinutes = mm?.total_minutes ?? 0;
+      const currentSpins = mm?.purchased_spins ?? 0;
+
+      await supabase
+        .from("member_minutes")
+        .upsert(
+          {
+            user_id: userId,
+            login_streak: newStreak,
+            last_streak_login_at: now.toISOString(),
+            streak_rewards_claimed: updatedClaimed,
+            total_minutes: currentMinutes + totalBonusMinutes,
+            purchased_spins: currentSpins + totalBonusSpins,
+            updated_at: now.toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          streak: newStreak,
+          previousStreak: currentStreak,
+          claimedRewards: updatedClaimed,
+          newRewards,
+          totalBonusMinutes,
+          totalBonusSpins,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ADMIN_ADD_MINUTES
     if (type === "admin_add_minutes") {
       const actualTargetUserId = targetUserId || userId;
