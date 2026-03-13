@@ -73,39 +73,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl font-black tracking-wide mt-2 mb-1">SETTINGS</h1>
-      <p className="text-lg font-bold mb-6">Change My Gender</p>
-
-      {/* Gender Selection */}
-      <div className="flex gap-8 mb-8">
-        <button
-          onClick={() => setSelectedGender("male")}
-          className={`flex flex-col items-center gap-2 transition-all ${
-            selectedGender === "male" ? "scale-110 opacity-100" : "opacity-60"
-          }`}
-        >
-          <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${
-            selectedGender === "male" ? "border-white" : "border-transparent"
-          }`}>
-            <img src={maleShades} alt="Male" className="w-full h-full object-cover" />
-          </div>
-          <span className="text-sm font-bold">Male</span>
-        </button>
-
-        <button
-          onClick={() => setSelectedGender("female")}
-          className={`flex flex-col items-center gap-2 transition-all ${
-            selectedGender === "female" ? "scale-110 opacity-100" : "opacity-60"
-          }`}
-        >
-          <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${
-            selectedGender === "female" ? "border-white" : "border-transparent"
-          }`}>
-            <img src={girlShades} alt="Female" className="w-full h-full object-cover" />
-          </div>
-          <span className="text-sm font-bold">Female</span>
-        </button>
-      </div>
+      <h1 className="text-3xl font-black tracking-wide mt-2 mb-6">SETTINGS</h1>
 
       {/* Earn History */}
       <button
