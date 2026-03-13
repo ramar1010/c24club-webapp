@@ -654,13 +654,23 @@ const VideoCallPage = () => {
         )}
       </div>
 
+      {/* Mobile slide toggle */}
+      {isMobile && !showRedeem && (
+        <button
+          onClick={() => setMobileNavHidden(!mobileNavHidden)}
+          className="flex justify-center py-1 md:hidden"
+        >
+          <div className="w-10 h-1 rounded-full bg-neutral-600" />
+        </button>
+      )}
+
       {/* Panels */}
       {showRedeem ? (
         <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div>
       ) : (
-        <>
+        <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <NavIcon src={storeIcon} label="REDEEM" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} shake />
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} highlight />
@@ -675,8 +685,6 @@ const VideoCallPage = () => {
               setGenderFilter("girls");
             }} className={`uppercase transition-colors ${genderFilter === "girls" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GIRLS
-
-
             </button>
             <button onClick={() => setGenderFilter("both")} className={`uppercase transition-colors text-lg ${genderFilter === "both" ? "text-white font-extrabold" : "text-neutral-400 hover:text-white"}`}>
               BOTH
@@ -686,10 +694,9 @@ const VideoCallPage = () => {
               setGenderFilter("guys");
             }} className={`uppercase transition-colors ${genderFilter === "guys" ? "text-yellow-400" : "text-neutral-400 hover:text-white"}`}>
               <span className="text-[10px] block text-neutral-500 font-normal tracking-wide">CONNECT TO</span>GUYS
-              
             </button>
           </div>
-        </>
+        </div>
       )}
 
       {/* Full-screen overlay pages */}
