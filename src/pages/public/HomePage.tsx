@@ -529,12 +529,17 @@ const HomePage = () => {
 
       {/* ===== STEPS ===== */}
       <section className="px-4 py-16 max-w-5xl mx-auto space-y-16">
-        <div className="text-center">
-          <h4 className="text-xl md:text-2xl font-bold text-white leading-relaxed">
-            Stop talking for free....<br />
-            On C24Club, every chat pays you back<br />
-            with rewards, perks, and real prizes.
+        <div className="text-center space-y-3">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-orange-400">Why settle for free?</p>
+          <h4 className="text-2xl md:text-3xl font-black text-white leading-snug" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
+            On C24Club, every chat <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">pays you back</span><br />
+            with rewards, perks & <span className="text-yellow-300">real prizes.</span>
           </h4>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <span className="w-8 h-px bg-gradient-to-r from-transparent to-orange-500" />
+            <span className="text-orange-400 text-xs font-bold tracking-widest uppercase">Here's how it works</span>
+            <span className="w-8 h-px bg-gradient-to-l from-transparent to-orange-500" />
+          </div>
         </div>
 
         {/* Step 1 */}
