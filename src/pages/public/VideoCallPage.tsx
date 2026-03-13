@@ -731,6 +731,14 @@ const VideoCallPage = () => {
                 💵 ${anchor.settings?.power_rate_cash ?? 1.5} / {anchor.settings?.power_rate_time ?? 30}min
               </span>
             </div>
+            {/* Minutes paused notice when actively anchoring */}
+            {anchor.status === "active" && (
+              <div className="bg-gray-900/90 py-1 px-3 text-center">
+                <span className="text-gray-300 text-[10px] font-medium">
+                  ⏸️ Normal minute earning is paused while anchor bonus is active
+                </span>
+              </div>
+            )}
           </button>
           {showAnchorPanel && (
             <AnchorEarningPanel
