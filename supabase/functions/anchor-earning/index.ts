@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         .eq("id", userId)
         .maybeSingle();
 
-      if (!member || member.gender !== "Female") {
+      if (!member || member.gender?.toLowerCase() !== "female") {
         return new Response(
           JSON.stringify({ success: true, eligible: false, reason: "not_female" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
