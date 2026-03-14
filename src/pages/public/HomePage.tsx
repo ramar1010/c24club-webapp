@@ -503,7 +503,7 @@ const HomePage = () => {
             ))}
           </div>
 
-          <div className="flex-1 max-w-2xl rounded-2xl overflow-hidden shadow-2xl">
+          <div className="flex-1 rounded-2xl overflow-hidden shadow-2xl">
             <div className="relative w-full" style={{ paddingBottom: "75%" }}>
               <iframe
                 src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
