@@ -1178,6 +1178,7 @@ export type Database = {
           banned_by: string | null
           created_at: string
           id: string
+          ip_address: string | null
           is_active: boolean
           reason: string
           unban_payment_session: string | null
@@ -1190,6 +1191,7 @@ export type Database = {
           banned_by?: string | null
           created_at?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean
           reason?: string
           unban_payment_session?: string | null
@@ -1202,6 +1204,7 @@ export type Database = {
           banned_by?: string | null
           created_at?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean
           reason?: string
           unban_payment_session?: string | null
