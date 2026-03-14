@@ -70,6 +70,7 @@ const VideoCallPage = () => {
   const [showAnchorBanner, setShowAnchorBanner] = useState(true);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
