@@ -62,6 +62,9 @@ const AnchorEarningPanel = ({
   const [cashingOut, setCashingOut] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [showExplainer, setShowExplainer] = useState(false);
+  const [verifyInput, setVerifyInput] = useState("");
+  const [verifyError, setVerifyError] = useState(false);
+  const [verifySubmitting, setVerifySubmitting] = useState(false);
 
   useEffect(() => {
     if (status !== "not_eligible" && status !== "loading") {
