@@ -726,7 +726,7 @@ const VideoCallPage = () => {
                 )}
               </div>
             )}
-            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
               <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
