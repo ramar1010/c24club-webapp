@@ -703,6 +703,11 @@ const VideoCallPage = () => {
                 <p className="text-neutral-400 text-sm">
                   {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
+                {callState === "waiting" && (
+                  <div className="mt-2 w-64">
+                    <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+                  </div>
+                )}
               </div>
             )}
             {partnerPinnedTopics.length > 0 && callState === "connected" && (
