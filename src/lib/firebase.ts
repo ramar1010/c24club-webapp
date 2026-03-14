@@ -14,14 +14,29 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 let messaging: ReturnType<typeof getMessaging> | null = null;
+let messagingInitError: string | null = null;
 
-// Only initialize messaging in browsers that support it
-if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+// Lazy-init messaging to avoid IndexedDB errors at import time
+const getMessagingInstance = () => {
+  if (messaging) return messaging;
+  if (messagingInitError) return null;
+
   try {
     messaging = getMessaging(app);
+    return messaging;
   } catch (err) {
-    console.warn("Firebase Messaging not supported:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn("Firebase Messaging not supported:", msg);
+
+    if (msg.includes("indexedDB") || msg.includes("IndexedDB") || msg.includes("backing store")) {
+      messagingInitError = "Your browser is blocking storage required for push notifications. Try disabling private/incognito mode, or check your browser privacy settings.";
+    } else {
+      messagingInitError = msg || "Push notifications are not supported on this device.";
+    }
+    return null;
   }
-}
+};
+
+export { app, messaging, getMessagingInstance, messagingInitError, getToken, onMessage };
 
 export { app, messaging, getToken, onMessage };
