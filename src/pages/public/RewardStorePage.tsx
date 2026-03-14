@@ -406,23 +406,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
               </button>
               {isPremiumVip && targetReward.rarity === "legendary" && Number(targetReward.cashout_value) > 0 && (
                 <button
-                  onClick={async () => {
-                    try {
-                      const { error } = await supabase.functions.invoke("redeem-reward", {
-                        body: {
-                          action: "cashout-legendary",
-                          rewardId: targetReward.id,
-                        },
-                      });
-                      if (error) throw error;
-                      toast.success(`💰 Cashed out $${Number(targetReward.cashout_value).toFixed(2)}!`);
-                      queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
-                      queryClient.invalidateQueries({ queryKey: ["public-rewards"] });
-                      setShowSpinToWin(null);
-                      setSpinReelItems([]);
-                    } catch (e: any) {
-                      toast.error(e.message || "Cashout failed");
-                    }
+                  onClick={() => {
+                    setShowPaypalPrompt(targetReward);
+                    setPaypalEmail("");
                   }}
                   className="w-full py-4 rounded-full font-black text-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:scale-105 active:scale-95 transition-all shadow-lg"
                 >
