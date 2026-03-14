@@ -117,82 +117,85 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   const handleToggle = async (checked: boolean) => {
     if (loading) return;
     setLoading(true);
-    console.log("[Notify] Toggle pressed, checked:", checked);
+    addLog(`Toggle pressed, checked: ${checked}`);
 
     try {
       const normalizedGender = userGender?.toLowerCase();
       if (!normalizedGender) {
         toast.error("Please set your gender on the home profile popup first");
+        addLog("ERROR: no gender set");
         return;
       }
 
       if (checked) {
         const pushSupport = checkPushSupport();
-        console.log("[Notify] Push support check:", pushSupport);
+        addLog(`Push support: ${JSON.stringify(pushSupport)}`);
         if (!pushSupport.supported) {
           toast.error(pushSupport.message);
           return;
         }
 
-        console.log("[Notify] Current permission:", Notification.permission);
+        addLog(`Current permission: ${Notification.permission}`);
         let permission = Notification.permission;
 
         if (permission === "default") {
-          console.log("[Notify] Requesting permission...");
+          addLog("Requesting permission...");
           permission = await Notification.requestPermission();
-          console.log("[Notify] Permission result:", permission);
+          addLog(`Permission result: ${permission}`);
         }
 
         if (permission === "denied") {
+          addLog("Permission DENIED");
           toast.error("Notifications are blocked. Enable them in your browser site settings and try again.");
           return;
         }
 
         if (permission !== "granted") {
+          addLog(`Permission not granted: ${permission}`);
           toast.error("Please allow notifications to use this feature");
           return;
         }
 
-        console.log("[Notify] Registering service worker first...");
+        addLog("Registering SW...");
         let swRegistration: ServiceWorkerRegistration;
         try {
           swRegistration = await registerServiceWorker();
-          console.log("[Notify] SW registered successfully");
+          addLog("SW registered OK");
         } catch (swErr) {
-          console.error("[Notify] SW registration failed:", swErr);
+          addLog(`SW FAILED: ${swErr}`);
           toast.error("Could not register notification worker. Try refreshing the page.");
           return;
         }
 
-        console.log("[Notify] Initializing messaging...");
+        addLog("Init messaging...");
         let msg;
         try {
           msg = getMessagingInstance();
         } catch (initErr) {
-          console.error("[Notify] Messaging init crashed:", initErr);
-          toast.error("Push notifications failed to initialize. Your browser may be blocking required storage.");
+          addLog(`Messaging init CRASHED: ${initErr}`);
+          toast.error("Push notifications failed to initialize.");
           return;
         }
 
         if (!msg) {
-          console.error("[Notify] Messaging init returned null:", messagingInitError);
-          toast.error(messagingInitError || "Push messaging is not available on this device/browser.");
+          addLog(`Messaging null: ${messagingInitError}`);
+          toast.error(messagingInitError || "Push messaging is not available.");
           return;
         }
 
-        console.log("[Notify] Getting FCM token...");
+        addLog("Getting FCM token...");
         let token: string | null = null;
         try {
           token = await getToken(msg, {
             vapidKey: VAPID_KEY,
             serviceWorkerRegistration: swRegistration,
           });
-          console.log("[Notify] Token result:", token ? "obtained" : "null");
+          addLog(`Token: ${token ? "obtained" : "null"}`);
         } catch (tokenErr) {
-          console.error("[Notify] getToken failed:", tokenErr);
+          addLog(`getToken FAILED: ${tokenErr}`);
           const errMsg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
           if (errMsg.includes("indexedDB") || errMsg.includes("IndexedDB") || errMsg.includes("backing store")) {
-            toast.error("Your browser is blocking storage needed for notifications. Try clearing site data or using a different browser.");
+            toast.error("Browser blocking storage needed for notifications.");
           } else {
             toast.error(getPushSetupErrorMessage(tokenErr));
           }
@@ -200,6 +203,7 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         }
 
         if (!token) {
+          addLog("Token is null/empty");
           toast.error("Could not create push token. Please try again.");
           return;
         }
@@ -212,7 +216,8 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         if (error) throw error;
 
         setEnabled(true);
-        toast.success("🔔 Notifications enabled! We'll alert you when someone is waiting.");
+        addLog("SUCCESS - notifications enabled");
+        toast.success("🔔 Notifications enabled!");
       } else {
         const { error } = await supabase
           .from("members")
@@ -222,10 +227,11 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         if (error) throw error;
 
         setEnabled(false);
+        addLog("Notifications disabled");
         toast.info("Notifications disabled");
       }
     } catch (err) {
-      console.error("Notify toggle error:", err);
+      addLog(`CATCH error: ${err}`);
       toast.error(getPushSetupErrorMessage(err));
     } finally {
       setLoading(false);
