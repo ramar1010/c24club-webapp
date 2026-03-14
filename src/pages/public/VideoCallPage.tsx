@@ -213,6 +213,7 @@ const VideoCallPage = () => {
     userId: memberId,
     partnerId: currentPartnerId,
     isConnected: callState === "connected",
+    voiceMode: isFemale ? voiceMode : false,
   });
 
   const [showFrozenPopup, setShowFrozenPopup] = useState(false);
