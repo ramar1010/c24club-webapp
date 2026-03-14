@@ -24,6 +24,7 @@ import {
   LogOut,
   Activity,
   TrendingUp,
+  BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
