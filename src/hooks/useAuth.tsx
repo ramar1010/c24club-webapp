@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
+  const ipCheckedRef = useRef(false);
 
   const checkAdmin = useCallback(async (userId: string) => {
     const { data } = await supabase
