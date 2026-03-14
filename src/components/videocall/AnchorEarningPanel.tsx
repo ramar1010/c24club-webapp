@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnchorMode, AnchorStatus } from "@/hooks/useAnchorEarning";
 import { toast } from "sonner";
+import AnchorExplainerModal, { STORAGE_KEY } from "./AnchorExplainerModal";
 
 interface AnchorSettings {
   power_rate_cash: number;
@@ -53,8 +54,21 @@ const AnchorEarningPanel = ({
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [showExplainer, setShowExplainer] = useState(false);
+
+  useEffect(() => {
+    if (status !== "not_eligible" && status !== "loading") {
+      const seen = localStorage.getItem(STORAGE_KEY);
+      if (!seen) setShowExplainer(true);
+    }
+  }, [status]);
 
   if (status === "not_eligible" || status === "loading") return null;
+
+  {/* One-time explainer modal for new female users */}
+  if (showExplainer) {
+    return <AnchorExplainerModal onClose={() => setShowExplainer(false)} />;
+  }
 
   if (isHidden) {
     return (
