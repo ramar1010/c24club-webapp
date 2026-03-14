@@ -215,7 +215,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
             No redeemed {selectedFilter.toLowerCase()} yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
             {filtered.map((item: any) => {
               const rarityColor = RARITY_COLORS[item.reward_rarity] || "text-white";
               const rarityEmoji = RARITY_EMOJI[item.reward_rarity] || "";
