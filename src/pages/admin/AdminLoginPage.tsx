@@ -106,7 +106,7 @@ const AdminLoginPage = () => {
                 onExpire={() => setCaptchaToken(null)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || !captchaToken}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {mode === "login" ? (
                 <><LogIn className="mr-2 h-4 w-4" />{loading ? "Signing in..." : "Sign In"}</>
               ) : (
