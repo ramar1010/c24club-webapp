@@ -519,15 +519,6 @@ const VideoCallPage = () => {
             </div>
           )}
 
-  // If the authenticated user changes (e.g. admin login in same browser), stop the call
-  useEffect(() => {
-    if (prevUserIdRef.current !== memberId && prevUserIdRef.current !== "anonymous") {
-      console.log("[VideoCall] User changed, stopping call to prevent cross-account issues");
-      stop();
-    }
-    prevUserIdRef.current = memberId;
-  }, [memberId, stop]);
-
 
           <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
             <div className="flex flex-col items-center gap-3">
