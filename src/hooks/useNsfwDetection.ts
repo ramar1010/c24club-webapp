@@ -181,9 +181,16 @@ export function useNsfwDetection({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
+    let debugLogCount = 0;
     const interval = setInterval(async () => {
       const video = remoteVideoRef.current;
       const model = modelRef.current;
+
+      if (debugLogCount < 3) {
+        console.log(`[NSFW] Check — video: ${!!video}, model: ${!!model}, readyState: ${video?.readyState}, videoWidth: ${video?.videoWidth}, srcObject: ${!!video?.srcObject}`);
+        debugLogCount++;
+      }
+
       if (!video || !model || video.readyState < 2) return;
 
       try {
