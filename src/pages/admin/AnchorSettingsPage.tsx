@@ -61,6 +61,21 @@ const AnchorSettingsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updatePayoutMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("anchor_payouts")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      toast.success(`Payout marked as ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["anchor-admin-data"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   // Fetch active sessions and queue
   const { data: anchorData } = useQuery({
     queryKey: ["anchor-admin-data"],
