@@ -18,13 +18,15 @@ interface AnchorReward {
 export type AnchorStatus = "loading" | "not_eligible" | "idle" | "active" | "queued" | "slots_full";
 export type AnchorMode = "chill" | "power";
 
+const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder", "blossom", "cascade", "eclipse", "harbor", "lantern", "orchid", "phoenix", "radiance", "sapphire", "velvet"];
+
 export function useAnchorEarning({
   userId,
   isOnCall,
   partnerGender,
 }: {
   userId: string;
-  isOnCall: boolean; // true when waiting or connected
+  isOnCall: boolean;
   partnerGender?: string | null;
 }) {
   const [status, setStatus] = useState<AnchorStatus>("loading");
@@ -36,6 +38,8 @@ export function useAnchorEarning({
   const [settings, setSettings] = useState<AnchorSettings | null>(null);
   const [rewardEarned, setRewardEarned] = useState<AnchorReward | null>(null);
   const [cashEarned, setCashEarned] = useState<number>(0);
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [verificationWord, setVerificationWord] = useState("");
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const localElapsedRef = useRef(0);
