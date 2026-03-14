@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AnchorMode, AnchorStatus } from "@/hooks/useAnchorEarning";
+import { AnchorMode, AnchorStatus, AnchorPayout } from "@/hooks/useAnchorEarning";
 import { toast } from "sonner";
 import { Info } from "lucide-react";
 import AnchorExplainerModal, { STORAGE_KEY } from "./AnchorExplainerModal";
