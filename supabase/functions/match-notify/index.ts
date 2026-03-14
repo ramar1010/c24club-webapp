@@ -83,13 +83,21 @@ Deno.serve(async (req) => {
     // Send FCM push notifications if configured
     const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
     let pushSent = 0;
+    let pushFailed = 0;
+    let pushStatus: number | null = null;
+    let pushError: string | null = null;
+
     if (fcmServerKey && targets && targets.length > 0) {
       const tokens = targets
         .map((t) => t.push_token)
         .filter((t): t is string => !!t);
 
       if (tokens.length > 0) {
-        pushSent = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
+        const pushResult = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
+        pushSent = pushResult.sent;
+        pushFailed = pushResult.failed;
+        pushStatus = pushResult.status;
+        pushError = pushResult.error;
       }
     }
 
@@ -107,6 +115,9 @@ Deno.serve(async (req) => {
         message: "notifications_sent",
         discord_sent: discordSent,
         push_sent: pushSent,
+        push_failed: pushFailed,
+        push_status: pushStatus,
+        push_error: pushError,
         targets_found: targets?.length ?? 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
