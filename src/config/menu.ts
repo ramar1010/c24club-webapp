@@ -206,6 +206,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "system-health",
+    icon: Activity,
+    title: "System Health",
+    submenu: [
+      { key: "system-health", label: "Health Dashboard", path: "/admin/system-health" },
+    ],
+  },
+  {
     key: "settings",
     icon: Settings,
     title: "Settings",
