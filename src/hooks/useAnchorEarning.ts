@@ -293,6 +293,7 @@ export function useAnchorEarning({
     cashEarned,
     verificationRequired,
     verificationWord,
+    payouts,
     joinAnchor,
     leaveAnchor,
     cashout,
@@ -300,5 +301,6 @@ export function useAnchorEarning({
     dismissCashEarned,
     submitVerification,
     checkStatus,
+    fetchPayouts,
   };
 }
