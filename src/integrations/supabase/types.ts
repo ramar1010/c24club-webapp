@@ -571,6 +571,7 @@ export type Database = {
           id: string
           image_thumb_url: string | null
           image_url: string | null
+          last_ip: string | null
           membership: string | null
           name: string
           profession: string | null
@@ -590,6 +591,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          last_ip?: string | null
           membership?: string | null
           name: string
           profession?: string | null
@@ -609,6 +611,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          last_ip?: string | null
           membership?: string | null
           name?: string
           profession?: string | null
