@@ -132,6 +132,13 @@ export function useAnchorEarning({
     });
 
     if (data?.success) {
+      if (data.verification_required) {
+        // Pause timer and show challenge
+        isActiveRef.current = false;
+        setVerificationRequired(true);
+        setVerificationWord(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
+        return;
+      }
       setElapsedSeconds(data.elapsed_seconds);
       localElapsedRef.current = data.elapsed_seconds;
       setMode(data.currentMode);
