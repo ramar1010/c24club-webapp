@@ -4,12 +4,9 @@ import { useState } from "react";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "About CEP", href: "#about" },
-  { label: "Why Us?", href: "#why-us" },
   { label: "How To Guide", href: "/how-to-guide" },
   { label: "Rules", href: "/rules" },
   { label: "Blog", href: "/blog" },
-  { label: "Milestones", href: "/milestones-page" },
 ];
 
 const PublicNav = () => {
