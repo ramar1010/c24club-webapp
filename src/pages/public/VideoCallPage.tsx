@@ -620,7 +620,7 @@ const VideoCallPage = () => {
               <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">🚫</span>
                 <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
-                <p className="text-red-400 text-xs font-bold mt-1">Strike {nsfwStrikes}/5 — nudity detected</p>
+                <p className="text-red-400 text-xs font-bold mt-1">Partner strike {Math.min(nsfwStrikes, 5)}/5 — nudity detected</p>
                 {nsfwStrikes >= 3 && (
                   <p className="text-yellow-400 text-xs font-bold mt-1 animate-pulse">⚠️ Warning: Ban at 5 strikes</p>
                 )}
