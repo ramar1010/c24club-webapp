@@ -105,10 +105,14 @@ export function useNsfwDetection({
   const persistStrike = useCallback(
     async (newCount: number) => {
       if (!userId || userId === "anonymous") return;
-      await supabase
+      const { error } = await supabase
         .from("member_minutes")
         .update({ nsfw_strikes: newCount } as any)
         .eq("user_id", userId);
+
+      if (error) {
+        console.warn("[NSFW] Failed to persist strikes:", error.message);
+      }
     },
     [userId]
   );
