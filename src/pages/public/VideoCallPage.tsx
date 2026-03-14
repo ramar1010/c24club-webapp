@@ -138,12 +138,12 @@ const VideoCallPage = () => {
   const { partnerBlackScreen } = useBlackScreenDetection({
     remoteVideoRef,
     localStreamRef,
-    isConnected: callState === "connected",
+    isConnected: callState === "connected" && !partnerVoiceMode,
   });
 
   const { localBlackScreen } = useLocalBlackScreenDetection({
     localVideoRef,
-    isActive: callState !== "idle",
+    isActive: callState !== "idle" && !(isFemale && voiceMode),
   });
 
   const NSFW_BAN_THRESHOLD = 5;
