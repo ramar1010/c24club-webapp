@@ -118,7 +118,7 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   };
 
   const label =
-    userGender === "Female"
+    userGender?.toLowerCase() === "female"
       ? "Notify me when a male is online"
       : "Notify me when a female comes online";
 
