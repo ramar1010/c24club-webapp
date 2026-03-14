@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [ensureMemberRow]);
 
   // Check IP ban on initial load (regardless of auth state)
   useEffect(() => {

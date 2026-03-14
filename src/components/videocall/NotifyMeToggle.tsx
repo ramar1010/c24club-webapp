@@ -56,18 +56,22 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
     setLoading(true);
 
     try {
+      const normalizedGender = userGender?.toLowerCase();
+      if (!normalizedGender) {
+        toast.error("Please set your gender on the home profile popup first");
+        return;
+      }
+
       if (checked) {
         // Request notification permission
         if (!("Notification" in window)) {
           toast.error("Your browser doesn't support notifications");
-          setLoading(false);
           return;
         }
 
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
           toast.error("Please allow notifications to use this feature");
-          setLoading(false);
           return;
         }
 
@@ -117,10 +121,13 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
     }
   };
 
+  const normalizedGender = userGender?.toLowerCase();
   const label =
-    userGender?.toLowerCase() === "female"
+    normalizedGender === "female"
       ? "Notify me when a male is online"
-      : "Notify me when a female comes online";
+      : normalizedGender === "male"
+      ? "Notify me when a female comes online"
+      : "Set your gender first to get accurate notifications";
 
   return (
     <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">

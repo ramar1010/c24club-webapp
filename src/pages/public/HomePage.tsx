@@ -318,8 +318,16 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
     setSaving(true);
     const { error } = await supabase
       .from("members")
-      .update({ name: name.trim(), gender })
-      .eq("id", user.id);
+      .upsert(
+        {
+          id: user.id,
+          email: user.email ?? null,
+          name: name.trim(),
+          gender,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
     setSaving(false);
     if (error) {
       toast.error("Failed to save profile", { description: error.message });
