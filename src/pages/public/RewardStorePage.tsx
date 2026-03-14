@@ -1008,7 +1008,14 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                         key={cat.id}
                         onClick={() => {
                           if (isLocked) {
-                            toast("👑 VIP members only! Subscribe to unlock exclusive rewards.", { icon: "🔒" });
+                            toast("👑 VIP members only! Subscribe to unlock exclusive rewards.", {
+                              icon: "🔒",
+                              action: {
+                                label: "Become VIP",
+                                onClick: () => navigate("/vip"),
+                              },
+                              duration: 5000,
+                            });
                             return;
                           }
                           setSelectedCategory(cat.id);
