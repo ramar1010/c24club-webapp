@@ -97,7 +97,15 @@ const AdminLoginPage = () => {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <div className="flex justify-center">
+              <Turnstile
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || !captchaToken}>
               {mode === "login" ? (
                 <><LogIn className="mr-2 h-4 w-4" />{loading ? "Signing in..." : "Sign In"}</>
               ) : (
