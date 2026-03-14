@@ -8,17 +8,22 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
+
+const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Replace with your real Cloudflare Turnstile site key
 
 const AdminLoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaToken) { toast.error("Please complete the CAPTCHA verification"); return; }
     setLoading(true);
     const { error } = await signIn(email, password);
 
@@ -33,6 +38,7 @@ const AdminLoginPage = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaToken) { toast.error("Please complete the CAPTCHA verification"); return; }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -91,7 +97,15 @@ const AdminLoginPage = () => {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <div className="flex justify-center">
+              <Turnstile
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || !captchaToken}>
               {mode === "login" ? (
                 <><LogIn className="mr-2 h-4 w-4" />{loading ? "Signing in..." : "Sign In"}</>
               ) : (

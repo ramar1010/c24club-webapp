@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { useNavigate } from "react-router-dom";
 import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
@@ -174,13 +175,16 @@ const MobileRewardSlider = () => {
 };
 
 /* ─── Sign-In Popup ─── */
+const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Replace with your real Cloudflare Turnstile site key
+
 const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; onClose: () => void; defaultSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  useEffect(() => { setIsSignUp(defaultSignUp); }, [defaultSignUp, open]);
+  useEffect(() => { setIsSignUp(defaultSignUp); setCaptchaToken(null); }, [defaultSignUp, open]);
 
   if (!open) return null;
 
@@ -197,6 +201,10 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
   const handleEmailAuth = async () => {
     if (!email.trim() || !password) {
       toast.error("Please enter email and password");
+      return;
+    }
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
       return;
     }
     setLoading(true);
@@ -263,9 +271,18 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             placeholder="Password"
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition-colors text-sm"
           />
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setCaptchaToken(null)}
+              onExpire={() => setCaptchaToken(null)}
+              options={{ theme: "dark", size: "compact" }}
+            />
+          </div>
           <button
             onClick={handleEmailAuth}
-            disabled={loading}
+            disabled={loading || !captchaToken}
             className="w-full px-6 py-3.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-base shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50"
           >
             {loading ? "..." : isSignUp ? "Create Account" : "Sign In with Email"}
