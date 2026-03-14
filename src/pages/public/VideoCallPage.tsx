@@ -658,7 +658,7 @@ const VideoCallPage = () => {
                   <p className="text-red-400 text-[7px] font-bold">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
                 </div>
               )}
-              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
                 <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xl">📵</span>
                   <p className="text-white font-black text-[8px] text-center px-1">FACELESS</p>
