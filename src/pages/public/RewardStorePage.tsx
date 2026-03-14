@@ -541,7 +541,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             {copiedCode ? <><Check className="w-4 h-4 text-green-400" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Code</>}
           </button>
         </div>
-        <p className="text-red-500 text-[10px] font-bold mt-4">SAVE THIS CODE — IT WON'T BE SHOWN AGAIN</p>
+        <p className="text-neutral-400 text-[10px] font-bold mt-4">You can revisit this code anytime in My Rewards → Giftcards</p>
         <button
           onClick={() => { setRedeemedCode(null); setShowGiftCards(true); }}
           className="mt-6 text-neutral-400 hover:text-white text-sm font-bold transition-colors"
