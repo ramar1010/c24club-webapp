@@ -634,8 +634,12 @@ const VideoCallPage = () => {
 
           {isMobile && (
             <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
+              {/* Partner voice mode avatar - mobile */}
+              {partnerVoiceMode && callState === "connected" && (
+                <VoiceModeAvatar remoteStream={localStreamRef} className="z-20" />
+              )}
               <video ref={remoteVideoRef} autoPlay playsInline
-                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+                className={`w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
               {isNsfwBlurred && callState === "connected" && (
                 <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xl">🚫</span>
