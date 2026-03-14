@@ -359,80 +359,13 @@ const TermsPage = () => {
           </ul>
         </section>
 
-        {/* === PRIVACY POLICY === */}
+        {/* === PRIVACY POLICY LINK === */}
         <div className="border-t border-white/10 pt-8">
-          <h2 className="text-xl font-black text-white mb-4">Privacy Policy</h2>
+          <section>
+            <h3 className="text-lg font-bold text-orange-400 mb-2">Privacy Policy</h3>
+            <p>For details on how we collect, use, and protect your personal information, please see our full <a href="/privacy" className="text-orange-400 underline hover:text-orange-300">Privacy Policy</a>.</p>
+          </section>
         </div>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">28. Information Collection & Use</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>C24 Club collects users' names, email addresses, and shipping addresses (when redeeming physical rewards).</li>
-            <li>Information is used to process and ship rewards, manage accounts, and improve our services.</li>
-            <li>Users' addresses and contact information may be stored for future reward redemptions.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">29. Third-Party Sharing</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Users' shipping information may be shared with third-party sellers solely for the purpose of shipping rewards.</li>
-            <li>C24 Club uses third-party sites to provide gift cards as rewards.</li>
-            <li>Promo data may be shared with third-party service providers for analytics, subject to confidentiality agreements.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">30. Data Security</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>C24 Club is committed to protecting the privacy and security of users' information with appropriate measures against unauthorized access or disclosure.</li>
-            <li>All screenshots and user content submitted for challenges are handled in compliance with applicable privacy laws, including CCPA and GDPR.</li>
-            <li>Screenshots and media files submitted for weekly challenges are retained for a maximum of 30 days and then permanently deleted.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">31. Social/Pay App Privacy</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>When users pin social/pay apps, they acknowledge their personal information may be shared with or used by other users. C24 Club is not responsible for how others use this information.</li>
-            <li>C24 Club cannot guarantee the security of interactions through pinned apps. Users should review third-party app privacy policies.</li>
-            <li>By using the pinning feature, users consent to sharing their information and understand the associated risks.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">32. Screen Recording & Privacy</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Users acknowledge that their interactions may be recorded by other users. C24 Club is not liable for privacy violations resulting from screen recordings by users with malicious intent.</li>
-            <li>C24 Club does not assume responsibility for such interactions but will investigate and take action against violators where possible.</li>
-            <li>Users are encouraged to report any suspicious or harmful behavior.</li>
-          </ul>
-        </section>
-
-        {/* === CCPA === */}
-        <div className="border-t border-white/10 pt-8">
-          <h2 className="text-xl font-black text-white mb-4">California Consumer Rights (CCPA)</h2>
-        </div>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">33. Your CCPA Rights</h3>
-          <ul className="list-disc list-inside space-y-2">
-            <li><strong className="text-white">Right to Know:</strong> You have the right to know what personal information we collect, the sources, the purpose, and the third parties with whom we share it.</li>
-            <li><strong className="text-white">Right to Delete:</strong> You may request deletion of your personal information by contacting business@c24club.com. We will respond in accordance with CCPA regulations.</li>
-            <li><strong className="text-white">Abuse of Deletion Rights:</strong> To prevent fraud, C24 Club may retain non-identifiable account activity logs and verify deletion requests through additional security measures. Requests found to be part of exploitation attempts may be denied and the account permanently banned.</li>
-            <li><strong className="text-white">Right to Opt-Out:</strong> C24 Club does not currently sell personal information. If this changes, a "Do Not Sell My Personal Information" link will be provided.</li>
-            <li><strong className="text-white">Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any of your CCPA rights.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">34. Protection of Minors</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>C24 Club does not knowingly collect personal information from users under the age of 18. If we become aware that a minor has provided personal information, we will delete it and terminate the account.</li>
-            <li>Users misrepresenting their age do so in violation of these Terms. C24 Club is not liable for resulting consequences.</li>
-            <li>Parents and legal guardians are responsible for monitoring the online activity of minors.</li>
-          </ul>
-        </section>
 
         {/* === REFUND POLICY === */}
         <div className="border-t border-white/10 pt-8">
