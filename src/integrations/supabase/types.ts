@@ -140,6 +140,7 @@ export type Database = {
           current_mode: string
           elapsed_seconds: number
           id: string
+          last_verified_at: string | null
           status: string
           updated_at: string
           user_id: string
@@ -150,6 +151,7 @@ export type Database = {
           current_mode?: string
           elapsed_seconds?: number
           id?: string
+          last_verified_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -160,6 +162,7 @@ export type Database = {
           current_mode?: string
           elapsed_seconds?: number
           id?: string
+          last_verified_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string
