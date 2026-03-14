@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 
-const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Replace with your real Cloudflare Turnstile site key
+const TURNSTILE_SITE_KEY = "0x4AAAAAACq2hFFseq9xTdN1";
 
 const AdminLoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");

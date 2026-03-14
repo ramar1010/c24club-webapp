@@ -175,7 +175,7 @@ const MobileRewardSlider = () => {
 };
 
 /* ─── Sign-In Popup ─── */
-const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Replace with your real Cloudflare Turnstile site key
+const TURNSTILE_SITE_KEY = "0x4AAAAAACq2hFFseq9xTdN1";
 
 const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; onClose: () => void; defaultSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
