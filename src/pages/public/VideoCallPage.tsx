@@ -81,6 +81,7 @@ const VideoCallPage = () => {
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | null>(null);
   const memberId = user?.id ?? "anonymous";
+  const prevUserIdRef = useRef(memberId);
 
   const {
     callState,
@@ -96,6 +97,16 @@ const VideoCallPage = () => {
     memberId,
     genderPreference: genderMap[genderFilter],
   });
+
+  // If the authenticated user changes (e.g. admin login in same browser), stop the call
+  // to prevent NSFW detection from running under the wrong user context
+  useEffect(() => {
+    if (prevUserIdRef.current !== memberId && prevUserIdRef.current !== "anonymous") {
+      console.log("[VideoCall] User changed, stopping call to prevent cross-account issues");
+      stop();
+    }
+    prevUserIdRef.current = memberId;
+  }, [memberId, stop]);
 
   const { partnerBlackScreen } = useBlackScreenDetection({
     remoteVideoRef,
