@@ -425,6 +425,15 @@ const MembersPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Dialog */}
+      <DeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={(open) => !open && setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`${selectedIds.size} selected member(s)`}
+        isPending={bulkDeleting}
+      />
     </div>
   );
 };
