@@ -142,8 +142,9 @@ export const adminMenu: MenuItem[] = [
   {
     key: "ban-ip",
     icon: Ban,
-    title: "Ban by IP",
+    title: "Bans",
     submenu: [
+      { key: "banned-users", label: "Banned Users", path: "/admin/banned-users" },
       { key: "ban-member-by-ip", label: "Ban by IP", path: "/admin/ban-by-ip" },
     ],
   },

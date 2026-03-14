@@ -107,6 +107,7 @@ const App = () => (
               <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
               <Route path="contests" element={<PlaceholderPage title="Contests" />} />
               <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
+              <Route path="banned-users" element={<AdminBannedUsersPage />} />
               <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
               <Route path="challenges" element={<AdminChallengesPage />} />
               <Route path="challenges/new" element={<AdminChallengesPage />} />
