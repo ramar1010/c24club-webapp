@@ -186,7 +186,16 @@ Deno.serve(async (req) => {
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
+      // Voice mode females earn at reduced rate (5 min cap instead of 10)
+      const voiceModeCap = 5;
+      let cap: number;
+      if (freezeInfo.isFrozen) {
+        cap = freezeInfo.earnRate;
+      } else if (voiceMode) {
+        cap = voiceModeCap;
+      } else {
+        cap = isVip ? 30 : 10;
+      }
 
       // Use sessionId to track cap per-session (not per-day)
       // If no sessionId provided, fall back to date-based tracking
