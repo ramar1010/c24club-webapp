@@ -196,6 +196,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) {
+    // During HMR the context can temporarily be undefined; reload to recover
+    if (import.meta.hot) {
+      window.location.reload();
+    }
+    throw new Error("useAuth must be used within AuthProvider");
+  }
   return ctx;
 };
