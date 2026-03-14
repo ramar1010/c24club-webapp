@@ -550,15 +550,14 @@ const VideoCallPage = () => {
           )}
 
 
-          <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10" style={{ display: callState === "waiting" ? "flex" : "none" }}>
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-              <p className="text-sm text-neutral-300">Finding a partner...</p>
-              <div className="mt-2 w-64">
-                <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+          {callState === "waiting" && (
+            <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <p className="text-sm text-neutral-300">Finding a partner...</p>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Report button - mobile below timer, desktop top-left of partner video */}
           {callState === "connected" && currentPartnerId && isMobile && (
