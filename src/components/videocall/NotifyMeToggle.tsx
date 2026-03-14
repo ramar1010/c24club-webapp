@@ -5,7 +5,7 @@ import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import { messaging, getToken, onMessage } from "@/lib/firebase";
 
-const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || "";
+const VAPID_KEY = "BEo__3du10IrVV25ijuIjj50R14egL1ONqFpkzMXmC0RFBz8xG7J3zbczrLHfITkU1DCItWoRSZ17uU7fo3rYfk";
 
 interface NotifyMeToggleProps {
   userId: string;
