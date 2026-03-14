@@ -496,7 +496,7 @@ const HomePage = () => {
         </div>
 
         {/* Hero card with side rewards */}
-        <div className="max-w-5xl mx-auto flex items-center justify-center gap-3 lg:gap-5">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-1 lg:gap-2">
           <div className="hidden sm:flex flex-col gap-3">
             {leftSideRewards.map((img, i) => (
               <SideCard key={`l-${i}`} image={img} />
