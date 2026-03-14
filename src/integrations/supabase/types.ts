@@ -604,10 +604,13 @@ export type Database = {
           id: string
           image_thumb_url: string | null
           image_url: string | null
+          is_test_account: boolean
           last_ip: string | null
           membership: string | null
           name: string
+          notify_enabled: boolean
           profession: string | null
+          push_token: string | null
           state: string | null
           stats: string | null
           title: string | null
@@ -624,10 +627,13 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          is_test_account?: boolean
           last_ip?: string | null
           membership?: string | null
           name: string
+          notify_enabled?: boolean
           profession?: string | null
+          push_token?: string | null
           state?: string | null
           stats?: string | null
           title?: string | null
@@ -644,10 +650,13 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          is_test_account?: boolean
           last_ip?: string | null
           membership?: string | null
           name?: string
+          notify_enabled?: boolean
           profession?: string | null
+          push_token?: string | null
           state?: string | null
           stats?: string | null
           title?: string | null
@@ -725,6 +734,24 @@ export type Database = {
           unlock_minutes?: number
           updated_at?: string
           vip_only?: boolean
+        }
+        Relationships: []
+      }
+      notification_cooldowns: {
+        Row: {
+          gender_segment: string
+          id: string
+          last_notified_at: string
+        }
+        Insert: {
+          gender_segment: string
+          id?: string
+          last_notified_at?: string
+        }
+        Update: {
+          gender_segment?: string
+          id?: string
+          last_notified_at?: string
         }
         Relationships: []
       }
