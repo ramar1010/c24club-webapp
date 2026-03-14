@@ -31,6 +31,7 @@ import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
 import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
 import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
 import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
+import SystemHealthPage from "@/pages/admin/SystemHealthPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";

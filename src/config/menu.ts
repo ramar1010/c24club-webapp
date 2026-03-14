@@ -22,6 +22,7 @@ import {
   Mail,
   Settings,
   LogOut,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 
