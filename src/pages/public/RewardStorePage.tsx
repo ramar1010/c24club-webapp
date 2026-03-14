@@ -1012,7 +1012,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                               icon: "🔒",
                               action: {
                                 label: "Become VIP",
-                                onClick: () => navigate("/vip"),
+                                onClick: () => navigate("/videocall"),
                               },
                               duration: 5000,
                             });
