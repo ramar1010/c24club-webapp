@@ -28,11 +28,14 @@ interface AnchorEarningPanelProps {
   rewardEarned: AnchorReward | null;
   cashEarned: number;
   settings: AnchorSettings | null;
+  verificationRequired: boolean;
+  verificationWord: string;
   onJoin: () => void;
   onLeave: () => void;
   onCashout: (email: string) => Promise<number>;
   onDismissReward: () => void;
   onDismissCash: () => void;
+  onSubmitVerification: (input: string) => Promise<boolean>;
 }
 
 const AnchorEarningPanel = ({
@@ -45,11 +48,14 @@ const AnchorEarningPanel = ({
   rewardEarned,
   cashEarned,
   settings,
+  verificationRequired,
+  verificationWord,
   onJoin,
   onLeave,
   onCashout,
   onDismissReward,
   onDismissCash,
+  onSubmitVerification,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
