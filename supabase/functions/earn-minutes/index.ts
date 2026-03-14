@@ -425,7 +425,14 @@ Deno.serve(async (req) => {
 
       const isVip = memberData?.is_vip ?? false;
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
+      let cap: number;
+      if (freezeInfo.isFrozen) {
+        cap = freezeInfo.earnRate;
+      } else if (voiceMode) {
+        cap = 5;
+      } else {
+        cap = isVip ? 30 : 10;
+      }
 
       const trackingId = sessionId || new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase

@@ -22,7 +22,7 @@ interface FreezeInfo {
   earnRate: number;
 }
 
-export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
+export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
