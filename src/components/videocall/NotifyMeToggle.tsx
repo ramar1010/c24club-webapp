@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
-import { messaging, getToken, onMessage } from "@/lib/firebase";
+import { getMessagingInstance, messagingInitError, getToken, onMessage } from "@/lib/firebase";
 
 const VAPID_KEY = "BEo__3du10IrVV25ijuIjj50R14egL1ONqFpkzMXmC0RFBz8xG7J3zbczrLHfITkU1DCItWoRSZ17uU7fo3rYfk";
 
