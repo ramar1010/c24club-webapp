@@ -84,6 +84,16 @@ const VideoCallPage = () => {
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
+  // Fetch member gender (needed for WebRTC + notifications)
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
   const {
     callState,
     error,
@@ -97,6 +107,7 @@ const VideoCallPage = () => {
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
+    memberGender: memberGender ?? undefined,
   });
 
   // If the authenticated user changes (e.g. admin login in same browser), stop the call
@@ -219,15 +230,6 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
-  // Fetch member gender for anchor system
-  const { data: memberGender } = useQuery({
-    queryKey: ["member_gender", memberId],
-    enabled: memberId !== "anonymous",
-    queryFn: async () => {
-      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
-      return data?.gender ?? null;
-    },
-  });
 
   // Fetch partner gender for anchor system
   const { data: partnerGenderData } = useQuery({
