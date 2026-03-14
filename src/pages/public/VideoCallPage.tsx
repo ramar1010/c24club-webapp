@@ -84,6 +84,16 @@ const VideoCallPage = () => {
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
+  // Fetch member gender (needed for WebRTC + notifications)
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+
   const {
     callState,
     error,
