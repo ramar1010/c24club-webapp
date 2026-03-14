@@ -115,6 +115,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       });
     }
 
+    // In voice mode (no video track), add a recvonly video transceiver
+    // so we can still receive the partner's video stream
+    if (voiceModeRef.current) {
+      pc.addTransceiver('video', { direction: 'recvonly' });
+    }
+
     pc.ontrack = (event) => {
       const [stream] = event.streams;
       if (stream && remoteVideoRef.current) {
