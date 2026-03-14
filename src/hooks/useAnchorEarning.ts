@@ -15,6 +15,15 @@ interface AnchorReward {
   rarity: string;
 }
 
+export interface AnchorPayout {
+  id: string;
+  amount: number;
+  status: string;
+  paypal_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AnchorStatus = "loading" | "not_eligible" | "idle" | "active" | "queued" | "slots_full";
 export type AnchorMode = "chill" | "power";
 
@@ -40,6 +49,7 @@ export function useAnchorEarning({
   const [cashEarned, setCashEarned] = useState<number>(0);
   const [verificationRequired, setVerificationRequired] = useState(false);
   const [verificationWord, setVerificationWord] = useState("");
+  const [payouts, setPayouts] = useState<AnchorPayout[]>([]);
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const localElapsedRef = useRef(0);
@@ -88,9 +98,21 @@ export function useAnchorEarning({
     }
   }, [userId]);
 
+  // Fetch payout history
+  const fetchPayouts = useCallback(async () => {
+    if (!userId || userId === "anonymous") return;
+    const { data } = await supabase.functions.invoke("anchor-earning", {
+      body: { type: "get_earnings", userId },
+    });
+    if (data?.success) {
+      setPayouts(data.payouts ?? []);
+    }
+  }, [userId]);
+
   useEffect(() => {
     checkStatus();
-  }, [checkStatus]);
+    fetchPayouts();
+  }, [checkStatus, fetchPayouts]);
 
   // Join anchor earning
   const joinAnchor = useCallback(async () => {
@@ -102,9 +124,9 @@ export function useAnchorEarning({
       if (data.status === "active") {
         setStatus("active");
         isActiveRef.current = true;
-        setElapsedSeconds(0);
-        localElapsedRef.current = 0;
-        setCashBalance(0);
+        setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
+        localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
+        setCashBalance(Number(data.session?.cash_balance ?? 0));
         setMode(data.currentMode);
       } else if (data.status === "queued") {
         setStatus("queued");
@@ -223,10 +245,11 @@ export function useAnchorEarning({
 
     if (data?.success) {
       setCashBalance(0);
+      fetchPayouts(); // refresh payout list
       return data.amount;
     }
     throw new Error(data?.message || "Cashout failed");
-  }, [userId]);
+  }, [userId, fetchPayouts]);
 
   const dismissReward = useCallback(() => setRewardEarned(null), []);
   const dismissCashEarned = useCallback(() => setCashEarned(0), []);
@@ -270,6 +293,7 @@ export function useAnchorEarning({
     cashEarned,
     verificationRequired,
     verificationWord,
+    payouts,
     joinAnchor,
     leaveAnchor,
     cashout,
@@ -277,5 +301,6 @@ export function useAnchorEarning({
     dismissCashEarned,
     submitVerification,
     checkStatus,
+    fetchPayouts,
   };
 }

@@ -172,8 +172,40 @@ Deno.serve(async (req) => {
         .eq("status", "active");
 
       if ((activeCount ?? 0) < settings.max_anchor_cap) {
-        // Clean up any existing session or queue entry
+        // Clean up queue entry
         await supabase.from("anchor_queue").delete().eq("user_id", userId);
+
+        // Check for existing paused session to resume (preserves cash_balance)
+        const { data: pausedSession } = await supabase
+          .from("anchor_sessions")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("status", "paused")
+          .maybeSingle();
+
+        if (pausedSession) {
+          await supabase
+            .from("anchor_sessions")
+            .update({
+              status: "active",
+              current_mode: currentMode,
+              last_verified_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", pausedSession.id);
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              status: "active",
+              session: { ...pausedSession, status: "active", current_mode: currentMode },
+              currentMode,
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // No paused session — clean up and create new
         await supabase.from("anchor_sessions").delete().eq("user_id", userId);
 
         // Create active session

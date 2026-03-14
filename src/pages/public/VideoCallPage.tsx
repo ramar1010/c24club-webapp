@@ -813,6 +813,7 @@ const VideoCallPage = () => {
               settings={anchor.settings}
               verificationRequired={anchor.verificationRequired}
               verificationWord={anchor.verificationWord}
+              payouts={anchor.payouts}
               onJoin={anchor.joinAnchor}
               onLeave={anchor.leaveAnchor}
               onCashout={anchor.cashout}
