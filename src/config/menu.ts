@@ -24,6 +24,7 @@ import {
   LogOut,
   Activity,
   TrendingUp,
+  BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
@@ -214,6 +215,14 @@ export const adminMenu: MenuItem[] = [
     title: "Revenue",
     submenu: [
       { key: "revenue", label: "Revenue Dashboard", path: "/admin/revenue" },
+    ],
+  },
+  {
+    key: "user-analytics",
+    icon: BarChart3,
+    title: "User Analytics",
+    submenu: [
+      { key: "user-analytics", label: "Growth & Acquisition", path: "/admin/user-analytics" },
     ],
   },
   {

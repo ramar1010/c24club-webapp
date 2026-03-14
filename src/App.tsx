@@ -34,6 +34,7 @@ import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
 import SystemHealthPage from "@/pages/admin/SystemHealthPage";
 import RevenuePage from "@/pages/admin/RevenuePage";
 import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
+import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
               <Route path="system-health" element={<SystemHealthPage />} />
               <Route path="revenue" element={<RevenuePage />} />
+              <Route path="user-analytics" element={<UserAnalyticsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
