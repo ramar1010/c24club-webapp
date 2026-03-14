@@ -1064,8 +1064,10 @@ export type Database = {
           id: string
           member1: string
           member1_gender: string | null
+          member1_voice_mode: boolean
           member2: string | null
           member2_gender: string | null
+          member2_voice_mode: boolean
           status: string
         }
         Insert: {
@@ -1077,8 +1079,10 @@ export type Database = {
           id?: string
           member1: string
           member1_gender?: string | null
+          member1_voice_mode?: boolean
           member2?: string | null
           member2_gender?: string | null
+          member2_voice_mode?: boolean
           status?: string
         }
         Update: {
@@ -1090,8 +1094,10 @@ export type Database = {
           id?: string
           member1?: string
           member1_gender?: string | null
+          member1_voice_mode?: boolean
           member2?: string | null
           member2_gender?: string | null
+          member2_voice_mode?: boolean
           status?: string
         }
         Relationships: []
@@ -1366,6 +1372,7 @@ export type Database = {
           id: string
           member_gender: string | null
           member_id: string
+          voice_mode: boolean
         }
         Insert: {
           channel_id: string
@@ -1374,6 +1381,7 @@ export type Database = {
           id?: string
           member_gender?: string | null
           member_id: string
+          voice_mode?: boolean
         }
         Update: {
           channel_id?: string
@@ -1382,6 +1390,7 @@ export type Database = {
           id?: string
           member_gender?: string | null
           member_id?: string
+          voice_mode?: boolean
         }
         Relationships: []
       }
