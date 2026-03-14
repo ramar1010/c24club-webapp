@@ -47,7 +47,7 @@ import RulesPage from "@/pages/public/RulesPage";
 import NotFound from "./pages/NotFound";
 import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
 import HowToGuidePage from "@/pages/public/HowToGuidePage";
-
+import TermsPage from "@/pages/public/TermsPage";
 const queryClient = new QueryClient();
 
 const App = () => (
