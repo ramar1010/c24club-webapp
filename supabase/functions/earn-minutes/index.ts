@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId } = body;
+    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId, voiceMode } = body;
 
     // GET_BALANCE: Return current minutes + ad points + VIP status + freeze status
     if (type === "get_balance") {
