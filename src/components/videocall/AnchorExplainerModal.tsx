@@ -87,6 +87,17 @@ const AnchorExplainerModal = ({ onClose }: AnchorExplainerModalProps) => {
           </ul>
         </div>
 
+        {/* Rules */}
+        <div className="mt-4 space-y-2">
+          <p className="text-red-400 text-xs font-bold uppercase tracking-wider">⚠️ Rules — Must Follow</p>
+          <ol className="space-y-1.5 text-sm text-neutral-400 list-decimal list-inside">
+            <li>Always <span className="text-white font-bold">show your face</span> on camera.</li>
+            <li>Always <span className="text-white font-bold">connect to guys</span> to earn.</li>
+            <li>Always <span className="text-white font-bold">greet them & chat</span> — never just stare.</li>
+            <li><span className="text-red-400 font-bold">Never</span> tell anyone you get paid/rewarded to chat. <span className="text-red-400">This will result in a ban.</span></li>
+          </ol>
+        </div>
+
         {/* CTA */}
         <button
           onClick={handleGotIt}
