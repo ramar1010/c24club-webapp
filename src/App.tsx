@@ -47,7 +47,7 @@ import RulesPage from "@/pages/public/RulesPage";
 import NotFound from "./pages/NotFound";
 import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
 import HowToGuidePage from "@/pages/public/HowToGuidePage";
-
+import TermsPage from "@/pages/public/TermsPage";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -63,7 +63,7 @@ const App = () => (
               <Route index element={<HomePage />} />
               <Route path="how-to-guide" element={<HowToGuidePage />} />
               <Route path="rules" element={<RulesPage />} />
-              <Route path="terms" element={<PlaceholderPage title="Terms & Conditions" />} />
+              <Route path="terms" element={<TermsPage />} />
               <Route path="privacy" element={<PlaceholderPage title="Privacy Policy" />} />
               <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
               <Route path="blog" element={<PlaceholderPage title="Blog" />} />
