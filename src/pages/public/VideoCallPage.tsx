@@ -122,7 +122,7 @@ const VideoCallPage = () => {
 
   // Auto-ban the offending remote user when NSFW strikes reach threshold
   useEffect(() => {
-    if (!shouldBan || !currentPartnerId) return;
+    if (!shouldBan || !currentPartnerId || currentPartnerId === memberId) return;
 
     const banUser = async () => {
       try {
