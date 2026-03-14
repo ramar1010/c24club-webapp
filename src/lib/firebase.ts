@@ -38,5 +38,3 @@ const getMessagingInstance = () => {
 };
 
 export { app, messaging, getMessagingInstance, messagingInitError, getToken, onMessage };
-
-export { app, messaging, getToken, onMessage };
