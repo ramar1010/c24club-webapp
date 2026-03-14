@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { type, memberId, channelId, genderPreference, memberGender, partnerId } = await req.json();
+    const { type, memberId, channelId, genderPreference, memberGender, partnerId, voiceMode } = await req.json();
 
     // JOIN: Try to find a match or add to queue
     if (type === "join") {
@@ -70,6 +70,8 @@ Deno.serve(async (req) => {
           channel2: channelId,
           member1_gender: partner.member_gender,
           member2_gender: memberGender,
+          member1_voice_mode: partner.voice_mode ?? false,
+          member2_voice_mode: voiceMode ?? false,
           status: "connected",
           connected_at: new Date().toISOString(),
         });
@@ -81,6 +83,7 @@ Deno.serve(async (req) => {
             roomId,
             partnerId: partner.member_id,
             partnerChannelId: partner.channel_id,
+            partnerVoiceMode: partner.voice_mode ?? false,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -92,6 +95,7 @@ Deno.serve(async (req) => {
         channel_id: channelId,
         gender_preference: genderPreference || "Both",
         member_gender: memberGender,
+        voice_mode: voiceMode ?? false,
       });
 
       // Fire match-notify in background (don't await — non-blocking)

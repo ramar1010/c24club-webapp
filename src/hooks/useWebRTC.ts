@@ -14,12 +14,14 @@ interface UseWebRTCOptions {
   memberId: string;
   genderPreference?: string;
   memberGender?: string;
+  voiceMode?: boolean;
 }
 
-export function useWebRTC({ memberId, genderPreference = "Both", memberGender }: UseWebRTCOptions) {
+export function useWebRTC({ memberId, genderPreference = "Both", memberGender, voiceMode = false }: UseWebRTCOptions) {
   const [callState, setCallState] = useState<CallState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
+  const [partnerVoiceMode, setPartnerVoiceMode] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
