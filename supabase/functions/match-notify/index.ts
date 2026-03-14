@@ -6,6 +6,71 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// --- FCM v1 OAuth2 helper ---
+function base64url(data: Uint8Array): string {
+  let binary = "";
+  for (const byte of data) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function getAccessToken(serviceAccount: {
+  client_email: string;
+  private_key: string;
+  token_uri: string;
+}): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64url(new TextEncoder().encode(JSON.stringify({ alg: "RS256", typ: "JWT" })));
+  const payload = base64url(
+    new TextEncoder().encode(
+      JSON.stringify({
+        iss: serviceAccount.client_email,
+        scope: "https://www.googleapis.com/auth/firebase.messaging",
+        aud: serviceAccount.token_uri,
+        iat: now,
+        exp: now + 3600,
+      })
+    )
+  );
+
+  const signingInput = `${header}.${payload}`;
+
+  // Import RSA private key
+  const pemBody = serviceAccount.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/, "")
+    .replace(/-----END PRIVATE KEY-----/, "")
+    .replace(/\s/g, "");
+  const keyData = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    keyData,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    new TextEncoder().encode(signingInput)
+  );
+
+  const jwt = `${signingInput}.${base64url(new Uint8Array(signature))}`;
+
+  const tokenRes = await fetch(serviceAccount.token_uri, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  });
+
+  const tokenData = await tokenRes.json();
+  if (!tokenRes.ok) {
+    throw new Error(`OAuth2 token error: ${JSON.stringify(tokenData)}`);
+  }
+  return tokenData.access_token;
+}
+
+// --- Main handler ---
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -25,10 +90,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Normalize gender to lowercase for consistent comparison
     const normalizedGender = memberGender.toLowerCase();
 
-    // Check if this is a test account
+    // Check if test account
     const { data: member } = await supabase
       .from("members")
       .select("is_test_account")
@@ -60,10 +124,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Determine who to notify (opposite gender, offline, notify_enabled)
+    // Targets: opposite gender, notify_enabled, with push_token
     const targetGender = normalizedGender === "female" ? "male" : "female";
-
-    // Query members to notify — use ilike for case-insensitive gender match
     const { data: targets } = await supabase
       .from("members")
       .select("id, push_token")
@@ -73,31 +135,34 @@ Deno.serve(async (req) => {
       .neq("id", memberId)
       .limit(100);
 
-    // Send Discord webhook notification
+    // Discord
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-    const discordSent = await sendDiscordNotification(
-      discordWebhookUrl,
-      normalizedGender,
-    );
+    const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
 
-    // Send FCM push notifications if configured
-    const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
+    // FCM v1 push
     let pushSent = 0;
     let pushFailed = 0;
-    let pushStatus: number | null = null;
     let pushError: string | null = null;
 
-    if (fcmServerKey && targets && targets.length > 0) {
-      const tokens = targets
-        .map((t) => t.push_token)
-        .filter((t): t is string => !!t);
+    const serviceAccountJson = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
+    if (serviceAccountJson && targets && targets.length > 0) {
+      const tokens = targets.map((t) => t.push_token).filter((t): t is string => !!t);
 
       if (tokens.length > 0) {
-        const pushResult = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
-        pushSent = pushResult.sent;
-        pushFailed = pushResult.failed;
-        pushStatus = pushResult.status;
-        pushError = pushResult.error;
+        try {
+          const serviceAccount = JSON.parse(serviceAccountJson);
+          const accessToken = await getAccessToken(serviceAccount);
+          const projectId = serviceAccount.project_id;
+
+          const result = await sendFcmV1Notifications(accessToken, projectId, tokens, normalizedGender);
+          pushSent = result.sent;
+          pushFailed = result.failed;
+          pushError = result.error;
+        } catch (err) {
+          pushError = err instanceof Error ? err.message : String(err);
+          pushFailed = tokens.length;
+          console.error("FCM v1 auth/send error:", pushError);
+        }
       }
     }
 
@@ -116,7 +181,6 @@ Deno.serve(async (req) => {
         discord_sent: discordSent,
         push_sent: pushSent,
         push_failed: pushFailed,
-        push_status: pushStatus,
         push_error: pushError,
         targets_found: targets?.length ?? 0,
       }),
@@ -131,6 +195,7 @@ Deno.serve(async (req) => {
   }
 });
 
+// --- Discord ---
 async function sendDiscordNotification(
   webhookUrl: string | undefined,
   gender: string,
@@ -155,11 +220,13 @@ async function sendDiscordNotification(
   }
 }
 
-async function sendFcmNotifications(
-  serverKey: string,
+// --- FCM HTTP v1 ---
+async function sendFcmV1Notifications(
+  accessToken: string,
+  projectId: string,
   tokens: string[],
   searchingGender: string,
-): Promise<{ sent: number; failed: number; status: number | null; error: string | null }> {
+): Promise<{ sent: number; failed: number; error: string | null }> {
   const title = "Someone's waiting on C24 Club!";
   const body =
     searchingGender === "female"
@@ -168,53 +235,45 @@ async function sendFcmNotifications(
 
   let sent = 0;
   let failed = 0;
-  let lastStatus: number | null = null;
   let lastError: string | null = null;
-  const batchSize = 1000;
 
-  for (let i = 0; i < tokens.length; i += batchSize) {
-    const batch = tokens.slice(i, i + batchSize);
+  const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+  // FCM v1 sends one message per token
+  const promises = tokens.map(async (token) => {
     try {
-      const res = await fetch("https://fcm.googleapis.com/fcm/send", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `key=${serverKey}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          registration_ids: batch,
-          notification: { title, body, icon: "/favicon-96x96.png" },
-          data: { url: "/videocall" },
+          message: {
+            token,
+            notification: { title, body },
+            webpush: {
+              fcm_options: { link: "https://c24club.lovable.app/videocall" },
+              notification: { icon: "/favicon-96x96.png" },
+            },
+          },
         }),
       });
 
-      lastStatus = res.status;
       const raw = await res.text();
-
-      if (!res.ok) {
-        failed += batch.length;
-        lastError = `FCM HTTP ${res.status}: ${raw}`;
-        console.error("FCM send failed:", lastError);
-        continue;
+      if (res.ok) {
+        sent++;
+      } else {
+        failed++;
+        lastError = `FCM v1 ${res.status}: ${raw}`;
+        console.error("FCM v1 send failed for token:", lastError);
       }
-
-      let result: { success?: number; failure?: number } = {};
-      try {
-        result = JSON.parse(raw);
-      } catch {
-        failed += batch.length;
-        lastError = `FCM returned non-JSON response: ${raw}`;
-        continue;
-      }
-
-      sent += result.success ?? 0;
-      failed += result.failure ?? 0;
     } catch (err) {
-      failed += batch.length;
+      failed++;
       lastError = err instanceof Error ? err.message : String(err);
-      console.error("FCM batch error:", err);
     }
-  }
+  });
 
-  return { sent, failed, status: lastStatus, error: lastError };
+  await Promise.all(promises);
+  return { sent, failed, error: lastError };
 }
