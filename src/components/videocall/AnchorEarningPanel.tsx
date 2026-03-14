@@ -54,6 +54,14 @@ const AnchorEarningPanel = ({
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [showExplainer, setShowExplainer] = useState(false);
+
+  useEffect(() => {
+    if (status !== "not_eligible" && status !== "loading") {
+      const seen = localStorage.getItem(STORAGE_KEY);
+      if (!seen) setShowExplainer(true);
+    }
+  }, [status]);
 
   if (status === "not_eligible" || status === "loading") return null;
 
