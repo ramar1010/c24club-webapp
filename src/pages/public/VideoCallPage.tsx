@@ -96,7 +96,7 @@ const VideoCallPage = () => {
     },
   });
 
-  const isFemale = memberGender === "Female";
+  const isFemale = memberGender?.toLowerCase() === "female";
 
   const {
     callState,
