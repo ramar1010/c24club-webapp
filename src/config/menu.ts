@@ -207,6 +207,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "revenue",
+    icon: TrendingUp,
+    title: "Revenue",
+    submenu: [
+      { key: "revenue", label: "Revenue Dashboard", path: "/admin/revenue" },
+    ],
+  },
+  {
     key: "system-health",
     icon: Activity,
     title: "System Health",
