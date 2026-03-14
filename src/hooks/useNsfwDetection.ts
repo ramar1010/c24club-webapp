@@ -114,11 +114,20 @@ export function useNsfwDetection({
     (async () => {
       try {
         const tf = await import("@tensorflow/tfjs");
-        await tf.ready();
+        // Force CPU backend on desktop to avoid WebGL context conflicts
+        try {
+          await tf.setBackend("cpu");
+          await tf.ready();
+          console.log("[NSFW] TF backend:", tf.getBackend());
+        } catch (backendErr) {
+          console.warn("[NSFW] CPU backend failed, trying default:", backendErr);
+          await tf.ready();
+          console.log("[NSFW] TF fallback backend:", tf.getBackend());
+        }
         const nsfwjs = await import("nsfwjs");
         const model = await nsfwjs.load();
         modelRef.current = model;
-        console.log("[NSFW] Model loaded");
+        console.log("[NSFW] Model loaded successfully");
       } catch (err) {
         console.error("[NSFW] Failed to load model:", err);
         loadingRef.current = false;
