@@ -23,6 +23,7 @@ const AdminLoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaToken) { toast.error("Please complete the CAPTCHA verification"); return; }
     setLoading(true);
     const { error } = await signIn(email, password);
 
