@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, RefObject } from "react";
 
 interface VoiceModeAvatarProps {
-  remoteStream: RefObject<MediaStream | null>;
+  videoRef: RefObject<HTMLVideoElement>;
   className?: string;
 }
 
@@ -9,14 +9,18 @@ interface VoiceModeAvatarProps {
  * Displays a stylized avatar with live audio waveform bars
  * when the partner is in voice-only mode.
  */
-const VoiceModeAvatar = ({ remoteStream, className = "" }: VoiceModeAvatarProps) => {
+const VoiceModeAvatar = ({ videoRef, className = "" }: VoiceModeAvatarProps) => {
   const [levels, setLevels] = useState<number[]>(Array(12).fill(0.1));
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    const stream = remoteStream.current;
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Wait for the video to have a srcObject
+    const stream = video.srcObject as MediaStream | null;
     if (!stream) return;
 
     const audioTracks = stream.getAudioTracks();
@@ -34,9 +38,8 @@ const VoiceModeAvatar = ({ remoteStream, className = "" }: VoiceModeAvatarProps)
 
     const draw = () => {
       analyser.getByteFrequencyData(dataArray);
-      // Pick 12 evenly spaced bins
       const barCount = 12;
-      const step = Math.floor(dataArray.length / barCount);
+      const step = Math.max(1, Math.floor(dataArray.length / barCount));
       const newLevels: number[] = [];
       for (let i = 0; i < barCount; i++) {
         const val = dataArray[i * step] / 255;
@@ -51,7 +54,7 @@ const VoiceModeAvatar = ({ remoteStream, className = "" }: VoiceModeAvatarProps)
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       audioCtx.close();
     };
-  }, [remoteStream.current]);
+  }, [videoRef]);
 
   return (
     <div className={`absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center ${className}`}>
