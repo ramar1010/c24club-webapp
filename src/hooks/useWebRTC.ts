@@ -364,6 +364,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     callState,
     error,
     currentPartnerId,
+    partnerVoiceMode,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,
