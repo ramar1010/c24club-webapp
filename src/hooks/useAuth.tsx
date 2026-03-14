@@ -29,6 +29,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
   const ipCheckedRef = useRef(false);
 
+  const ensureMemberRow = useCallback(async (authUser: User) => {
+    const fallbackName =
+      authUser.user_metadata?.full_name ||
+      authUser.user_metadata?.name ||
+      authUser.email?.split("@")[0] ||
+      "Member";
+
+    const { error } = await supabase.from("members").upsert(
+      {
+        id: authUser.id,
+        email: authUser.email ?? null,
+        name: fallbackName,
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
+    if (error) {
+      console.warn("Failed to ensure member row:", error.message);
+    }
+  }, []);
+
   const checkAdmin = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("user_roles")
@@ -65,6 +86,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(nextSession?.user ?? null);
       setLoading(false);
 
+      if (nextSession?.user) {
+        void ensureMemberRow(nextSession.user);
+      }
+
       // Fire welcome email on first signup
       if (event === "SIGNED_IN" && nextSession?.user) {
         const createdAt = new Date(nextSession.user.created_at).getTime();
@@ -82,10 +107,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(initialSession);
       setUser(initialSession?.user ?? null);
       setLoading(false);
+      if (initialSession?.user) {
+        void ensureMemberRow(initialSession.user);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [ensureMemberRow]);
 
   // Check IP ban on initial load (regardless of auth state)
   useEffect(() => {
