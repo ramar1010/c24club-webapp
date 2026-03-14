@@ -98,6 +98,16 @@ const VideoCallPage = () => {
     genderPreference: genderMap[genderFilter],
   });
 
+  // If the authenticated user changes (e.g. admin login in same browser), stop the call
+  // to prevent NSFW detection from running under the wrong user context
+  useEffect(() => {
+    if (prevUserIdRef.current !== memberId && prevUserIdRef.current !== "anonymous") {
+      console.log("[VideoCall] User changed, stopping call to prevent cross-account issues");
+      stop();
+    }
+    prevUserIdRef.current = memberId;
+  }, [memberId, stop]);
+
   const { partnerBlackScreen } = useBlackScreenDetection({
     remoteVideoRef,
     localStreamRef,
