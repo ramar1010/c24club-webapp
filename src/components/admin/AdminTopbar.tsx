@@ -1,5 +1,6 @@
-import { Menu, Bell, User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AdminNotifications from "./AdminNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
