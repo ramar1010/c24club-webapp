@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { useNavigate } from "react-router-dom";
 import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
