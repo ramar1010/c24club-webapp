@@ -49,6 +49,7 @@ export function useAnchorEarning({
   const [cashEarned, setCashEarned] = useState<number>(0);
   const [verificationRequired, setVerificationRequired] = useState(false);
   const [verificationWord, setVerificationWord] = useState("");
+  const [payouts, setPayouts] = useState<AnchorPayout[]>([]);
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const localElapsedRef = useRef(0);
