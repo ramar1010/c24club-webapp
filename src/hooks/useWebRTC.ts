@@ -266,6 +266,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
     roomIdRef.current = null;
     setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
     setCallState("idle");
   }
 
