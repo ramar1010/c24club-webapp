@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
-import { messaging, getToken, onMessage } from "@/lib/firebase";
+import { getMessagingInstance, messagingInitError, getToken, onMessage } from "@/lib/firebase";
 
 const VAPID_KEY = "BEo__3du10IrVV25ijuIjj50R14egL1ONqFpkzMXmC0RFBz8xG7J3zbczrLHfITkU1DCItWoRSZ17uU7fo3rYfk";
 
@@ -91,8 +91,9 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
 
   // Listen for foreground messages
   useEffect(() => {
-    if (!messaging) return;
-    const unsubscribe = onMessage(messaging, (payload) => {
+    const msg = getMessagingInstance();
+    if (!msg) return;
+    const unsubscribe = onMessage(msg, (payload) => {
       console.log("[FCM] Foreground message:", payload);
       toast(payload.notification?.title || "C24 Club", {
         description: payload.notification?.body,
@@ -146,14 +147,15 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
           return;
         }
 
-        if (!messaging) {
-          toast.error("Push messaging is not available on this device/browser.");
+        const msg = getMessagingInstance();
+        if (!msg) {
+          toast.error(messagingInitError || "Push messaging is not available on this device/browser.");
           return;
         }
 
         const swRegistration = await registerServiceWorker();
 
-        const token = await getToken(messaging, {
+        const token = await getToken(msg, {
           vapidKey: VAPID_KEY,
           serviceWorkerRegistration: swRegistration,
         });
