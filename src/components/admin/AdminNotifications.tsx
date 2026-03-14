@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, UserPlus, Gift, AlertTriangle, Trophy, Check, X } from "lucide-react";
+import { Bell, UserPlus, Gift, AlertTriangle, Trophy, Check, X, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
