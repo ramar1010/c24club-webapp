@@ -51,6 +51,7 @@ const AnchorEarningPanel = ({
   settings,
   verificationRequired,
   verificationWord,
+  payouts,
   onJoin,
   onLeave,
   onCashout,
