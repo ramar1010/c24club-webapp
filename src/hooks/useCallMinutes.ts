@@ -87,6 +87,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
         partnerId: pid,
         minutesEarned: safeMinutes,
         sessionId: sessionIdRef.current,
+        voiceMode,
       },
     });
 
