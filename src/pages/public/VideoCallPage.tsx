@@ -230,15 +230,6 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
-  // Fetch member gender for anchor system
-  const { data: memberGender } = useQuery({
-    queryKey: ["member_gender", memberId],
-    enabled: memberId !== "anonymous",
-    queryFn: async () => {
-      const { data } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
-      return data?.gender ?? null;
-    },
-  });
 
   // Fetch partner gender for anchor system
   const { data: partnerGenderData } = useQuery({
