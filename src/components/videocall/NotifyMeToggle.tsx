@@ -45,30 +45,26 @@ const checkPushSupport = () => {
   }
 
   if (!window.isSecureContext) {
+    console.warn("[Push] Not secure context");
     return { supported: false, message: "Notifications require HTTPS." };
   }
 
   if (!("Notification" in window)) {
+    console.warn("[Push] Notification API missing");
     return { supported: false, message: "This browser doesn't support notifications." };
   }
 
   if (!("serviceWorker" in navigator)) {
+    console.warn("[Push] ServiceWorker missing");
     return { supported: false, message: "Service workers are not supported in this browser." };
   }
 
   if (!("PushManager" in window)) {
+    console.warn("[Push] PushManager missing");
     return { supported: false, message: "Push notifications are not supported in this browser." };
   }
 
-  const isIOS = IOS_REGEX.test(navigator.userAgent);
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  if (isIOS && !isStandalone) {
-    return {
-      supported: false,
-      message: "On iPhone/iPad, install this app to Home Screen first, then enable notifications.",
-    };
-  }
-
+  console.log("[Push] All checks passed, push supported");
   return { supported: true, message: "" };
 };
 
@@ -115,6 +111,7 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   const handleToggle = async (checked: boolean) => {
     if (loading) return;
     setLoading(true);
+    console.log("[Notify] Toggle pressed, checked:", checked);
 
     try {
       const normalizedGender = userGender?.toLowerCase();
@@ -125,16 +122,19 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
 
       if (checked) {
         const pushSupport = checkPushSupport();
+        console.log("[Notify] Push support check:", pushSupport);
         if (!pushSupport.supported) {
           toast.error(pushSupport.message);
           return;
         }
 
+        console.log("[Notify] Current permission:", Notification.permission);
         let permission = Notification.permission;
 
-        // Prompt only when needed
         if (permission === "default") {
+          console.log("[Notify] Requesting permission...");
           permission = await Notification.requestPermission();
+          console.log("[Notify] Permission result:", permission);
         }
 
         if (permission === "denied") {
@@ -147,18 +147,23 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
           return;
         }
 
+        console.log("[Notify] Initializing messaging...");
         const msg = getMessagingInstance();
         if (!msg) {
+          console.error("[Notify] Messaging init failed:", messagingInitError);
           toast.error(messagingInitError || "Push messaging is not available on this device/browser.");
           return;
         }
 
+        console.log("[Notify] Registering service worker...");
         const swRegistration = await registerServiceWorker();
+        console.log("[Notify] SW registered, getting token...");
 
         const token = await getToken(msg, {
           vapidKey: VAPID_KEY,
           serviceWorkerRegistration: swRegistration,
         });
+        console.log("[Notify] Token result:", token ? "obtained" : "null");
 
         if (!token) {
           toast.error("Could not create push token. Please try again.");
