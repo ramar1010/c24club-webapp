@@ -230,11 +230,11 @@ async function sendFcmV1Notifications(
   tokens: string[],
   searchingGender: string,
 ): Promise<{ sent: number; failed: number; error: string | null }> {
-  const title = "Someone's waiting on C24 Club!";
-  const body =
-    searchingGender === "female"
-      ? "A female user is online and waiting for a match!"
-      : "A male user is searching — jump in and start earning!";
+  const title =
+    searchingGender === "male"
+      ? "Earn CASH NOW! A Male User Is Online Wanting To Chat! - C24Club Video Chat"
+      : "A female user is waiting to video chat. Join now before she leaves! - C24Club Video Chat";
+  const body = "";
 
   let sent = 0;
   let failed = 0;
