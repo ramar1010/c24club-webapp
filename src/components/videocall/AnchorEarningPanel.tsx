@@ -67,6 +67,11 @@ const AnchorEarningPanel = ({
   const [verifyInput, setVerifyInput] = useState("");
   const [verifyError, setVerifyError] = useState(false);
   const [verifySubmitting, setVerifySubmitting] = useState(false);
+  const [showPayouts, setShowPayouts] = useState(false);
+
+  const pendingPayouts = payouts.filter(p => p.status === "pending");
+  const statusColor = (s: string) => s === "paid" ? "text-green-400" : s === "rejected" ? "text-red-400" : "text-yellow-400";
+  const statusIcon = (s: string) => s === "paid" ? "✅" : s === "rejected" ? "❌" : "⏳";
 
   useEffect(() => {
     if (status !== "not_eligible" && status !== "loading") {
