@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, UserPlus, Gift, AlertTriangle, Trophy, Check, X } from "lucide-react";
+import { Bell, UserPlus, Gift, AlertTriangle, Trophy, Check, X, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -25,6 +25,7 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
   new_redemption: { icon: Gift, color: "text-green-500" },
   new_report: { icon: AlertTriangle, color: "text-red-500" },
   new_challenge_submission: { icon: Trophy, color: "text-amber-500" },
+  new_room_join: { icon: Video, color: "text-purple-500" },
 };
 
 const AdminNotifications = () => {
