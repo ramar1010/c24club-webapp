@@ -25,6 +25,9 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Normalize gender to lowercase for consistent comparison
+    const normalizedGender = memberGender.toLowerCase();
+
     // Check if this is a test account
     const { data: member } = await supabase
       .from("members")
@@ -40,7 +43,7 @@ Deno.serve(async (req) => {
     }
 
     // Rate limiting: 5-minute cooldown per gender segment
-    const segment = memberGender === "Female" ? "female_searching" : "male_searching";
+    const segment = normalizedGender === "female" ? "female_searching" : "male_searching";
     const { data: cooldown } = await supabase
       .from("notification_cooldowns")
       .select("last_notified_at")
@@ -58,14 +61,14 @@ Deno.serve(async (req) => {
     }
 
     // Determine who to notify (opposite gender, offline, notify_enabled)
-    const targetGender = memberGender === "Female" ? "Male" : "Female";
+    const targetGender = normalizedGender === "female" ? "male" : "female";
 
-    // Query members to notify
+    // Query members to notify — use ilike for case-insensitive gender match
     const { data: targets } = await supabase
       .from("members")
       .select("id, push_token")
       .eq("notify_enabled", true)
-      .eq("gender", targetGender)
+      .ilike("gender", targetGender)
       .eq("is_test_account", false)
       .neq("id", memberId)
       .limit(100);
@@ -74,7 +77,7 @@ Deno.serve(async (req) => {
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
     const discordSent = await sendDiscordNotification(
       discordWebhookUrl,
-      memberGender,
+      normalizedGender,
     );
 
     // Send FCM push notifications if configured
@@ -86,7 +89,7 @@ Deno.serve(async (req) => {
         .filter((t): t is string => !!t);
 
       if (tokens.length > 0) {
-        pushSent = await sendFcmNotifications(fcmServerKey, tokens, memberGender);
+        pushSent = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
       }
     }
 
@@ -124,8 +127,9 @@ async function sendDiscordNotification(
   if (!webhookUrl) return false;
 
   const siteUrl = "https://c24club.lovable.app";
-  const emoji = gender === "Female" ? "👩" : "👨";
-  const content = `📢 A new ${emoji} **${gender}** user is waiting for a match! Click here to be their next partner: ${siteUrl}/videocall`;
+  const emoji = gender === "female" ? "👩" : "👨";
+  const displayGender = gender === "female" ? "Female" : "Male";
+  const content = `📢 A new ${emoji} **${displayGender}** user is waiting for a match! Click here to be their next partner: ${siteUrl}/videocall`;
 
   try {
     const res = await fetch(webhookUrl, {
@@ -147,12 +151,11 @@ async function sendFcmNotifications(
 ): Promise<number> {
   const title = "Someone's waiting on C24 Club!";
   const body =
-    searchingGender === "Female"
+    searchingGender === "female"
       ? "A female user is online and waiting for a match!"
       : "A male user is searching — jump in and start earning!";
 
   let sent = 0;
-  // FCM supports up to 1000 tokens per multicast
   const batchSize = 1000;
   for (let i = 0; i < tokens.length; i += batchSize) {
     const batch = tokens.slice(i, i + batchSize);
