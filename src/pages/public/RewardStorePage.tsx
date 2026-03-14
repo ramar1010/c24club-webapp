@@ -999,30 +999,55 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <>
               {categoryCards && categoryCards.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
-                  {categoryCards.map((cat: any) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className="relative rounded-2xl overflow-hidden bg-neutral-800 aspect-square group text-left"
-                    >
-                      {cat.image_url ? (
-                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center">
-                          <span className="text-4xl">📦</span>
+                  {categoryCards.map((cat: any) => {
+                    const isVipCategory = cat.show_as === "As VIP Reward";
+                    const isLocked = isVipCategory && !subscribed;
+
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          if (isLocked) {
+                            toast("👑 VIP members only! Subscribe to unlock exclusive rewards.", { icon: "🔒" });
+                            return;
+                          }
+                          setSelectedCategory(cat.id);
+                        }}
+                        className={`relative rounded-2xl overflow-hidden bg-neutral-800 aspect-square group text-left ${isLocked ? "cursor-not-allowed" : ""}`}
+                      >
+                        {cat.image_url ? (
+                          <img src={cat.image_url} alt={cat.name} className={`w-full h-full object-cover transition-transform duration-300 ${isLocked ? "blur-[6px] scale-105" : "group-hover:scale-105"}`} />
+                        ) : (
+                          <div className={`w-full h-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center ${isLocked ? "blur-[6px]" : ""}`}>
+                            <span className="text-4xl">📦</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                        {/* VIP Lock Overlay */}
+                        {isLocked && (
+                          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-10">
+                            <div className="bg-gradient-to-br from-amber-500 to-yellow-600 rounded-full p-3 mb-2 shadow-lg shadow-amber-500/30">
+                              <Crown className="w-6 h-6 text-black" />
+                            </div>
+                            <p className="font-black text-xs text-amber-400 tracking-wider">VIP ONLY</p>
+                          </div>
+                        )}
+
+                        <div className="absolute top-3 left-3 z-20">
+                          <div className="flex items-center gap-1.5">
+                            {isVipCategory && <Crown className="w-4 h-4 text-amber-400" />}
+                            <p className="font-black text-base text-white drop-shadow-lg">{cat.name}</p>
+                          </div>
                         </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute top-3 left-3">
-                        <p className="font-black text-base text-white drop-shadow-lg">{cat.name}</p>
-                      </div>
-                      <div className="absolute bottom-3 left-3">
-                        <span className="bg-black/60 backdrop-blur-sm text-white font-bold text-xs px-3 py-1.5 rounded-lg">
-                          {cat.count} Items
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                        <div className="absolute bottom-3 left-3 z-20">
+                          <span className="bg-black/60 backdrop-blur-sm text-white font-bold text-xs px-3 py-1.5 rounded-lg">
+                            {isLocked ? "🔒 Unlock with VIP" : `${cat.count} Items`}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
