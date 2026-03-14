@@ -571,6 +571,7 @@ export type Database = {
           id: string
           image_thumb_url: string | null
           image_url: string | null
+          last_ip: string | null
           membership: string | null
           name: string
           profession: string | null
@@ -590,6 +591,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          last_ip?: string | null
           membership?: string | null
           name: string
           profession?: string | null
@@ -609,6 +611,7 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          last_ip?: string | null
           membership?: string | null
           name?: string
           profession?: string | null
@@ -1178,6 +1181,7 @@ export type Database = {
           banned_by: string | null
           created_at: string
           id: string
+          ip_address: string | null
           is_active: boolean
           reason: string
           unban_payment_session: string | null
@@ -1190,6 +1194,7 @@ export type Database = {
           banned_by?: string | null
           created_at?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean
           reason?: string
           unban_payment_session?: string | null
@@ -1202,6 +1207,7 @@ export type Database = {
           banned_by?: string | null
           created_at?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean
           reason?: string
           unban_payment_session?: string | null

@@ -34,6 +34,14 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    // Look up the target user's last known IP
+    const { data: memberData } = await adminClient
+      .from("members")
+      .select("last_ip")
+      .eq("id", targetUserId)
+      .maybeSingle();
+    const targetIp = memberData?.last_ip || null;
+
     // Check for existing active ban
     const { data: existingBan } = await adminClient
       .from("user_bans")
@@ -53,6 +61,7 @@ Deno.serve(async (req) => {
       reason: "Nudity detected on camera (automated)",
       ban_type: "standard",
       is_active: true,
+      ip_address: targetIp,
     });
 
     if (banError) throw banError;

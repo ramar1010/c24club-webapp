@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
+  const ipCheckedRef = useRef(false);
 
   const checkAdmin = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -84,6 +85,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Check IP ban on initial load (regardless of auth state)
+  useEffect(() => {
+    if (ipCheckedRef.current) return;
+    ipCheckedRef.current = true;
+
+    supabase.functions
+      .invoke("check-ip-ban")
+      .then(({ data }) => {
+        if (data?.banned && !banInfo) {
+          setBanInfo({
+            reason: data.reason || "Your IP address has been banned",
+            ban_type: data.ban_type || "standard",
+            created_at: data.created_at || new Date().toISOString(),
+          });
+        }
+      })
+      .catch((err) => console.warn("IP ban check failed:", err));
   }, []);
 
   useEffect(() => {
