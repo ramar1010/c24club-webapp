@@ -122,6 +122,7 @@ const App = () => (
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
               <Route path="system-health" element={<SystemHealthPage />} />
+              <Route path="revenue" element={<RevenuePage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
