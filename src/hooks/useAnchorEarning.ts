@@ -245,10 +245,11 @@ export function useAnchorEarning({
 
     if (data?.success) {
       setCashBalance(0);
+      fetchPayouts(); // refresh payout list
       return data.amount;
     }
     throw new Error(data?.message || "Cashout failed");
-  }, [userId]);
+  }, [userId, fetchPayouts]);
 
   const dismissReward = useCallback(() => setRewardEarned(null), []);
   const dismissCashEarned = useCallback(() => setCashEarned(0), []);
