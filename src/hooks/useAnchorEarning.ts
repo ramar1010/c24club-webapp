@@ -98,9 +98,21 @@ export function useAnchorEarning({
     }
   }, [userId]);
 
+  // Fetch payout history
+  const fetchPayouts = useCallback(async () => {
+    if (!userId || userId === "anonymous") return;
+    const { data } = await supabase.functions.invoke("anchor-earning", {
+      body: { type: "get_earnings", userId },
+    });
+    if (data?.success) {
+      setPayouts(data.payouts ?? []);
+    }
+  }, [userId]);
+
   useEffect(() => {
     checkStatus();
-  }, [checkStatus]);
+    fetchPayouts();
+  }, [checkStatus, fetchPayouts]);
 
   // Join anchor earning
   const joinAnchor = useCallback(async () => {
