@@ -247,21 +247,30 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         : "Set your gender first to get accurate notifications";
 
   return (
-    <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
-      {enabled ? (
-        <Bell className="w-4 h-4 text-yellow-400 shrink-0" />
-      ) : (
-        <BellOff className="w-4 h-4 text-neutral-500 shrink-0" />
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+        {enabled ? (
+          <Bell className="w-4 h-4 text-yellow-400 shrink-0" />
+        ) : (
+          <BellOff className="w-4 h-4 text-neutral-500 shrink-0" />
+        )}
+        <span className="text-[11px] text-neutral-300 leading-tight flex-1">
+          {label}
+        </span>
+        <Switch
+          checked={enabled}
+          onCheckedChange={handleToggle}
+          disabled={loading}
+          className="shrink-0 scale-75"
+        />
+      </div>
+      {debugLog.length > 0 && (
+        <div className="bg-black/80 border border-green-500/30 rounded p-2 text-[9px] font-mono text-green-400 max-h-32 overflow-y-auto">
+          {debugLog.map((log, i) => (
+            <div key={i}>{log}</div>
+          ))}
+        </div>
       )}
-      <span className="text-[11px] text-neutral-300 leading-tight flex-1">
-        {label}
-      </span>
-      <Switch
-        checked={enabled}
-        onCheckedChange={handleToggle}
-        disabled={loading}
-        className="shrink-0 scale-75"
-      />
     </div>
   );
 };
