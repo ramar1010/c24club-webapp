@@ -9,6 +9,7 @@ interface UseCallMinutesOptions {
   userId: string;
   partnerId: string | null;
   isConnected: boolean;
+  voiceMode?: boolean;
 }
 
 interface CapInfo {
