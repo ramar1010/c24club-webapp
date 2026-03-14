@@ -12,6 +12,66 @@ interface NotifyMeToggleProps {
   userGender: string | null;
 }
 
+const IOS_REGEX = /iPad|iPhone|iPod/i;
+
+const getPushSetupErrorMessage = (error: unknown) => {
+  const code = typeof error === "object" && error && "code" in error ? String((error as { code: string }).code) : "";
+
+  if (code === "messaging/invalid-vapid-key") {
+    return "Push configuration error (invalid VAPID key).";
+  }
+
+  if (code === "messaging/permission-blocked") {
+    return "Notifications are blocked. Re-enable them in browser site settings.";
+  }
+
+  if (code === "messaging/unsupported-browser") {
+    return "This browser doesn't support web push notifications.";
+  }
+
+  if (code === "messaging/failed-service-worker-registration") {
+    return "Could not register notification background worker.";
+  }
+
+  const message = error instanceof Error ? error.message : "";
+  if (message) return message;
+
+  return "Push setup failed. Please try again.";
+};
+
+const checkPushSupport = () => {
+  if (typeof window === "undefined") {
+    return { supported: false, message: "Browser environment required." };
+  }
+
+  if (!window.isSecureContext) {
+    return { supported: false, message: "Notifications require HTTPS." };
+  }
+
+  if (!("Notification" in window)) {
+    return { supported: false, message: "This browser doesn't support notifications." };
+  }
+
+  if (!("serviceWorker" in navigator)) {
+    return { supported: false, message: "Service workers are not supported in this browser." };
+  }
+
+  if (!("PushManager" in window)) {
+    return { supported: false, message: "Push notifications are not supported in this browser." };
+  }
+
+  const isIOS = IOS_REGEX.test(navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  if (isIOS && !isStandalone) {
+    return {
+      supported: false,
+      message: "On iPhone/iPad, install this app to Home Screen first, then enable notifications.",
+    };
+  }
+
+  return { supported: true, message: "" };
+};
+
 const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,11 +81,11 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
     if (!userId || userId === "anonymous") return;
     supabase
       .from("members")
-      .select("notify_enabled")
+      .select("notify_enabled, push_token")
       .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.notify_enabled) setEnabled(true);
+        setEnabled(Boolean(data?.notify_enabled && data?.push_token));
       });
   }, [userId]);
 
@@ -42,13 +102,13 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   }, []);
 
   const registerServiceWorker = async () => {
-    if ("serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.register(
-        "/firebase-messaging-sw.js"
-      );
-      return registration;
+    if (!("serviceWorker" in navigator)) {
+      throw new Error("Service workers are not supported in this browser.");
     }
-    return null;
+
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    await navigator.serviceWorker.ready;
+    return registration;
   };
 
   const handleToggle = async (checked: boolean) => {
@@ -63,59 +123,69 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
       }
 
       if (checked) {
-        // Request notification permission
-        if (!("Notification" in window)) {
-          toast.error("Your browser doesn't support notifications");
+        const pushSupport = checkPushSupport();
+        if (!pushSupport.supported) {
+          toast.error(pushSupport.message);
           return;
         }
 
-        const permission = await Notification.requestPermission();
+        let permission = Notification.permission;
+
+        // Prompt only when needed
+        if (permission === "default") {
+          permission = await Notification.requestPermission();
+        }
+
+        if (permission === "denied") {
+          toast.error("Notifications are blocked. Enable them in your browser site settings and try again.");
+          return;
+        }
+
         if (permission !== "granted") {
           toast.error("Please allow notifications to use this feature");
           return;
         }
 
-        // Register service worker and get FCM token
-        const swRegistration = await registerServiceWorker();
-
-        let token: string | null = null;
-        if (messaging && VAPID_KEY) {
-          try {
-            token = await getToken(messaging, {
-              vapidKey: VAPID_KEY,
-              serviceWorkerRegistration: swRegistration || undefined,
-            });
-            console.log("[FCM] Token obtained:", token?.substring(0, 20) + "...");
-          } catch (err) {
-            console.warn("[FCM] Token registration failed:", err);
-            // Still enable notify_enabled even without FCM token
-            // Discord notifications will still work
-          }
+        if (!messaging) {
+          toast.error("Push messaging is not available on this device/browser.");
+          return;
         }
 
-        // Store token and enabled state
-        await supabase
+        const swRegistration = await registerServiceWorker();
+
+        const token = await getToken(messaging, {
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: swRegistration,
+        });
+
+        if (!token) {
+          toast.error("Could not create push token. Please try again.");
+          return;
+        }
+
+        const { error } = await supabase
           .from("members")
-          .update({
-            notify_enabled: true,
-            ...(token ? { push_token: token } : {}),
-          } as any)
+          .update({ notify_enabled: true, push_token: token } as any)
           .eq("id", userId);
 
+        if (error) throw error;
+
         setEnabled(true);
-        toast.success("🔔 You'll be notified when someone is waiting!");
+        toast.success("🔔 Notifications enabled! We'll alert you when someone is waiting.");
       } else {
-        await supabase
+        const { error } = await supabase
           .from("members")
           .update({ notify_enabled: false, push_token: null } as any)
           .eq("id", userId);
+
+        if (error) throw error;
 
         setEnabled(false);
         toast.info("Notifications disabled");
       }
     } catch (err) {
       console.error("Notify toggle error:", err);
-      toast.error("Failed to update notification preference");
+      toast.error(getPushSetupErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -126,8 +196,8 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
     normalizedGender === "female"
       ? "Notify me when a male is online"
       : normalizedGender === "male"
-      ? "Notify me when a female comes online"
-      : "Set your gender first to get accurate notifications";
+        ? "Notify me when a female comes online"
+        : "Set your gender first to get accurate notifications";
 
   return (
     <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
