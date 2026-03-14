@@ -91,8 +91,9 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
 
   // Listen for foreground messages
   useEffect(() => {
-    if (!messaging) return;
-    const unsubscribe = onMessage(messaging, (payload) => {
+    const msg = getMessagingInstance();
+    if (!msg) return;
+    const unsubscribe = onMessage(msg, (payload) => {
       console.log("[FCM] Foreground message:", payload);
       toast(payload.notification?.title || "C24 Club", {
         description: payload.notification?.body,
