@@ -23,6 +23,7 @@ import {
   Settings,
   LogOut,
   Activity,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
