@@ -174,13 +174,16 @@ const MobileRewardSlider = () => {
 };
 
 /* ─── Sign-In Popup ─── */
+const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Replace with your real Cloudflare Turnstile site key
+
 const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; onClose: () => void; defaultSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  useEffect(() => { setIsSignUp(defaultSignUp); }, [defaultSignUp, open]);
+  useEffect(() => { setIsSignUp(defaultSignUp); setCaptchaToken(null); }, [defaultSignUp, open]);
 
   if (!open) return null;
 
