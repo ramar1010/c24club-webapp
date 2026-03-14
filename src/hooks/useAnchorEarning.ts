@@ -227,6 +227,22 @@ export function useAnchorEarning({
   const dismissReward = useCallback(() => setRewardEarned(null), []);
   const dismissCashEarned = useCallback(() => setCashEarned(0), []);
 
+  // Submit verification
+  const submitVerification = useCallback(async (input: string) => {
+    if (input.toLowerCase().trim() !== verificationWord.toLowerCase()) {
+      return false;
+    }
+    const { data } = await supabase.functions.invoke("anchor-earning", {
+      body: { type: "verify", userId },
+    });
+    if (data?.success) {
+      setVerificationRequired(false);
+      setVerificationWord("");
+      isActiveRef.current = true;
+    }
+    return !!data?.success;
+  }, [userId, verificationWord]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
