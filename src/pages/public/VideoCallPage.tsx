@@ -712,7 +712,7 @@ const VideoCallPage = () => {
           <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             {/* Partner voice mode avatar - desktop */}
             {partnerVoiceMode && callState === "connected" && (
-              <VoiceModeAvatar remoteStream={localStreamRef} className="z-20" />
+              <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20" />
             )}
             <video ref={remoteVideoRef} autoPlay playsInline
               className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
