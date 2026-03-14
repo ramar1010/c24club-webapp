@@ -22,6 +22,7 @@ import {
   Mail,
   Settings,
   LogOut,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 
@@ -203,6 +204,14 @@ export const adminMenu: MenuItem[] = [
     title: "Emails",
     submenu: [
       { key: "email-templates", label: "Email Templates", path: "/admin/emails" },
+    ],
+  },
+  {
+    key: "system-health",
+    icon: Activity,
+    title: "System Health",
+    submenu: [
+      { key: "system-health", label: "Health Dashboard", path: "/admin/system-health" },
     ],
   },
   {
