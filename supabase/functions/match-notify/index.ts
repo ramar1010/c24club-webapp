@@ -83,13 +83,21 @@ Deno.serve(async (req) => {
     // Send FCM push notifications if configured
     const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
     let pushSent = 0;
+    let pushFailed = 0;
+    let pushStatus: number | null = null;
+    let pushError: string | null = null;
+
     if (fcmServerKey && targets && targets.length > 0) {
       const tokens = targets
         .map((t) => t.push_token)
         .filter((t): t is string => !!t);
 
       if (tokens.length > 0) {
-        pushSent = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
+        const pushResult = await sendFcmNotifications(fcmServerKey, tokens, normalizedGender);
+        pushSent = pushResult.sent;
+        pushFailed = pushResult.failed;
+        pushStatus = pushResult.status;
+        pushError = pushResult.error;
       }
     }
 
@@ -107,6 +115,9 @@ Deno.serve(async (req) => {
         message: "notifications_sent",
         discord_sent: discordSent,
         push_sent: pushSent,
+        push_failed: pushFailed,
+        push_status: pushStatus,
+        push_error: pushError,
         targets_found: targets?.length ?? 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -148,7 +159,7 @@ async function sendFcmNotifications(
   serverKey: string,
   tokens: string[],
   searchingGender: string,
-): Promise<number> {
+): Promise<{ sent: number; failed: number; status: number | null; error: string | null }> {
   const title = "Someone's waiting on C24 Club!";
   const body =
     searchingGender === "female"
@@ -156,7 +167,11 @@ async function sendFcmNotifications(
       : "A male user is searching — jump in and start earning!";
 
   let sent = 0;
+  let failed = 0;
+  let lastStatus: number | null = null;
+  let lastError: string | null = null;
   const batchSize = 1000;
+
   for (let i = 0; i < tokens.length; i += batchSize) {
     const batch = tokens.slice(i, i + batchSize);
     try {
@@ -172,13 +187,34 @@ async function sendFcmNotifications(
           data: { url: "/videocall" },
         }),
       });
-      if (res.ok) {
-        const result = await res.json();
-        sent += result.success ?? 0;
+
+      lastStatus = res.status;
+      const raw = await res.text();
+
+      if (!res.ok) {
+        failed += batch.length;
+        lastError = `FCM HTTP ${res.status}: ${raw}`;
+        console.error("FCM send failed:", lastError);
+        continue;
       }
+
+      let result: { success?: number; failure?: number } = {};
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        failed += batch.length;
+        lastError = `FCM returned non-JSON response: ${raw}`;
+        continue;
+      }
+
+      sent += result.success ?? 0;
+      failed += result.failure ?? 0;
     } catch (err) {
+      failed += batch.length;
+      lastError = err instanceof Error ? err.message : String(err);
       console.error("FCM batch error:", err);
     }
   }
-  return sent;
+
+  return { sent, failed, status: lastStatus, error: lastError };
 }
