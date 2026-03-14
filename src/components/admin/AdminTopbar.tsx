@@ -1,5 +1,6 @@
-import { Menu, Bell, User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AdminNotifications from "./AdminNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,10 +30,7 @@ const AdminTopbar = ({ onToggleSidebar, pageTitle }: AdminTopbarProps) => {
       )}
 
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-topbar-foreground hover:bg-muted relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-        </Button>
+        <AdminNotifications />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
