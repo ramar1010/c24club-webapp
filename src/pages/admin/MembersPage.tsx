@@ -244,6 +244,9 @@ const MembersPage = () => {
         data={(data as Member[]) ?? []}
         columns={memberColumns}
         expandable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         searchKeys={["name", "email", "country", "gender", "membership"]}
         renderExpandedRow={(row) => (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
