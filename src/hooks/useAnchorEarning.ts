@@ -102,9 +102,9 @@ export function useAnchorEarning({
       if (data.status === "active") {
         setStatus("active");
         isActiveRef.current = true;
-        setElapsedSeconds(0);
-        localElapsedRef.current = 0;
-        setCashBalance(0);
+        setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
+        localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
+        setCashBalance(Number(data.session?.cash_balance ?? 0));
         setMode(data.currentMode);
       } else if (data.status === "queued") {
         setStatus("queued");
