@@ -147,14 +147,15 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
           return;
         }
 
-        if (!messaging) {
-          toast.error("Push messaging is not available on this device/browser.");
+        const msg = getMessagingInstance();
+        if (!msg) {
+          toast.error(messagingInitError || "Push messaging is not available on this device/browser.");
           return;
         }
 
         const swRegistration = await registerServiceWorker();
 
-        const token = await getToken(messaging, {
+        const token = await getToken(msg, {
           vapidKey: VAPID_KEY,
           serviceWorkerRegistration: swRegistration,
         });
