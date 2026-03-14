@@ -90,8 +90,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       return localStreamRef.current;
     }
 
+    // Voice mode: audio only, no video
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: !voiceModeRef.current,
       audio: true,
     });
 
