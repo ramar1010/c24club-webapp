@@ -985,6 +985,63 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           )}
         </div>
       )}
+
+      {/* PayPal Email Prompt Modal */}
+      {showPaypalPrompt && (
+        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center px-4">
+          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-6 w-full max-w-sm space-y-4">
+            <h3 className="font-black text-lg text-center text-white">💰 Enter Your PayPal</h3>
+            <p className="text-neutral-400 text-sm text-center">
+              We'll send <span className="text-green-400 font-black">${Number(showPaypalPrompt.cashout_value).toFixed(2)}</span> to your PayPal account.
+            </p>
+            <input
+              type="email"
+              placeholder="your@paypal-email.com"
+              value={paypalEmail}
+              onChange={(e) => setPaypalEmail(e.target.value)}
+              className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 font-bold text-white placeholder:text-white/40 focus:outline-none focus:border-green-500/50"
+            />
+            <button
+              disabled={cashingOut || !paypalEmail.includes("@")}
+              onClick={async () => {
+                setCashingOut(true);
+                try {
+                  const { error } = await supabase.functions.invoke("redeem-reward", {
+                    body: {
+                      action: "cashout-legendary",
+                      rewardId: showPaypalPrompt.id,
+                      paypalEmail: paypalEmail.trim(),
+                    },
+                  });
+                  if (error) throw error;
+                  toast.success(`💰 Cashed out $${Number(showPaypalPrompt.cashout_value).toFixed(2)}! Payment will be sent to ${paypalEmail.trim()}`);
+                  queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+                  queryClient.invalidateQueries({ queryKey: ["public-rewards"] });
+                  setShowSpinToWin(null);
+                  setSpinReelItems([]);
+                  setShowPaypalPrompt(null);
+                } catch (e: any) {
+                  toast.error(e.message || "Cashout failed");
+                }
+                setCashingOut(false);
+              }}
+              className={`w-full py-4 rounded-full font-black text-lg transition-all shadow-lg ${
+                !paypalEmail.includes("@") || cashingOut
+                  ? "bg-neutral-700 text-neutral-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:scale-105 active:scale-95"
+              }`}
+            >
+              {cashingOut ? "Processing..." : `💰 CONFIRM CASHOUT`}
+            </button>
+            <button
+              onClick={() => setShowPaypalPrompt(null)}
+              className="w-full py-3 text-neutral-400 font-bold text-sm hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
