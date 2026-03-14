@@ -96,10 +96,13 @@ const VideoCallPage = () => {
     },
   });
 
+  const isFemale = memberGender === "Female";
+
   const {
     callState,
     error,
     currentPartnerId,
+    partnerVoiceMode,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,
@@ -110,6 +113,7 @@ const VideoCallPage = () => {
     memberId,
     genderPreference: genderMap[genderFilter],
     memberGender: memberGender ?? undefined,
+    voiceMode: isFemale ? voiceMode : false,
   });
 
   // If the authenticated user changes (e.g. admin login in same browser), stop the call
