@@ -658,7 +658,7 @@ const VideoCallPage = () => {
                   <p className="text-red-400 text-[7px] font-bold">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
                 </div>
               )}
-              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
                 <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xl">📵</span>
                   <p className="text-white font-black text-[8px] text-center px-1">FACELESS</p>
@@ -726,7 +726,7 @@ const VideoCallPage = () => {
                 )}
               </div>
             )}
-            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && (
+            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
               <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
@@ -787,9 +787,9 @@ const VideoCallPage = () => {
                 <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
               </button>
             )}
-            {/* NEXT Button - inside partner box, bottom-right */}
+            {/* NEXT Button - inside partner box, bottom-right, above overlays */}
             {isActive && (
-              <button onClick={handleNext} className="absolute bottom-3 right-3 z-20 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-5 py-2 transition-colors">
+              <button onClick={handleNext} className="absolute bottom-3 right-3 z-40 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-5 py-2 transition-colors">
                 <span className="font-bold text-sm">NEXT</span>
                 <img src={nextBtn} alt="Next" className="w-8 h-8" />
               </button>
