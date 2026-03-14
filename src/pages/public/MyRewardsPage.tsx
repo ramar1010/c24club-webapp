@@ -97,6 +97,26 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Fetch claimed gift cards with codes
+  const { data: claimedGiftCards = [], isLoading: giftCardsLoading } = useQuery({
+    queryKey: ["my-gift-cards", user?.id],
+    enabled: !!user && selectedFilter === "Giftcards",
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("redeem-giftcard", {
+        body: { action: "my-cards" },
+      });
+      if (error) throw error;
+      return data?.cards || [];
+    },
+  });
+
+  const handleCopyCode = (code: string, cardId: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCardId(cardId);
+    toast.success("Code copied!");
+    setTimeout(() => setCopiedCardId(null), 2000);
+  };
+
   const filtered = redemptions.filter(
     (r: any) => r.reward_type === filterToType[selectedFilter]
   );
