@@ -17,7 +17,7 @@ const PublicNav = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3">
   {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 no-underline">
-        <img src="/src/assets/logo.png" alt="C24CLUB" className="h-10 w-auto" />
+        <img src={logo} alt="C24CLUB" className="h-10 w-auto" />
         <span className="font-extrabold text-xl text-white uppercase tracking-wide drop-shadow-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>
           C24CLUB
         </span>
