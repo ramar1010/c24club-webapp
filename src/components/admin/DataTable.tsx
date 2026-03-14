@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,10 @@ interface DataTableProps<T> {
   searchKeys?: string[];
   pageTitle?: string;
   actions?: (row: T) => React.ReactNode;
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
+  idKey?: string;
 }
 
 const PAGE_SIZE_OPTIONS = [
@@ -52,6 +57,10 @@ function DataTable<T extends Record<string, any>>({
   renderExpandedRow,
   searchKeys,
   actions,
+  selectable = false,
+  selectedIds,
+  onSelectionChange,
+  idKey = "id",
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -102,7 +111,6 @@ function DataTable<T extends Record<string, any>>({
     });
   };
 
-  // Reset page when search or pageSize changes
   const handleSearch = (val: string) => {
     setSearch(val);
     setCurrentPage(0);
@@ -112,6 +120,31 @@ function DataTable<T extends Record<string, any>>({
     setPageSize(Number(val));
     setCurrentPage(0);
   };
+
+  // Selection helpers
+  const allPageIds = paginated.map((row) => row[idKey] as string);
+  const allPageSelected = selectable && allPageIds.length > 0 && allPageIds.every((id) => selectedIds?.has(id));
+  const somePageSelected = selectable && allPageIds.some((id) => selectedIds?.has(id));
+
+  const toggleAll = () => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (allPageSelected) {
+      allPageIds.forEach((id) => next.delete(id));
+    } else {
+      allPageIds.forEach((id) => next.add(id));
+    }
+    onSelectionChange(next);
+  };
+
+  const toggleOne = (id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    next.has(id) ? next.delete(id) : next.add(id);
+    onSelectionChange(next);
+  };
+
+  const colSpanTotal = columns.length + (expandable ? 1 : 0) + (actions ? 1 : 0) + (selectable ? 1 : 0);
 
   return (
     <div className="space-y-4">
@@ -150,6 +183,14 @@ function DataTable<T extends Record<string, any>>({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
+              {selectable && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allPageSelected ? true : somePageSelected ? "indeterminate" : false}
+                    onCheckedChange={toggleAll}
+                  />
+                </TableHead>
+              )}
               {expandable && <TableHead className="w-10" />}
               {columns.map((col) => (
                 <TableHead
@@ -184,7 +225,7 @@ function DataTable<T extends Record<string, any>>({
             {paginated.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length + (expandable ? 1 : 0) + (actions ? 1 : 0)}
+                  colSpan={colSpanTotal}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No results found.
@@ -194,15 +235,25 @@ function DataTable<T extends Record<string, any>>({
               paginated.map((row, idx) => {
                 const globalIdx = pageSize === -1 ? idx : currentPage * pageSize + idx;
                 const isExpanded = expandedRows.has(globalIdx);
+                const rowId = row[idKey] as string;
                 return (
                   <>
                     <TableRow
                       key={globalIdx}
                       className={cn(
                         "hover:bg-muted/30 transition-colors",
-                        isExpanded && "bg-muted/20"
+                        isExpanded && "bg-muted/20",
+                        selectable && selectedIds?.has(rowId) && "bg-primary/5"
                       )}
                     >
+                      {selectable && (
+                        <TableCell className="w-10">
+                          <Checkbox
+                            checked={selectedIds?.has(rowId) ?? false}
+                            onCheckedChange={() => toggleOne(rowId)}
+                          />
+                        </TableCell>
+                      )}
                       {expandable && (
                         <TableCell className="w-10 cursor-pointer" onClick={() => toggleRow(globalIdx)}>
                           {isExpanded ? (
@@ -221,7 +272,7 @@ function DataTable<T extends Record<string, any>>({
                     </TableRow>
                     {expandable && isExpanded && renderExpandedRow && (
                       <TableRow key={`${globalIdx}-expanded`}>
-                        <TableCell colSpan={columns.length + 1 + (actions ? 1 : 0)} className="bg-muted/10 p-4">
+                        <TableCell colSpan={colSpanTotal} className="bg-muted/10 p-4">
                           {renderExpandedRow(row)}
                         </TableCell>
                       </TableRow>

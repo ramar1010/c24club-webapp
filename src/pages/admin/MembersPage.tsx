@@ -94,6 +94,9 @@ const MembersPage = () => {
   const deleteMutation = useDeleteMember();
   const { user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [banTarget, setBanTarget] = useState<Member | null>(null);
   const [banType, setBanType] = useState("standard");
   const [banReason, setBanReason] = useState("Violation of terms");
@@ -190,6 +193,30 @@ const MembersPage = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      // Delete in batches of 50
+      for (let i = 0; i < ids.length; i += 50) {
+        const batch = ids.slice(i, i + 50);
+        const { error } = await supabase.from("members").delete().in("id", batch);
+        if (error) throw error;
+      }
+      toast.success(`${ids.length} member(s) deleted`);
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      // Invalidate query to refresh
+      deleteMutation.reset();
+      window.location.reload();
+    } catch (err: any) {
+      toast.error("Bulk delete failed", { description: err.message });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -199,16 +226,27 @@ const MembersPage = () => {
             {isLoading ? "Loading..." : `${data?.length ?? 0} members total.`}
           </p>
         </div>
-        <Button>
-          <User className="mr-2 h-4 w-4" />
-          Add New Member
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete {selectedIds.size} selected
+            </Button>
+          )}
+          <Button>
+            <User className="mr-2 h-4 w-4" />
+            Add New Member
+          </Button>
+        </div>
       </div>
 
       <DataTable
         data={(data as Member[]) ?? []}
         columns={memberColumns}
         expandable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         searchKeys={["name", "email", "country", "gender", "membership"]}
         renderExpandedRow={(row) => (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
@@ -387,6 +425,15 @@ const MembersPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Dialog */}
+      <DeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={(open) => !open && setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`${selectedIds.size} selected member(s)`}
+        isPending={bulkDeleting}
+      />
     </div>
   );
 };
