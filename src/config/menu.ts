@@ -217,6 +217,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "user-analytics",
+    icon: BarChart3,
+    title: "User Analytics",
+    submenu: [
+      { key: "user-analytics", label: "Growth & Acquisition", path: "/admin/user-analytics" },
+    ],
+  },
+  {
     key: "system-health",
     icon: Activity,
     title: "System Health",
