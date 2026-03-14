@@ -228,7 +228,14 @@ const AnchorEarningPanel = ({
     return (
       <div className={`w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
         {/* Hide button */}
-        <div className="flex justify-end mb-1">
+        <div className="flex justify-end gap-2 mb-1">
+          <button
+            onClick={() => setShowExplainer(true)}
+            className="text-neutral-500 hover:text-yellow-400 text-xs p-1"
+            title="How it works"
+          >
+            <Info className="h-4 w-4" />
+          </button>
           <button
             onClick={() => setIsHidden(true)}
             className="text-neutral-500 hover:text-neutral-300 text-xs p-1"
