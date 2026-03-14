@@ -9,6 +9,7 @@ interface UseCallMinutesOptions {
   userId: string;
   partnerId: string | null;
   isConnected: boolean;
+  voiceMode?: boolean;
 }
 
 interface CapInfo {
@@ -21,7 +22,7 @@ interface FreezeInfo {
   earnRate: number;
 }
 
-export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinutesOptions) {
+export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
@@ -86,6 +87,7 @@ export function useCallMinutes({ userId, partnerId, isConnected }: UseCallMinute
         partnerId: pid,
         minutesEarned: safeMinutes,
         sessionId: sessionIdRef.current,
+        voiceMode,
       },
     });
 

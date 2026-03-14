@@ -36,6 +36,7 @@ import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
+import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -69,6 +70,7 @@ const VideoCallPage = () => {
   const [showAnchorBanner, setShowAnchorBanner] = useState(true);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -94,10 +96,13 @@ const VideoCallPage = () => {
     },
   });
 
+  const isFemale = memberGender === "Female";
+
   const {
     callState,
     error,
     currentPartnerId,
+    partnerVoiceMode,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,
@@ -108,6 +113,7 @@ const VideoCallPage = () => {
     memberId,
     genderPreference: genderMap[genderFilter],
     memberGender: memberGender ?? undefined,
+    voiceMode: isFemale ? voiceMode : false,
   });
 
   // If the authenticated user changes (e.g. admin login in same browser), stop the call
@@ -132,12 +138,12 @@ const VideoCallPage = () => {
   const { partnerBlackScreen } = useBlackScreenDetection({
     remoteVideoRef,
     localStreamRef,
-    isConnected: callState === "connected",
+    isConnected: callState === "connected" && !partnerVoiceMode,
   });
 
   const { localBlackScreen } = useLocalBlackScreenDetection({
     localVideoRef,
-    isActive: callState !== "idle",
+    isActive: callState !== "idle" && !(isFemale && voiceMode),
   });
 
   const NSFW_BAN_THRESHOLD = 5;
@@ -207,6 +213,7 @@ const VideoCallPage = () => {
     userId: memberId,
     partnerId: currentPartnerId,
     isConnected: callState === "connected",
+    voiceMode: isFemale ? voiceMode : false,
   });
 
   const [showFrozenPopup, setShowFrozenPopup] = useState(false);
@@ -509,6 +516,21 @@ const VideoCallPage = () => {
             <div className="flex flex-col items-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
               
+              {/* Voice Mode toggle - females only */}
+              {isFemale && (
+                <button
+                  onClick={() => setVoiceMode(!voiceMode)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    voiceMode
+                      ? "bg-pink-600 text-white shadow-lg shadow-pink-500/30"
+                      : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white border border-neutral-600"
+                  }`}
+                >
+                  <span>{voiceMode ? "🎙️" : "📹"}</span>
+                  <span>{voiceMode ? "Voice Mode ON" : "Voice Mode (Hide Face)"}</span>
+                </button>
+              )}
+
               <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
                 START
               </button>
@@ -524,8 +546,18 @@ const VideoCallPage = () => {
             }} />
           )}
 
+          {/* Voice mode: show avatar instead of local video */}
+          {isFemale && voiceMode && isActive && (
+            <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3">
+                <span className="text-4xl md:text-5xl">🎙️</span>
+              </div>
+              <span className="text-pink-400 text-xs font-bold">Voice Mode Active</span>
+            </div>
+          )}
+
           <video ref={localVideoRef} autoPlay muted playsInline
-           className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`} />
+           className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
 
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd && (
@@ -613,8 +645,12 @@ const VideoCallPage = () => {
 
           {isMobile && (
             <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
+              {/* Partner voice mode avatar - mobile */}
+              {partnerVoiceMode && callState === "connected" && (
+                <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20" />
+              )}
               <video ref={remoteVideoRef} autoPlay playsInline
-                className={`w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+                className={`w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
               {isNsfwBlurred && callState === "connected" && (
                 <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xl">🚫</span>
@@ -674,8 +710,12 @@ const VideoCallPage = () => {
         {/* Partner Video - desktop */}
         {!isMobile && (
           <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
+            {/* Partner voice mode avatar - desktop */}
+            {partnerVoiceMode && callState === "connected" && (
+              <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20" />
+            )}
             <video ref={remoteVideoRef} autoPlay playsInline
-              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+              className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
             {isNsfwBlurred && callState === "connected" && (
               <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">🚫</span>

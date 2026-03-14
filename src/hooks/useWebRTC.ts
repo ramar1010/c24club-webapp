@@ -14,12 +14,14 @@ interface UseWebRTCOptions {
   memberId: string;
   genderPreference?: string;
   memberGender?: string;
+  voiceMode?: boolean;
 }
 
-export function useWebRTC({ memberId, genderPreference = "Both", memberGender }: UseWebRTCOptions) {
+export function useWebRTC({ memberId, genderPreference = "Both", memberGender, voiceMode = false }: UseWebRTCOptions) {
   const [callState, setCallState] = useState<CallState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
+  const [partnerVoiceMode, setPartnerVoiceMode] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -33,6 +35,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
   const memberIdRef = useRef(memberId);
   const genderPreferenceRef = useRef(genderPreference);
   const memberGenderRef = useRef(memberGender);
+  const voiceModeRef = useRef(voiceMode);
 
   useEffect(() => {
     memberIdRef.current = memberId;
@@ -45,6 +48,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
   useEffect(() => {
     memberGenderRef.current = memberGender;
   }, [memberGender]);
+
+  useEffect(() => {
+    voiceModeRef.current = voiceMode;
+  }, [voiceMode]);
 
   function clearPolling() {
     if (pollingIntervalRef.current) {
@@ -83,8 +90,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       return localStreamRef.current;
     }
 
+    // Voice mode: audio only, no video
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: !voiceModeRef.current,
       audio: true,
     });
 
@@ -219,9 +227,11 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
       console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;
-      // Determine partner ID from the room
+      // Determine partner ID and voice mode from the room
       const pid = room.member1 === mid ? room.member2 : room.member1;
+      const pVoiceMode = room.member1 === mid ? room.member2_voice_mode : room.member1_voice_mode;
       setCurrentPartnerId(pid);
+      setPartnerVoiceMode(pVoiceMode ?? false);
       setCallState("connecting");
 
       const pc = createPeerConnection();
@@ -256,6 +266,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
 
     roomIdRef.current = null;
     setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
     setCallState("idle");
   }
 
@@ -279,6 +290,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
           channelId: channelIdRef.current,
           genderPreference: genderPreferenceRef.current,
           memberGender: memberGenderRef.current,
+          voiceMode: voiceModeRef.current,
         },
       });
 
@@ -290,6 +302,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
         console.log("[WebRTC] Partner found! Room:", data.roomId);
         roomIdRef.current = data.roomId;
         setCurrentPartnerId(data.partnerId);
+        setPartnerVoiceMode(data.partnerVoiceMode ?? false);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
@@ -351,6 +364,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender }:
     callState,
     error,
     currentPartnerId,
+    partnerVoiceMode,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,

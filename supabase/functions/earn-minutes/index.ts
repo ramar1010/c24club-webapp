@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId } = body;
+    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId, voiceMode } = body;
 
     // GET_BALANCE: Return current minutes + ad points + VIP status + freeze status
     if (type === "get_balance") {
@@ -186,7 +186,16 @@ Deno.serve(async (req) => {
 
       // Check freeze status to determine earn cap
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
+      // Voice mode females earn at reduced rate (5 min cap instead of 10)
+      const voiceModeCap = 5;
+      let cap: number;
+      if (freezeInfo.isFrozen) {
+        cap = freezeInfo.earnRate;
+      } else if (voiceMode) {
+        cap = voiceModeCap;
+      } else {
+        cap = isVip ? 30 : 10;
+      }
 
       // Use sessionId to track cap per-session (not per-day)
       // If no sessionId provided, fall back to date-based tracking
@@ -416,7 +425,14 @@ Deno.serve(async (req) => {
 
       const isVip = memberData?.is_vip ?? false;
       const freezeInfo = await checkFreezeStatus(supabase, userId);
-      const cap = freezeInfo.isFrozen ? freezeInfo.earnRate : (isVip ? 30 : 10);
+      let cap: number;
+      if (freezeInfo.isFrozen) {
+        cap = freezeInfo.earnRate;
+      } else if (voiceMode) {
+        cap = 5;
+      } else {
+        cap = isVip ? 30 : 10;
+      }
 
       const trackingId = sessionId || new Date().toISOString().split("T")[0];
       const { data: logData } = await supabase
