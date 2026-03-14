@@ -66,6 +66,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
     shipping_country: "",
   });
   const [saving, setSaving] = useState(false);
+  const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
 
   const { data: redemptions = [], isLoading } = useQuery({
     queryKey: ["my-redemptions", user?.id],
