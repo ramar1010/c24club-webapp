@@ -5,9 +5,11 @@ interface UseNsfwDetectionOptions {
   remoteVideoRef: RefObject<HTMLVideoElement>;
   isConnected: boolean;
   userId: string;
+  viewerUserId?: string;
   checkIntervalMs?: number;
   nudityThreshold?: number;
   maxStrikes?: number;
+  strikeCooldownMs?: number;
 }
 
 /**
@@ -20,9 +22,11 @@ export function useNsfwDetection({
   remoteVideoRef,
   isConnected,
   userId,
+  viewerUserId,
   checkIntervalMs = 5000,
   nudityThreshold = 0.8,
   maxStrikes = 5,
+  strikeCooldownMs = 15000,
 }: UseNsfwDetectionOptions) {
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
@@ -31,48 +35,76 @@ export function useNsfwDetection({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loadingRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
+  const lastStrikeAtRef = useRef(0);
+  const banTriggeredForUserRef = useRef<string | null>(null);
+
+  const getValidatedTargetUserId = useCallback(() => {
+    if (!userId || userId === "anonymous") return null;
+    if (viewerUserId && userId === viewerUserId) return null;
+    return userId;
+  }, [userId, viewerUserId]);
 
   // Load persisted strikes whenever the monitored user changes
   useEffect(() => {
-    if (!userId || userId === "anonymous") {
+    const targetUserId = getValidatedTargetUserId();
+
+    if (!targetUserId) {
       loadedUserIdRef.current = null;
+      lastStrikeAtRef.current = 0;
+      banTriggeredForUserRef.current = null;
       setNsfwStrikes(0);
       setShouldBan(false);
       setIsNsfwBlurred(false);
       return;
     }
 
-    if (loadedUserIdRef.current !== userId) {
+    if (loadedUserIdRef.current !== targetUserId) {
+      lastStrikeAtRef.current = 0;
+      banTriggeredForUserRef.current = null;
       setNsfwStrikes(0);
       setShouldBan(false);
       setIsNsfwBlurred(false);
     }
 
     let isMounted = true;
-    loadedUserIdRef.current = userId;
+    loadedUserIdRef.current = targetUserId;
 
     supabase
       .from("member_minutes")
       .select("nsfw_strikes")
-      .eq("user_id", userId)
+      .eq("user_id", targetUserId)
       .maybeSingle()
       .then(({ data, error }) => {
-        if (!isMounted || loadedUserIdRef.current !== userId) return;
+        if (!isMounted || loadedUserIdRef.current !== targetUserId) return;
         if (error) {
           console.warn("[NSFW] Failed to load strikes:", error.message);
           return;
         }
 
-        const strikesValue = Number((data as any)?.nsfw_strikes ?? 0);
-        const strikes = Number.isFinite(strikesValue) ? strikesValue : 0;
+        const rawValue = Number((data as any)?.nsfw_strikes ?? 0);
+        const normalized = Number.isFinite(rawValue) ? Math.max(0, Math.floor(rawValue)) : 0;
+        const strikes = Math.min(normalized, maxStrikes);
+
         setNsfwStrikes(strikes);
         setShouldBan(strikes >= maxStrikes);
+
+        if (normalized > maxStrikes) {
+          supabase
+            .from("member_minutes")
+            .update({ nsfw_strikes: maxStrikes } as any)
+            .eq("user_id", targetUserId)
+            .then(({ error: clampError }) => {
+              if (clampError) {
+                console.warn("[NSFW] Failed to clamp strikes:", clampError.message);
+              }
+            });
+        }
       });
 
     return () => {
       isMounted = false;
     };
-  }, [userId, maxStrikes]);
+  }, [getValidatedTargetUserId, maxStrikes]);
 
   // Load nsfwjs model dynamically
   useEffect(() => {
@@ -104,22 +136,31 @@ export function useNsfwDetection({
   // Persist a new strike count to the DB
   const persistStrike = useCallback(
     async (newCount: number) => {
-      if (!userId || userId === "anonymous") return;
+      const targetUserId = getValidatedTargetUserId();
+      if (!targetUserId) return;
+
+      const safeCount = Math.min(maxStrikes, Math.max(0, Math.floor(newCount)));
       const { error } = await supabase
         .from("member_minutes")
-        .update({ nsfw_strikes: newCount } as any)
-        .eq("user_id", userId);
+        .update({ nsfw_strikes: safeCount } as any)
+        .eq("user_id", targetUserId);
 
       if (error) {
         console.warn("[NSFW] Failed to persist strikes:", error.message);
       }
     },
-    [userId]
+    [getValidatedTargetUserId, maxStrikes]
   );
 
   // Periodic detection
   useEffect(() => {
     if (!isConnected) return;
+
+    const targetUserId = getValidatedTargetUserId();
+    if (!targetUserId) {
+      setIsNsfwBlurred(false);
+      return;
+    }
 
     if (!canvasRef.current) {
       canvasRef.current = document.createElement("canvas");
@@ -149,16 +190,27 @@ export function useNsfwDetection({
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
           setNsfwStrikes((prev) => {
-            // Don't increment past threshold — ban already triggered
-            if (prev >= maxStrikes) return prev;
-            const next = prev + 1;
+            if (prev >= maxStrikes) return maxStrikes;
+
+            const now = Date.now();
+            if (now - lastStrikeAtRef.current < strikeCooldownMs) {
+              return prev;
+            }
+
+            lastStrikeAtRef.current = now;
+            const next = Math.min(maxStrikes, prev + 1);
+
             console.log(
               `[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`
             );
+
             persistStrike(next);
-            if (next >= maxStrikes) {
+
+            if (next >= maxStrikes && banTriggeredForUserRef.current !== targetUserId) {
+              banTriggeredForUserRef.current = targetUserId;
               setShouldBan(true);
             }
+
             return next;
           });
         } else {
@@ -175,11 +227,15 @@ export function useNsfwDetection({
     checkIntervalMs,
     nudityThreshold,
     maxStrikes,
+    strikeCooldownMs,
     remoteVideoRef,
     persistStrike,
+    getValidatedTargetUserId,
   ]);
 
   const resetStrikes = useCallback(async () => {
+    lastStrikeAtRef.current = 0;
+    banTriggeredForUserRef.current = null;
     setNsfwStrikes(0);
     setShouldBan(false);
     setIsNsfwBlurred(false);

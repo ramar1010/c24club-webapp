@@ -108,12 +108,16 @@ const VideoCallPage = () => {
     isActive: callState !== "idle",
   });
 
-  const nsfwTargetUserId = callState === "connected" ? currentPartnerId ?? "anonymous" : "anonymous";
+  const nsfwTargetUserId =
+    callState === "connected" && currentPartnerId && currentPartnerId !== memberId
+      ? currentPartnerId
+      : "anonymous";
 
   const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
     remoteVideoRef,
     isConnected: callState === "connected",
     userId: nsfwTargetUserId,
+    viewerUserId: memberId,
   });
 
   // Auto-ban the offending remote user when NSFW strikes reach threshold
