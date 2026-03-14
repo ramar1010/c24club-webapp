@@ -127,6 +127,7 @@ const App = () => (
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
               <Route path="system-health" element={<SystemHealthPage />} />
               <Route path="revenue" element={<RevenuePage />} />
+              <Route path="user-analytics" element={<UserAnalyticsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
