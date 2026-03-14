@@ -271,9 +271,18 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             placeholder="Password"
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition-colors text-sm"
           />
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setCaptchaToken(null)}
+              onExpire={() => setCaptchaToken(null)}
+              options={{ theme: "dark", size: "compact" }}
+            />
+          </div>
           <button
             onClick={handleEmailAuth}
-            disabled={loading}
+            disabled={loading || !captchaToken}
             className="w-full px-6 py-3.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-base shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50"
           >
             {loading ? "..." : isSignUp ? "Create Account" : "Sign In with Email"}
