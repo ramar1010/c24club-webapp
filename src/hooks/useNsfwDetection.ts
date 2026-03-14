@@ -149,6 +149,8 @@ export function useNsfwDetection({
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
           setNsfwStrikes((prev) => {
+            // Don't increment past threshold — ban already triggered
+            if (prev >= maxStrikes) return prev;
             const next = prev + 1;
             console.log(
               `[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`

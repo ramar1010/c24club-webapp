@@ -122,24 +122,12 @@ const VideoCallPage = () => {
 
     const banUser = async () => {
       try {
-        const { data: existingBan, error: lookupError } = await supabase
-          .from("user_bans")
-          .select("id")
-          .eq("user_id", currentPartnerId)
-          .eq("is_active", true)
-          .maybeSingle();
-
-        if (lookupError) throw lookupError;
-        if (existingBan) return;
-
-        const { error: banError } = await supabase.from("user_bans").insert({
-          user_id: currentPartnerId,
-          reason: "Nudity detected on camera (automated)",
-          ban_type: "standard",
-          is_active: true,
+        const { data, error } = await supabase.functions.invoke("nsfw-ban", {
+          body: { targetUserId: currentPartnerId },
         });
 
-        if (banError) throw banError;
+        if (error) throw error;
+        console.log("[NSFW] Ban result:", data);
       } catch (err) {
         console.error("[NSFW] Failed to ban offending user:", err);
       }
