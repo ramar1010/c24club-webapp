@@ -35,6 +35,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const memberIdRef = useRef(memberId);
   const genderPreferenceRef = useRef(genderPreference);
   const memberGenderRef = useRef(memberGender);
+  const voiceModeRef = useRef(voiceMode);
 
   useEffect(() => {
     memberIdRef.current = memberId;
@@ -47,6 +48,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   useEffect(() => {
     memberGenderRef.current = memberGender;
   }, [memberGender]);
+
+  useEffect(() => {
+    voiceModeRef.current = voiceMode;
+  }, [voiceMode]);
 
   function clearPolling() {
     if (pollingIntervalRef.current) {
