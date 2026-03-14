@@ -65,6 +65,11 @@ const AnchorEarningPanel = ({
 
   if (status === "not_eligible" || status === "loading") return null;
 
+  {/* One-time explainer modal for new female users */}
+  if (showExplainer) {
+    return <AnchorExplainerModal onClose={() => setShowExplainer(false)} />;
+  }
+
   if (isHidden) {
     return (
       <button
