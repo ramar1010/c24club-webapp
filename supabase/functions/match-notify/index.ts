@@ -203,9 +203,12 @@ async function sendDiscordNotification(
   if (!webhookUrl) return false;
 
   const siteUrl = "https://c24club.lovable.app";
-  const emoji = gender === "female" ? "👩" : "👨";
-  const displayGender = gender === "female" ? "Female" : "Male";
-  const content = `📢 A new ${emoji} **${displayGender}** user is waiting for a match! Click here to be their next partner: ${siteUrl}/videocall`;
+  let content: string;
+  if (gender === "male") {
+    content = `EARN CASH NOW! A male user joined which means you can earn just by connecting with him or just by idling on our website! - C24Club video chat\n${siteUrl}/videocall`;
+  } else {
+    content = `Hey guys a female user joined and is looking for someone to video chat. - C24Club video chat\n${siteUrl}/videocall`;
+  }
 
   try {
     const res = await fetch(webhookUrl, {
@@ -227,11 +230,11 @@ async function sendFcmV1Notifications(
   tokens: string[],
   searchingGender: string,
 ): Promise<{ sent: number; failed: number; error: string | null }> {
-  const title = "Someone's waiting on C24 Club!";
-  const body =
-    searchingGender === "female"
-      ? "A female user is online and waiting for a match!"
-      : "A male user is searching — jump in and start earning!";
+  const title =
+    searchingGender === "male"
+      ? "Earn CASH NOW! A Male User Is Online Wanting To Chat! - C24Club Video Chat"
+      : "A female user is waiting to video chat. Join now before she leaves! - C24Club Video Chat";
+  const body = "";
 
   let sent = 0;
   let failed = 0;
