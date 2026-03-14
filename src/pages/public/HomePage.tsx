@@ -365,7 +365,15 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
             </div>
           </div>
 
-          <button
+          {/* 18+ Warning */}
+          <div className="border border-red-500/30 bg-red-950/30 rounded-xl px-4 py-3 text-center space-y-1">
+            <p className="text-red-400 font-black text-xs tracking-wide">🔞 18+ ONLY</p>
+            <p className="text-white/50 text-[11px] leading-snug">
+              You must be <span className="text-white/80 font-bold">18+</span> to use this platform.
+              Inappropriate behavior & explicit content are <span className="text-red-400 font-bold">strictly prohibited</span>.{" "}
+              <a href="/rules" target="_blank" className="text-orange-400 font-bold hover:underline">Read Rules</a>
+            </p>
+          </div>
             onClick={handleSubmit}
             disabled={saving}
             className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-base uppercase tracking-wide shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
