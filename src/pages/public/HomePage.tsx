@@ -747,7 +747,21 @@ const HomePage = () => {
         </div>
       </section>
 
-      <div className="mt-12" />
+      {/* 18+ Warning */}
+      <div className="max-w-3xl mx-auto px-4 mt-16 mb-8">
+        <div className="border border-red-500/30 bg-red-950/20 rounded-2xl px-6 py-5 text-center space-y-2">
+          <p className="text-red-400 font-black text-lg tracking-wide">🔞 18+ ONLY</p>
+          <p className="text-neutral-300 text-sm leading-relaxed">
+            You must be <span className="text-white font-bold">18 years or older</span> to use this platform.
+            By signing up, you confirm you meet this age requirement.
+            Inappropriate behavior, explicit content, and harassment are <span className="text-red-400 font-bold">strictly prohibited</span> and will result in a permanent ban.
+          </p>
+          <a href="/rules" className="inline-block text-orange-400 font-bold text-sm hover:underline mt-1">
+            Read our Community Rules →
+          </a>
+        </div>
+      </div>
+
       <PublicFooter />
     </div>
   );
