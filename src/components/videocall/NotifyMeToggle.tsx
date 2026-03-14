@@ -45,30 +45,26 @@ const checkPushSupport = () => {
   }
 
   if (!window.isSecureContext) {
+    console.warn("[Push] Not secure context");
     return { supported: false, message: "Notifications require HTTPS." };
   }
 
   if (!("Notification" in window)) {
+    console.warn("[Push] Notification API missing");
     return { supported: false, message: "This browser doesn't support notifications." };
   }
 
   if (!("serviceWorker" in navigator)) {
+    console.warn("[Push] ServiceWorker missing");
     return { supported: false, message: "Service workers are not supported in this browser." };
   }
 
   if (!("PushManager" in window)) {
+    console.warn("[Push] PushManager missing");
     return { supported: false, message: "Push notifications are not supported in this browser." };
   }
 
-  const isIOS = IOS_REGEX.test(navigator.userAgent);
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  if (isIOS && !isStandalone) {
-    return {
-      supported: false,
-      message: "On iPhone/iPad, install this app to Home Screen first, then enable notifications.",
-    };
-  }
-
+  console.log("[Push] All checks passed, push supported");
   return { supported: true, message: "" };
 };
 
