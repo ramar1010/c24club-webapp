@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
       reason: "Nudity detected on camera (automated)",
       ban_type: "standard",
       is_active: true,
+      ip_address: ipAddress || null,
     });
 
     if (banError) throw banError;
