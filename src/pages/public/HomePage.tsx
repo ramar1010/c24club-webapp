@@ -374,7 +374,7 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
               <a href="/rules" target="_blank" className="text-orange-400 font-bold hover:underline">Read Rules</a>
             </p>
           </div>
-            onClick={handleSubmit}
+            <button
             disabled={saving}
             className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-black text-base uppercase tracking-wide shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
           >
