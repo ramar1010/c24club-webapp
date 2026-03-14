@@ -108,29 +108,51 @@ const VideoCallPage = () => {
     isActive: callState !== "idle",
   });
 
+  const NSFW_BAN_THRESHOLD = 5;
   const nsfwTargetUserId =
     callState === "connected" && currentPartnerId && currentPartnerId !== memberId
       ? currentPartnerId
       : "anonymous";
 
-  const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
+  const { isNsfwBlurred, nsfwStrikes } = useNsfwDetection({
     remoteVideoRef,
     isConnected: callState === "connected",
     userId: nsfwTargetUserId,
     viewerUserId: memberId,
   });
 
-  // Auto-ban the offending remote user when NSFW strikes reach threshold
+  const banAttemptPartnerRef = useRef<string | null>(null);
+
+  // Auto-ban the offending remote user exactly when strike threshold is reached.
   useEffect(() => {
-    if (!shouldBan || !currentPartnerId || currentPartnerId === memberId) return;
+    if (!currentPartnerId || currentPartnerId === memberId) {
+      banAttemptPartnerRef.current = null;
+      return;
+    }
+
+    const targetUserId = currentPartnerId;
+
+    if (nsfwStrikes < NSFW_BAN_THRESHOLD) {
+      if (banAttemptPartnerRef.current === targetUserId) {
+        banAttemptPartnerRef.current = null;
+      }
+      return;
+    }
+
+    if (banAttemptPartnerRef.current === targetUserId) return;
+    banAttemptPartnerRef.current = targetUserId;
 
     const banUser = async () => {
       try {
         const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId: currentPartnerId },
+          body: { targetUserId },
         });
 
-        if (error) throw error;
+        if (error) {
+          banAttemptPartnerRef.current = null;
+          throw error;
+        }
+
         console.log("[NSFW] Ban result:", data);
       } catch (err) {
         console.error("[NSFW] Failed to ban offending user:", err);
@@ -138,7 +160,7 @@ const VideoCallPage = () => {
     };
 
     banUser();
-  }, [shouldBan, currentPartnerId]);
+  }, [nsfwStrikes, currentPartnerId, memberId]);
 
   const {
     totalMinutes,
