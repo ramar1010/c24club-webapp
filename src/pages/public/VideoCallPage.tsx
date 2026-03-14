@@ -97,6 +97,7 @@ const VideoCallPage = () => {
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
+    memberGender: memberGender ?? undefined,
   });
 
   // If the authenticated user changes (e.g. admin login in same browser), stop the call
