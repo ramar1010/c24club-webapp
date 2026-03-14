@@ -505,7 +505,7 @@ const VideoCallPage = () => {
           {!isActive && (
             <div className="flex flex-col items-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
-              <p className="text-[10px] text-neutral-400 -mt-1">The Omegle That Rewards You!</p>
+              
               <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
                 START
               </button>
