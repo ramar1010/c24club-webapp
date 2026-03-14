@@ -23,6 +23,7 @@ import {
   Settings,
   LogOut,
   Activity,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -204,6 +205,14 @@ export const adminMenu: MenuItem[] = [
     title: "Emails",
     submenu: [
       { key: "email-templates", label: "Email Templates", path: "/admin/emails" },
+    ],
+  },
+  {
+    key: "revenue",
+    icon: TrendingUp,
+    title: "Revenue",
+    submenu: [
+      { key: "revenue", label: "Revenue Dashboard", path: "/admin/revenue" },
     ],
   },
   {

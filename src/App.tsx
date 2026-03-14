@@ -32,6 +32,7 @@ import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
 import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
 import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
 import SystemHealthPage from "@/pages/admin/SystemHealthPage";
+import RevenuePage from "@/pages/admin/RevenuePage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -121,6 +122,7 @@ const App = () => (
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
               <Route path="system-health" element={<SystemHealthPage />} />
+              <Route path="revenue" element={<RevenuePage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
