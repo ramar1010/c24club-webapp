@@ -108,30 +108,45 @@ const VideoCallPage = () => {
     isActive: callState !== "idle",
   });
 
+  const nsfwTargetUserId = callState === "connected" ? currentPartnerId ?? "anonymous" : "anonymous";
+
   const { isNsfwBlurred, nsfwStrikes, shouldBan } = useNsfwDetection({
     remoteVideoRef,
     isConnected: callState === "connected",
-    userId: memberId,
+    userId: nsfwTargetUserId,
   });
 
-  // Auto-ban when NSFW strikes reach threshold
+  // Auto-ban the offending remote user when NSFW strikes reach threshold
   useEffect(() => {
-    if (!shouldBan || !user?.id) return;
+    if (!shouldBan || !currentPartnerId) return;
+
     const banUser = async () => {
       try {
-        await supabase.from("user_bans").insert({
-          user_id: user.id,
+        const { data: existingBan, error: lookupError } = await supabase
+          .from("user_bans")
+          .select("id")
+          .eq("user_id", currentPartnerId)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (lookupError) throw lookupError;
+        if (existingBan) return;
+
+        const { error: banError } = await supabase.from("user_bans").insert({
+          user_id: currentPartnerId,
           reason: "Nudity detected on camera (automated)",
           ban_type: "standard",
           is_active: true,
         });
-        recheckBan();
+
+        if (banError) throw banError;
       } catch (err) {
-        console.error("[NSFW] Failed to ban user:", err);
+        console.error("[NSFW] Failed to ban offending user:", err);
       }
     };
+
     banUser();
-  }, [shouldBan, user?.id, recheckBan]);
+  }, [shouldBan, currentPartnerId]);
 
   const {
     totalMinutes,

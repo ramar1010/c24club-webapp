@@ -30,27 +30,48 @@ export function useNsfwDetection({
   const modelRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loadingRef = useRef(false);
-  const strikesLoadedRef = useRef(false);
+  const loadedUserIdRef = useRef<string | null>(null);
 
-  // Load persisted strikes from DB on mount
+  // Load persisted strikes whenever the monitored user changes
   useEffect(() => {
-    if (!userId || userId === "anonymous" || strikesLoadedRef.current) return;
-    strikesLoadedRef.current = true;
+    if (!userId || userId === "anonymous") {
+      loadedUserIdRef.current = null;
+      setNsfwStrikes(0);
+      setShouldBan(false);
+      setIsNsfwBlurred(false);
+      return;
+    }
+
+    if (loadedUserIdRef.current !== userId) {
+      setNsfwStrikes(0);
+      setShouldBan(false);
+      setIsNsfwBlurred(false);
+    }
+
+    let isMounted = true;
+    loadedUserIdRef.current = userId;
 
     supabase
       .from("member_minutes")
       .select("nsfw_strikes")
       .eq("user_id", userId)
       .maybeSingle()
-      .then(({ data }) => {
-        if (data && typeof (data as any).nsfw_strikes === "number") {
-          const strikes = (data as any).nsfw_strikes as number;
-          setNsfwStrikes(strikes);
-          if (strikes >= maxStrikes) {
-            setShouldBan(true);
-          }
+      .then(({ data, error }) => {
+        if (!isMounted || loadedUserIdRef.current !== userId) return;
+        if (error) {
+          console.warn("[NSFW] Failed to load strikes:", error.message);
+          return;
         }
+
+        const strikesValue = Number((data as any)?.nsfw_strikes ?? 0);
+        const strikes = Number.isFinite(strikesValue) ? strikesValue : 0;
+        setNsfwStrikes(strikes);
+        setShouldBan(strikes >= maxStrikes);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId, maxStrikes]);
 
   // Load nsfwjs model dynamically
@@ -84,10 +105,14 @@ export function useNsfwDetection({
   const persistStrike = useCallback(
     async (newCount: number) => {
       if (!userId || userId === "anonymous") return;
-      await supabase
+      const { error } = await supabase
         .from("member_minutes")
         .update({ nsfw_strikes: newCount } as any)
         .eq("user_id", userId);
+
+      if (error) {
+        console.warn("[NSFW] Failed to persist strikes:", error.message);
+      }
     },
     [userId]
   );
