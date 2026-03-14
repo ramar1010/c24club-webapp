@@ -30,6 +30,7 @@ interface AnchorEarningPanelProps {
   settings: AnchorSettings | null;
   verificationRequired: boolean;
   verificationWord: string;
+  payouts: AnchorPayout[];
   onJoin: () => void;
   onLeave: () => void;
   onCashout: (email: string) => Promise<number>;
