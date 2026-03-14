@@ -193,6 +193,30 @@ const MembersPage = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      // Delete in batches of 50
+      for (let i = 0; i < ids.length; i += 50) {
+        const batch = ids.slice(i, i + 50);
+        const { error } = await supabase.from("members").delete().in("id", batch);
+        if (error) throw error;
+      }
+      toast.success(`${ids.length} member(s) deleted`);
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      // Invalidate query to refresh
+      deleteMutation.reset();
+      window.location.reload();
+    } catch (err: any) {
+      toast.error("Bulk delete failed", { description: err.message });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -202,10 +226,18 @@ const MembersPage = () => {
             {isLoading ? "Loading..." : `${data?.length ?? 0} members total.`}
           </p>
         </div>
-        <Button>
-          <User className="mr-2 h-4 w-4" />
-          Add New Member
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete {selectedIds.size} selected
+            </Button>
+          )}
+          <Button>
+            <User className="mr-2 h-4 w-4" />
+            Add New Member
+          </Button>
+        </div>
       </div>
 
       <DataTable
