@@ -373,6 +373,16 @@ const VideoCallPage = () => {
     }
   }, [banInfo, recheckBan, checkSubscription]);
 
+  // Auto-open VIP overlay when navigated with openVip state
+  const location = useLocation();
+  useEffect(() => {
+    if ((location.state as any)?.openVip) {
+      setOverlayPage("vip");
+      // Clear the state so it doesn't re-trigger
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, [location.state]);
+
   if (!loading && !user) {
     return <Navigate to="/" replace />;
   }
