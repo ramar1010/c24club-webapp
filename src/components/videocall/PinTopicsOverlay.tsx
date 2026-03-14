@@ -111,16 +111,6 @@ const PinTopicsOverlay = ({ userId, onClose }: PinTopicsOverlayProps) => {
       ) : !selectedCategory ? (
         /* Category selector dropdown-style */
         <div className="flex-1 flex flex-col items-center px-6 pt-4">
-          <button
-            onClick={() => {}}
-            className="bg-neutral-800 border border-neutral-600 rounded-full px-8 py-3 flex items-center gap-3 mb-8"
-          >
-            <span className="text-white font-bold text-lg">Pin Topic</span>
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
           {/* Category list */}
           <div className="w-full space-y-2">
             {categories.map((cat) => (
