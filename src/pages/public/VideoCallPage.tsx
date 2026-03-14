@@ -99,7 +99,6 @@ const VideoCallPage = () => {
   });
 
   // If the authenticated user changes (e.g. admin login in same browser), stop the call
-  // to prevent NSFW detection from running under the wrong user context
   useEffect(() => {
     if (prevUserIdRef.current !== memberId && prevUserIdRef.current !== "anonymous") {
       console.log("[VideoCall] User changed, stopping call to prevent cross-account issues");
@@ -107,6 +106,16 @@ const VideoCallPage = () => {
     }
     prevUserIdRef.current = memberId;
   }, [memberId, stop]);
+
+  // Capture user's IP on load and store it in their member record
+  useEffect(() => {
+    if (!user) return;
+    supabase.functions.invoke("get-client-ip").then(({ data }) => {
+      if (data?.ip) {
+        supabase.from("members").update({ last_ip: data.ip } as any).eq("id", user.id).then(() => {});
+      }
+    }).catch(() => {});
+  }, [user]);
 
   const { partnerBlackScreen } = useBlackScreenDetection({
     remoteVideoRef,
