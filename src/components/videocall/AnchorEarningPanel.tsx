@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { AnchorMode, AnchorStatus } from "@/hooks/useAnchorEarning";
 import { toast } from "sonner";
 import AnchorExplainerModal, { STORAGE_KEY } from "./AnchorExplainerModal";
-import { toast } from "sonner";
 
 interface AnchorSettings {
   power_rate_cash: number;
