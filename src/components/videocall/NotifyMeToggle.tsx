@@ -111,82 +111,64 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
   const handleToggle = async (checked: boolean) => {
     if (loading) return;
     setLoading(true);
-    addLog(`Toggle pressed, checked: ${checked}`);
 
     try {
       const normalizedGender = userGender?.toLowerCase();
       if (!normalizedGender) {
         toast.error("Please set your gender on the home profile popup first");
-        addLog("ERROR: no gender set");
         return;
       }
 
       if (checked) {
         const pushSupport = checkPushSupport();
-        addLog(`Push support: ${JSON.stringify(pushSupport)}`);
         if (!pushSupport.supported) {
           toast.error(pushSupport.message);
           return;
         }
 
-        addLog(`Current permission: ${Notification.permission}`);
         let permission = Notification.permission;
-
         if (permission === "default") {
-          addLog("Requesting permission...");
           permission = await Notification.requestPermission();
-          addLog(`Permission result: ${permission}`);
         }
 
         if (permission === "denied") {
-          addLog("Permission DENIED");
           toast.error("Notifications are blocked. Enable them in your browser site settings and try again.");
           return;
         }
 
         if (permission !== "granted") {
-          addLog(`Permission not granted: ${permission}`);
           toast.error("Please allow notifications to use this feature");
           return;
         }
 
-        addLog("Registering SW...");
         let swRegistration: ServiceWorkerRegistration;
         try {
           swRegistration = await registerServiceWorker();
-          addLog("SW registered OK");
         } catch (swErr) {
-          addLog(`SW FAILED: ${swErr}`);
           toast.error("Could not register notification worker. Try refreshing the page.");
           return;
         }
 
-        addLog("Init messaging...");
         let msg;
         try {
           msg = getMessagingInstance();
         } catch (initErr) {
-          addLog(`Messaging init CRASHED: ${initErr}`);
           toast.error("Push notifications failed to initialize.");
           return;
         }
 
         if (!msg) {
-          addLog(`Messaging null: ${messagingInitError}`);
           toast.error(messagingInitError || "Push messaging is not available.");
           return;
         }
 
-        addLog("Getting FCM token...");
         let token: string | null = null;
         try {
           token = await getToken(msg, {
             vapidKey: VAPID_KEY,
             serviceWorkerRegistration: swRegistration,
           });
-          addLog(`Token: ${token ? "obtained" : "null"}`);
         } catch (tokenErr) {
-          addLog(`getToken FAILED: ${tokenErr}`);
           const errMsg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
           if (errMsg.includes("indexedDB") || errMsg.includes("IndexedDB") || errMsg.includes("backing store")) {
             toast.error("Browser blocking storage needed for notifications.");
@@ -197,7 +179,6 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         }
 
         if (!token) {
-          addLog("Token is null/empty");
           toast.error("Could not create push token. Please try again.");
           return;
         }
@@ -210,7 +191,6 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         if (error) throw error;
 
         setEnabled(true);
-        addLog("SUCCESS - notifications enabled");
         toast.success("🔔 Notifications enabled!");
       } else {
         const { error } = await supabase
@@ -221,11 +201,9 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         if (error) throw error;
 
         setEnabled(false);
-        addLog("Notifications disabled");
         toast.info("Notifications disabled");
       }
     } catch (err) {
-      addLog(`CATCH error: ${err}`);
       toast.error(getPushSetupErrorMessage(err));
     } finally {
       setLoading(false);
@@ -241,30 +219,21 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
         : "Set your gender first to get accurate notifications";
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
-        {enabled ? (
-          <Bell className="w-4 h-4 text-yellow-400 shrink-0" />
-        ) : (
-          <BellOff className="w-4 h-4 text-neutral-500 shrink-0" />
-        )}
-        <span className="text-[11px] text-neutral-300 leading-tight flex-1">
-          {label}
-        </span>
-        <Switch
-          checked={enabled}
-          onCheckedChange={handleToggle}
-          disabled={loading}
-          className="shrink-0 scale-75"
-        />
-      </div>
-      {debugLog.length > 0 && (
-        <div className="bg-black/80 border border-green-500/30 rounded p-2 text-[9px] font-mono text-green-400 max-h-32 overflow-y-auto">
-          {debugLog.map((log, i) => (
-            <div key={i}>{log}</div>
-          ))}
-        </div>
+    <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+      {enabled ? (
+        <Bell className="w-4 h-4 text-yellow-400 shrink-0" />
+      ) : (
+        <BellOff className="w-4 h-4 text-neutral-500 shrink-0" />
       )}
+      <span className="text-[11px] text-neutral-300 leading-tight flex-1">
+        {label}
+      </span>
+      <Switch
+        checked={enabled}
+        onCheckedChange={handleToggle}
+        disabled={loading}
+        className="shrink-0 scale-75"
+      />
     </div>
   );
 };
