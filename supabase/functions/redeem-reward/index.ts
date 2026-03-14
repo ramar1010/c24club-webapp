@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, rewardId, shipping } = await req.json();
+    const { action, rewardId, shipping, paypalEmail } = await req.json();
 
     // ─── Shared helpers ───
     const getReward = async (id: string) => {
