@@ -203,6 +203,10 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
       toast.error("Please enter email and password");
       return;
     }
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
     setLoading(true);
     if (isSignUp) {
       const { error } = await supabase.auth.signUp({ email: email.trim(), password });
