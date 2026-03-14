@@ -387,11 +387,40 @@ const AnchorEarningPanel = ({
         )}
       </p>
 
+      {/* Payout history toggle */}
+      {payouts.length > 0 && (
+        <div className="mt-2">
+          <button
+            onClick={() => setShowPayouts(!showPayouts)}
+            className="text-xs text-neutral-400 hover:text-white font-bold w-full text-center"
+          >
+            {pendingPayouts.length > 0 && <span className="text-yellow-400">⏳ {pendingPayouts.length} pending</span>}
+            {pendingPayouts.length > 0 ? " · " : ""}
+            {showPayouts ? "Hide" : "View"} Cashout History
+          </button>
+          {showPayouts && (
+            <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+              {payouts.map(p => (
+                <div key={p.id} className="flex items-center justify-between bg-neutral-800/60 rounded-lg px-3 py-1.5 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span>{statusIcon(p.status)}</span>
+                    <span className="text-green-400 font-bold">${Number(p.amount).toFixed(2)}</span>
+                  </div>
+                  <span className={`font-bold uppercase text-[10px] ${statusColor(p.status)}`}>
+                    {p.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Leave button */}
       <div className="text-center mt-1">
         <button
           onClick={() => {
-            if (confirm("⚠️ Stopping will reset your timer progress. Are you sure?")) {
+            if (confirm("⚠️ Stopping will pause your timer. Your cash balance is saved.")) {
               onLeave();
             }
           }}
@@ -399,10 +428,9 @@ const AnchorEarningPanel = ({
         >
           Stop Earning
         </button>
-        <p className="text-neutral-600 text-[9px] mt-0.5">⚠️ Timer resets if you stop</p>
+        <p className="text-neutral-600 text-[9px] mt-0.5">⏸ Timer pauses if you stop · Cash is saved</p>
       </div>
 
-      {/* Settings badge */}
       {settings && (
         <div className="hidden">
           {/* Hidden settings for reference */}
