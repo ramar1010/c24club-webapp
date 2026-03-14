@@ -125,27 +125,27 @@ const VideoCallPage = () => {
 
   // Auto-ban the offending remote user exactly when strike threshold is reached.
   useEffect(() => {
-    const hasValidPartner = !!currentPartnerId && currentPartnerId !== memberId;
-
-    if (!hasValidPartner) {
+    if (!currentPartnerId || currentPartnerId === memberId) {
       banAttemptPartnerRef.current = null;
       return;
     }
 
+    const targetUserId = currentPartnerId;
+
     if (nsfwStrikes < NSFW_BAN_THRESHOLD) {
-      if (banAttemptPartnerRef.current === currentPartnerId) {
+      if (banAttemptPartnerRef.current === targetUserId) {
         banAttemptPartnerRef.current = null;
       }
       return;
     }
 
-    if (banAttemptPartnerRef.current === currentPartnerId) return;
-    banAttemptPartnerRef.current = currentPartnerId;
+    if (banAttemptPartnerRef.current === targetUserId) return;
+    banAttemptPartnerRef.current = targetUserId;
 
     const banUser = async () => {
       try {
         const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId: currentPartnerId },
+          body: { targetUserId },
         });
 
         if (error) {
