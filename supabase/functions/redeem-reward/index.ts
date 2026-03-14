@@ -128,8 +128,9 @@ Deno.serve(async (req) => {
         minutes_cost: reward.minutes_cost,
         status: "processing",
         cashout_amount: cashoutValue,
+        cashout_paypal: paypalEmail || null,
         cashout_status: "pending",
-        notes: `Legendary cashout: $${cashoutValue.toFixed(2)}`,
+        notes: `Legendary cashout: $${cashoutValue.toFixed(2)}${paypalEmail ? ` → ${paypalEmail}` : ""}`,
       });
 
       if (insertErr) {
