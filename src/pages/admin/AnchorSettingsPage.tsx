@@ -61,6 +61,21 @@ const AnchorSettingsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updatePayoutMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("anchor_payouts")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      toast.success(`Payout marked as ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["anchor-admin-data"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   // Fetch active sessions and queue
   const { data: anchorData } = useQuery({
     queryKey: ["anchor-admin-data"],
@@ -234,11 +249,29 @@ const AnchorSettingsPage = () => {
                   <span className="font-bold text-sm">{memberName(p.user_id)}</span>
                   <span className="text-xs text-neutral-500 ml-2">{p.paypal_email}</span>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-2">
                   <span className="font-bold text-green-400">${Number(p.amount).toFixed(2)}</span>
-                  <span className={`text-xs ml-2 font-bold ${p.status === "pending" ? "text-yellow-400" : p.status === "paid" ? "text-green-400" : "text-red-400"}`}>
+                  <span className={`text-xs font-bold ${p.status === "pending" ? "text-yellow-400" : p.status === "paid" ? "text-green-400" : "text-red-400"}`}>
                     {p.status.toUpperCase()}
                   </span>
+                  {p.status === "pending" && (
+                    <>
+                      <button
+                        onClick={() => updatePayoutMutation.mutate({ id: p.id, status: "paid" })}
+                        disabled={updatePayoutMutation.isPending}
+                        className="px-3 py-1 text-xs font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                      >
+                        Mark Paid
+                      </button>
+                      <button
+                        onClick={() => updatePayoutMutation.mutate({ id: p.id, status: "rejected" })}
+                        disabled={updatePayoutMutation.isPending}
+                        className="px-3 py-1 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
