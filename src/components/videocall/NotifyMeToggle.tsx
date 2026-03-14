@@ -147,23 +147,51 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
           return;
         }
 
+        console.log("[Notify] Registering service worker first...");
+        let swRegistration: ServiceWorkerRegistration;
+        try {
+          swRegistration = await registerServiceWorker();
+          console.log("[Notify] SW registered successfully");
+        } catch (swErr) {
+          console.error("[Notify] SW registration failed:", swErr);
+          toast.error("Could not register notification worker. Try refreshing the page.");
+          return;
+        }
+
         console.log("[Notify] Initializing messaging...");
-        const msg = getMessagingInstance();
+        let msg;
+        try {
+          msg = getMessagingInstance();
+        } catch (initErr) {
+          console.error("[Notify] Messaging init crashed:", initErr);
+          toast.error("Push notifications failed to initialize. Your browser may be blocking required storage.");
+          return;
+        }
+
         if (!msg) {
-          console.error("[Notify] Messaging init failed:", messagingInitError);
+          console.error("[Notify] Messaging init returned null:", messagingInitError);
           toast.error(messagingInitError || "Push messaging is not available on this device/browser.");
           return;
         }
 
-        console.log("[Notify] Registering service worker...");
-        const swRegistration = await registerServiceWorker();
-        console.log("[Notify] SW registered, getting token...");
-
-        const token = await getToken(msg, {
-          vapidKey: VAPID_KEY,
-          serviceWorkerRegistration: swRegistration,
-        });
-        console.log("[Notify] Token result:", token ? "obtained" : "null");
+        console.log("[Notify] Getting FCM token...");
+        let token: string | null = null;
+        try {
+          token = await getToken(msg, {
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: swRegistration,
+          });
+          console.log("[Notify] Token result:", token ? "obtained" : "null");
+        } catch (tokenErr) {
+          console.error("[Notify] getToken failed:", tokenErr);
+          const errMsg = tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+          if (errMsg.includes("indexedDB") || errMsg.includes("IndexedDB") || errMsg.includes("backing store")) {
+            toast.error("Your browser is blocking storage needed for notifications. Try clearing site data or using a different browser.");
+          } else {
+            toast.error(getPushSetupErrorMessage(tokenErr));
+          }
+          return;
+        }
 
         if (!token) {
           toast.error("Could not create push token. Please try again.");
