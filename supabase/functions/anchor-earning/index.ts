@@ -222,6 +222,33 @@ Deno.serve(async (req) => {
       );
     }
 
+    // VERIFY: User completed the typing challenge
+    if (type === "verify") {
+      const { data: session } = await supabase
+        .from("anchor_sessions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (!session) {
+        return new Response(
+          JSON.stringify({ success: false, message: "no_active_session" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      await supabase
+        .from("anchor_sessions")
+        .update({ last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", session.id);
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // TICK: Report elapsed time progress (called every ~30s from client)
     if (type === "tick") {
       const { secondsToAdd, partnerGender } = body;
@@ -244,6 +271,17 @@ Deno.serve(async (req) => {
       if (!session) {
         return new Response(
           JSON.stringify({ success: false, message: "no_active_session" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if verification is needed (every 15 minutes)
+      const VERIFY_INTERVAL_MS = 15 * 60 * 1000;
+      const lastVerified = session.last_verified_at ? new Date(session.last_verified_at).getTime() : new Date(session.created_at).getTime();
+      const now = Date.now();
+      if (now - lastVerified >= VERIFY_INTERVAL_MS) {
+        return new Response(
+          JSON.stringify({ success: true, verification_required: true, elapsed_seconds: session.elapsed_seconds, currentMode, cash_balance: Number(session.cash_balance), threshold_seconds: currentMode === "power" ? settings.power_rate_time * 60 : settings.chill_reward_time * 60 }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

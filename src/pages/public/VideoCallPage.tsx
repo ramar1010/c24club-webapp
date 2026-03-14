@@ -811,11 +811,14 @@ const VideoCallPage = () => {
               rewardEarned={anchor.rewardEarned}
               cashEarned={anchor.cashEarned}
               settings={anchor.settings}
+              verificationRequired={anchor.verificationRequired}
+              verificationWord={anchor.verificationWord}
               onJoin={anchor.joinAnchor}
               onLeave={anchor.leaveAnchor}
               onCashout={anchor.cashout}
               onDismissReward={anchor.dismissReward}
               onDismissCash={anchor.dismissCashEarned}
+              onSubmitVerification={anchor.submitVerification}
             />
           )}
         </div>

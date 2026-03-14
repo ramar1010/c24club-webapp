@@ -18,13 +18,15 @@ interface AnchorReward {
 export type AnchorStatus = "loading" | "not_eligible" | "idle" | "active" | "queued" | "slots_full";
 export type AnchorMode = "chill" | "power";
 
+const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder", "blossom", "cascade", "eclipse", "harbor", "lantern", "orchid", "phoenix", "radiance", "sapphire", "velvet"];
+
 export function useAnchorEarning({
   userId,
   isOnCall,
   partnerGender,
 }: {
   userId: string;
-  isOnCall: boolean; // true when waiting or connected
+  isOnCall: boolean;
   partnerGender?: string | null;
 }) {
   const [status, setStatus] = useState<AnchorStatus>("loading");
@@ -36,6 +38,8 @@ export function useAnchorEarning({
   const [settings, setSettings] = useState<AnchorSettings | null>(null);
   const [rewardEarned, setRewardEarned] = useState<AnchorReward | null>(null);
   const [cashEarned, setCashEarned] = useState<number>(0);
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [verificationWord, setVerificationWord] = useState("");
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const localElapsedRef = useRef(0);
@@ -132,6 +136,13 @@ export function useAnchorEarning({
     });
 
     if (data?.success) {
+      if (data.verification_required) {
+        // Pause timer and show challenge
+        isActiveRef.current = false;
+        setVerificationRequired(true);
+        setVerificationWord(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
+        return;
+      }
       setElapsedSeconds(data.elapsed_seconds);
       localElapsedRef.current = data.elapsed_seconds;
       setMode(data.currentMode);
@@ -220,6 +231,22 @@ export function useAnchorEarning({
   const dismissReward = useCallback(() => setRewardEarned(null), []);
   const dismissCashEarned = useCallback(() => setCashEarned(0), []);
 
+  // Submit verification
+  const submitVerification = useCallback(async (input: string) => {
+    if (input.toLowerCase().trim() !== verificationWord.toLowerCase()) {
+      return false;
+    }
+    const { data } = await supabase.functions.invoke("anchor-earning", {
+      body: { type: "verify", userId },
+    });
+    if (data?.success) {
+      setVerificationRequired(false);
+      setVerificationWord("");
+      isActiveRef.current = true;
+    }
+    return !!data?.success;
+  }, [userId, verificationWord]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -241,11 +268,14 @@ export function useAnchorEarning({
     settings,
     rewardEarned,
     cashEarned,
+    verificationRequired,
+    verificationWord,
     joinAnchor,
     leaveAnchor,
     cashout,
     dismissReward,
     dismissCashEarned,
+    submitVerification,
     checkStatus,
   };
 }

@@ -28,11 +28,14 @@ interface AnchorEarningPanelProps {
   rewardEarned: AnchorReward | null;
   cashEarned: number;
   settings: AnchorSettings | null;
+  verificationRequired: boolean;
+  verificationWord: string;
   onJoin: () => void;
   onLeave: () => void;
   onCashout: (email: string) => Promise<number>;
   onDismissReward: () => void;
   onDismissCash: () => void;
+  onSubmitVerification: (input: string) => Promise<boolean>;
 }
 
 const AnchorEarningPanel = ({
@@ -45,17 +48,23 @@ const AnchorEarningPanel = ({
   rewardEarned,
   cashEarned,
   settings,
+  verificationRequired,
+  verificationWord,
   onJoin,
   onLeave,
   onCashout,
   onDismissReward,
   onDismissCash,
+  onSubmitVerification,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [showExplainer, setShowExplainer] = useState(false);
+  const [verifyInput, setVerifyInput] = useState("");
+  const [verifyError, setVerifyError] = useState(false);
+  const [verifySubmitting, setVerifySubmitting] = useState(false);
 
   useEffect(() => {
     if (status !== "not_eligible" && status !== "loading") {
@@ -160,6 +169,60 @@ const AnchorEarningPanel = ({
           >
             Keep Earning! 💪
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Verification challenge popup
+  if (verificationRequired) {
+    const handleVerify = async () => {
+      setVerifySubmitting(true);
+      setVerifyError(false);
+      const ok = await onSubmitVerification(verifyInput);
+      setVerifySubmitting(false);
+      if (ok) {
+        setVerifyInput("");
+        toast.success("Verified! Timer resumed ✅");
+      } else {
+        setVerifyError(true);
+        setVerifyInput("");
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+        <div className="bg-neutral-900 border-2 border-yellow-500 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95">
+          <div className="text-4xl mb-3">⏸️</div>
+          <h3 className="text-lg font-black text-white mb-1 uppercase">Still There?</h3>
+          <p className="text-neutral-400 text-sm mb-4">
+            Type the word below to keep earning
+          </p>
+          <p className="text-yellow-400 font-black text-2xl tracking-widest mb-4 select-none">
+            {verificationWord.toUpperCase()}
+          </p>
+          <input
+            type="text"
+            value={verifyInput}
+            onChange={(e) => { setVerifyInput(e.target.value); setVerifyError(false); }}
+            placeholder="Type the word here..."
+            autoFocus
+            className={`w-full bg-neutral-800 border ${verifyError ? "border-red-500" : "border-neutral-600"} rounded-lg px-4 py-3 text-white text-center text-lg font-bold mb-2 focus:outline-none focus:border-yellow-500`}
+            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+          />
+          {verifyError && (
+            <p className="text-red-400 text-xs mb-2">Wrong word — try again!</p>
+          )}
+          <button
+            onClick={handleVerify}
+            disabled={verifySubmitting || !verifyInput.trim()}
+            className="mt-2 w-full py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-neutral-900 font-black text-lg uppercase transition-colors disabled:opacity-50"
+          >
+            {verifySubmitting ? "Verifying..." : "Confirm ✅"}
+          </button>
+          <p className="text-neutral-600 text-[10px] mt-3">
+            Your timer is paused until you verify
+          </p>
         </div>
       </div>
     );
