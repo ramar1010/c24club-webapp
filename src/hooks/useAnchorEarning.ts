@@ -264,11 +264,14 @@ export function useAnchorEarning({
     settings,
     rewardEarned,
     cashEarned,
+    verificationRequired,
+    verificationWord,
     joinAnchor,
     leaveAnchor,
     cashout,
     dismissReward,
     dismissCashEarned,
+    submitVerification,
     checkStatus,
   };
 }
