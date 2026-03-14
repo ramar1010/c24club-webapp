@@ -164,15 +164,8 @@ const VideoCallPage = () => {
 
     const banUser = async () => {
       try {
-        // Fetch the partner's IP to store with the ban
-        let ipAddress: string | null = null;
-        try {
-          const { data: ipData } = await supabase.functions.invoke("get-client-ip");
-          ipAddress = ipData?.ip || null;
-        } catch {}
-
         const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId, ipAddress },
+          body: { targetUserId },
         });
 
         if (error) {
