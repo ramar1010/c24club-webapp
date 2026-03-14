@@ -227,7 +227,52 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Rewards grid */}
       <div className="flex-1 px-4 pb-6">
-        {isLoading ? (
+        {selectedFilter === "Giftcards" ? (
+          // Gift cards view with codes
+          giftCardsLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          ) : claimedGiftCards.length === 0 ? (
+            <p className="text-neutral-500 text-center py-16 font-bold">
+              No redeemed giftcards yet.
+            </p>
+          ) : (
+            <div className="space-y-3 max-w-lg mx-auto">
+              {claimedGiftCards.map((card: any) => (
+                <div
+                  key={card.id}
+                  className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-black text-sm">{card.brand}</p>
+                      <p className="text-green-400 font-black text-xs">${card.value_amount} Gift Card</p>
+                    </div>
+                    <p className="text-[10px] text-neutral-500">
+                      {new Date(card.claimed_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-black/50 border border-neutral-700 rounded-xl px-4 py-3">
+                    <code className="flex-1 text-sm font-mono text-white tracking-wider select-all">
+                      {card.code}
+                    </code>
+                    <button
+                      onClick={() => handleCopyCode(card.code, card.id)}
+                      className="flex-shrink-0 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                    >
+                      {copiedCardId === card.id ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-neutral-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
           </div>
