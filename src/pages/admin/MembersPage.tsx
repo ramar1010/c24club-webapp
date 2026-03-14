@@ -94,6 +94,9 @@ const MembersPage = () => {
   const deleteMutation = useDeleteMember();
   const { user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [banTarget, setBanTarget] = useState<Member | null>(null);
   const [banType, setBanType] = useState("standard");
   const [banReason, setBanReason] = useState("Violation of terms");
