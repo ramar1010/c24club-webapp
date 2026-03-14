@@ -15,6 +15,15 @@ interface AnchorReward {
   rarity: string;
 }
 
+export interface AnchorPayout {
+  id: string;
+  amount: number;
+  status: string;
+  paypal_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AnchorStatus = "loading" | "not_eligible" | "idle" | "active" | "queued" | "slots_full";
 export type AnchorMode = "chill" | "power";
 
