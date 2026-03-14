@@ -94,6 +94,16 @@ Deno.serve(async (req) => {
         member_gender: memberGender,
       });
 
+      // Fire match-notify in background (don't await — non-blocking)
+      fetch(`${supabaseUrl}/functions/v1/match-notify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({ memberId, memberGender }),
+      }).catch((err) => console.warn("match-notify fire failed:", err));
+
       return new Response(
         JSON.stringify({
           success: true,

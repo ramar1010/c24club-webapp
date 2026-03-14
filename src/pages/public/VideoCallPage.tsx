@@ -35,6 +35,7 @@ import ReportUserOverlay from "@/components/videocall/ReportUserOverlay";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 import QuickStartGuide from "@/components/videocall/QuickStartGuide";
+import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -553,6 +554,9 @@ const VideoCallPage = () => {
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
               <p className="text-sm text-neutral-300">Finding a partner...</p>
+              <div className="mt-2 w-64">
+                <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+              </div>
             </div>
           </div>
 
@@ -699,6 +703,11 @@ const VideoCallPage = () => {
                 <p className="text-neutral-400 text-sm">
                   {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
+                {callState === "waiting" && (
+                  <div className="mt-2 w-64">
+                    <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+                  </div>
+                )}
               </div>
             )}
             {partnerPinnedTopics.length > 0 && callState === "connected" && (
