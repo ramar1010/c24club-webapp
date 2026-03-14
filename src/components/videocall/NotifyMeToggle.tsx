@@ -119,7 +119,7 @@ const NotifyMeToggle = ({ userId, userGender }: NotifyMeToggleProps) => {
 
   const label =
     userGender === "Female"
-      ? "Notify me when someone is waiting so I can Earn Cash!"
+      ? "Notify me when a male is online"
       : "Notify me when a female comes online";
 
   return (
