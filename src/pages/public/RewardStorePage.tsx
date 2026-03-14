@@ -113,6 +113,9 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [redeemingGiftCard, setRedeemingGiftCard] = useState<string | null>(null);
   const [redeemedCode, setRedeemedCode] = useState<{ code: string; brand: string; value: number } | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [showPaypalPrompt, setShowPaypalPrompt] = useState<any | null>(null);
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [cashingOut, setCashingOut] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
