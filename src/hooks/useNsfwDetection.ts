@@ -114,11 +114,20 @@ export function useNsfwDetection({
     (async () => {
       try {
         const tf = await import("@tensorflow/tfjs");
-        await tf.ready();
+        // Force CPU backend on desktop to avoid WebGL context conflicts
+        try {
+          await tf.setBackend("cpu");
+          await tf.ready();
+          console.log("[NSFW] TF backend:", tf.getBackend());
+        } catch (backendErr) {
+          console.warn("[NSFW] CPU backend failed, trying default:", backendErr);
+          await tf.ready();
+          console.log("[NSFW] TF fallback backend:", tf.getBackend());
+        }
         const nsfwjs = await import("nsfwjs");
         const model = await nsfwjs.load();
         modelRef.current = model;
-        console.log("[NSFW] Model loaded");
+        console.log("[NSFW] Model loaded successfully");
       } catch (err) {
         console.error("[NSFW] Failed to load model:", err);
         loadingRef.current = false;
@@ -172,9 +181,16 @@ export function useNsfwDetection({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
+    let debugLogCount = 0;
     const interval = setInterval(async () => {
       const video = remoteVideoRef.current;
       const model = modelRef.current;
+
+      if (debugLogCount < 3) {
+        console.log(`[NSFW] Check — video: ${!!video}, model: ${!!model}, readyState: ${video?.readyState}, videoWidth: ${video?.videoWidth}, srcObject: ${!!video?.srcObject}`);
+        debugLogCount++;
+      }
+
       if (!video || !model || video.readyState < 2) return;
 
       try {
