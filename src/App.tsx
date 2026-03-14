@@ -48,6 +48,7 @@ import NotFound from "./pages/NotFound";
 import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
 import HowToGuidePage from "@/pages/public/HowToGuidePage";
 import TermsPage from "@/pages/public/TermsPage";
+import PrivacyPolicyPage from "@/pages/public/PrivacyPolicyPage";
 const queryClient = new QueryClient();
 
 const App = () => (
