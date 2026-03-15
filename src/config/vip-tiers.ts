@@ -52,7 +52,7 @@ export const VIP_TIERS = {
       { label: "Get More Minutes Per User", icon: capIcon },
       { label: "Free Shipping 1 Month", icon: freeShippingIcon },
       { label: "2nd Spin Attempt on Legendary Items", icon: secondSpinIcon },
-      { label: "Promo Perks", icon: adPointsIcon },
+      { label: "More Promo Perks", icon: adPointsIcon },
       { label: "Add Custom Topics", icon: customTopicsIcon },
       { label: "2x Ad Points", icon: spinLegendaryIcon },
       { label: "5 Free Spins Per Month", icon: slotMachineIcon },
