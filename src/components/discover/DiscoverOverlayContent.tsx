@@ -12,7 +12,7 @@ interface DiscoverOverlayContentProps {
 
 const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   const {
-    members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();

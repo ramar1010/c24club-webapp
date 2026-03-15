@@ -10,7 +10,7 @@ import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
-    members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
