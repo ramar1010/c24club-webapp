@@ -75,6 +75,7 @@ const VideoCallPage = () => {
   const [voiceMode, setVoiceMode] = useState(false);
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
+  const [pulseAnchorBtn, setPulseAnchorBtn] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
