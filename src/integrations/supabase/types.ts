@@ -626,6 +626,7 @@ export type Database = {
           email: string | null
           gender: string | null
           id: string
+          image_status: string
           image_thumb_url: string | null
           image_url: string | null
           is_discoverable: boolean
@@ -651,6 +652,7 @@ export type Database = {
           email?: string | null
           gender?: string | null
           id?: string
+          image_status?: string
           image_thumb_url?: string | null
           image_url?: string | null
           is_discoverable?: boolean
@@ -676,6 +678,7 @@ export type Database = {
           email?: string | null
           gender?: string | null
           id?: string
+          image_status?: string
           image_thumb_url?: string | null
           image_url?: string | null
           is_discoverable?: boolean
