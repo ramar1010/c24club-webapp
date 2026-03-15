@@ -161,7 +161,7 @@ const DiscoverPage = () => {
       {/* Members grid */}
       <div className="p-4">
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="aspect-[3/4] rounded-xl bg-white/5 animate-pulse" />
             ))}
