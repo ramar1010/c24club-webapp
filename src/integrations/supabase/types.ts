@@ -429,6 +429,7 @@ export type Database = {
       member_interests: {
         Row: {
           created_at: string
+          icebreaker_message: string | null
           id: string
           interested_in_user_id: string
           notified: boolean
@@ -436,6 +437,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          icebreaker_message?: string | null
           id?: string
           interested_in_user_id: string
           notified?: boolean
@@ -443,6 +445,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          icebreaker_message?: string | null
           id?: string
           interested_in_user_id?: string
           notified?: boolean
@@ -619,6 +622,7 @@ export type Database = {
       }
       members: {
         Row: {
+          bio: string | null
           birthdate: string | null
           city: string | null
           country: string | null
@@ -645,6 +649,7 @@ export type Database = {
           zip: string | null
         }
         Insert: {
+          bio?: string | null
           birthdate?: string | null
           city?: string | null
           country?: string | null
@@ -671,6 +676,7 @@ export type Database = {
           zip?: string | null
         }
         Update: {
+          bio?: string | null
           birthdate?: string | null
           city?: string | null
           country?: string | null
