@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
+import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -71,6 +72,8 @@ const VideoCallPage = () => {
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
+  const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
+  const voiceModeExplainerShownRef = useRef(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -237,6 +240,13 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
+  // Show voice mode explainer once per session when female connects with voice mode
+  useEffect(() => {
+    if (callState === "connected" && isFemale && voiceMode && !voiceModeExplainerShownRef.current) {
+      voiceModeExplainerShownRef.current = true;
+      setShowVoiceModeExplainer(true);
+    }
+  }, [callState, isFemale, voiceMode]);
 
   // Fetch partner gender for anchor system
   const { data: partnerGenderData } = useQuery({
@@ -1001,7 +1011,12 @@ const VideoCallPage = () => {
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
-        <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
+        <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} voiceMode={isFemale && voiceMode} />
+      )}
+
+      {/* Voice Mode Explainer Popup */}
+      {showVoiceModeExplainer && (
+        <VoiceModeExplainerPopup onDismiss={() => setShowVoiceModeExplainer(false)} />
       )}
 
       {/* Minutes Frozen Popup */}
