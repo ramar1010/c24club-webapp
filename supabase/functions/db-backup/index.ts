@@ -53,7 +53,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const backupToken = Deno.env.get("BACKUP_AUTH_TOKEN")!;
-    console.log("BACKUP_AUTH_TOKEN length:", backupToken?.length, "first 10 chars:", backupToken?.substring(0, 10));
     const vpsUrl = "http://187.124.94.22:3333/backup";
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
