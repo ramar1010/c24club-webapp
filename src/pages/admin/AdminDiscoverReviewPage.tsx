@@ -35,16 +35,14 @@ const AdminDiscoverReviewPage = () => {
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
     queryFn: async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from("members")
         .select("id, name, email, image_url, gender, country, created_at, is_discoverable")
         .not("image_url", "is", null)
+        .filter("image_status", "eq", activeTab)
         .order("created_at", { ascending: false });
-
-      // Filter by image_status — we cast to any since types haven't regenerated yet
-      const { data, error } = await (query as any).eq("image_status", activeTab);
       if (error) throw error;
-      return (data || []) as MemberImage[];
+      return (data || []) as unknown as MemberImage[];
     },
   });
 
