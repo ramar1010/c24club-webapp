@@ -11,27 +11,16 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user) throw new Error("Not authenticated");
-
     const { action, giftCardId } = await req.json();
 
+    // List action doesn't require authentication
     if (action === "list") {
-      // List available gift cards (grouped by brand + value, showing count)
       const { data: cards, error } = await supabaseAdmin
         .from("gift_cards")
         .select("id, brand, value_amount, minutes_cost, image_url, status")
@@ -40,7 +29,6 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // Group by brand + value_amount + minutes_cost
       const grouped: Record<string, { brand: string; value_amount: number; minutes_cost: number; image_url: string | null; count: number; sample_id: string }> = {};
       for (const card of cards || []) {
         const key = `${card.brand}-${card.value_amount}-${card.minutes_cost}`;
@@ -62,10 +50,35 @@ serve(async (req) => {
       });
     }
 
+    // All other actions require authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Not authenticated" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = claimsData.claims.sub;
+
     if (action === "redeem") {
       if (!giftCardId) throw new Error("No gift card specified");
 
-      // Get the gift card
       const { data: card, error: cardError } = await supabaseAdmin
         .from("gift_cards")
         .select("*")
@@ -75,36 +88,32 @@ serve(async (req) => {
 
       if (cardError || !card) throw new Error("Gift card not available");
 
-      // Check user balance
       const { data: userMinutes } = await supabaseAdmin
         .from("member_minutes")
         .select("total_minutes")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .single();
 
       if (!userMinutes || userMinutes.total_minutes < card.minutes_cost) {
         throw new Error("Not enough minutes");
       }
 
-      // Deduct minutes
       await supabaseAdmin.rpc("atomic_increment_minutes", {
-        p_user_id: user.id,
+        p_user_id: userId,
         p_amount: -card.minutes_cost,
       });
 
-      // Mark card as claimed
       await supabaseAdmin
         .from("gift_cards")
         .update({
           status: "claimed",
-          claimed_by: user.id,
+          claimed_by: userId,
           claimed_at: new Date().toISOString(),
         })
         .eq("id", giftCardId);
 
-      // Record in member_redemptions
       await supabaseAdmin.from("member_redemptions").insert({
-        user_id: user.id,
+        user_id: userId,
         reward_title: `${card.brand} $${card.value_amount} Gift Card`,
         reward_type: "giftcard",
         reward_rarity: "common",
@@ -127,7 +136,7 @@ serve(async (req) => {
       const { data: cards, error } = await supabaseAdmin
         .from("gift_cards")
         .select("id, brand, value_amount, code, claimed_at")
-        .eq("claimed_by", user.id)
+        .eq("claimed_by", userId)
         .eq("status", "claimed")
         .order("claimed_at", { ascending: false });
 
