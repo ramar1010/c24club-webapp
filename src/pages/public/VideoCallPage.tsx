@@ -39,6 +39,7 @@ import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
 import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
+import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -88,7 +89,7 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
 
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | null>(null);
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
@@ -283,6 +284,14 @@ const VideoCallPage = () => {
       connectionStartRef.current = null;
     }
   }, [callState]);
+
+  // Auto-close Discover overlay when a match is found
+  useEffect(() => {
+    if (callState === "connected" && overlayPage === "discover") {
+      setOverlayPage(null);
+      toast("Match found! 🎉", { description: "You've been connected to someone!" });
+    }
+  }, [callState, overlayPage]);
 
   const isMobile = useIsMobile();
 
@@ -602,8 +611,7 @@ const VideoCallPage = () => {
                 Turn on your camera to see your partner
               </p>
             </div>
-          )}
-
+      )}
 
           {callState === "waiting" && (
             <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
@@ -936,6 +944,7 @@ const VideoCallPage = () => {
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
+            <NavIcon src={profileIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} />
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
@@ -1002,6 +1011,11 @@ const VideoCallPage = () => {
           genderFilter={genderFilter}
           onGenderFilterChange={(g) => setGenderFilter(g as GenderFilter)}
         />
+      )}
+      {overlayPage === "discover" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
       )}
 
       {/* Skip Penalty Popup (first 3 times) */}
