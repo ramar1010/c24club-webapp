@@ -4,6 +4,7 @@ import { useDiscover } from "@/hooks/useDiscover";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
+import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 
 interface DiscoverOverlayContentProps {
   onClose?: () => void;
