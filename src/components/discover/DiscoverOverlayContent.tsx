@@ -178,7 +178,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
             <p className="text-white/40 text-sm">Be the first to get listed!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {members.map((member) => {
               const alreadyInterested = myInterests.has(member.id);
               const isFemale = member.gender?.toLowerCase() === "female";
