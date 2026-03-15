@@ -426,24 +426,23 @@ const VideoCallPage = () => {
     const isQuickSkip = connectedDurationSec < 5;
 
     // Only penalize non-VIP users
-    if (isQuickSkip && !subscribed && totalMinutes > 0) {
-      // Deduct 2 minutes server-side
-      const { data: penaltyData } = await supabase.functions.invoke("earn-minutes", {
-        body: { type: "deduct", userId: memberId, amount: 2 },
-      });
+    if (isQuickSkip && !subscribed) {
+      // Deduct 2 minutes server-side (only if they have minutes)
+      if (totalMinutes > 0) {
+        const { data: penaltyData } = await supabase.functions.invoke("earn-minutes", {
+          body: { type: "deduct", userId: memberId, amount: 2 },
+        });
 
-      // Refresh the displayed balance
-      if (penaltyData?.success) {
-        refreshMinutesBalance();
+        if (penaltyData?.success) {
+          refreshMinutesBalance();
+        }
       }
 
       skipPenaltyCountRef.current += 1;
 
       if (skipPenaltyCountRef.current <= 3) {
-        // Show full popup for first 3 times
         setShowSkipPenaltyPopup(true);
       } else {
-        // After 3 times, just show floating text
         setShowMinuteLossToast(true);
       }
     }
