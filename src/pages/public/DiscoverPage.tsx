@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Heart, Camera, Sparkles, DollarSign } from "lucide-react";
+import { ArrowLeft, Heart, Camera, Sparkles, DollarSign, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 
