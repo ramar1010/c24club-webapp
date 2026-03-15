@@ -465,11 +465,19 @@ const VideoCallPage = () => {
       setShowPromoAd(true);
     }
   };
-  const handleBack = () => {
+  const doLeave = useCallback(() => {
     awardAdPoints(elapsedSeconds).catch(() => {});
     flushMinutes().catch(() => {});
     stop().catch(() => {});
     navigate("/");
+  }, [awardAdPoints, elapsedSeconds, flushMinutes, stop, navigate]);
+
+  const handleBack = () => {
+    // Intercept for female retention modal (once per session)
+    if (isFemale && retentionModalRef.current?.tryShow()) {
+      return; // modal shown, wait for user decision
+    }
+    doLeave();
   };
 
   return (
