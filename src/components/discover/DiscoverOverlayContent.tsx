@@ -27,17 +27,20 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
 
+  const [myGender, setMyGender] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
 
     const load = async () => {
       const { data: me } = await supabase
         .from("members")
-        .select("is_discoverable, image_url")
+        .select("is_discoverable, image_url, gender")
         .eq("id", user.id)
         .single();
 
       setIsDiscoverable(!!me?.is_discoverable && !!me?.image_url);
+      setMyGender(me?.gender?.toLowerCase() || null);
 
       const { data: membersList } = await supabase
         .from("members")
