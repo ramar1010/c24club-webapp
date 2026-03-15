@@ -240,6 +240,13 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
+  // Show voice mode explainer once per session when female connects with voice mode
+  useEffect(() => {
+    if (callState === "connected" && isFemale && voiceMode && !voiceModeExplainerShownRef.current) {
+      voiceModeExplainerShownRef.current = true;
+      setShowVoiceModeExplainer(true);
+    }
+  }, [callState, isFemale, voiceMode]);
 
   // Fetch partner gender for anchor system
   const { data: partnerGenderData } = useQuery({
