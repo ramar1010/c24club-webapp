@@ -833,8 +833,9 @@ const VideoCallPage = () => {
             </button>
           </div>
           <button
+            id="anchor-tap-me-btn"
             onClick={() => setShowAnchorPanel(!showAnchorPanel)}
-            className="w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
+            className={`w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : ""}`}
           >
             {/* Main Tap Me row */}
             <div className="bg-gradient-to-r from-pink-600 to-fuchsia-600 py-2 px-3 flex items-center justify-between animate-pulse">
