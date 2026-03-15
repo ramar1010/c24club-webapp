@@ -48,25 +48,19 @@ const AdminDiscoverReviewPage = () => {
 
   const updateStatus = useMutation({
     mutationFn: async ({ memberId, status }: { memberId: string; status: ImageStatus }) => {
-      const updateData: Record<string, any> = {};
-      if (status === "approved") {
-        updateData.is_discoverable = true;
-      } else if (status === "denied") {
-        updateData.is_discoverable = false;
-      }
-      // Use rpc or raw update — image_status not in generated types yet
-      const { error } = await supabase.rpc("exec_sql" as any, {}) // fallback below
-      // Direct update with filter
-      const { error: err2 } = await supabase
+      const updateData: Record<string, any> = {
+        image_status: status,
+        is_discoverable: status === "approved",
+      };
+      const { error } = await supabase
         .from("members")
-        .update({ ...updateData } as any)
+        .update(updateData as any)
         .eq("id", memberId);
-      // Also update image_status via a separate approach
-      const { error: err3 } = await (supabase.from("members").update({} as any).eq("id", memberId) as any);
-      if (err2) throw err2;
+      if (error) throw error;
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
       toast({
         title: status === "approved" ? "Image Approved ✅" : "Image Denied ❌",
         description: status === "approved"
