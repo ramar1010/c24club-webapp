@@ -117,6 +117,9 @@ const VideoCallPage = () => {
 
   const needsSelfie = isDiscoverable === false;
 
+  const isFemale = memberGender?.toLowerCase() === "female";
+
+
 
   const {
     callState,
