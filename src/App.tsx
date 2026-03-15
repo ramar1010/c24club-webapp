@@ -45,6 +45,7 @@ import MyRewardsPage from "@/pages/public/MyRewardsPage";
 import SettingsPage from "@/pages/public/SettingsPage";
 import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
 import RulesPage from "@/pages/public/RulesPage";
+import DiscoverPage from "@/pages/public/DiscoverPage";
 
 import NotFound from "./pages/NotFound";
 import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
