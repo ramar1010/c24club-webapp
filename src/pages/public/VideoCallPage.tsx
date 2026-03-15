@@ -105,7 +105,18 @@ const VideoCallPage = () => {
     },
   });
 
-  const isFemale = memberGender?.toLowerCase() === "female";
+  // Check if user has taken a selfie (is discoverable)
+  const { data: isDiscoverable, refetch: refetchDiscoverable } = useQuery({
+    queryKey: ["member_discoverable", memberId],
+    enabled: memberId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("is_discoverable, image_url").eq("id", memberId).maybeSingle();
+      return !!(data?.is_discoverable && data?.image_url);
+    },
+  });
+
+  const needsSelfie = isDiscoverable === false;
+
 
   const {
     callState,
