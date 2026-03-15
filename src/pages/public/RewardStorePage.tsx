@@ -874,9 +874,14 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             </button>
           )}
           {isRareOrLegendary && !canSpinThis && selectedReward.rarity === "legendary" && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 text-center">
-              <p className="text-amber-400 font-black text-sm">👑 Premium VIP Only</p>
-              <p className="text-neutral-400 text-xs">Upgrade to spin for legendary items</p>
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-4 text-center space-y-2">
+              <p className="text-amber-400 font-black text-base">👑 PREMIUM VIP ONLY</p>
+              <p className="text-neutral-300 text-sm leading-snug">
+                Legendary items can only be won through <span className="text-amber-400 font-bold">Spin to Win</span> by <span className="text-amber-400 font-bold">Premium VIP</span> members.
+              </p>
+              <p className="text-neutral-500 text-xs">
+                Upgrade to Premium VIP ($9.99/mo) to unlock legendary spins, cash-out rewards, re-spins & more.
+              </p>
             </div>
           )}
 
