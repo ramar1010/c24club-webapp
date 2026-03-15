@@ -1113,6 +1113,7 @@ const VideoCallPage = () => {
 
       {/* Female Retention Modal */}
       <FemaleRetentionModal
+        ref={retentionModalRef}
         isFemale={isFemale}
         callState={callState}
         isMobile={isMobile}
@@ -1123,6 +1124,7 @@ const VideoCallPage = () => {
           const anchorBanner = document.getElementById("anchor-tap-me-btn");
           anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
         }}
+        onLeaveAnyway={doLeave}
       />
     </div>
   );
