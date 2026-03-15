@@ -82,7 +82,7 @@ const AdminDiscoverReviewPage = () => {
         .from("members")
         .select("id", { count: "exact", head: true })
         .not("image_url", "is", null)
-        .eq("image_status" as any, "pending");
+        .filter("image_status", "eq", "pending");
       if (error) throw error;
       return count || 0;
     },
