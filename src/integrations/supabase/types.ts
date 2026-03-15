@@ -426,6 +426,30 @@ export type Database = {
         }
         Relationships: []
       }
+      member_interests: {
+        Row: {
+          created_at: string
+          id: string
+          interested_in_user_id: string
+          notified: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interested_in_user_id: string
+          notified?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interested_in_user_id?: string
+          notified?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       member_minutes: {
         Row: {
           ad_points: number
@@ -604,7 +628,9 @@ export type Database = {
           id: string
           image_thumb_url: string | null
           image_url: string | null
+          is_discoverable: boolean
           is_test_account: boolean
+          last_active_at: string | null
           last_ip: string | null
           membership: string | null
           name: string
@@ -627,7 +653,9 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          is_discoverable?: boolean
           is_test_account?: boolean
+          last_active_at?: string | null
           last_ip?: string | null
           membership?: string | null
           name: string
@@ -650,7 +678,9 @@ export type Database = {
           id?: string
           image_thumb_url?: string | null
           image_url?: string | null
+          is_discoverable?: boolean
           is_test_account?: boolean
+          last_active_at?: string | null
           last_ip?: string | null
           membership?: string | null
           name?: string
