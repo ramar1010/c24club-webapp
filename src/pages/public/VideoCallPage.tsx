@@ -38,6 +38,7 @@ import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
+import FemaleRetentionModal from "@/components/videocall/FemaleRetentionModal";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -74,6 +75,7 @@ const VideoCallPage = () => {
   const [voiceMode, setVoiceMode] = useState(false);
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
+  const [pulseAnchorBtn, setPulseAnchorBtn] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -831,8 +833,9 @@ const VideoCallPage = () => {
             </button>
           </div>
           <button
+            id="anchor-tap-me-btn"
             onClick={() => setShowAnchorPanel(!showAnchorPanel)}
-            className="w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
+            className={`w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : ""}`}
           >
             {/* Main Tap Me row */}
             <div className="bg-gradient-to-r from-pink-600 to-fuchsia-600 py-2 px-3 flex items-center justify-between animate-pulse">
@@ -1098,6 +1101,20 @@ const VideoCallPage = () => {
           </div>
         </div>
       )}
+
+      {/* Female Retention Modal */}
+      <FemaleRetentionModal
+        isFemale={isFemale}
+        callState={callState}
+        isMobile={isMobile}
+        onStayAndEarn={() => {
+          setPulseAnchorBtn(true);
+          setShowAnchorBanner(true);
+          setTimeout(() => setPulseAnchorBtn(false), 3000);
+          const anchorBanner = document.getElementById("anchor-tap-me-btn");
+          anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
     </div>
   );
 };
