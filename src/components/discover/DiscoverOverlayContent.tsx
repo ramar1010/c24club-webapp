@@ -148,7 +148,9 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
             <div>
               <h3 className="font-bold text-white mb-1">Get discovered!</h3>
               <p className="text-white/70 text-sm mb-3">
-                Take a quick selfie to let others find you. We'll email you when someone wants to connect — <span className="text-pink-300 font-semibold">females can earn cash</span> by chatting!
+                Take a quick selfie to let others find you. We'll email you when someone wants to connect
+                {myGender === "female" && <> — <span className="text-pink-300 font-semibold">earn cash</span> by chatting!</>}
+                {myGender !== "female" && <>!</>}
               </p>
               <button
                 onClick={() => setShowSelfie(true)}
