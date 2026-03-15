@@ -99,6 +99,29 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
     setIsDiscoverable(true);
   };
 
+  const handleRemoveListing = useCallback(async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("members")
+      .update({
+        is_discoverable: false,
+        image_url: null,
+        image_thumb_url: null,
+      } as any)
+      .eq("id", user.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Delete the photo from storage
+    await supabase.storage.from("member-photos").remove([`${user.id}/selfie.jpg`]);
+
+    setIsDiscoverable(false);
+    toast({ title: "Listing removed 👋", description: "Your selfie has been deleted and you're no longer discoverable." });
+  }, [user]);
+
   const getTimeAgo = (dateStr: string | null) => {
     if (!dateStr) return "Recently";
     const diff = Date.now() - new Date(dateStr).getTime();
