@@ -14,6 +14,26 @@ const SettingsPage = () => {
   const [helpMessage, setHelpMessage] = useState("");
   const [helpSending, setHelpSending] = useState(false);
   const [resetSending, setResetSending] = useState(false);
+  const [bio, setBio] = useState("");
+  const [bioSaving, setBioSaving] = useState(false);
+  const [bioLoaded, setBioLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("members").select("bio").eq("id", user.id).single().then(({ data }) => {
+      setBio((data as any)?.bio || "");
+      setBioLoaded(true);
+    });
+  }, [user]);
+
+  const handleSaveBio = async () => {
+    if (!user) return;
+    setBioSaving(true);
+    const { error } = await supabase.from("members").update({ bio } as any).eq("id", user.id);
+    if (error) toast.error("Failed to save bio");
+    else toast.success("Bio saved! ✨");
+    setBioSaving(false);
+  };
 
   const handleResetPassword = async () => {
     if (!user?.email) {
