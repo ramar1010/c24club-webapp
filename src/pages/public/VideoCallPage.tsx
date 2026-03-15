@@ -611,8 +611,12 @@ const VideoCallPage = () => {
                 Turn on your camera to see your partner
               </p>
             </div>
-          )}
-
+      )}
+      {overlayPage === "discover" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
 
           {callState === "waiting" && (
             <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
