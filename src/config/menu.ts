@@ -25,6 +25,7 @@ import {
   Activity,
   TrendingUp,
   BarChart3,
+  Camera,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,6 +85,14 @@ export const adminMenu: MenuItem[] = [
     title: "Promos",
     submenu: [
       { key: "promos", label: "All Promos", path: "/admin/promos" },
+    ],
+  },
+  {
+    key: "discover-review",
+    icon: Camera,
+    title: "Discover Images",
+    submenu: [
+      { key: "discover-review", label: "Review Images", path: "/admin/discover-review" },
     ],
   },
   {

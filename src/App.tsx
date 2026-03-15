@@ -35,6 +35,7 @@ import SystemHealthPage from "@/pages/admin/SystemHealthPage";
 import RevenuePage from "@/pages/admin/RevenuePage";
 import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
 import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
+import AdminDiscoverReviewPage from "@/pages/admin/AdminDiscoverReviewPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<ReportedUsersPage />} />
+              <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="categories/new" element={<AddCategoryPage />} />
               <Route path="categories/:id/edit" element={<AddCategoryPage />} />

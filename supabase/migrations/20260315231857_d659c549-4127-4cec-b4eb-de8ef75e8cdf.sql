@@ -1,0 +1,1 @@
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS image_status text NOT NULL DEFAULT 'pending';

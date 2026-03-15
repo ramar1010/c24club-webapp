@@ -94,16 +94,16 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     const { data: urlData } = supabase.storage.from("member-photos").getPublicUrl(filePath);
     const imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    // Update member profile
+    // Update member profile — image_status defaults to 'pending', admin must approve
     await supabase.from("members").update({
       image_url: imageUrl,
       image_thumb_url: imageUrl,
-      is_discoverable: true,
+      is_discoverable: false,
       last_active_at: new Date().toISOString(),
-    }).eq("id", user.id);
+    } as any).eq("id", user.id);
 
     onComplete(imageUrl);
-    toast({ title: "You're discoverable! 🎉", description: "We'll notify you when someone wants to connect." });
+    toast({ title: "Selfie submitted! 📸", description: "Your photo is under review — we'll make you discoverable once approved." });
   }, [capturedBlob, user, onComplete]);
 
   const handleClose = () => {
