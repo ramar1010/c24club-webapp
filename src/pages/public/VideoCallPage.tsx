@@ -596,9 +596,6 @@ const VideoCallPage = () => {
               )}
             </div>
           )}
-              
-            </div>
-          )}
 
           {/* Quick Start Guide overlay */}
           {!isActive && showQuickStart && (
