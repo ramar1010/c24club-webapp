@@ -182,6 +182,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    // Clean up anchor session before signing out
+    if (user) {
+      try {
+        await supabase.functions.invoke("anchor-earning", {
+          body: { type: "leave", userId: user.id },
+        });
+      } catch (e) {
+        console.warn("Anchor cleanup on sign-out failed:", e);
+      }
+    }
     await supabase.auth.signOut();
     setIsAdmin(false);
     setBanInfo(null);

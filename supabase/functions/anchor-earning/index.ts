@@ -60,6 +60,57 @@ Deno.serve(async (req) => {
 
     const currentMode = getCurrentMode(settings);
 
+    // --- Stale session cleanup: auto-pause sessions not updated in 30+ minutes ---
+    const staleThreshold = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data: staleSessions } = await supabase
+      .from("anchor_sessions")
+      .select("id, user_id")
+      .eq("status", "active")
+      .lt("updated_at", staleThreshold);
+
+    if (staleSessions && staleSessions.length > 0) {
+      console.log(`[ANCHOR] Cleaning ${staleSessions.length} stale sessions`);
+      for (const stale of staleSessions) {
+        await supabase
+          .from("anchor_sessions")
+          .update({ status: "paused", updated_at: new Date().toISOString() })
+          .eq("id", stale.id);
+      }
+
+      // Promote queued users for freed slots
+      const { count: activeAfterClean } = await supabase
+        .from("anchor_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active");
+
+      const freeSlots = settings.max_anchor_cap - (activeAfterClean ?? 0);
+      if (freeSlots > 0) {
+        const { data: queued } = await supabase
+          .from("anchor_queue")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .limit(freeSlots);
+
+        if (queued) {
+          for (const q of queued) {
+            const { data: paused } = await supabase
+              .from("anchor_sessions")
+              .select("id")
+              .eq("user_id", q.user_id)
+              .eq("status", "paused")
+              .maybeSingle();
+
+            if (paused) {
+              await supabase.from("anchor_sessions").update({ status: "active", updated_at: new Date().toISOString() }).eq("id", paused.id);
+            } else {
+              await supabase.from("anchor_sessions").insert({ user_id: q.user_id, status: "active", current_mode: currentMode, elapsed_seconds: 0, cash_balance: 0 });
+            }
+            await supabase.from("anchor_queue").delete().eq("user_id", q.user_id);
+          }
+        }
+      }
+    }
+
     // GET_STATUS: Check if user is eligible, active, or queued
     if (type === "get_status") {
       // Check if user is female
