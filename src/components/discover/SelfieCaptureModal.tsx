@@ -1,8 +1,23 @@
 import { useRef, useState, useCallback } from "react";
-import { Camera, RotateCcw, Check, X } from "lucide-react";
+import { Camera, RotateCcw, Check, X, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import cashappIcon from "@/assets/socials/cashapp.png";
+import tiktokIcon from "@/assets/socials/tiktok.png";
+import instagramIcon from "@/assets/socials/instagram.png";
+import snapchatIcon from "@/assets/socials/snapchat.png";
+import venmoIcon from "@/assets/socials/venmo.png";
+import paypalIcon from "@/assets/socials/paypal.png";
+
+const SOCIAL_PLATFORMS = [
+  { key: "instagram", label: "Instagram", icon: instagramIcon, placeholder: "@username" },
+  { key: "tiktok", label: "TikTok", icon: tiktokIcon, placeholder: "@username" },
+  { key: "snapchat", label: "Snapchat", icon: snapchatIcon, placeholder: "/username" },
+  { key: "cashapp", label: "CashApp", icon: cashappIcon, placeholder: "$cashtag" },
+  { key: "venmo", label: "Venmo", icon: venmoIcon, placeholder: "/username" },
+  { key: "paypal", label: "PayPal", icon: paypalIcon, placeholder: "@username" },
+];
 
 interface SelfieCaptureModalProps {
   open: boolean;
@@ -15,10 +30,12 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [step, setStep] = useState<"camera" | "preview" | "uploading">("camera");
+  const [step, setStep] = useState<"camera" | "preview" | "socials" | "uploading">("camera");
   const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [cameraStarted, setCameraStarted] = useState(false);
+  const [socialInputs, setSocialInputs] = useState<Record<string, string>>({});
+  const [bio, setBio] = useState("");
 
   const startCamera = useCallback(async () => {
     try {
@@ -42,7 +59,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     setCameraStarted(false);
   }, []);
 
-  const analyzeBrightness = useCallback((canvas: HTMLCanvasElement): { brightness: number; isTooDark: boolean; isTooUniform: boolean } => {
+  const analyzeBrightness = useCallback((canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext("2d")!;
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
@@ -52,21 +69,16 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
 
     for (let i = 0; i < pixels.length; i += 4) {
       const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-      const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+      const brightness = r * 0.299 + g * 0.587 + b * 0.114;
       totalBrightness += brightness;
       brightnessBuckets[Math.min(9, Math.floor(brightness / 25.6))]++;
     }
 
     const avgBrightness = totalBrightness / pixelCount;
-    // Check if >85% of pixels fall in the same bucket (too uniform = covered camera / solid color)
     const maxBucket = Math.max(...brightnessBuckets);
     const isTooUniform = maxBucket / pixelCount > 0.85;
 
-    return {
-      brightness: avgBrightness,
-      isTooDark: avgBrightness < 40,
-      isTooUniform,
-    };
+    return { isTooDark: avgBrightness < 40, isTooUniform };
   }, []);
 
   const takeSnapshot = useCallback(() => {
@@ -82,10 +94,9 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     const sy = (video.videoHeight - size) / 2;
     ctx.drawImage(video, sx, sy, size, size, 0, 0, 480, 480);
 
-    // Analyze brightness before accepting
     const { isTooDark, isTooUniform } = analyzeBrightness(canvas);
     if (isTooDark) {
-      toast({ title: "Too dark! 🌑", description: "Your photo is too dark. Move to a well-lit area and try again.", variant: "destructive" });
+      toast({ title: "Too dark! 🌑", description: "Move to a well-lit area and try again.", variant: "destructive" });
       return;
     }
     if (isTooUniform) {
@@ -114,6 +125,8 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     setTimeout(startCamera, 100);
   }, [startCamera]);
 
+  const goToSocials = () => setStep("socials");
+
   const confirmAndUpload = useCallback(async () => {
     if (!capturedBlob || !user) return;
     setStep("uploading");
@@ -125,56 +138,93 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
 
     if (error) {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-      setStep("preview");
+      setStep("socials");
       return;
     }
 
     const { data: urlData } = supabase.storage.from("member-photos").getPublicUrl(filePath);
     const imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    // Update member profile — image_status defaults to 'pending', admin must approve
+    // Update member profile
     await supabase.from("members").update({
       image_url: imageUrl,
       image_thumb_url: imageUrl,
       is_discoverable: false,
       last_active_at: new Date().toISOString(),
+      ...(bio.trim() ? { bio: bio.trim() } : {}),
     } as any).eq("id", user.id);
+
+    // Save socials to vip_settings (pinned_socials format: "platform:username")
+    const socialsArray = Object.entries(socialInputs)
+      .filter(([, val]) => val.trim())
+      .map(([key, val]) => `${key}:${val.trim()}`);
+
+    if (socialsArray.length > 0) {
+      const { data: existing } = await supabase
+        .from("vip_settings")
+        .select("id, pinned_socials")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Merge: keep existing socials for platforms not entered, add new ones
+        const existingMap = new Map<string, string>();
+        (existing.pinned_socials || []).forEach((s: string) => {
+          const [k, ...v] = s.split(":");
+          existingMap.set(k, v.join(":"));
+        });
+        socialsArray.forEach(s => {
+          const [k, ...v] = s.split(":");
+          existingMap.set(k, v.join(":"));
+        });
+        const merged = [...existingMap.entries()].map(([k, v]) => `${k}:${v}`);
+        await supabase.from("vip_settings").update({ pinned_socials: merged, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+      } else {
+        await supabase.from("vip_settings").insert({ user_id: user.id, pinned_socials: socialsArray });
+      }
+    }
 
     onComplete(imageUrl);
     toast({ title: "Selfie submitted! 📸", description: "Your photo is under review — we'll make you discoverable once approved." });
-  }, [capturedBlob, user, onComplete]);
+  }, [capturedBlob, user, onComplete, socialInputs, bio]);
 
   const handleClose = () => {
     stopCamera();
     onClose();
   };
 
+  const handleSocialChange = (key: string, value: string) => {
+    setSocialInputs(prev => ({ ...prev, [key]: value }));
+  };
+
+  const filledSocials = Object.values(socialInputs).filter(v => v.trim()).length;
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#1a1a1a] rounded-2xl w-full max-w-sm overflow-hidden border border-white/10">
+      <div className="bg-[#1a1a1a] rounded-2xl w-full max-w-sm overflow-hidden border border-white/10 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-white font-bold text-lg">Take a Quick Selfie 📸</h2>
+          <h2 className="text-white font-bold text-lg">
+            {step === "socials" ? "Add Your Socials 🔗" : "Take a Quick Selfie 📸"}
+          </h2>
           <button onClick={handleClose} className="text-white/60 hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-4">
-          <p className="text-white/60 text-sm text-center mb-4">
-            Just one snap — we'll find people who want to connect with you and let you know!
-          </p>
-
-          {/* Camera / Preview area */}
-          <div className="relative aspect-square rounded-xl overflow-hidden bg-black mb-4">
-            {step === "camera" && (
-              <>
+          {/* Step: Camera */}
+          {step === "camera" && (
+            <>
+              <p className="text-white/60 text-sm text-center mb-4">
+                Just one snap — we'll find people who want to connect with you!
+              </p>
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-black mb-4">
                 <video
                   ref={videoRef}
-                  className="w-full h-full object-cover mirror"
+                  className="w-full h-full object-cover"
                   style={{ transform: "scaleX(-1)" }}
                   playsInline
                   muted
@@ -188,30 +238,28 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
                     <span className="text-white font-medium">Tap to open camera</span>
                   </button>
                 )}
-              </>
-            )}
+              </div>
+              <canvas ref={canvasRef} className="hidden" />
+              {cameraStarted && (
+                <button
+                  onClick={takeSnapshot}
+                  className="w-full flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  <Camera className="w-5 h-5" />
+                  Snap!
+                </button>
+              )}
+            </>
+          )}
 
-            {(step === "preview" || step === "uploading") && previewUrl && (
-              <img src={previewUrl} alt="Your selfie" className="w-full h-full object-cover" />
-            )}
-          </div>
-
-          <canvas ref={canvasRef} className="hidden" />
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            {step === "camera" && cameraStarted && (
-              <button
-                onClick={takeSnapshot}
-                className="flex-1 flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-colors"
-              >
-                <Camera className="w-5 h-5" />
-                Snap!
-              </button>
-            )}
-
-            {step === "preview" && (
-              <>
+          {/* Step: Preview */}
+          {step === "preview" && (
+            <>
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-black mb-4">
+                <img src={previewUrl} alt="Your selfie" className="w-full h-full object-cover" />
+              </div>
+              <canvas ref={canvasRef} className="hidden" />
+              <div className="flex gap-3">
                 <button
                   onClick={retake}
                   className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition-colors"
@@ -220,22 +268,76 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
                   Retake
                 </button>
                 <button
+                  onClick={goToSocials}
+                  className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Step: Socials + Bio */}
+          {step === "socials" && (
+            <>
+              <p className="text-white/50 text-xs text-center mb-3">
+                Add your socials so matches can connect with you. This is optional — you can always add them later.
+              </p>
+
+              {/* Bio */}
+              <div className="mb-4">
+                <label className="text-white/70 text-xs font-bold mb-1 block">Short Bio</label>
+                <input
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value.slice(0, 120))}
+                  placeholder="Tell people a little about yourself..."
+                  maxLength={120}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
+                />
+                <span className="text-white/30 text-[10px]">{bio.length}/120</span>
+              </div>
+
+              {/* Social platforms */}
+              <div className="space-y-2 mb-4">
+                {SOCIAL_PLATFORMS.map((platform) => (
+                  <div key={platform.key} className="flex items-center gap-2">
+                    <img src={platform.icon} alt={platform.label} className="w-7 h-7 rounded-md object-contain" />
+                    <input
+                      value={socialInputs[platform.key] || ""}
+                      onChange={(e) => handleSocialChange(platform.key, e.target.value)}
+                      placeholder={platform.placeholder}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep("preview")}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition-colors"
+                >
+                  Back
+                </button>
+                <button
                   onClick={confirmAndUpload}
                   className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors"
                 >
                   <Check className="w-5 h-5" />
-                  Looks Good!
+                  {filledSocials > 0 ? "Submit" : "Skip & Submit"}
                 </button>
-              </>
-            )}
-
-            {step === "uploading" && (
-              <div className="flex-1 flex items-center justify-center gap-2 bg-white/10 text-white/60 font-medium py-3 rounded-xl">
-                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Setting you up...
               </div>
-            )}
-          </div>
+            </>
+          )}
+
+          {/* Step: Uploading */}
+          {step === "uploading" && (
+            <div className="flex items-center justify-center gap-2 bg-white/10 text-white/60 font-medium py-3 rounded-xl">
+              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              Setting you up...
+            </div>
+          )}
         </div>
       </div>
     </div>

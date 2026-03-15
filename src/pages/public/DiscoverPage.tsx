@@ -5,11 +5,12 @@ import { useDiscover } from "@/hooks/useDiscover";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
+import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
-    members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
@@ -84,6 +85,9 @@ const DiscoverPage = () => {
           filteredCount={members.length}
         />
       )}
+
+      {/* Profile editor (for discoverable users) */}
+      {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
 
       {/* Members grid */}
       <div className="p-4">
