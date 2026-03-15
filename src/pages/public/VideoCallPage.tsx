@@ -1101,6 +1101,20 @@ const VideoCallPage = () => {
           </div>
         </div>
       )}
+
+      {/* Female Retention Modal */}
+      <FemaleRetentionModal
+        isFemale={isFemale}
+        callState={callState}
+        isMobile={isMobile}
+        onStayAndEarn={() => {
+          setPulseAnchorBtn(true);
+          setShowAnchorBanner(true);
+          setTimeout(() => setPulseAnchorBtn(false), 3000);
+          const anchorBanner = document.getElementById("anchor-tap-me-btn");
+          anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
     </div>
   );
 };
