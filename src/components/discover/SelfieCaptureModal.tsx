@@ -42,6 +42,33 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     setCameraStarted(false);
   }, []);
 
+  const analyzeBrightness = useCallback((canvas: HTMLCanvasElement): { brightness: number; isTooDark: boolean; isTooUniform: boolean } => {
+    const ctx = canvas.getContext("2d")!;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
+    let totalBrightness = 0;
+    const pixelCount = pixels.length / 4;
+    const brightnessBuckets = new Array(10).fill(0);
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+      totalBrightness += brightness;
+      brightnessBuckets[Math.min(9, Math.floor(brightness / 25.6))]++;
+    }
+
+    const avgBrightness = totalBrightness / pixelCount;
+    // Check if >85% of pixels fall in the same bucket (too uniform = covered camera / solid color)
+    const maxBucket = Math.max(...brightnessBuckets);
+    const isTooUniform = maxBucket / pixelCount > 0.85;
+
+    return {
+      brightness: avgBrightness,
+      isTooDark: avgBrightness < 40,
+      isTooUniform,
+    };
+  }, []);
+
   const takeSnapshot = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -55,6 +82,17 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     const sy = (video.videoHeight - size) / 2;
     ctx.drawImage(video, sx, sy, size, size, 0, 0, 480, 480);
 
+    // Analyze brightness before accepting
+    const { isTooDark, isTooUniform } = analyzeBrightness(canvas);
+    if (isTooDark) {
+      toast({ title: "Too dark! 🌑", description: "Your photo is too dark. Move to a well-lit area and try again.", variant: "destructive" });
+      return;
+    }
+    if (isTooUniform) {
+      toast({ title: "Can't see you! 🙈", description: "Make sure your face is visible and the camera isn't covered.", variant: "destructive" });
+      return;
+    }
+
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -67,7 +105,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
       "image/jpeg",
       0.85
     );
-  }, [stopCamera]);
+  }, [stopCamera, analyzeBrightness]);
 
   const retake = useCallback(() => {
     setCapturedBlob(null);
