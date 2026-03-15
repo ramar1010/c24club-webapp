@@ -1012,6 +1012,11 @@ const VideoCallPage = () => {
           onGenderFilterChange={(g) => setGenderFilter(g as GenderFilter)}
         />
       )}
+      {overlayPage === "discover" && (
+        <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      )}
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup && (
