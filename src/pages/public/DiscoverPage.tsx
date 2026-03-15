@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Heart, Camera, Sparkles, DollarSign } from "lucide-react";
+import { ArrowLeft, Heart, Camera, Sparkles, DollarSign, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 
@@ -102,6 +102,21 @@ const DiscoverPage = () => {
     setIsDiscoverable(true);
   };
 
+  const handleRemoveListing = useCallback(async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("members")
+      .update({ is_discoverable: false, image_url: null, image_thumb_url: null } as any)
+      .eq("id", user.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    await supabase.storage.from("member-photos").remove([`${user.id}/selfie.jpg`]);
+    setIsDiscoverable(false);
+    toast({ title: "Listing removed 👋", description: "Your selfie has been deleted and you're no longer discoverable." });
+  }, [user]);
+
   const getTimeAgo = (dateStr: string | null) => {
     if (!dateStr) return "Recently";
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -125,13 +140,21 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
-          {!isDiscoverable && (
+          {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
               className="flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
             >
               <Camera className="w-4 h-4" />
               Get Listed
+            </button>
+          ) : (
+            <button
+              onClick={handleRemoveListing}
+              className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-red-500/30"
+            >
+              <Trash2 className="w-4 h-4" />
+              Remove
             </button>
           )}
         </div>
