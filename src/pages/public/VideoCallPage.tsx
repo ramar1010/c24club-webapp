@@ -285,6 +285,14 @@ const VideoCallPage = () => {
     }
   }, [callState]);
 
+  // Auto-close Discover overlay when a match is found
+  useEffect(() => {
+    if (callState === "connected" && overlayPage === "discover") {
+      setOverlayPage(null);
+      toast("Match found! 🎉", { description: "You've been connected to someone!" });
+    }
+  }, [callState, overlayPage]);
+
   const isMobile = useIsMobile();
 
   const fetchPinnedTopics = async (userId: string) => {
