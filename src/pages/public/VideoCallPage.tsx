@@ -38,7 +38,7 @@ import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
-import FemaleRetentionModal from "@/components/videocall/FemaleRetentionModal";
+import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -76,6 +76,7 @@ const VideoCallPage = () => {
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
   const [pulseAnchorBtn, setPulseAnchorBtn] = useState(false);
+  const retentionModalRef = useRef<FemaleRetentionModalRef>(null);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -405,6 +406,13 @@ const VideoCallPage = () => {
     }
   }, [location.state]);
 
+  const doLeave = useCallback(() => {
+    awardAdPoints(elapsedSeconds).catch(() => {});
+    flushMinutes().catch(() => {});
+    stop().catch(() => {});
+    navigate("/");
+  }, [awardAdPoints, elapsedSeconds, flushMinutes, stop, navigate]);
+
   if (!loading && !user) {
     return <Navigate to="/" replace />;
   }
@@ -464,11 +472,13 @@ const VideoCallPage = () => {
       setShowPromoAd(true);
     }
   };
+
   const handleBack = () => {
-    awardAdPoints(elapsedSeconds).catch(() => {});
-    flushMinutes().catch(() => {});
-    stop().catch(() => {});
-    navigate("/");
+    // Intercept for female retention modal (once per session)
+    if (isFemale && retentionModalRef.current?.tryShow()) {
+      return; // modal shown, wait for user decision
+    }
+    doLeave();
   };
 
   return (
@@ -1104,6 +1114,7 @@ const VideoCallPage = () => {
 
       {/* Female Retention Modal */}
       <FemaleRetentionModal
+        ref={retentionModalRef}
         isFemale={isFemale}
         callState={callState}
         isMobile={isMobile}
@@ -1114,6 +1125,7 @@ const VideoCallPage = () => {
           const anchorBanner = document.getElementById("anchor-tap-me-btn");
           anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
         }}
+        onLeaveAnyway={doLeave}
       />
     </div>
   );
