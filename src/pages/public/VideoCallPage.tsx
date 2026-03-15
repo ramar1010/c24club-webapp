@@ -51,6 +51,7 @@ import promoIcon from "@/assets/videocall/promo-star.png";
 import profileIcon from "@/assets/videocall/profile-avatar.png";
 import vipIcon from "@/assets/videocall/vip-rocket.png";
 import giftIcon from "@/assets/videocall/gift-icon.svg";
+import discoverIcon from "@/assets/discover-icon.png";
 import reportIconImg from "@/assets/videocall/report-icon.png";
 import frozenEmoji from "@/assets/videocall/frozen-emoji.png";
 
