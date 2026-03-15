@@ -1170,6 +1170,16 @@ const VideoCallPage = () => {
         }}
         onLeaveAnyway={doLeave}
       />
+
+      {/* Mandatory Selfie Capture Modal */}
+      <SelfieCaptureModal
+        open={showSelfieCapture}
+        onClose={() => setShowSelfieCapture(false)}
+        onComplete={() => {
+          setShowSelfieCapture(false);
+          refetchDiscoverable();
+        }}
+      />
     </div>
   );
 };
