@@ -27,17 +27,20 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
 
+  const [myGender, setMyGender] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
 
     const load = async () => {
       const { data: me } = await supabase
         .from("members")
-        .select("is_discoverable, image_url")
+        .select("is_discoverable, image_url, gender")
         .eq("id", user.id)
         .single();
 
       setIsDiscoverable(!!me?.is_discoverable && !!me?.image_url);
+      setMyGender(me?.gender?.toLowerCase() || null);
 
       const { data: membersList } = await supabase
         .from("members")
@@ -145,7 +148,9 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
             <div>
               <h3 className="font-bold text-white mb-1">Get discovered!</h3>
               <p className="text-white/70 text-sm mb-3">
-                Take a quick selfie to let others find you. We'll email you when someone wants to connect — <span className="text-pink-300 font-semibold">females can earn cash</span> by chatting!
+                Take a quick selfie to let others find you. We'll email you when someone wants to connect
+                {myGender === "female" && <> — <span className="text-pink-300 font-semibold">earn cash</span> by chatting!</>}
+                {myGender !== "female" && <>!</>}
               </p>
               <button
                 onClick={() => setShowSelfie(true)}
@@ -208,7 +213,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
                             {getTimeAgo(member.last_active_at)}
                           </span>
                         </div>
-                        {isFemale && (
+                        {isFemale && myGender === "female" && (
                           <div className="flex items-center gap-1 mt-1 text-emerald-400 text-xs">
                             <DollarSign className="w-3 h-3" />
                             <span>Earns by chatting</span>
