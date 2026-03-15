@@ -406,6 +406,13 @@ const VideoCallPage = () => {
     }
   }, [location.state]);
 
+  const doLeave = useCallback(() => {
+    awardAdPoints(elapsedSeconds).catch(() => {});
+    flushMinutes().catch(() => {});
+    stop().catch(() => {});
+    navigate("/");
+  }, [awardAdPoints, elapsedSeconds, flushMinutes, stop, navigate]);
+
   if (!loading && !user) {
     return <Navigate to="/" replace />;
   }
@@ -465,12 +472,6 @@ const VideoCallPage = () => {
       setShowPromoAd(true);
     }
   };
-  const doLeave = useCallback(() => {
-    awardAdPoints(elapsedSeconds).catch(() => {});
-    flushMinutes().catch(() => {});
-    stop().catch(() => {});
-    navigate("/");
-  }, [awardAdPoints, elapsedSeconds, flushMinutes, stop, navigate]);
 
   const handleBack = () => {
     // Intercept for female retention modal (once per session)
