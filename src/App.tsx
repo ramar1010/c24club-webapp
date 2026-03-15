@@ -81,6 +81,7 @@ const App = () => (
             <Route path="/my-rewards" element={<MyRewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/earn-history" element={<EarnHistoryPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
