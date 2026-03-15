@@ -213,7 +213,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
                             {getTimeAgo(member.last_active_at)}
                           </span>
                         </div>
-                        {isFemale && (
+                        {isFemale && myGender === "female" && (
                           <div className="flex items-center gap-1 mt-1 text-emerald-400 text-xs">
                             <DollarSign className="w-3 h-3" />
                             <span>Earns by chatting</span>
