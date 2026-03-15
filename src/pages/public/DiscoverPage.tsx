@@ -44,6 +44,7 @@ const DiscoverPage = () => {
         .from("members")
         .select("id, name, image_url, gender, country, last_active_at")
         .eq("is_discoverable", true)
+        .filter("image_status", "eq", "approved")
         .neq("id", user.id)
         .order("last_active_at", { ascending: false })
         .limit(50);
