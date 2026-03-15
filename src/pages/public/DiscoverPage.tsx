@@ -140,13 +140,21 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
-          {!isDiscoverable && (
+          {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
               className="flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
             >
               <Camera className="w-4 h-4" />
               Get Listed
+            </button>
+          ) : (
+            <button
+              onClick={handleRemoveListing}
+              className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-red-500/30"
+            >
+              <Trash2 className="w-4 h-4" />
+              Remove
             </button>
           )}
         </div>
