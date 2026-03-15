@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { Heart, Camera, Sparkles, DollarSign, Users } from "lucide-react";
+import { Heart, Camera, Sparkles, DollarSign, Users, Trash2 } from "lucide-react";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 
 interface DiscoverOverlayContentProps {
