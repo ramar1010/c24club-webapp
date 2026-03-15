@@ -92,6 +92,9 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
         />
       )}
 
+      {/* Profile editor (for discoverable users) */}
+      {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
+
       {/* Members grid */}
       <div className="p-4">
         {loading ? (
