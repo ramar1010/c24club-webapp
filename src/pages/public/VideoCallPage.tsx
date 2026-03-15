@@ -1004,7 +1004,12 @@ const VideoCallPage = () => {
 
       {/* Cap Reached Popup */}
       {showCapPopup && capInfo && (
-        <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} />
+        <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} voiceMode={isFemale && voiceMode} />
+      )}
+
+      {/* Voice Mode Explainer Popup */}
+      {showVoiceModeExplainer && (
+        <VoiceModeExplainerPopup onDismiss={() => setShowVoiceModeExplainer(false)} />
       )}
 
       {/* Minutes Frozen Popup */}
