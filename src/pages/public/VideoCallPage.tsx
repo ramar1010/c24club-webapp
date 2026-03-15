@@ -82,6 +82,7 @@ const VideoCallPage = () => {
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
+  const [showSelfieCapture, setShowSelfieCapture] = useState(false);
 
   // Skip penalty state
   const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
