@@ -25,6 +25,7 @@ import {
   Activity,
   TrendingUp,
   BarChart3,
+  Camera,
   type LucideIcon,
 } from "lucide-react";
 
