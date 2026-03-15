@@ -103,8 +103,30 @@ const SettingsPage = () => {
         EARN HISTORY
       </button>
 
-
-
+      {/* Discover Bio */}
+      {bioLoaded && (
+        <div className="w-full max-w-sm mb-6">
+          <h3 className="text-sm font-black tracking-wide mb-2 text-center">DISCOVER BIO</h3>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, 120))}
+            placeholder="Write a short bio for your Discover profile..."
+            maxLength={120}
+            rows={2}
+            className="w-full bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 mb-1 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500 text-xs">{bio.length}/120</span>
+            <button
+              onClick={handleSaveBio}
+              disabled={bioSaving}
+              className="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full transition-colors disabled:opacity-50"
+            >
+              {bioSaving ? "Saving..." : "Save Bio"}
+            </button>
+          </div>
+        </div>
+      )}
 
 
 
