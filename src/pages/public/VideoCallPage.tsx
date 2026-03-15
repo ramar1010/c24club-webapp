@@ -577,9 +577,25 @@ const VideoCallPage = () => {
                 </button>
               )}
 
-              <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
-                START
-              </button>
+              {needsSelfie ? (
+                <button
+                  onClick={() => setShowSelfieCapture(true)}
+                  className="bg-pink-500 hover:bg-pink-600 text-white font-black text-lg px-8 py-3 rounded-xl transition-colors shadow-lg flex items-center gap-2"
+                >
+                  📸 Take a Selfie to Start
+                </button>
+              ) : (
+                <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
+                  START
+                </button>
+              )}
+              {needsSelfie && (
+                <p className="text-white/50 text-xs text-center max-w-[250px]">
+                  Quick selfie so others can discover you — takes 3 seconds!
+                </p>
+              )}
+            </div>
+          )}
               
             </div>
           )}
