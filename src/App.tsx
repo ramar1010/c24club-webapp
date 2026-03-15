@@ -100,6 +100,7 @@ const App = () => (
               <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
               <Route path="promos" element={<PromosPage />} />
               <Route path="reported-users" element={<ReportedUsersPage />} />
+              <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="categories/new" element={<AddCategoryPage />} />
               <Route path="categories/:id/edit" element={<AddCategoryPage />} />

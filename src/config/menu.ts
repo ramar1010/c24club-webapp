@@ -88,6 +88,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "discover-review",
+    icon: Camera,
+    title: "Discover Images",
+    submenu: [
+      { key: "discover-review", label: "Review Images", path: "/admin/discover-review" },
+    ],
+  },
+  {
     key: "reported-users",
     icon: Shield,
     title: "Reported Users",
