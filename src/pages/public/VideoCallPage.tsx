@@ -634,8 +634,19 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          <video ref={localVideoRef} autoPlay muted playsInline
-           className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          {/* Partner video (big box) on mobile, local video on desktop */}
+          {isMobile ? (
+            <>
+              {partnerVoiceMode && callState === "connected" && (
+                <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20 absolute inset-0" />
+              )}
+              <video ref={remoteVideoRef} autoPlay playsInline
+                className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+            </>
+          ) : (
+            <video ref={localVideoRef} autoPlay muted playsInline
+              className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          )}
 
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd && (
