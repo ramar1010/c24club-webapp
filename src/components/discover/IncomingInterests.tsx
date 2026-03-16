@@ -22,12 +22,14 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
   const handleVideoChat = async (targetId: string) => {
     if (!user) return;
     try {
-      // Create a direct call invite
       await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
         invitee_id: targetId,
       } as any);
-      // Navigate to video call page
+      // Send push notification to invitee (fire and forget)
+      supabase.functions.invoke("notify-direct-call", {
+        body: { inviterId: user.id, inviteeId: targetId },
+      }).catch(() => {});
       navigate("/videocall");
       toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
     } catch {
