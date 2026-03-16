@@ -21,6 +21,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   order_shipped: <Truck className="h-5 w-5" />,
   item_out_of_stock: <AlertTriangle className="h-5 w-5" />,
   address_not_exist: <MapPinOff className="h-5 w-5" />,
+  power_hour_reminder: <Zap className="h-5 w-5" />,
 };
 
 const VARIABLE_HELP: Record<string, string[]> = {
@@ -29,6 +30,7 @@ const VARIABLE_HELP: Record<string, string[]> = {
   order_shipped: ["{{user_name}}", "{{reward_title}}", "{{tracking_url}}"],
   item_out_of_stock: ["{{user_name}}", "{{reward_title}}"],
   address_not_exist: ["{{user_name}}", "{{reward_title}}"],
+  power_hour_reminder: ["{{user_name}}"],
 };
 
 interface EmailTemplate {
