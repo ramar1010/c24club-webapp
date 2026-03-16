@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Heart, MessageCircle, ChevronDown, ChevronUp, Video } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getTimeAgo, isOnlineNow } from "@/hooks/useDiscover";
 import type { IncomingInterest } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
+import DirectCallModal from "./DirectCallModal";
 
 interface IncomingInterestsProps {
   interests: IncomingInterest[];
@@ -16,24 +16,27 @@ interface IncomingInterestsProps {
 
 const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest }: IncomingInterestsProps) => {
   const [expanded, setExpanded] = useState(true);
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
 
-  const handleVideoChat = async (targetId: string) => {
+  const handleVideoChat = async (targetId: string, targetName: string) => {
     if (!user) return;
     try {
-      await supabase.from("direct_call_invites").insert({
+      const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
         invitee_id: targetId,
-      } as any);
-      // Send push notification to invitee (fire and forget)
+      } as any).select("id").single();
+
+      if (error) throw error;
+
       supabase.functions.invoke("notify-direct-call", {
         body: { inviterId: user.id, inviteeId: targetId },
       }).catch(() => {});
-      navigate("/videocall");
-      toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
-    } catch {
-      navigate("/videocall");
+
+      setDirectCall({ inviteId: data.id, partnerId: targetId, partnerName: targetName });
+      toast({ title: "📹 Starting video chat", description: `Calling ${targetName}...` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
