@@ -72,7 +72,13 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
-  const [showAnchorBanner, setShowAnchorBanner] = useState(true);
+  const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
+    // Hide anchor banner on mobile for first-time female users to reduce clutter
+    if (window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen")) {
+      return false;
+    }
+    return true;
+  });
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
