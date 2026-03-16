@@ -1057,6 +1057,11 @@ const VideoCallPage = () => {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
+              {unreadDmCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {unreadDmCount > 9 ? "9+" : unreadDmCount}
+                </span>
+              )}
               <span className="text-[11px] md:text-sm font-black tracking-wider text-white">DMs</span>
             </button>
           </div>
