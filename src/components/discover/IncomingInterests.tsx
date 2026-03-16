@@ -45,6 +45,7 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
   const unreadCount = interests.filter(i => !myInterests.has(i.user_id)).length;
 
   return (
+    <>
     <div className="mx-4 mt-3">
       <button
         onClick={() => setExpanded(!expanded)}
