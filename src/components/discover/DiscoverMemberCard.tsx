@@ -169,16 +169,8 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-              {/* Icebreaker button */}
-              {!alreadyInterested && (
-                <button
-                  onClick={() => setShowIcebreaker(true)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-blue-500/80 text-white/60 hover:text-white transition-all"
-                  title="Send a message"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              )}
+
+
 
               {/* Heart button */}
               <button
