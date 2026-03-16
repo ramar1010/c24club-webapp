@@ -185,15 +185,10 @@ const DiscoverMemberCard = ({
             </div>
           </div>
 
-          {/* Socials reveal (mutual match) */}
+          {/* Socials reveal */}
           {showSocials && mutualSocials && (
-            <div className="mt-2 p-2 rounded-lg bg-purple-500/20 border border-purple-500/30">
-              <p className="text-purple-300 text-[10px] font-bold mb-1">🔗 Their Socials</p>
-              <div className="flex flex-wrap gap-1">
-                {mutualSocials.map((social, i) => (
-                  <span key={i} className="text-white text-[11px] bg-white/10 px-2 py-0.5 rounded-full">{social}</span>
-                ))}
-              </div>
+            <div className="mt-2">
+              <PinnedSocialsDisplay pinnedSocials={mutualSocials} />
             </div>
           )}
         </div>
