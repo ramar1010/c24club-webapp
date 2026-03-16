@@ -28,10 +28,10 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
         invitee_id: targetId,
       } as any);
       // Navigate to video call page
-      navigate("/video-call");
+      navigate("/videocall");
       toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
     } catch {
-      navigate("/video-call");
+      navigate("/videocall");
     }
   };
 
