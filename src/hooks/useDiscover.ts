@@ -66,6 +66,7 @@ export const useDiscover = () => {
   const [loading, setLoading] = useState(true);
   const [myInterests, setMyInterests] = useState<Map<string, string | null>>(new Map());
   const [interestedInMe, setInterestedInMe] = useState<Set<string>>(new Set());
+  const [incomingInterestsList, setIncomingInterestsList] = useState<IncomingInterest[]>([]);
   const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [myGender, setMyGender] = useState<string | null>(null);
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
