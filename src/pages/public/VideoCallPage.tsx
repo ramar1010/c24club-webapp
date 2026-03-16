@@ -366,11 +366,19 @@ const VideoCallPage = () => {
     },
   });
 
-  // Fetch partner's pinned socials
+  // Fetch partner's pinned socials — only show if partner is VIP
   const { data: partnerPinnedSocials = [] } = useQuery({
     queryKey: ["partner_pinned_socials", currentPartnerId],
     enabled: !!currentPartnerId && callState === "connected",
     queryFn: async () => {
+      // Check if partner is VIP first
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("is_vip")
+        .eq("user_id", currentPartnerId!)
+        .maybeSingle();
+      if (!mm?.is_vip) return [];
+
       const { data } = await supabase
         .from("vip_settings")
         .select("pinned_socials")
