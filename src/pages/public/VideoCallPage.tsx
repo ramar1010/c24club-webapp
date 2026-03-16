@@ -684,16 +684,16 @@ const VideoCallPage = () => {
             </button>
           )}
 
-          {/* Warning to local user when their camera is black */}
-          {localBlackScreen && isActive && callState === "connected" && (
+          {/* Warning to local user when their camera is black - desktop only (on mobile it's in the small box) */}
+          {!isMobile && localBlackScreen && isActive && callState === "connected" && (
             <div className="absolute inset-0 z-30 bg-black/80 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-4xl md:text-5xl">📵</span>
-              <p className="text-white font-black text-sm md:text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
-              <p className="text-yellow-400 text-xs md:text-sm text-center px-6 mt-1 animate-pulse font-bold">
+              <span className="text-5xl">📵</span>
+              <p className="text-white font-black text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
+              <p className="text-yellow-400 text-sm text-center px-6 mt-1 animate-pulse font-bold">
                 Turn on your camera to see your partner
               </p>
             </div>
-      )}
+          )}
 
           {callState === "waiting" && (
             <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
