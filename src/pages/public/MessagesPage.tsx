@@ -31,6 +31,43 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Handle ?to= query param to open/create conversation with a specific user
+  useEffect(() => {
+    if (!toUserId || !user || loadingConvos) return;
+
+    // Check if we already have a conversation with this user
+    const existing = conversations.find(
+      (c) => c.other_user?.id === toUserId
+    );
+    if (existing) {
+      setSelectedConvo(existing);
+      return;
+    }
+
+    // Create a placeholder conversation for the UI (will be created on first message send)
+    const loadNewConvo = async () => {
+      const { data: member } = await supabase
+        .from("members")
+        .select("id, name, image_url, gender")
+        .eq("id", toUserId)
+        .single();
+
+      if (member) {
+        setSelectedConvo({
+          id: "",  // Empty = new conversation
+          participant_1: user.id,
+          participant_2: toUserId,
+          last_message_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          other_user: member,
+          last_message: "",
+          unread_count: 0,
+        });
+      }
+    };
+    loadNewConvo();
+  }, [toUserId, user, conversations, loadingConvos]);
+
   const handleSend = () => {
     if (!messageText.trim() || !selectedConvo) return;
     const otherId = selectedConvo.other_user?.id;
