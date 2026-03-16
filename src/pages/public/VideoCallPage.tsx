@@ -963,8 +963,8 @@ const VideoCallPage = () => {
             {/* Minutes paused notice */}
             {anchor.status === "active" && (
               <div className="bg-gray-900/90 py-1 px-3 text-center rounded-b-xl">
-                <span className="text-gray-300 text-[10px] font-medium">
-                  ⏸️ Normal minute earning is paused while female bonus is active
+                <span className="text-white/90 text-[10px] font-semibold">
+                  Chat with guys or wait for a partner to earn!
                 </span>
               </div>
             )}
