@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
       recipient_email: member.email,
       template_name: templateKey,
       status: "pending",
-      message_id: String(msgId),
+      message_id: messageId,
       metadata: { redemption_id: redemptionId, email_type: emailType },
     });
 
