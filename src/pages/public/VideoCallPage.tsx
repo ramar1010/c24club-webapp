@@ -785,7 +785,7 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          {pinnedTopics.length > 0 && isActive && (
+          {!isMobile && pinnedTopics.length > 0 && isActive && (
             <div className="absolute bottom-10 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
               {pinnedTopics.map((topic: { id: string; name: string }) => (
                 <span key={topic.id} className="bg-red-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
