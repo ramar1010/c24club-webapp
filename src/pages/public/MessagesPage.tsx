@@ -119,7 +119,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const showThread = !!selectedConvo;
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950 text-white">
+    <div className="flex flex-col h-full min-h-screen bg-neutral-950 text-white">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 bg-neutral-900 border-b border-white/10 shrink-0">
         <button onClick={handleBack} className="text-white/70 hover:text-white">
