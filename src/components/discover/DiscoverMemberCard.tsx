@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video } from "lucide-react";
+import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import IcebreakerPicker from "./IcebreakerPicker";
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
@@ -40,6 +41,7 @@ const DiscoverMemberCard = ({
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
@@ -146,6 +148,15 @@ const DiscoverMemberCard = ({
                   <Video className="w-4 h-4" />
                 </button>
               )}
+
+              {/* DM button */}
+              <button
+                onClick={() => navigate(`/messages?to=${member.id}`)}
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/80 hover:bg-blue-500 text-white transition-all"
+                title="Send Message"
+              >
+                <Mail className="w-4 h-4" />
+              </button>
 
               {/* Socials button */}
               {mutualSocials && mutualSocials.length > 0 && (

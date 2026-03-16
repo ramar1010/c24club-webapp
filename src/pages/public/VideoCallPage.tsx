@@ -41,6 +41,8 @@ import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPo
 import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
+import MessagesPage from "@/pages/public/MessagesPage";
+import { useUnreadCount } from "@/hooks/useMessages";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -98,7 +100,7 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
 
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | null>(null);
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
@@ -266,6 +268,7 @@ const VideoCallPage = () => {
   });
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
+  const { data: unreadDmCount = 0 } = useUnreadCount();
 
   // Show voice mode explainer once per session when female connects with voice mode
   useEffect(() => {
@@ -1045,6 +1048,22 @@ const VideoCallPage = () => {
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
             <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} />
+            <button
+              onClick={() => isActive ? setOverlayPage("messages") : navigate("/messages")}
+              className="flex flex-col items-center gap-1 hover:scale-110 transition-transform relative"
+            >
+              <div className="w-14 h-14 md:w-20 md:h-20 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 md:w-14 md:h-14">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              {unreadDmCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {unreadDmCount > 9 ? "9+" : unreadDmCount}
+                </span>
+              )}
+              <span className="text-[11px] md:text-sm font-black tracking-wider text-white">DMs</span>
+            </button>
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
@@ -1115,6 +1134,11 @@ const VideoCallPage = () => {
       {overlayPage === "discover" &&
       <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      }
+      {overlayPage === "messages" &&
+      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <MessagesPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
 

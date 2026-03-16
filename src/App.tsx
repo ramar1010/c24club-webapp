@@ -49,6 +49,7 @@ import SettingsPage from "@/pages/public/SettingsPage";
 import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
 import RulesPage from "@/pages/public/RulesPage";
 import DiscoverPage from "@/pages/public/DiscoverPage";
+import MessagesPage from "@/pages/public/MessagesPage";
 
 import NotFound from "./pages/NotFound";
 import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/earn-history" element={<EarnHistoryPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
