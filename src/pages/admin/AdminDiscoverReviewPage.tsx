@@ -73,6 +73,27 @@ const AdminDiscoverReviewPage = () => {
     },
   });
 
+  const deleteImage = useMutation({
+    mutationFn: async ({ memberId }: { memberId: string }) => {
+      // Remove from storage
+      await supabase.storage.from("member-photos").remove([`${memberId}/selfie.jpg`]);
+      // Clear image from member record
+      const { error } = await supabase
+        .from("members")
+        .update({ image_url: null, image_thumb_url: null, image_status: "pending", is_discoverable: false } as any)
+        .eq("id", memberId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "Image Deleted 🗑️", description: "The image has been removed and the user is no longer discoverable." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
   const pendingCount = useQuery({
     queryKey: ["admin-discover-pending-count"],
     queryFn: async () => {
