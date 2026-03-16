@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
