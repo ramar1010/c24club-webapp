@@ -1,7 +1,7 @@
+import { useState } from "react";
 import { useDirectCallInviteListener } from "@/hooks/useDirectCallInviteListener";
 import { useAuth } from "@/hooks/useAuth";
 import DirectCallModal from "@/components/discover/DirectCallModal";
-
 export function DirectCallInviteListenerWrapper() {
   const { user } = useAuth();
   const { incomingCall, clearCall, declineCall } = useDirectCallInviteListener();
