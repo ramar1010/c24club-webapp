@@ -2,3 +2,6 @@ project_id = "ncpbiymnafxdfsvpxirb"
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.discover-weekly-digest]
+verify_jwt = false
