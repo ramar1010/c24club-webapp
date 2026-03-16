@@ -50,6 +50,9 @@ const DiscoverMemberCard = ({
         inviter_id: user.id,
         invitee_id: member.id,
       } as any);
+      supabase.functions.invoke("notify-direct-call", {
+        body: { inviterId: user.id, inviteeId: member.id },
+      }).catch(() => {});
       navigate("/videocall");
       toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
     } catch {
