@@ -887,8 +887,17 @@ const VideoCallPage = () => {
 
       {/* Anchor "Tap Me" Banner (female users only) */}
       {showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" && (
-        <div className="mx-3 md:mx-auto md:w-[420px]">
-          {/* Hide button - positioned above the banner */}
+        <div className="mx-3 md:mx-auto md:w-[420px] relative">
+          {/* First-time coach mark tooltip */}
+          {!sessionStorage.getItem("tapme_tooltip_dismissed") && anchor.status !== "active" && (
+            <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+              <div className="bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                👇 Tap here to start earning cash!
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-white" />
+              </div>
+            </div>
+          )}
+          {/* Hide button */}
           <div className="mb-1 flex justify-end">
             <button
               onClick={() => setShowAnchorBanner(false)}
@@ -902,26 +911,39 @@ const VideoCallPage = () => {
             id="anchor-tap-me-btn"
             onClick={() => {
               setShowAnchorPanel(!showAnchorPanel);
+              sessionStorage.setItem("tapme_tooltip_dismissed", "1");
+              // Auto-join if idle
+              if (anchor.status === "idle" || anchor.status === "slots_full") {
+                anchor.joinAnchor();
+              }
               // Log tap event for analytics
               if (user?.id) {
                 supabase.from("tap_me_events").insert({ user_id: user.id }).then(() => {});
               }
             }}
-            className={`w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : ""}`}
+            className={`w-full mb-1 rounded-xl overflow-hidden transition-all relative ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : "hover:scale-[1.02]"}`}
+            style={{ animation: pulseAnchorBtn ? undefined : "tapme-glow 2s ease-in-out infinite" }}
           >
+            {/* Floating coin particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <span className="absolute text-lg animate-[float-coin_3s_ease-in-out_infinite]" style={{ left: "10%", top: "20%" }}>💰</span>
+              <span className="absolute text-lg animate-[float-coin_2.5s_ease-in-out_infinite_0.5s]" style={{ left: "85%", top: "10%" }}>💵</span>
+              <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "5%" }}>✨</span>
+            </div>
             {/* Main Tap Me row */}
-            <div className="bg-gradient-to-r from-pink-600 to-fuchsia-600 py-2 px-3 flex items-center justify-between animate-pulse">
-              <span className="text-white text-sm font-black">
+            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
+              <span className="text-white text-base font-black tracking-wide drop-shadow-lg">
                 🎉💰 TAP ME!
               </span>
               <span className="text-white font-black text-sm">
-                Female Earning Bonus{" "}
-                <span className="text-green-300">
-                  ${anchor.cashBalance.toFixed(0)}
-                </span>
+                {anchor.status === "active" ? (
+                  <>Earning: <span className="text-green-300 text-base">${anchor.cashBalance.toFixed(2)}</span></>
+                ) : (
+                  <>Earn up to <span className="text-green-300 text-base">${anchor.settings?.power_rate_cash ?? 1.5}/hr</span></>
+                )}
               </span>
             </div>
-            {/* Schedule rows - always show both */}
+            {/* Schedule rows */}
             <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "chill" ? "bg-gradient-to-r from-purple-700/90 to-indigo-600/90" : "bg-gradient-to-r from-purple-900/60 to-indigo-800/60"}`}>
               <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-purple-200 animate-pulse" : "text-purple-300/70"}`}>
                 {anchor.mode === "chill" ? "✨ CHILL HOURS (NOW)" : "✨ CHILL: 12 AM – 7 PM EST"}
@@ -938,7 +960,7 @@ const VideoCallPage = () => {
                 💵 ${anchor.settings?.power_rate_cash ?? 1.5} / {anchor.settings?.power_rate_time ?? 30}min
               </span>
             </div>
-            {/* Minutes paused notice when actively anchoring */}
+            {/* Minutes paused notice */}
             {anchor.status === "active" && (
               <div className="bg-gray-900/90 py-1 px-3 text-center">
                 <span className="text-gray-300 text-[10px] font-medium">
