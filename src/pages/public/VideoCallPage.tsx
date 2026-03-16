@@ -1045,6 +1045,17 @@ const VideoCallPage = () => {
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
             <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} />
+            <button
+              onClick={() => isActive ? setOverlayPage("messages") : navigate("/messages")}
+              className="flex flex-col items-center gap-1 hover:scale-110 transition-transform relative"
+            >
+              <div className="w-14 h-14 md:w-20 md:h-20 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 md:w-14 md:h-14">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <span className="text-[11px] md:text-sm font-black tracking-wider text-white">DMs</span>
+            </button>
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
