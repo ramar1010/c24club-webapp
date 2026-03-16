@@ -6,11 +6,12 @@ import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
+import IncomingInterests from "@/components/discover/IncomingInterests";
 
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
-    user, members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
@@ -88,6 +89,14 @@ const DiscoverPage = () => {
 
       {/* Profile editor (for discoverable users) */}
       {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
+
+      {/* Incoming interests */}
+      <IncomingInterests
+        interests={incomingInterestsList}
+        myInterests={myInterests}
+        onInterestBack={(id) => handleInterest(id)}
+        sendingInterest={sendingInterest}
+      />
 
       {/* Members grid */}
       <div className="p-4">
