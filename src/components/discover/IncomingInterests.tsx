@@ -16,6 +16,24 @@ interface IncomingInterestsProps {
 
 const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest }: IncomingInterestsProps) => {
   const [expanded, setExpanded] = useState(true);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleVideoChat = async (targetId: string) => {
+    if (!user) return;
+    try {
+      // Create a direct call invite
+      await supabase.from("direct_call_invites").insert({
+        inviter_id: user.id,
+        invitee_id: targetId,
+      } as any);
+      // Navigate to video call page
+      navigate("/video-call");
+      toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
+    } catch {
+      navigate("/video-call");
+    }
+  };
 
   if (interests.length === 0) return null;
 
