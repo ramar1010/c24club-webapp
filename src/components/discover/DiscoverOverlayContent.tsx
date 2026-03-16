@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Camera, Sparkles, Users, Trash2 } from "lucide-react";
+import { Camera, Sparkles, Users, Trash2, MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
+import { useUnreadCount } from "@/hooks/useMessages";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
+import MessagesPage from "@/pages/public/MessagesPage";
 
 interface DiscoverOverlayContentProps {
   onClose?: () => void;
