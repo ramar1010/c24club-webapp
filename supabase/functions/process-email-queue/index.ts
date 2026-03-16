@@ -157,11 +157,48 @@ Deno.serve(async (req) => {
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i]
-      const payload = msg.message
+      const payload = msg.message as Record<string, unknown> | null
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
           : 0
+
+      const hasInvalidTransactionalPayload =
+        queue === 'transactional_emails' && (
+          payload?.purpose !== 'transactional' ||
+          typeof payload?.message_id !== 'string' ||
+          payload.message_id.length === 0 ||
+          typeof payload?.sender_domain !== 'string' ||
+          payload.sender_domain.length === 0
+        )
+
+      if (hasInvalidTransactionalPayload) {
+        const invalidPayloadError = 'Invalid transactional payload: missing required delivery metadata'
+        await supabase.from('email_send_log').insert({
+          message_id: typeof payload?.message_id === 'string' ? payload.message_id : null,
+          template_name: typeof payload?.label === 'string' ? payload.label : queue,
+          recipient_email: typeof payload?.to === 'string' ? payload.to : 'unknown',
+          status: 'dlq',
+          error_message: invalidPayloadError,
+        })
+
+        const { error: invalidDlqError } = await supabase.rpc('move_to_dlq', {
+          source_queue: queue,
+          dlq_name: dlq,
+          message_id: msg.msg_id,
+          payload: payload ?? {},
+        })
+
+        if (invalidDlqError) {
+          console.error('Failed to move invalid transactional payload to DLQ', {
+            queue,
+            msg_id: msg.msg_id,
+            error: invalidDlqError,
+          })
+        }
+
+        continue
+      }
 
       // Drop expired messages (TTL exceeded)
       if (payload.queued_at) {
