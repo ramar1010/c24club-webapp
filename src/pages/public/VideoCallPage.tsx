@@ -922,7 +922,7 @@ const VideoCallPage = () => {
           {/* Hide button */}
           <div className="mb-1 flex justify-end">
             <button
-              onClick={() => setShowAnchorBanner(false)}
+              onClick={() => { setShowAnchorBanner(false); localStorage.setItem("anchor_banner_seen", "1"); }}
               className="text-neutral-500 hover:text-neutral-300 text-xs px-2 py-1 flex items-center gap-1"
               title="Hide earning banner"
             >
