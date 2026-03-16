@@ -67,6 +67,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <DirectCallInviteListenerWrapper />
+          <DmNotificationListener />
           <Routes>
             {/* Public site */}
             <Route path="/" element={<PublicLayout />}>
