@@ -30,6 +30,7 @@ const VARIABLE_HELP: Record<string, string[]> = {
   order_shipped: ["{{user_name}}", "{{reward_title}}", "{{tracking_url}}"],
   item_out_of_stock: ["{{user_name}}", "{{reward_title}}"],
   address_not_exist: ["{{user_name}}", "{{reward_title}}"],
+  power_hour_reminder: ["{{user_name}}"],
 };
 
 interface EmailTemplate {
