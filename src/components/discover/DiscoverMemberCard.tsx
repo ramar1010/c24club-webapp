@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video, Mail } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import IcebreakerPicker from "./IcebreakerPicker";
+
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
 
@@ -37,7 +37,6 @@ const DiscoverMemberCard = ({
   onInterest,
   myGender,
 }: DiscoverMemberCardProps) => {
-  const [showIcebreaker, setShowIcebreaker] = useState(false);
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const { user } = useAuth();
@@ -67,10 +66,6 @@ const DiscoverMemberCard = ({
     }
   };
 
-  const handleIcebreakerSend = (message: string) => {
-    setShowIcebreaker(false);
-    onInterest(member.id, message);
-  };
 
   return (
     <>
@@ -169,16 +164,8 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-              {/* Icebreaker button */}
-              {!alreadyInterested && (
-                <button
-                  onClick={() => setShowIcebreaker(true)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-blue-500/80 text-white/60 hover:text-white transition-all"
-                  title="Send a message"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              )}
+
+
 
               {/* Heart button */}
               <button
@@ -208,14 +195,8 @@ const DiscoverMemberCard = ({
         </div>
       </div>
 
-      {/* Icebreaker modal */}
-      {showIcebreaker && (
-        <IcebreakerPicker
-          memberName={member.name}
-          onSend={handleIcebreakerSend}
-          onClose={() => setShowIcebreaker(false)}
-        />
-      )}
+
+
 
       {/* Direct call modal */}
       {directCall && user && (
