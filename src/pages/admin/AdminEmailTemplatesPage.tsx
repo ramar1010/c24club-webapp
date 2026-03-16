@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Mail, Save, ChevronDown, ChevronUp, Info, Zap, Send,
-  UserPlus, Package, Truck, AlertTriangle, MapPinOff, Eye,
+  UserPlus, Package, Truck, AlertTriangle, MapPinOff, Eye, MessageSquare,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
