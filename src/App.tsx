@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DirectCallInviteListenerWrapper } from "@/components/DirectCallInviteListenerWrapper";
+import DmNotificationListener from "@/components/DmNotificationListener";
 
 // Admin
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -66,6 +67,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <DirectCallInviteListenerWrapper />
+          <DmNotificationListener />
           <Routes>
             {/* Public site */}
             <Route path="/" element={<PublicLayout />}>
