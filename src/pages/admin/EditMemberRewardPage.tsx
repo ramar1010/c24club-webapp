@@ -25,7 +25,7 @@ const STATUSES = [
 
 const ADDRESS_OPTIONS = ["unknown", "yes", "no"];
 
-const EMAIL_TRIGGERING_STATUSES = ["Order placed", "Order shipped", "Item Out of stock"];
+const EMAIL_TRIGGERING_STATUSES = ["Order placed", "Order shipped", "Item Out of stock", "Delivered", "Gift Card Sent on Email"];
 
 const EditMemberRewardPage = () => {
   const { id } = useParams<{ id: string }>();
