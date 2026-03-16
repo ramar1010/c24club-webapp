@@ -890,7 +890,13 @@ const VideoCallPage = () => {
           </div>
           <button
             id="anchor-tap-me-btn"
-            onClick={() => setShowAnchorPanel(!showAnchorPanel)}
+            onClick={() => {
+              setShowAnchorPanel(!showAnchorPanel);
+              // Log tap event for analytics
+              if (user?.id) {
+                supabase.from("tap_me_events").insert({ user_id: user.id }).then(() => {});
+              }
+            }}
             className={`w-full mb-1 rounded-xl overflow-hidden hover:opacity-90 transition-opacity ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : ""}`}
           >
             {/* Main Tap Me row */}
