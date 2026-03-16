@@ -66,10 +66,6 @@ const DiscoverMemberCard = ({
     }
   };
 
-  const handleIcebreakerSend = (message: string) => {
-    setShowIcebreaker(false);
-    onInterest(member.id, message);
-  };
 
   return (
     <>
