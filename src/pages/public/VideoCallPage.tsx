@@ -634,8 +634,42 @@ const VideoCallPage = () => {
             </div>
           )}
 
-          <video ref={localVideoRef} autoPlay muted playsInline
-           className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          {/* Partner video (big box) on mobile, local video on desktop */}
+          {isMobile ? (
+            <>
+              {partnerVoiceMode && callState === "connected" && (
+                <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20 absolute inset-0" />
+              )}
+              <video ref={remoteVideoRef} autoPlay playsInline
+                className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
+              {isNsfwBlurred && callState === "connected" && (
+                <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-4xl">🚫</span>
+                  <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
+                  <p className="text-red-400 text-xs font-bold mt-1">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
+                </div>
+              )}
+              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
+                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-4xl">📵</span>
+                  <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
+                  <p className="text-neutral-400 text-xs text-center px-4 mt-1">Tap Next to skip</p>
+                </div>
+              )}
+              {partnerPinnedTopics.length > 0 && callState === "connected" && (
+                <div className="absolute bottom-10 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
+                  {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
+                    <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                      📌 {topic.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <video ref={localVideoRef} autoPlay muted playsInline
+              className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          )}
 
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd && (
@@ -650,16 +684,16 @@ const VideoCallPage = () => {
             </button>
           )}
 
-          {/* Warning to local user when their camera is black */}
-          {localBlackScreen && isActive && callState === "connected" && (
+          {/* Warning to local user when their camera is black - desktop only (on mobile it's in the small box) */}
+          {!isMobile && localBlackScreen && isActive && callState === "connected" && (
             <div className="absolute inset-0 z-30 bg-black/80 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-4xl md:text-5xl">📵</span>
-              <p className="text-white font-black text-sm md:text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
-              <p className="text-yellow-400 text-xs md:text-sm text-center px-6 mt-1 animate-pulse font-bold">
+              <span className="text-5xl">📵</span>
+              <p className="text-white font-black text-base mt-2 text-center px-4">YOUR CAMERA IS OFF</p>
+              <p className="text-yellow-400 text-sm text-center px-6 mt-1 animate-pulse font-bold">
                 Turn on your camera to see your partner
               </p>
             </div>
-      )}
+          )}
 
           {callState === "waiting" && (
             <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
@@ -722,32 +756,15 @@ const VideoCallPage = () => {
 
           {isMobile && (
             <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
-              {/* Partner voice mode avatar - mobile */}
-              {partnerVoiceMode && callState === "connected" && (
-                <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20" />
-              )}
-              <video ref={remoteVideoRef} autoPlay playsInline
-                className={`w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
-              {isNsfwBlurred && callState === "connected" && (
-                <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl">🚫</span>
-                  <p className="text-white font-black text-[8px] text-center px-1">BLURRED</p>
-                  <p className="text-red-400 text-[7px] font-bold">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
+              {/* Local video (me) - small box on mobile */}
+              {isFemale && voiceMode && isActive ? (
+                <div className="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
+                  <span className="text-2xl">🎙️</span>
+                  <span className="text-pink-400 text-[7px] font-bold">Voice Mode</span>
                 </div>
-              )}
-              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode && (
-                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl">📵</span>
-                  <p className="text-white font-black text-[8px] text-center px-1">FACELESS</p>
-                  <p className="text-neutral-400 text-[7px] text-center px-1">Tap Next to skip</p>
-                </div>
-              )}
-              {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred && (
-                <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl">🙈</span>
-                  <p className="text-white font-black text-[8px] text-center px-1">HIDDEN</p>
-                  <p className="text-yellow-400 text-[6px] text-center px-1">You're faceless — partner hidden</p>
-                </div>
+              ) : (
+                <video ref={localVideoRef} autoPlay muted playsInline
+                  className={`w-full h-full object-cover ${isActive ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
               )}
               {callState !== "connected" && (
                 <div className="w-full h-full flex items-center justify-center">
@@ -756,20 +773,19 @@ const VideoCallPage = () => {
                   </p>
                 </div>
               )}
-              {partnerPinnedTopics.length > 0 && callState === "connected" && (
+              {pinnedTopics.length > 0 && isActive && (
                 <div className="absolute bottom-1 left-1 z-20 flex flex-wrap gap-1 max-w-[90%]">
-                  {partnerPinnedTopics.map((topic: { id: string; name: string }) => (
-                    <span key={topic.id} className="bg-blue-600/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                  {pinnedTopics.map((topic: { id: string; name: string }) => (
+                    <span key={topic.id} className="bg-red-600/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
                       📌 {topic.name}
                     </span>
                   ))}
                 </div>
               )}
-              
             </div>
           )}
 
-          {pinnedTopics.length > 0 && isActive && (
+          {!isMobile && pinnedTopics.length > 0 && isActive && (
             <div className="absolute bottom-10 left-2 z-20 flex flex-wrap gap-1.5 max-w-[70%]">
               {pinnedTopics.map((topic: { id: string; name: string }) => (
                 <span key={topic.id} className="bg-red-600/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
