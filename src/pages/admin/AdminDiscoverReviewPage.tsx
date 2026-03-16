@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Check, X, Eye, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -67,6 +67,27 @@ const AdminDiscoverReviewPage = () => {
           ? "User is now discoverable."
           : "User has been removed from discover.",
       });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteImage = useMutation({
+    mutationFn: async ({ memberId }: { memberId: string }) => {
+      // Remove from storage
+      await supabase.storage.from("member-photos").remove([`${memberId}/selfie.jpg`]);
+      // Clear image from member record
+      const { error } = await supabase
+        .from("members")
+        .update({ image_url: null, image_thumb_url: null, image_status: "pending", is_discoverable: false } as any)
+        .eq("id", memberId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "Image Deleted 🗑️", description: "The image has been removed and the user is no longer discoverable." });
     },
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -213,6 +234,21 @@ const AdminDiscoverReviewPage = () => {
                         <Check className="w-3.5 h-3.5 mr-1" /> Re-approve
                       </Button>
                     )}
+
+                    {/* Delete button — available on all tabs */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={() => {
+                        if (confirm(`Delete ${member.name}'s image? This cannot be undone.`)) {
+                          deleteImage.mutate({ memberId: member.id });
+                        }
+                      }}
+                      disabled={deleteImage.isPending}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete Image
+                    </Button>
                   </div>
                 </div>
               ))}
