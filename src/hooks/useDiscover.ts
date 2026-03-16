@@ -115,14 +115,43 @@ export const useDiscover = () => {
       (interests || []).forEach((i: any) => interestsMap.set(i.interested_in_user_id, i.icebreaker_message));
       setMyInterests(interestsMap);
 
-      // Fetch who is interested in me
+      // Fetch who is interested in me (with icebreaker + member details)
       const { data: incomingInterests } = await supabase
         .from("member_interests")
-        .select("user_id")
-        .eq("interested_in_user_id", user.id);
+        .select("user_id, icebreaker_message, created_at")
+        .eq("interested_in_user_id", user.id)
+        .order("created_at", { ascending: false });
 
-      const incomingSet = new Set((incomingInterests || []).map((i: any) => i.user_id));
+      const incomingUserIds = (incomingInterests || []).map((i: any) => i.user_id);
+      const incomingSet = new Set(incomingUserIds);
       setInterestedInMe(incomingSet);
+
+      // Fetch member info for incoming interests
+      if (incomingUserIds.length > 0) {
+        const { data: incomingMembers } = await supabase
+          .from("members")
+          .select("id, name, image_url, gender, country")
+          .in("id", incomingUserIds);
+
+        const memberMap = new Map<string, any>();
+        (incomingMembers || []).forEach((m: any) => memberMap.set(m.id, m));
+
+        const enriched: IncomingInterest[] = (incomingInterests || []).map((i: any) => {
+          const m = memberMap.get(i.user_id);
+          return {
+            user_id: i.user_id,
+            icebreaker_message: i.icebreaker_message,
+            created_at: i.created_at,
+            name: m?.name || "Someone",
+            image_url: m?.image_url || null,
+            gender: m?.gender || null,
+            country: m?.country || null,
+          };
+        });
+        setIncomingInterestsList(enriched);
+      } else {
+        setIncomingInterestsList([]);
+      }
 
       // For mutual matches, load their pinned socials
       const mutualIds = [...interestsMap.keys()].filter(id => incomingSet.has(id));
