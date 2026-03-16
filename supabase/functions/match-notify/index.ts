@@ -230,6 +230,7 @@ Deno.serve(async (req) => {
             console.error("Failed to enqueue email for", target.email, emailErr);
           }
         }
+        } // end emailTemplate check
       }
     }
 
