@@ -63,6 +63,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <DirectCallInviteListenerWrapper />
           <Routes>
             {/* Public site */}
             <Route path="/" element={<PublicLayout />}>
