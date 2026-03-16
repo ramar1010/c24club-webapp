@@ -931,7 +931,7 @@ const VideoCallPage = () => {
               <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "-12px" }}>✨</span>
             </div>
             {/* Main Tap Me row */}
-            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
+            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative rounded-t-xl" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
               <span className="text-white text-base font-black tracking-wide drop-shadow-lg">
                 🎉💰 TAP ME!
               </span>
