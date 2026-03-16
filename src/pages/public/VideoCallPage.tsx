@@ -121,16 +121,7 @@ const VideoCallPage = () => {
   const isFemale = memberGender?.toLowerCase() === "female";
 
 
-  // Auto-start anchor earning for eligible female users
   const hasAutoStartedRef = useRef(false);
-  useEffect(() => {
-    if (anchor.status === "idle" && !hasAutoStartedRef.current) {
-      hasAutoStartedRef.current = true;
-      anchor.joinAnchor();
-      setShowAnchorPanel(true);
-      setShowAnchorBanner(true);
-    }
-  }, [anchor.status]);
 
   const {
     callState,
