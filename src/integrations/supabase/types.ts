@@ -892,16 +892,19 @@ export type Database = {
       }
       notification_cooldowns: {
         Row: {
+          email_notify_counter: number
           gender_segment: string
           id: string
           last_notified_at: string
         }
         Insert: {
+          email_notify_counter?: number
           gender_segment: string
           id?: string
           last_notified_at?: string
         }
         Update: {
+          email_notify_counter?: number
           gender_segment?: string
           id?: string
           last_notified_at?: string

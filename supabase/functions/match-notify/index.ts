@@ -166,13 +166,83 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update cooldown
-    await supabase
+    // Update cooldown and increment email counter
+    const { data: updatedCooldown } = await supabase
       .from("notification_cooldowns")
       .upsert(
-        { gender_segment: segment, last_notified_at: new Date().toISOString() },
+        {
+          gender_segment: segment,
+          last_notified_at: new Date().toISOString(),
+          email_notify_counter: (cooldown as any)?.email_notify_counter
+            ? (cooldown as any).email_notify_counter + 1
+            : 1,
+        },
         { onConflict: "gender_segment" }
-      );
+      )
+      .select("email_notify_counter")
+      .single();
+
+    // Send email every 5th join to avoid spamming
+    const EMAIL_EVERY_N = 5;
+    let emailsSent = 0;
+    const currentCount = updatedCooldown?.email_notify_counter ?? 1;
+
+    if (currentCount % EMAIL_EVERY_N === 0) {
+      // Get opposite-gender members with notify_enabled + email
+      const { data: emailTargets } = await supabase
+        .from("members")
+        .select("id, email, name, gender")
+        .eq("notify_enabled", true)
+        .ilike("gender", targetGender === "male" ? "female" : "male")
+        .eq("is_test_account", false)
+        .neq("id", memberId)
+        .not("email", "is", null)
+        .limit(200);
+
+      if (emailTargets && emailTargets.length > 0) {
+        const emailSubject =
+          normalizedGender === "male"
+            ? "💰 A Male User Is Online – Earn CASH Now on C24Club!"
+            : "👋 A Female User Just Came Online on C24Club!";
+
+        const siteUrl = "https://c24club.lovable.app/videocall";
+
+        for (const target of emailTargets) {
+          const emailBody =
+            normalizedGender === "male"
+              ? `<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+                  <h2 style="color:#0ea5e9;">Earn CASH Now! 💰</h2>
+                  <p>Hey ${target.name || "there"},</p>
+                  <p>A male user just joined C24Club and is looking to video chat. You can <strong>earn cash</strong> just by connecting!</p>
+                  <a href="${siteUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0;">Join Video Chat →</a>
+                  <p style="color:#888;font-size:12px;">You're receiving this because you enabled notifications on C24Club.</p>
+                </div>`
+              : `<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+                  <h2 style="color:#0ea5e9;">A Female User Is Waiting! 👋</h2>
+                  <p>Hey ${target.name || "there"},</p>
+                  <p>A female user just came online on C24Club and is looking for someone to video chat with. Join now before she leaves!</p>
+                  <a href="${siteUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0;">Join Video Chat →</a>
+                  <p style="color:#888;font-size:12px;">You're receiving this because you enabled notifications on C24Club.</p>
+                </div>`;
+
+          try {
+            await supabase.rpc("enqueue_email", {
+              queue_name: "transactional_emails",
+              payload: {
+                to: target.email,
+                subject: emailSubject,
+                html: emailBody,
+                purpose: "user_online_notify",
+                message_id: `online-notify-${segment}-${Date.now()}-${target.id}`,
+              },
+            });
+            emailsSent++;
+          } catch (emailErr) {
+            console.error("Failed to enqueue email for", target.email, emailErr);
+          }
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({
@@ -183,6 +253,9 @@ Deno.serve(async (req) => {
         push_failed: pushFailed,
         push_error: pushError,
         targets_found: targets?.length ?? 0,
+        emails_sent: emailsSent,
+        email_counter: currentCount,
+        email_threshold: EMAIL_EVERY_N,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
