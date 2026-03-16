@@ -15,6 +15,7 @@ const STATUSES = [
   "Redeemed Milestone Reward",
   "Order placed",
   "Order shipped",
+  "Delivered",
   "Item Out of stock",
   "Gift Card Form Filled by user",
   "Gift Card Sent on Email",
