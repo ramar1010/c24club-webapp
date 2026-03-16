@@ -234,6 +234,21 @@ const AdminDiscoverReviewPage = () => {
                         <Check className="w-3.5 h-3.5 mr-1" /> Re-approve
                       </Button>
                     )}
+
+                    {/* Delete button — available on all tabs */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={() => {
+                        if (confirm(`Delete ${member.name}'s image? This cannot be undone.`)) {
+                          deleteImage.mutate({ memberId: member.id });
+                        }
+                      }}
+                      disabled={deleteImage.isPending}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete Image
+                    </Button>
                   </div>
                 </div>
               ))}
