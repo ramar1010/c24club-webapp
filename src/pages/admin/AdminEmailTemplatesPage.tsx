@@ -104,9 +104,12 @@ const AdminEmailTemplatesPage = () => {
     const state = editState[template.id] || { subject: template.subject, body: template.body };
     const previewBody = state.body
       .replace(/\{\{user_name\}\}/g, "Alex")
+      .replace(/\{\{name\}\}/g, "Alex")
       .replace(/\{\{reward_title\}\}/g, "Nike Air Max 90")
       .replace(/\{\{order_date\}\}/g, "March 13, 2026")
-      .replace(/\{\{tracking_url\}\}/g, "https://tracking.example.com/12345");
+      .replace(/\{\{tracking_url\}\}/g, "https://tracking.example.com/12345")
+      .replace(/\{\{count\}\}/g, "3")
+      .replace(/\{\{senders\}\}/g, "Jordan and Sam");
 
     return (
       <div className="mt-4 border rounded-lg bg-white p-6 text-sm text-gray-800 whitespace-pre-wrap font-sans max-w-2xl">
