@@ -144,8 +144,8 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-              {/* Mutual match socials button */}
-              {isMutualMatch && mutualSocials && mutualSocials.length > 0 && (
+              {/* Socials button */}
+              {mutualSocials && mutualSocials.length > 0 && (
                 <button
                   onClick={() => setShowSocials(!showSocials)}
                   className="w-9 h-9 rounded-full flex items-center justify-center bg-purple-500/80 hover:bg-purple-500 text-white transition-all"
