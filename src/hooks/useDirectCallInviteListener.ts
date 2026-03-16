@@ -1,16 +1,34 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+export interface IncomingDirectCall {
+  inviteId: string;
+  inviterId: string;
+  inviterName: string;
+}
+
 /**
  * Global listener for incoming direct video chat invites.
- * Shows a toast with "Join Now" when someone invites the current user.
+ * Returns pending incoming call data so a modal can be rendered.
  */
 export function useDirectCallInviteListener() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [incomingCall, setIncomingCall] = useState<IncomingDirectCall | null>(null);
+
+  const acceptCall = () => {
+    // Keep incomingCall data — consumer will render the DirectCallModal
+  };
+
+  const declineCall = () => {
+    if (incomingCall) {
+      supabase.from("direct_call_invites").update({ status: "declined" } as any).eq("id", incomingCall.inviteId).then();
+    }
+    setIncomingCall(null);
+  };
+
+  const clearCall = () => setIncomingCall(null);
 
   useEffect(() => {
     if (!user) return;
@@ -38,13 +56,15 @@ export function useDirectCallInviteListener() {
 
           const name = inviter?.name || "Someone";
 
+          setIncomingCall({
+            inviteId: invite.id,
+            inviterId: invite.inviter_id,
+            inviterName: name,
+          });
+
           toast(`📹 ${name} wants to video chat!`, {
-            description: "They're waiting for you on the video call page.",
-            duration: 15000,
-            action: {
-              label: "Join Now",
-              onClick: () => navigate("/videocall"),
-            },
+            description: "Accept or decline the call.",
+            duration: 30000,
           });
         }
       )
@@ -53,5 +73,7 @@ export function useDirectCallInviteListener() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, navigate]);
+  }, [user]);
+
+  return { incomingCall, acceptCall, declineCall, clearCall };
 }
