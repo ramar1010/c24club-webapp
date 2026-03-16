@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import IcebreakerPicker from "./IcebreakerPicker";
+
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
 
