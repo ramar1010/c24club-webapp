@@ -77,9 +77,17 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
       {
         recipientId: otherId,
         content: messageText.trim(),
-        conversationId: selectedConvo.id,
+        conversationId: selectedConvo.id || undefined, // empty string = create new
       },
-      { onSuccess: () => setMessageText("") }
+      {
+        onSuccess: (convoId) => {
+          setMessageText("");
+          // Update the selected convo with real id if it was new
+          if (!selectedConvo.id && convoId) {
+            setSelectedConvo((prev) => prev ? { ...prev, id: convoId } : prev);
+          }
+        },
+      }
     );
   };
 
