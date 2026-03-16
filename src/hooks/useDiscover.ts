@@ -153,13 +153,13 @@ export const useDiscover = () => {
         setIncomingInterestsList([]);
       }
 
-      // For mutual matches, load their pinned socials
-      const mutualIds = [...interestsMap.keys()].filter(id => incomingSet.has(id));
-      if (mutualIds.length > 0) {
+      // Load pinned socials for all discoverable members
+      const allMemberIds = list.map(m => m.id);
+      if (allMemberIds.length > 0) {
         const { data: socials } = await supabase
           .from("vip_settings")
           .select("user_id, pinned_socials")
-          .in("user_id", mutualIds);
+          .in("user_id", allMemberIds);
 
         const socialsMap = new Map<string, string[]>();
         (socials || []).forEach((s: any) => {
