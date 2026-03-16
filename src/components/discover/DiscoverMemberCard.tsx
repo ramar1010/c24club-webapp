@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import IcebreakerPicker from "./IcebreakerPicker";
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
+import DirectCallModal from "./DirectCallModal";
 
 interface DiscoverMemberCardProps {
   member: {
@@ -38,7 +38,7 @@ const DiscoverMemberCard = ({
 }: DiscoverMemberCardProps) => {
   const [showIcebreaker, setShowIcebreaker] = useState(false);
   const [showSocials, setShowSocials] = useState(false);
-  const navigate = useNavigate();
+  const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const { user } = useAuth();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
@@ -47,17 +47,21 @@ const DiscoverMemberCard = ({
   const handleVideoChat = async () => {
     if (!user) return;
     try {
-      await supabase.from("direct_call_invites").insert({
+      const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
         invitee_id: member.id,
-      } as any);
+      } as any).select("id").single();
+
+      if (error) throw error;
+
       supabase.functions.invoke("notify-direct-call", {
         body: { inviterId: user.id, inviteeId: member.id },
       }).catch(() => {});
-      navigate("/videocall");
-      toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
-    } catch {
-      navigate("/videocall");
+
+      setDirectCall({ inviteId: data.id });
+      toast({ title: "📹 Starting video chat", description: `Calling ${member.name}...` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
@@ -108,7 +112,6 @@ const DiscoverMemberCard = ({
 
         {/* Info overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-12">
-          {/* Bio */}
           {member.bio && (
             <p className="text-white/70 text-[11px] mb-1.5 line-clamp-2 italic">"{member.bio}"</p>
           )}
@@ -155,7 +158,7 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-              {/* Icebreaker button (only if not already interested) */}
+              {/* Icebreaker button */}
               {!alreadyInterested && (
                 <button
                   onClick={() => setShowIcebreaker(true)}
@@ -200,6 +203,18 @@ const DiscoverMemberCard = ({
           memberName={member.name}
           onSend={handleIcebreakerSend}
           onClose={() => setShowIcebreaker(false)}
+        />
+      )}
+
+      {/* Direct call modal */}
+      {directCall && user && (
+        <DirectCallModal
+          myUserId={user.id}
+          partnerId={member.id}
+          partnerName={member.name}
+          inviteId={directCall.inviteId}
+          isInitiator={true}
+          onClose={() => setDirectCall(null)}
         />
       )}
     </>
