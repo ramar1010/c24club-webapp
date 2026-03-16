@@ -266,7 +266,7 @@ const VideoCallPage = () => {
   });
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
-  const { data: unreadDmCount = 0 } = useUnreadCount();
+  
 
   // Show voice mode explainer once per session when female connects with voice mode
   useEffect(() => {
