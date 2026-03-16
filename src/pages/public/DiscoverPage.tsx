@@ -11,7 +11,7 @@ import IncomingInterests from "@/components/discover/IncomingInterests";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
-    user, members, allMembers, loading, myInterests, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
