@@ -43,6 +43,19 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Browse while you wait for a match</p>
           </div>
+          {/* DMs button */}
+          <button
+            onClick={() => setShowMessages(true)}
+            className="relative flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
+          >
+            <MessageSquare className="w-4 h-4" />
+            DMs
+            {unreadDmCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {unreadDmCount > 9 ? "9+" : unreadDmCount}
+              </span>
+            )}
+          </button>
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
