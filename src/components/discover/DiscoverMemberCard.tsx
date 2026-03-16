@@ -37,7 +37,6 @@ const DiscoverMemberCard = ({
   onInterest,
   myGender,
 }: DiscoverMemberCardProps) => {
-  const [showIcebreaker, setShowIcebreaker] = useState(false);
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const { user } = useAuth();
