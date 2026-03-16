@@ -141,6 +141,19 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
         </div>
       )}
     </div>
+
+    {/* Direct call modal */}
+    {directCall && user && (
+      <DirectCallModal
+        myUserId={user.id}
+        partnerId={directCall.partnerId}
+        partnerName={directCall.partnerName}
+        inviteId={directCall.inviteId}
+        isInitiator={true}
+        onClose={() => setDirectCall(null)}
+      />
+    )}
+    </>
   );
 };
 
