@@ -200,30 +200,19 @@ Deno.serve(async (req) => {
         .limit(200);
 
       if (emailTargets && emailTargets.length > 0) {
-        const emailSubject =
-          normalizedGender === "male"
-            ? "💰 A Male User Is Online – Earn CASH Now on C24Club!"
-            : "👋 A Female User Just Came Online on C24Club!";
+        // Load template from DB so admins can edit it
+        const templateKey = normalizedGender === "male" ? "male_online_notify" : "female_online_notify";
+        const { data: emailTemplate } = await supabase
+          .from("email_templates")
+          .select("subject, body, is_active")
+          .eq("template_key", templateKey)
+          .eq("is_active", true)
+          .maybeSingle();
 
-        const siteUrl = "https://c24club.lovable.app/videocall";
-
-        for (const target of emailTargets) {
-          const emailBody =
-            normalizedGender === "male"
-              ? `<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-                  <h2 style="color:#0ea5e9;">Earn CASH Now! 💰</h2>
-                  <p>Hey ${target.name || "there"},</p>
-                  <p>A male user just joined C24Club and is looking to video chat. You can <strong>earn cash</strong> just by connecting!</p>
-                  <a href="${siteUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0;">Join Video Chat →</a>
-                  <p style="color:#888;font-size:12px;">You're receiving this because you enabled notifications on C24Club.</p>
-                </div>`
-              : `<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-                  <h2 style="color:#0ea5e9;">A Female User Is Waiting! 👋</h2>
-                  <p>Hey ${target.name || "there"},</p>
-                  <p>A female user just came online on C24Club and is looking for someone to video chat with. Join now before she leaves!</p>
-                  <a href="${siteUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0;">Join Video Chat →</a>
-                  <p style="color:#888;font-size:12px;">You're receiving this because you enabled notifications on C24Club.</p>
-                </div>`;
+        if (emailTemplate) {
+          for (const target of emailTargets) {
+            const emailBody = emailTemplate.body.replace(/\{\{user_name\}\}/g, target.name || "there");
+            const emailSubject = emailTemplate.subject;
 
           try {
             await supabase.rpc("enqueue_email", {
