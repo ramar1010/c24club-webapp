@@ -72,7 +72,13 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
-  const [showAnchorBanner, setShowAnchorBanner] = useState(true);
+  const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
+    // Hide anchor banner on mobile for first-time female users to reduce clutter
+    if (window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen")) {
+      return false;
+    }
+    return true;
+  });
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
@@ -916,7 +922,7 @@ const VideoCallPage = () => {
           {/* Hide button */}
           <div className="mb-1 flex justify-end">
             <button
-              onClick={() => setShowAnchorBanner(false)}
+              onClick={() => { setShowAnchorBanner(false); localStorage.setItem("anchor_banner_seen", "1"); }}
               className="text-neutral-500 hover:text-neutral-300 text-xs px-2 py-1 flex items-center gap-1"
               title="Hide earning banner"
             >
@@ -1014,7 +1020,7 @@ const VideoCallPage = () => {
       {!showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" && (
         <div className="mx-3 md:mx-auto md:w-[420px]">
           <button
-            onClick={() => setShowAnchorBanner(true)}
+            onClick={() => { setShowAnchorBanner(true); localStorage.setItem("anchor_banner_seen", "1"); }}
             className="w-full mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
           >
             <span>👁</span> Show Earning Dashboard
