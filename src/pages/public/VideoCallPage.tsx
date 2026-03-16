@@ -286,6 +286,16 @@ const VideoCallPage = () => {
     partnerGender: partnerGenderData,
   });
 
+  // Auto-start anchor earning for eligible female users
+  useEffect(() => {
+    if (anchor.status === "idle" && !hasAutoStartedRef.current) {
+      hasAutoStartedRef.current = true;
+      anchor.joinAnchor();
+      setShowAnchorPanel(true);
+      setShowAnchorBanner(true);
+    }
+  }, [anchor.status]);
+
   // Reset gender filter if not VIP
   useEffect(() => {
     if (!subscribed && genderFilter !== "both") {
