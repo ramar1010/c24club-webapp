@@ -25,6 +25,67 @@ Deno.serve(async (req) => {
         .delete()
         .eq("member_id", memberId);
 
+      // Check for pending direct call invites first
+      const { data: directInvites } = await supabase
+        .from("direct_call_invites")
+        .select("*")
+        .or(`inviter_id.eq.${memberId},invitee_id.eq.${memberId}`)
+        .eq("status", "pending")
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (directInvites && directInvites.length > 0) {
+        const invite = directInvites[0];
+        const directPartnerId = invite.inviter_id === memberId ? invite.invitee_id : invite.inviter_id;
+
+        // Check if partner is already in the waiting queue
+        const { data: partnerInQueue } = await supabase
+          .from("waiting_queue")
+          .select("*")
+          .eq("member_id", directPartnerId)
+          .limit(1);
+
+        if (partnerInQueue && partnerInQueue.length > 0) {
+          const partner = partnerInQueue[0];
+
+          // Remove partner from queue
+          await supabase.from("waiting_queue").delete().eq("id", partner.id);
+
+          // Mark invite as matched
+          await supabase.from("direct_call_invites").update({ status: "matched" }).eq("id", invite.id);
+
+          // Create a room
+          const roomId = crypto.randomUUID();
+          await supabase.from("rooms").insert({
+            id: roomId,
+            member1: partner.member_id,
+            member2: memberId,
+            channel1: partner.channel_id,
+            channel2: channelId,
+            member1_gender: partner.member_gender,
+            member2_gender: memberGender,
+            member1_voice_mode: partner.voice_mode ?? false,
+            member2_voice_mode: voiceMode ?? false,
+            status: "connected",
+            connected_at: new Date().toISOString(),
+          });
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: "partner_found",
+              roomId,
+              partnerId: partner.member_id,
+              partnerChannelId: partner.channel_id,
+              partnerVoiceMode: partner.voice_mode ?? false,
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        // Partner not in queue yet — fall through to add to queue, they'll be matched when partner joins
+      }
+
       // Try to find a match based on gender preference
       let query = supabase
         .from("waiting_queue")

@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, MessageCircle, Link2 } from "lucide-react";
+import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
+import { toast } from "@/hooks/use-toast";
 import IcebreakerPicker from "./IcebreakerPicker";
 
 interface DiscoverMemberCardProps {
@@ -33,9 +37,25 @@ const DiscoverMemberCard = ({
 }: DiscoverMemberCardProps) => {
   const [showIcebreaker, setShowIcebreaker] = useState(false);
   const [showSocials, setShowSocials] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
+
+  const handleVideoChat = async () => {
+    if (!user) return;
+    try {
+      await supabase.from("direct_call_invites").insert({
+        inviter_id: user.id,
+        invitee_id: member.id,
+      } as any);
+      navigate("/video-call");
+      toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
+    } catch {
+      navigate("/video-call");
+    }
+  };
 
   const handleIcebreakerSend = (message: string) => {
     setShowIcebreaker(false);
@@ -109,6 +129,17 @@ const DiscoverMemberCard = ({
             </div>
 
             <div className="flex flex-col gap-1.5 shrink-0">
+              {/* Video Chat button for mutual matches */}
+              {isMutualMatch && (
+                <button
+                  onClick={handleVideoChat}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-emerald-500/80 hover:bg-emerald-500 text-white transition-all"
+                  title="Video Chat"
+                >
+                  <Video className="w-4 h-4" />
+                </button>
+              )}
+
               {/* Mutual match socials button */}
               {isMutualMatch && mutualSocials && mutualSocials.length > 0 && (
                 <button
