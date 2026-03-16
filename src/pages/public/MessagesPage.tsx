@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Send, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useConversations,
   useConversationMessages,
@@ -13,10 +14,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const toUserId = searchParams.get("to");
 
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
