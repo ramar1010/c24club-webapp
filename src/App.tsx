@@ -135,6 +135,7 @@ const App = () => (
               <Route path="system-health" element={<SystemHealthPage />} />
               <Route path="revenue" element={<RevenuePage />} />
               <Route path="user-analytics" element={<UserAnalyticsPage />} />
+              <Route path="tap-analytics" element={<TapAnalyticsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
