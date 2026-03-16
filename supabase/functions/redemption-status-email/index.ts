@@ -109,11 +109,16 @@ Deno.serve(async (req) => {
       .replace(/\{\{order_date\}\}/g, orderDate);
 
     // Enqueue email via pgmq
+    const messageId = `redemption-${redemptionId}-${templateKey}-${Date.now()}`;
     const emailPayload = {
       to: member.email,
       subject,
       html: body,
-      template_name: templateKey,
+      purpose: "transactional",
+      label: templateKey,
+      sender_domain: "notify.c24club.com",
+      message_id: messageId,
+      queued_at: new Date().toISOString(),
     };
 
     const { data: msgId, error: enqueueError } = await supabase.rpc("enqueue_email", {
@@ -131,7 +136,7 @@ Deno.serve(async (req) => {
       recipient_email: member.email,
       template_name: templateKey,
       status: "pending",
-      message_id: String(msgId),
+      message_id: messageId,
       metadata: { redemption_id: redemptionId, email_type: emailType },
     });
 
