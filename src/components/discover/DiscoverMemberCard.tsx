@@ -200,14 +200,8 @@ const DiscoverMemberCard = ({
         </div>
       </div>
 
-      {/* Icebreaker modal */}
-      {showIcebreaker && (
-        <IcebreakerPicker
-          memberName={member.name}
-          onSend={handleIcebreakerSend}
-          onClose={() => setShowIcebreaker(false)}
-        />
-      )}
+
+
 
       {/* Direct call modal */}
       {directCall && user && (
