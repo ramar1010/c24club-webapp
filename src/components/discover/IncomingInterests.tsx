@@ -122,7 +122,13 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
                     )}
                   </button>
                 ) : (
-                  <span className="shrink-0 text-pink-400 text-xs font-medium">Matched ✓</span>
+                  <button
+                    onClick={() => handleVideoChat(interest.user_id)}
+                    className="shrink-0 flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    Video Chat
+                  </button>
                 )}
               </div>
             );
