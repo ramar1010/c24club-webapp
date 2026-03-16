@@ -931,7 +931,7 @@ const VideoCallPage = () => {
               <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "-12px" }}>✨</span>
             </div>
             {/* Main Tap Me row */}
-            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
+            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative rounded-t-xl" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
               <span className="text-white text-base font-black tracking-wide drop-shadow-lg">
                 🎉💰 TAP ME!
               </span>
@@ -952,7 +952,7 @@ const VideoCallPage = () => {
                 🎁 Mystery Reward / {anchor.settings?.chill_reward_time ?? 45}min
               </span>
             </div>
-            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
+            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.status !== "active" ? "rounded-b-xl" : ""} ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
               <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-yellow-200 animate-pulse" : "text-yellow-300/70"}`}>
                 {anchor.mode === "power" ? "🔥 POWER HOUR (LIVE!)" : "⚡ POWER: 7 PM – 12 AM EST"}
               </span>
@@ -962,7 +962,7 @@ const VideoCallPage = () => {
             </div>
             {/* Minutes paused notice */}
             {anchor.status === "active" && (
-              <div className="bg-gray-900/90 py-1 px-3 text-center">
+              <div className="bg-gray-900/90 py-1 px-3 text-center rounded-b-xl">
                 <span className="text-gray-300 text-[10px] font-medium">
                   ⏸️ Normal minute earning is paused while female bonus is active
                 </span>
