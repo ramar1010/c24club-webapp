@@ -952,7 +952,7 @@ const VideoCallPage = () => {
                 🎁 Mystery Reward / {anchor.settings?.chill_reward_time ?? 45}min
               </span>
             </div>
-            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
+            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.status !== "active" ? "rounded-b-xl" : ""} ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
               <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-yellow-200 animate-pulse" : "text-yellow-300/70"}`}>
                 {anchor.mode === "power" ? "🔥 POWER HOUR (LIVE!)" : "⚡ POWER: 7 PM – 12 AM EST"}
               </span>
