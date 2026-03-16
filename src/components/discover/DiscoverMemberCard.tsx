@@ -37,9 +37,25 @@ const DiscoverMemberCard = ({
 }: DiscoverMemberCardProps) => {
   const [showIcebreaker, setShowIcebreaker] = useState(false);
   const [showSocials, setShowSocials] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
+
+  const handleVideoChat = async () => {
+    if (!user) return;
+    try {
+      await supabase.from("direct_call_invites").insert({
+        inviter_id: user.id,
+        invitee_id: member.id,
+      } as any);
+      navigate("/video-call");
+      toast({ title: "📹 Starting video chat", description: "Join the call — we'll connect you when your match joins!" });
+    } catch {
+      navigate("/video-call");
+    }
+  };
 
   const handleIcebreakerSend = (message: string) => {
     setShowIcebreaker(false);
