@@ -39,6 +39,7 @@ import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
 import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
 import AdminDiscoverReviewPage from "@/pages/admin/AdminDiscoverReviewPage";
 import TapAnalyticsPage from "@/pages/admin/TapAnalyticsPage";
+import AdminDmMonitorPage from "@/pages/admin/AdminDmMonitorPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -140,6 +141,7 @@ const App = () => (
               <Route path="revenue" element={<RevenuePage />} />
               <Route path="user-analytics" element={<UserAnalyticsPage />} />
               <Route path="tap-analytics" element={<TapAnalyticsPage />} />
+              <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

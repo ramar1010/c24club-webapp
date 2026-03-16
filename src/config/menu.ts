@@ -63,6 +63,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "dm-monitor",
+    icon: MessageSquare,
+    title: "DM Monitor",
+    submenu: [
+      { key: "dm-conversations", label: "All Conversations", path: "/admin/dm-monitor" },
+    ],
+  },
+  {
     key: "rewards",
     icon: Gift,
     title: "Rewards",
