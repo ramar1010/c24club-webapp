@@ -924,11 +924,11 @@ const VideoCallPage = () => {
             className={`w-full mb-1 rounded-xl overflow-hidden transition-all relative ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : "hover:scale-[1.02]"}`}
             style={{ animation: pulseAnchorBtn ? undefined : "tapme-glow 2s ease-in-out infinite" }}
           >
-            {/* Floating coin particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <span className="absolute text-lg animate-[float-coin_3s_ease-in-out_infinite]" style={{ left: "10%", top: "20%" }}>💰</span>
-              <span className="absolute text-lg animate-[float-coin_2.5s_ease-in-out_infinite_0.5s]" style={{ left: "85%", top: "10%" }}>💵</span>
-              <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "5%" }}>✨</span>
+            {/* Floating coin particles - above content */}
+            <div className="absolute inset-0 z-10 overflow-visible pointer-events-none">
+              <span className="absolute text-lg animate-[float-coin_3s_ease-in-out_infinite]" style={{ left: "10%", top: "-10px" }}>💰</span>
+              <span className="absolute text-lg animate-[float-coin_2.5s_ease-in-out_infinite_0.5s]" style={{ right: "8%", top: "-8px" }}>💵</span>
+              <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "-12px" }}>✨</span>
             </div>
             {/* Main Tap Me row */}
             <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
