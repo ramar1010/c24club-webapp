@@ -20,7 +20,9 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
+  const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
