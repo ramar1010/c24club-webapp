@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import IcebreakerPicker from "./IcebreakerPicker";
+import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 
 interface DiscoverMemberCardProps {
   member: {
