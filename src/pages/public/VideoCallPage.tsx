@@ -1136,6 +1136,11 @@ const VideoCallPage = () => {
           <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
+      {overlayPage === "messages" &&
+      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <MessagesPage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      }
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
