@@ -41,6 +41,7 @@ const DiscoverMemberCard = ({
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
