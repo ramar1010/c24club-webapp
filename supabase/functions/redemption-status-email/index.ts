@@ -42,6 +42,8 @@ Deno.serve(async (req) => {
     const templateKeyMap: Record<string, string> = {
       "Order placed": "order_placed",
       "Order shipped": "order_shipped",
+      "Delivered": "order_delivered",
+      "Gift Card Sent on Email": "gift_card_sent",
       "Item Out of stock": "item_out_of_stock",
       "address_not_exist": "address_not_exist",
     };
@@ -79,27 +81,69 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check suppression list
+    const { data: suppressed } = await supabase
+      .from("suppressed_emails")
+      .select("id")
+      .eq("email", member.email)
+      .maybeSingle();
+    if (suppressed) {
+      return new Response(JSON.stringify({ error: "Email is suppressed" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const orderDate = new Date(redemption.created_at).toLocaleDateString("en-US", {
       year: "numeric", month: "long", day: "numeric",
     });
 
     // Replace template variables
-    const subject = template.subject;
+    const subject = template.subject
+      .replace(/\{\{user_name\}\}/g, member.name)
+      .replace(/\{\{reward_title\}\}/g, redemption.reward_title);
+
     const body = template.body
       .replace(/\{\{user_name\}\}/g, member.name)
       .replace(/\{\{reward_title\}\}/g, redemption.reward_title)
-      .replace(/\{\{tracking_url\}\}/g, (redemption as any).shipping_tracking_url || "Tracking info coming soon")
+      .replace(/\{\{tracking_url\}\}/g, redemption.shipping_tracking_url || "#")
       .replace(/\{\{order_date\}\}/g, orderDate);
 
-    console.log(`📧 Email to ${member.email}:`, { subject, body });
+    // Enqueue email via pgmq
+    const emailPayload = {
+      to: member.email,
+      subject,
+      html: body,
+      template_name: templateKey,
+    };
 
-    // Log to notes
+    const { data: msgId, error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: emailPayload,
+    });
+
+    if (enqueueError) {
+      console.error("Failed to enqueue email:", enqueueError);
+      throw new Error(`Failed to enqueue email: ${enqueueError.message}`);
+    }
+
+    // Log to email_send_log
+    await supabase.from("email_send_log").insert({
+      recipient_email: member.email,
+      template_name: templateKey,
+      status: "pending",
+      message_id: String(msgId),
+      metadata: { redemption_id: redemptionId, email_type: emailType },
+    });
+
+    // Log to redemption notes
     const existingNotes = redemption.notes || "";
     const emailLog = `[${new Date().toISOString()}] Email sent: ${emailType}`;
     await supabase
       .from("member_redemptions")
       .update({ notes: existingNotes ? `${existingNotes}\n${emailLog}` : emailLog })
       .eq("id", redemptionId);
+
+    console.log(`📧 Email enqueued for ${member.email}: ${templateKey} (msg_id: ${msgId})`);
 
     return new Response(
       JSON.stringify({ success: true, message: `Email queued for ${member.email}` }),
