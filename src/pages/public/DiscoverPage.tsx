@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
+import { useUnreadCount } from "@/hooks/useMessages";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
+import MessagesPage from "@/pages/public/MessagesPage";
 
 const DiscoverPage = () => {
   const navigate = useNavigate();
@@ -15,12 +17,18 @@ const DiscoverPage = () => {
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
+  const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
     setIsDiscoverable(true);
   };
+
+  if (showMessages) {
+    return <MessagesPage onClose={() => setShowMessages(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#111] text-white">
@@ -34,6 +42,19 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
+          {/* DMs button */}
+          <button
+            onClick={() => setShowMessages(true)}
+            className="relative flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
+          >
+            <MessageSquare className="w-4 h-4" />
+            DMs
+            {unreadDmCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {unreadDmCount > 9 ? "9+" : unreadDmCount}
+              </span>
+            )}
+          </button>
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
