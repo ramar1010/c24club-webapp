@@ -129,6 +129,17 @@ const DiscoverMemberCard = ({
             </div>
 
             <div className="flex flex-col gap-1.5 shrink-0">
+              {/* Video Chat button for mutual matches */}
+              {isMutualMatch && (
+                <button
+                  onClick={handleVideoChat}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-emerald-500/80 hover:bg-emerald-500 text-white transition-all"
+                  title="Video Chat"
+                >
+                  <Video className="w-4 h-4" />
+                </button>
+              )}
+
               {/* Mutual match socials button */}
               {isMutualMatch && mutualSocials && mutualSocials.length > 0 && (
                 <button
