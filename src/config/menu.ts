@@ -26,6 +26,7 @@ import {
   TrendingUp,
   BarChart3,
   Camera,
+  MousePointerClick,
   type LucideIcon,
 } from "lucide-react";
 
