@@ -29,6 +29,10 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
     setIsDiscoverable(true);
   };
 
+  if (showMessages) {
+    return <MessagesPage onClose={() => setShowMessages(false)} />;
+  }
+
   return (
     <div className="min-h-full bg-[#111] text-white pb-20">
       {/* Header */}
