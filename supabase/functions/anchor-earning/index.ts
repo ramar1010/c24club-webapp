@@ -7,13 +7,11 @@ const corsHeaders = {
 };
 
 function getCurrentMode(settings: any): "chill" | "power" {
-  // Get current EST time
+  // Get current Eastern Time (handles EST/EDT automatically)
   const now = new Date();
-  const estOffset = -5;
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const est = new Date(utc + 3600000 * estOffset);
-  const currentHour = est.getHours();
-  const currentMinute = est.getMinutes();
+  const eastern = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const currentHour = eastern.getHours();
+  const currentMinute = eastern.getMinutes();
   const currentTime = currentHour * 60 + currentMinute;
 
   const [phStartH, phStartM] = (settings.power_hour_start || "19:00").split(":").map(Number);
