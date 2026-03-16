@@ -57,13 +57,11 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   }, []);
 
   const endCall = useCallback(() => {
-    // Notify partner
     channelRef.current?.send({
       type: "broadcast",
       event: "call-ended",
       payload: {},
     });
-    // Update invite status
     supabase.from("direct_call_invites").update({ status: "ended" } as any).eq("id", inviteId).then();
     cleanup();
   }, [cleanup, inviteId]);
@@ -89,13 +87,11 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
 
     async function start() {
       try {
-        // Get local media
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         localStreamRef.current = stream;
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-        // Create peer connection
         const pc = new RTCPeerConnection(ICE_SERVERS);
         pcRef.current = pc;
 
@@ -115,7 +111,6 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           }
         };
 
-        // Set up signaling channel
         const channel = supabase.channel(channelName);
         channelRef.current = channel;
 
@@ -127,6 +122,21 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
               payload: { candidate: event.candidate.toJSON(), from: myUserId },
             });
           }
+        };
+
+        // Track whether we've already sent an offer to avoid duplicates
+        let offerSent = false;
+
+        const sendOffer = async () => {
+          if (!isInitiator || offerSent || cancelled) return;
+          offerSent = true;
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          channel.send({
+            type: "broadcast",
+            event: "offer",
+            payload: { sdp: offer, from: myUserId },
+          });
         };
 
         channel
@@ -153,21 +163,30 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           })
           .on("broadcast", { event: "call-ended" }, () => {
             cleanup();
+          })
+          .on("broadcast", { event: "peer-ready" }, () => {
+            // The other peer is subscribed and ready — initiator can now safely send offer
+            sendOffer();
           });
 
         await channel.subscribe();
 
         setCallState("ringing");
 
-        // Initiator sends offer
+        // Both sides broadcast readiness after subscribing.
+        // When the initiator receives "peer-ready" from the receiver, it sends the offer.
+        channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
+
+        // If both are already subscribed (e.g. initiator joined second),
+        // the "peer-ready" from the other side triggers sendOffer.
+        // As a fallback for timing, initiator also retries a few times.
         if (isInitiator) {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          channel.send({
-            type: "broadcast",
-            event: "offer",
-            payload: { sdp: offer, from: myUserId },
-          });
+          for (let i = 0; i < 5; i++) {
+            await new Promise(r => setTimeout(r, 1000));
+            if (offerSent || cancelled) break;
+            // Re-broadcast readiness to prompt receiver to reply
+            channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
+          }
         }
       } catch (err) {
         console.error("Direct call error:", err);
