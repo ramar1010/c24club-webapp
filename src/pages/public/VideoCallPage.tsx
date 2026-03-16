@@ -41,8 +41,6 @@ import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPo
 import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
-import MessagesPage from "@/pages/public/MessagesPage";
-import { useUnreadCount } from "@/hooks/useMessages";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
