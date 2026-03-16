@@ -943,10 +943,6 @@ const VideoCallPage = () => {
                 )}
               </span>
             </div>
-            {/* Helper text */}
-            <div className="py-1.5 px-3 bg-white/10 text-center">
-              <span className="text-xs font-semibold text-white/90">Chat with guys or wait for a partner to earn!</span>
-            </div>
             {/* Schedule rows */}
             <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "chill" ? "bg-gradient-to-r from-purple-700/90 to-indigo-600/90" : "bg-gradient-to-r from-purple-900/60 to-indigo-800/60"}`}>
               <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-purple-200 animate-pulse" : "text-purple-300/70"}`}>
