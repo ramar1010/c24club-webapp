@@ -106,17 +106,17 @@ const VideoCallPage = () => {
     },
   });
 
-  // Check if user has taken a selfie (is discoverable)
-  const { data: isDiscoverable, refetch: refetchDiscoverable } = useQuery({
+  // Check if user has taken a selfie (image_url exists = selfie submitted, regardless of approval status)
+  const { data: hasSelfie, refetch: refetchDiscoverable } = useQuery({
     queryKey: ["member_discoverable", memberId],
     enabled: memberId !== "anonymous",
     queryFn: async () => {
-      const { data } = await supabase.from("members").select("is_discoverable, image_url").eq("id", memberId).maybeSingle();
-      return !!(data?.is_discoverable && data?.image_url);
+      const { data } = await supabase.from("members").select("image_url").eq("id", memberId).maybeSingle();
+      return !!data?.image_url;
     },
   });
 
-  const needsSelfie = isDiscoverable === false;
+  const needsSelfie = hasSelfie === false;
 
   const isFemale = memberGender?.toLowerCase() === "female";
 
