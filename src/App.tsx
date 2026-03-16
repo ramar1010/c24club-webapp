@@ -37,6 +37,7 @@ import RevenuePage from "@/pages/admin/RevenuePage";
 import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
 import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
 import AdminDiscoverReviewPage from "@/pages/admin/AdminDiscoverReviewPage";
+import TapAnalyticsPage from "@/pages/admin/TapAnalyticsPage";
 // Public
 import PublicLayout from "@/components/public/PublicLayout";
 import HomePage from "@/pages/public/HomePage";
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="system-health" element={<SystemHealthPage />} />
               <Route path="revenue" element={<RevenuePage />} />
               <Route path="user-analytics" element={<UserAnalyticsPage />} />
+              <Route path="tap-analytics" element={<TapAnalyticsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
