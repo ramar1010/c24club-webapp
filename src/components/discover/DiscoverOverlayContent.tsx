@@ -96,6 +96,14 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
       {/* Profile editor (for discoverable users) */}
       {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
 
+      {/* Incoming interests */}
+      <IncomingInterests
+        interests={incomingInterestsList}
+        myInterests={myInterests}
+        onInterestBack={(id) => handleInterest(id)}
+        sendingInterest={sendingInterest}
+      />
+
       {/* Members grid */}
       <div className="p-4">
         {loading ? (
