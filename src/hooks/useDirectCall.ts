@@ -87,23 +87,27 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
 
     async function start() {
       try {
+        // Get local media
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         localStreamRef.current = stream;
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
+        // Create peer connection
         const pc = new RTCPeerConnection(ICE_SERVERS);
         pcRef.current = pc;
 
         stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
         pc.ontrack = (event) => {
+          console.log("[DirectCall] Remote track received", event.streams.length);
           if (remoteVideoRef.current && event.streams[0]) {
             remoteVideoRef.current.srcObject = event.streams[0];
           }
         };
 
         pc.onconnectionstatechange = () => {
+          console.log("[DirectCall] Connection state:", pc.connectionState);
           if (pc.connectionState === "connected") {
             setCallState("connected");
           } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
@@ -111,25 +115,21 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           }
         };
 
-        const channel = supabase.channel(channelName);
+        // Queue ICE candidates until channel is ready
+        const pendingCandidates: RTCIceCandidateInit[] = [];
+        let channelReady = false;
+
+        const channel = supabase.channel(channelName, {
+          config: { broadcast: { self: false } },
+        });
         channelRef.current = channel;
 
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            channel.send({
-              type: "broadcast",
-              event: "ice-candidate",
-              payload: { candidate: event.candidate.toJSON(), from: myUserId },
-            });
-          }
-        };
-
-        // Track whether we've already sent an offer to avoid duplicates
         let offerSent = false;
 
         const sendOffer = async () => {
           if (!isInitiator || offerSent || cancelled) return;
           offerSent = true;
+          console.log("[DirectCall] Creating and sending offer");
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
           channel.send({
@@ -139,9 +139,25 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           });
         };
 
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            const candidateJson = event.candidate.toJSON();
+            if (channelReady) {
+              channel.send({
+                type: "broadcast",
+                event: "ice-candidate",
+                payload: { candidate: candidateJson, from: myUserId },
+              });
+            } else {
+              pendingCandidates.push(candidateJson);
+            }
+          }
+        };
+
         channel
           .on("broadcast", { event: "offer" }, async ({ payload }) => {
             if (payload.from === myUserId) return;
+            console.log("[DirectCall] Received offer");
             await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
@@ -153,43 +169,63 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           })
           .on("broadcast", { event: "answer" }, async ({ payload }) => {
             if (payload.from === myUserId) return;
+            console.log("[DirectCall] Received answer");
             await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
           })
           .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
             if (payload.from === myUserId) return;
             try {
               await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-            } catch {}
+            } catch (e) {
+              console.warn("[DirectCall] Failed to add ICE candidate", e);
+            }
           })
           .on("broadcast", { event: "call-ended" }, () => {
             cleanup();
           })
           .on("broadcast", { event: "peer-ready" }, () => {
-            // The other peer is subscribed and ready — initiator can now safely send offer
+            console.log("[DirectCall] Peer ready received, isInitiator:", isInitiator);
+            // The other peer is subscribed — initiator can now safely send offer
             sendOffer();
+          })
+          .subscribe((status) => {
+            console.log("[DirectCall] Channel status:", status);
+            if (status === "SUBSCRIBED") {
+              channelReady = true;
+              setCallState("ringing");
+
+              // Flush any queued ICE candidates
+              for (const candidate of pendingCandidates) {
+                channel.send({
+                  type: "broadcast",
+                  event: "ice-candidate",
+                  payload: { candidate, from: myUserId },
+                });
+              }
+              pendingCandidates.length = 0;
+
+              // Signal readiness to peer
+              console.log("[DirectCall] Sending peer-ready");
+              channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
+
+              // Initiator: retry peer-ready periodically in case the receiver joins later
+              if (isInitiator) {
+                const retryInterval = setInterval(() => {
+                  if (offerSent || cancelled || cleanedUpRef.current) {
+                    clearInterval(retryInterval);
+                    return;
+                  }
+                  console.log("[DirectCall] Retrying peer-ready");
+                  channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
+                }, 1500);
+
+                // Stop retrying after 30s
+                setTimeout(() => clearInterval(retryInterval), 30000);
+              }
+            }
           });
-
-        await channel.subscribe();
-
-        setCallState("ringing");
-
-        // Both sides broadcast readiness after subscribing.
-        // When the initiator receives "peer-ready" from the receiver, it sends the offer.
-        channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
-
-        // If both are already subscribed (e.g. initiator joined second),
-        // the "peer-ready" from the other side triggers sendOffer.
-        // As a fallback for timing, initiator also retries a few times.
-        if (isInitiator) {
-          for (let i = 0; i < 5; i++) {
-            await new Promise(r => setTimeout(r, 1000));
-            if (offerSent || cancelled) break;
-            // Re-broadcast readiness to prompt receiver to reply
-            channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
-          }
-        }
       } catch (err) {
-        console.error("Direct call error:", err);
+        console.error("[DirectCall] Error:", err);
         cleanup();
       }
     }
