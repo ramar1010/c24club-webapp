@@ -14,6 +14,16 @@ export interface DiscoverableMember {
   created_at: string;
 }
 
+export interface IncomingInterest {
+  user_id: string;
+  icebreaker_message: string | null;
+  created_at: string;
+  name: string;
+  image_url: string | null;
+  gender: string | null;
+  country: string | null;
+}
+
 export type DiscoverFilter = {
   gender: string;
   country: string;
