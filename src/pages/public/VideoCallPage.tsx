@@ -921,7 +921,7 @@ const VideoCallPage = () => {
                 supabase.from("tap_me_events").insert({ user_id: user.id }).then(() => {});
               }
             }}
-            className={`w-full mb-1 rounded-xl overflow-hidden transition-all relative ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : "hover:scale-[1.02]"}`}
+            className={`w-full mb-1 rounded-xl transition-all relative ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : "hover:scale-[1.02]"}`}
             style={{ animation: pulseAnchorBtn ? undefined : "tapme-glow 2s ease-in-out infinite" }}
           >
             {/* Floating coin particles - above content */}
