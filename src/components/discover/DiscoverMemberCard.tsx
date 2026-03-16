@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, MessageCircle, Link2 } from "lucide-react";
+import { Heart, DollarSign, Sparkles, MessageCircle, Link2, Video } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
+import { toast } from "@/hooks/use-toast";
 import IcebreakerPicker from "./IcebreakerPicker";
 
 interface DiscoverMemberCardProps {
