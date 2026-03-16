@@ -1359,6 +1359,24 @@ export type Database = {
         }
         Relationships: []
       }
+      tap_me_events: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       topic_categories: {
         Row: {
           created_at: string
