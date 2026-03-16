@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Heart, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, MessageCircle, ChevronDown, ChevronUp, Video } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { getTimeAgo, isOnlineNow } from "@/hooks/useDiscover";
 import type { IncomingInterest } from "@/hooks/useDiscover";
+import { toast } from "@/hooks/use-toast";
 
 interface IncomingInterestsProps {
   interests: IncomingInterest[];
