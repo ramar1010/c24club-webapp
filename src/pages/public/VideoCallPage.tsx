@@ -297,7 +297,9 @@ const VideoCallPage = () => {
     if (anchor.status === "idle" && !hasAutoStartedRef.current) {
       hasAutoStartedRef.current = true;
       anchor.joinAnchor();
-      setShowAnchorPanel(true);
+      // On mobile first visit, keep the panel collapsed to reduce clutter
+      const isMobileFirstVisit = window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen");
+      setShowAnchorPanel(!isMobileFirstVisit);
       setShowAnchorBanner(true);
     }
   }, [anchor.status]);
