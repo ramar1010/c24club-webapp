@@ -74,4 +74,3 @@ function AcceptButton({
   );
 }
 
-import { useState } from "react";
