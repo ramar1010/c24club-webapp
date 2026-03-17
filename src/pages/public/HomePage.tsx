@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
@@ -405,18 +405,57 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
 const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showSignIn, setShowSignIn] = useState(false);
   const [signInDefaultSignUp, setSignInDefaultSignUp] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [memberName, setMemberName] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const returnToHandledRef = useRef(false);
+
+  // Auto-open sign-in popup if returnTo is present and user is not logged in
+  useEffect(() => {
+    const returnTo = searchParams.get("returnTo");
+    if (returnTo && !user && !returnToHandledRef.current) {
+      setSignInDefaultSignUp(false);
+      setShowSignIn(true);
+    }
+  }, [searchParams, user]);
 
   useEffect(() => {
     if (!user) {
       setMemberName(null);
       setNeedsOnboarding(false);
+      returnToHandledRef.current = false;
       return;
     }
+
+    // If user just logged in and there's a returnTo param, redirect there
+    const returnTo = searchParams.get("returnTo");
+    if (returnTo && !returnToHandledRef.current) {
+      returnToHandledRef.current = true;
+      // Still check onboarding first
+      const checkAndRedirect = async () => {
+        const { data } = await supabase
+          .from("members")
+          .select("name, gender")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (data) {
+          const hasProfile = data.name && data.name !== user.email && data.gender;
+          if (!hasProfile) {
+            setMemberName(null);
+            setNeedsOnboarding(true);
+            setShowOnboarding(true);
+            return;
+          }
+        }
+        navigate(returnTo, { replace: true });
+      };
+      checkAndRedirect();
+      return;
+    }
+
     const fetchMember = async () => {
       const { data } = await supabase
         .from("members")
@@ -436,7 +475,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
       }
     };
     fetchMember();
-  }, [user]);
+  }, [user, searchParams, navigate]);
 
   const handleEnterClub = () => {
     if (needsOnboarding) {
@@ -449,7 +488,8 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setNeedsOnboarding(false);
-    navigate("/videocall");
+    const returnTo = searchParams.get("returnTo");
+    navigate(returnTo || "/videocall", { replace: true });
   };
 
   return (

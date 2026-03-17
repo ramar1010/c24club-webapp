@@ -12,8 +12,15 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect unauthenticated users to home with returnTo param
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/?returnTo=/messages", { replace: true });
+    }
+  }, [loading, user, navigate]);
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
