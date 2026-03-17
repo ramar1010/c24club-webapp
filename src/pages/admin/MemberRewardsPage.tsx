@@ -60,7 +60,18 @@ const columns: DataTableColumn<MemberRedemption>[] = [
       </div>
     ),
   },
-  { key: "reward_title", header: "Reward" },
+  {
+    key: "reward_title",
+    header: "Reward",
+    render: (row) => (
+      <div className="flex items-center gap-2">
+        <span>{row.reward_title}</span>
+        {row.status === "Redeemed as Anchor User Reward" && (
+          <Badge className="text-[10px] bg-teal-500/10 text-teal-600 border-teal-500/20">Anchor</Badge>
+        )}
+      </div>
+    ),
+  },
   {
     key: "minutes_cost",
     header: "Cost",
