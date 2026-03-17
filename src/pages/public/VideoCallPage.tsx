@@ -71,6 +71,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
+  const mobileNavInitializedRef = useRef(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
   const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
