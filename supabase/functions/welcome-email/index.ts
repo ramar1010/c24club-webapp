@@ -52,7 +52,32 @@ Deno.serve(async (req) => {
     }
 
     const subject = template.subject;
-    const body = template.body.replace(/\{\{user_name\}\}/g, member.name);
+    const rawBody = template.body.replace(/\{\{user_name\}\}/g, member.name);
+
+    // Wrap in styled HTML email layout
+    const body = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;padding:40px 0;">
+    <tr><td align="center">
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;padding:32px 28px;max-width:480px;">
+        <tr><td>
+          <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="120" style="margin-bottom:24px;" />
+          <h1 style="font-size:22px;font-weight:bold;color:#1a1a2e;margin:0 0 20px;">Welcome to C24 Club! 🎉</h1>
+          <div style="font-size:14px;color:#55575d;line-height:1.8;">
+            ${rawBody.includes('<') ? rawBody : rawBody.replace(/\n/g, '<br/>')}
+          </div>
+          <a href="https://c24club.lovable.app" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
+            GET STARTED
+          </a>
+          <p style="font-size:12px;color:#999999;margin:30px 0 0;">C24CLUB</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
     const messageId = crypto.randomUUID();
 
