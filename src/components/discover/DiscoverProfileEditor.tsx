@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Pencil, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Pencil, Check, X, ChevronDown, ChevronUp, Camera, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import cashappIcon from "@/assets/socials/cashapp.png";
