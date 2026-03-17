@@ -59,6 +59,7 @@ const AnchorEarningPanel = ({
   onDismissReward,
   onDismissCash,
   onSubmitVerification,
+  isFirstSession = false,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
