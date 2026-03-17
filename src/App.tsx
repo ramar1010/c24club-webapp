@@ -95,6 +95,7 @@ const App = () => (
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
 
             {/* Admin panel (protected) */}
             <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
