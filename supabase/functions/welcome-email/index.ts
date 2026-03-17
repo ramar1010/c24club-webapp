@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
         run_id: crypto.randomUUID(),
         message_id: messageId,
         to: member.email,
-        from: `C24Club <noreply@c24club.com>`,
+        from: `C24Club <support@c24club.com>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html: body,
