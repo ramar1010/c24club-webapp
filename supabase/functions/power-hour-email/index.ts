@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
 
       const htmlContent = body.replace(/\n/g, "<br>");
       const emailPayload = {
-        run_id: "",
+        run_id: crypto.randomUUID(),
         to: member.email,
         from: `C24Club <noreply@notify.c24club.com>`,
         subject,

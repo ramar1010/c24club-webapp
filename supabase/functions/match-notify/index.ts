@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
-                run_id: "",
+                run_id: crypto.randomUUID(),
                 to: target.email,
                 from: `C24Club <noreply@notify.c24club.com>`,
                 sender_domain: "notify.c24club.com",
