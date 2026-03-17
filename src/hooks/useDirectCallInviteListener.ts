@@ -24,6 +24,8 @@ export function useDirectCallInviteListener() {
   const declineCall = () => {
     if (incomingCall) {
       supabase.from("direct_call_invites").update({ status: "declined" } as any).eq("id", incomingCall.inviteId).then();
+      // Send missed call email to the invitee (this user declined)
+      sendMissedCallEmail(incomingCall.inviterId, user?.id);
     }
     setIncomingCall(null);
   };
@@ -66,6 +68,19 @@ export function useDirectCallInviteListener() {
             description: "Accept or decline the call.",
             duration: 30000,
           });
+
+          // Auto-expire: if not answered in 60s, send missed call email
+          setTimeout(async () => {
+            const { data: currentInvite } = await supabase
+              .from("direct_call_invites")
+              .select("status")
+              .eq("id", invite.id)
+              .maybeSingle();
+
+            if (currentInvite && currentInvite.status === "pending") {
+              sendMissedCallEmail(invite.inviter_id, user.id);
+            }
+          }, 60000);
         }
       )
       .subscribe();
@@ -76,4 +91,14 @@ export function useDirectCallInviteListener() {
   }, [user]);
 
   return { incomingCall, acceptCall, declineCall, clearCall };
+}
+
+/** Fire-and-forget missed call email */
+function sendMissedCallEmail(inviterId?: string, inviteeId?: string) {
+  if (!inviterId || !inviteeId) return;
+  supabase.functions
+    .invoke("missed-call-email", {
+      body: { inviterId, inviteeId },
+    })
+    .catch((err) => console.error("Failed to send missed call email:", err));
 }
