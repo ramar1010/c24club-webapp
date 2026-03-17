@@ -24,6 +24,7 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
         .order("last_active_at", { ascending: false })
         .limit(6);
 
+      // Filter to opposite gender when known, otherwise show everyone
       if (myGender) {
         query = query.eq("gender", oppositeGender);
       }
