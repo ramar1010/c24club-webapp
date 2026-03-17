@@ -40,6 +40,7 @@ import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
 import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
+import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
@@ -705,13 +706,18 @@ const VideoCallPage = () => {
           }
 
           {callState === "waiting" &&
-          <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-3">
+          <div className="md:hidden absolute inset-0 bg-black/60 flex items-center justify-center z-10 overflow-y-auto">
+              <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
                 <div className="mt-2 w-64">
                   <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
                 </div>
+                <DiscoverTeaser
+                  myGender={memberGender ?? null}
+                  myUserId={memberId}
+                  onOpenDiscover={() => setOverlayPage("discover")}
+                />
               </div>
             </div>
           }
@@ -850,9 +856,16 @@ const VideoCallPage = () => {
                   {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
                 {callState === "waiting" &&
-            <div className="mt-2 w-64">
-                    <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
-                  </div>
+            <>
+              <div className="mt-2 w-64">
+                      <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+                    </div>
+              <DiscoverTeaser
+                myGender={memberGender ?? null}
+                myUserId={memberId}
+                onOpenDiscover={() => setOverlayPage("discover")}
+              />
+            </>
             }
               </div>
           }
