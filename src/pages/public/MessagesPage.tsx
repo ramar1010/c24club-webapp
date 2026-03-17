@@ -192,6 +192,25 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         <button onClick={handleBack} className="text-white/70 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </button>
+        {selectedConvo && isMobile && (
+          <div
+            className="relative cursor-pointer"
+            onClick={() => selectedConvo.other_user && setProfileCard(selectedConvo.other_user)}
+          >
+            <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+              {selectedConvo.other_user?.image_url ? (
+                <img src={selectedConvo.other_user.image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-xs">
+                  {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
+            </div>
+            {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at) && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-900 rounded-full" />
+            )}
+          </div>
+        )}
         <h1 className="font-bold text-lg flex-1">
           {selectedConvo && isMobile
             ? selectedConvo.other_user?.name || "Chat"
