@@ -646,8 +646,8 @@ const VideoCallPage = () => {
           }} />
           }
 
-          {/* Voice mode: show avatar instead of local video */}
-          {isFemale && voiceMode && isActive &&
+          {/* Voice mode: show avatar instead of local video (desktop only — on mobile this box shows partner) */}
+          {!isMobile && isFemale && voiceMode && isActive &&
           <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
               <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3">
                 <span className="text-4xl md:text-5xl">🎙️</span>
