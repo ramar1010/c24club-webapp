@@ -28,15 +28,20 @@ const DiscoverProfileEditor = ({ userId }: DiscoverProfileEditorProps) => {
   const [socialInputs, setSocialInputs] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageStatus, setImageStatus] = useState<string>("pending");
+  const [showRetakeSelfie, setShowRetakeSelfie] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       const [{ data: member }, { data: settings }] = await Promise.all([
-        supabase.from("members").select("bio").eq("id", userId).single(),
+        supabase.from("members").select("bio, image_url, image_status").eq("id", userId).single(),
         supabase.from("vip_settings").select("pinned_socials").eq("user_id", userId).maybeSingle(),
       ]);
 
       setBio((member as any)?.bio || "");
+      setImageUrl((member as any)?.image_url || null);
+      setImageStatus((member as any)?.image_status || "pending");
 
       if (settings?.pinned_socials) {
         const parsed: Record<string, string> = {};
