@@ -720,9 +720,6 @@ const VideoCallPage = () => {
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
-                <div className="mt-2 w-64">
-                  <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
-                </div>
                 <DiscoverTeaser
                   myGender={memberGender ?? null}
                   myUserId={memberId}
