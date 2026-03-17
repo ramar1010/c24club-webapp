@@ -334,6 +334,14 @@ const VideoCallPage = () => {
 
   const isMobile = useIsMobile();
 
+  // Default to fullscreen video on mobile for females
+  useEffect(() => {
+    if (isMobile && isFemale && !mobileNavInitializedRef.current) {
+      mobileNavInitializedRef.current = true;
+      setMobileNavHidden(true);
+    }
+  }, [isMobile, isFemale]);
+
   const fetchPinnedTopics = async (userId: string) => {
     const { data: pins } = await supabase.
     from("pinned_topics").
