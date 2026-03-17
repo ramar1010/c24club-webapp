@@ -74,85 +74,86 @@ const App = () => (
         <BrowserRouter>
           <DirectCallInviteListenerWrapper />
           <DmNotificationListener />
-          <Routes>
-            {/* Public site */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="how-to-guide" element={<HowToGuidePage />} />
-              <Route path="rules" element={<RulesPage />} />
-              <Route path="terms" element={<TermsPage />} />
-              <Route path="privacy" element={<PrivacyPolicyPage />} />
-              <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
-              <Route path="blog" element={<PlaceholderPage title="Blog" />} />
-              
-            </Route>
+          <Suspense fallback={<div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" /></div>}>
+            <Routes>
+              {/* Public site */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="how-to-guide" element={<HowToGuidePage />} />
+                <Route path="rules" element={<RulesPage />} />
+                <Route path="terms" element={<TermsPage />} />
+                <Route path="privacy" element={<PrivacyPolicyPage />} />
+                <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
+                <Route path="blog" element={<PlaceholderPage title="Blog" />} />
+              </Route>
 
-            {/* Video call (full-screen, no public layout) */}
-            <Route path="/videocall" element={<VideoCallPage />} />
-            <Route path="/store" element={<RewardStorePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/my-rewards" element={<MyRewardsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/earn-history" element={<EarnHistoryPage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
+              {/* Video call (full-screen, no public layout) */}
+              <Route path="/videocall" element={<VideoCallPage />} />
+              <Route path="/store" element={<RewardStorePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/my-rewards" element={<MyRewardsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/earn-history" element={<EarnHistoryPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
 
-            {/* Admin login */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
+              {/* Admin login */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
 
-            {/* Admin panel (protected) */}
-            <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
-              <Route index element={<DashboardPage />} />
-              <Route path="members" element={<MembersPage />} />
-              <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
-              <Route path="rooms" element={<AdminRoomsPage />} />
-              <Route path="rewards" element={<RewardsPage />} />
-              <Route path="rewards/new" element={<AddRewardPage />} />
-              <Route path="rewards/:id/edit" element={<AddRewardPage />} />
-              <Route path="member-rewards" element={<MemberRewardsPage />} />
-              <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
-              <Route path="promos" element={<PromosPage />} />
-              <Route path="reported-users" element={<ReportedUsersPage />} />
-              <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
-              <Route path="categories" element={<CategoriesPage />} />
-              <Route path="categories/new" element={<AddCategoryPage />} />
-              <Route path="categories/:id/edit" element={<AddCategoryPage />} />
-              <Route path="topics" element={<TopicsPage />} />
-              <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
-              <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
-              <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
-              <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
-              <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
-              <Route path="contests" element={<PlaceholderPage title="Contests" />} />
-              <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
-              <Route path="banned-users" element={<AdminBannedUsersPage />} />
-              <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
-              <Route path="challenges" element={<AdminChallengesPage />} />
-              <Route path="challenges/new" element={<AdminChallengesPage />} />
-              <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
-              <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
-              <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
-              <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
-              <Route path="gift-cards" element={<AdminGiftCardsPage />} />
-              <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
-              <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
-              <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
-              <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
-              <Route path="emails" element={<AdminEmailTemplatesPage />} />
-              <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
-              <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
-              <Route path="manage-minutes" element={<ManageMinutesPage />} />
-              <Route path="freeze-settings" element={<FreezeSettingsPage />} />
-              <Route path="system-health" element={<SystemHealthPage />} />
-              <Route path="revenue" element={<RevenuePage />} />
-              <Route path="user-analytics" element={<UserAnalyticsPage />} />
-              <Route path="tap-analytics" element={<TapAnalyticsPage />} />
-              <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
-            </Route>
+              {/* Admin panel (protected) */}
+              <Route path="/admin" element={<Suspense fallback={<div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" /></div>}><ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute></Suspense>}>
+                <Route index element={<DashboardPage />} />
+                <Route path="members" element={<MembersPage />} />
+                <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
+                <Route path="rooms" element={<AdminRoomsPage />} />
+                <Route path="rewards" element={<RewardsPage />} />
+                <Route path="rewards/new" element={<AddRewardPage />} />
+                <Route path="rewards/:id/edit" element={<AddRewardPage />} />
+                <Route path="member-rewards" element={<MemberRewardsPage />} />
+                <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
+                <Route path="promos" element={<PromosPage />} />
+                <Route path="reported-users" element={<ReportedUsersPage />} />
+                <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
+                <Route path="categories/new" element={<AddCategoryPage />} />
+                <Route path="categories/:id/edit" element={<AddCategoryPage />} />
+                <Route path="topics" element={<TopicsPage />} />
+                <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
+                <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
+                <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
+                <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
+                <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
+                <Route path="contests" element={<PlaceholderPage title="Contests" />} />
+                <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
+                <Route path="banned-users" element={<AdminBannedUsersPage />} />
+                <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
+                <Route path="challenges" element={<AdminChallengesPage />} />
+                <Route path="challenges/new" element={<AdminChallengesPage />} />
+                <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
+                <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
+                <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
+                <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
+                <Route path="gift-cards" element={<AdminGiftCardsPage />} />
+                <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
+                <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
+                <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
+                <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
+                <Route path="emails" element={<AdminEmailTemplatesPage />} />
+                <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
+                <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
+                <Route path="manage-minutes" element={<ManageMinutesPage />} />
+                <Route path="freeze-settings" element={<FreezeSettingsPage />} />
+                <Route path="system-health" element={<SystemHealthPage />} />
+                <Route path="revenue" element={<RevenuePage />} />
+                <Route path="user-analytics" element={<UserAnalyticsPage />} />
+                <Route path="tap-analytics" element={<TapAnalyticsPage />} />
+                <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
