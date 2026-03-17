@@ -146,8 +146,8 @@ Deno.serve(async (req) => {
             run_id: crypto.randomUUID(),
             message_id: dmMessageId,
             to: member.email,
-            from: `C24Club <noreply@notify.c24club.com>`,
-            sender_domain: "notify.c24club.com",
+            from: `C24Club <support@c24club.com>`,
+            sender_domain: "c24club.com",
             subject,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
               <h2 style="color:#1a1a2e;">💬 ${subject}</h2>
