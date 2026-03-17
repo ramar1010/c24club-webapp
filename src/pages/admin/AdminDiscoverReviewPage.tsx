@@ -32,6 +32,9 @@ const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
+  const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
+  const { user } = useAuth();
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
