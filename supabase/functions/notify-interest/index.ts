@@ -222,6 +222,7 @@ serve(async (req) => {
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
+                run_id: "",
                 message_id: matchIdInterested,
                 to: interestedEmail,
                 from: `C24Club <noreply@${SENDER_DOMAIN}>`,
