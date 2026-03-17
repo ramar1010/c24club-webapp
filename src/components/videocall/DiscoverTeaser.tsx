@@ -79,27 +79,19 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
         People waiting to chat
       </button>
 
-      {isMobile ? (
-        <Carousel
-          opts={{ align: "start", loop: true }}
-          plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-1.5">
-            {members.slice(0, 6).map((m) => (
-              <CarouselItem key={m.id} className="basis-1/3 pl-1.5">
-                <MemberCard m={m} onOpenDiscover={onOpenDiscover} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      ) : (
-        <div className="grid grid-cols-3 gap-1.5">
+      <Carousel
+        opts={{ align: "start", loop: true }}
+        plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-1.5">
           {members.slice(0, 6).map((m) => (
-            <MemberCard key={m.id} m={m} onOpenDiscover={onOpenDiscover} />
+            <CarouselItem key={m.id} className="basis-1/3 pl-1.5">
+              <MemberCard m={m} onOpenDiscover={onOpenDiscover} />
+            </CarouselItem>
           ))}
-        </div>
-      )}
+        </CarouselContent>
+      </Carousel>
 
       <button
         onClick={onOpenDiscover}
