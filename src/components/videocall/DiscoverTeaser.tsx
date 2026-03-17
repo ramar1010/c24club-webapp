@@ -9,7 +9,7 @@ interface DiscoverTeaserProps {
 }
 
 const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserProps) => {
-  const oppositeGender = myGender?.toLowerCase() === "female" ? "Male" : "Female";
+  const oppositeGender = myGender?.toLowerCase() === "female" ? "male" : "female";
 
   const { data: members = [] } = useQuery({
     queryKey: ["discover-teaser", oppositeGender, myUserId],
