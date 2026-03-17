@@ -66,7 +66,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     const loadNewConvo = async () => {
       const { data: member } = await supabase
         .from("members")
-        .select("id, name, image_url, gender")
+        .select("id, name, image_url, gender, last_active_at")
         .eq("id", toUserId)
         .single();
 
