@@ -189,6 +189,16 @@ const DiscoverProfileEditor = ({ userId }: DiscoverProfileEditorProps) => {
           </button>
         </div>
       )}
+
+      <SelfieCaptureModal
+        open={showRetakeSelfie}
+        onClose={() => setShowRetakeSelfie(false)}
+        onComplete={(newUrl) => {
+          setShowRetakeSelfie(false);
+          setImageUrl(newUrl);
+          setImageStatus("pending");
+        }}
+      />
     </div>
   );
 };
