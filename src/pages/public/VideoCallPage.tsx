@@ -715,7 +715,7 @@ const VideoCallPage = () => {
             </div>
           }
 
-          {callState === "waiting" &&
+          {callState === "waiting" && isMobile &&
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 overflow-y-auto">
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
