@@ -13,18 +13,22 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
 
   const { data: members = [] } = useQuery({
     queryKey: ["discover-teaser", oppositeGender, myUserId],
-    enabled: !!myGender,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("members")
         .select("id, name, image_url, country")
         .eq("is_discoverable", true)
         .eq("image_status", "approved")
-        .eq("gender", oppositeGender)
         .neq("id", myUserId)
         .order("last_active_at", { ascending: false })
         .limit(6);
+
+      if (myGender) {
+        query = query.eq("gender", oppositeGender);
+      }
+
+      const { data } = await query;
       return (data ?? []).filter((m) => m.image_url);
     },
   });
