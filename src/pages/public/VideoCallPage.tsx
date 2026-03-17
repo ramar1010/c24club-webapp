@@ -42,6 +42,7 @@ import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
+import { useUnreadCount } from "@/hooks/useMessages";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -92,6 +93,7 @@ const VideoCallPage = () => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
+  const { data: unreadDmCount = 0 } = useUnreadCount();
 
   // Skip penalty state
   const [showSkipPenaltyPopup, setShowSkipPenaltyPopup] = useState(false);
@@ -1081,7 +1083,7 @@ const VideoCallPage = () => {
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
-            <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} />
+            <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} badge={unreadDmCount > 0 ? `${unreadDmCount > 9 ? "9+" : unreadDmCount} DMs` : null} />
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
