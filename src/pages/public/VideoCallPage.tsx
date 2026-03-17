@@ -938,7 +938,11 @@ const VideoCallPage = () => {
         }}
         onClick={() => setMobileNavHidden(!mobileNavHidden)}
       >
-          <div className={`w-12 h-1.5 rounded-full bg-neutral-500 transition-transform ${mobileNavHidden ? 'scale-x-75' : ''}`} />
+          {mobileNavHidden ? (
+            <span className="text-[10px] text-neutral-400 font-medium tracking-wide animate-pulse">↓ View more ↓</span>
+          ) : (
+            <div className="w-12 h-1.5 rounded-full bg-neutral-500" />
+          )}
         </div>
       }
 
