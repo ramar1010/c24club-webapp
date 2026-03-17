@@ -906,6 +906,17 @@ const VideoCallPage = () => {
         }
       </div>
 
+      {/* Discover Teaser - desktop, below video boxes */}
+      {!isMobile && callState === "waiting" &&
+        <div className="flex justify-center mt-4">
+          <DiscoverTeaser
+            myGender={memberGender ?? null}
+            myUserId={memberId}
+            onOpenDiscover={() => setOverlayPage("discover")}
+          />
+        </div>
+      }
+
       {/* Mobile slide toggle – swipe up/down or tap */}
       {isMobile && !showRedeem &&
       <div
