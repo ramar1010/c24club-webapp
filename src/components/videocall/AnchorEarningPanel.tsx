@@ -50,6 +50,7 @@ const AnchorEarningPanel = ({
   rewardEarned,
   cashEarned,
   settings,
+  settingsLoaded,
   verificationRequired,
   verificationWord,
   payouts,
