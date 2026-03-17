@@ -1022,7 +1022,7 @@ const VideoCallPage = () => {
               </div>
           }
           </button>
-          {showAnchorPanel &&
+          {showAnchorPanel && !(totalMinutes === 0 && !localStorage.getItem("anchor_banner_seen")) &&
         <AnchorEarningPanel
           status={anchor.status}
           mode={anchor.mode}
@@ -1041,8 +1041,7 @@ const VideoCallPage = () => {
           onCashout={anchor.cashout}
           onDismissReward={anchor.dismissReward}
           onDismissCash={anchor.dismissCashEarned}
-          onSubmitVerification={anchor.submitVerification}
-          isFirstSession={totalMinutes === 0 && !localStorage.getItem("anchor_banner_seen")} />
+          onSubmitVerification={anchor.submitVerification} />
 
         }
         </div>
