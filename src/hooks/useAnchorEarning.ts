@@ -81,6 +81,7 @@ export function useAnchorEarning({
       setSettings(data.settings);
       setSettingsLoaded(true);
     }
+    setMode(data.currentMode);
 
     if (data.status === "active") {
       setStatus("active");
