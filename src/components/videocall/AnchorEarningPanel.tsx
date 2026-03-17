@@ -28,6 +28,7 @@ interface AnchorEarningPanelProps {
   rewardEarned: AnchorReward | null;
   cashEarned: number;
   settings: AnchorSettings | null;
+  settingsLoaded: boolean;
   verificationRequired: boolean;
   verificationWord: string;
   payouts: AnchorPayout[];
