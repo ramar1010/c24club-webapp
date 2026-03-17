@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,6 +10,7 @@ import {
   type Conversation,
 } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import { toast } from "sonner";
 
