@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
@@ -69,20 +70,24 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
   if (members.length === 0) return null;
 
   return (
-    <div className="w-full max-w-xs mt-4">
+    <div className="w-full max-w-[260px] mt-3">
       <button
         onClick={onOpenDiscover}
-        className="flex items-center gap-1.5 mx-auto mb-2 text-amber-400 text-xs font-bold hover:text-amber-300 transition-colors"
+        className="flex items-center gap-1.5 mx-auto mb-1.5 text-amber-400 text-[10px] font-bold hover:text-amber-300 transition-colors"
       >
-        <Sparkles className="w-3.5 h-3.5" />
+        <Sparkles className="w-3 h-3" />
         People waiting to chat
       </button>
 
       {isMobile ? (
-        <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-2">
+        <Carousel
+          opts={{ align: "start", loop: true }}
+          plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-1.5">
             {members.slice(0, 6).map((m) => (
-              <CarouselItem key={m.id} className="basis-1/3 pl-2">
+              <CarouselItem key={m.id} className="basis-1/3 pl-1.5">
                 <MemberCard m={m} onOpenDiscover={onOpenDiscover} />
               </CarouselItem>
             ))}
