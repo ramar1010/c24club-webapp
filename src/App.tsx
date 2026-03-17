@@ -19,6 +19,7 @@ import AddCategoryPage from "@/pages/admin/AddCategoryPage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import AdminResetPasswordPage from "@/pages/admin/AdminResetPasswordPage";
 import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 import TopicsPage from "@/pages/admin/TopicsPage";
 import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
@@ -95,6 +96,7 @@ const App = () => (
 
             {/* Admin login */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
 
             {/* Admin panel (protected) */}
             <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
