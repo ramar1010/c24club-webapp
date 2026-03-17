@@ -105,7 +105,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
 
       // Notify the other user via edge function
       supabase.functions.invoke("notify-direct-call", {
-        body: { inviteId: data.id, inviteeId: partnerId },
+        body: { inviterId: user.id, inviteeId: partnerId },
       }).catch(() => {});
 
       setActiveCall({
