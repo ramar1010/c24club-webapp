@@ -41,7 +41,8 @@ export function useAnchorEarning({
   const [status, setStatus] = useState<AnchorStatus>("loading");
   const [mode, setMode] = useState<AnchorMode>("chill");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [thresholdSeconds, setThresholdSeconds] = useState(45 * 60);
+  const [thresholdSeconds, setThresholdSeconds] = useState(0);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [cashBalance, setCashBalance] = useState(0);
   const [queuePosition, setQueuePosition] = useState(0);
   const [settings, setSettings] = useState<AnchorSettings | null>(null);
