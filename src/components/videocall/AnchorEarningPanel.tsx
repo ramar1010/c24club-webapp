@@ -37,6 +37,7 @@ interface AnchorEarningPanelProps {
   onDismissReward: () => void;
   onDismissCash: () => void;
   onSubmitVerification: (input: string) => Promise<boolean>;
+  isFirstSession?: boolean;
 }
 
 const AnchorEarningPanel = ({
