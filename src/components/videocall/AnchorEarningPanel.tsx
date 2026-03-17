@@ -372,22 +372,26 @@ const AnchorEarningPanel = ({
         )}
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-2 bg-neutral-700 rounded-full overflow-hidden mb-2">
-        <div
-          className={`h-full ${progressBarColor} rounded-full transition-all duration-1000`}
-          style={{ width: `${progress * 100}%` }}
-        />
-      </div>
+      {!isFirstSession && (
+        <>
+          {/* Progress bar */}
+          <div className="w-full h-2 bg-neutral-700 rounded-full overflow-hidden mb-2">
+            <div
+              className={`h-full ${progressBarColor} rounded-full transition-all duration-1000`}
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
 
-      {/* Timer text */}
-      <p className={`text-center text-sm font-bold ${accentColor}`}>
-        {isPower ? (
-          <>Next <span className="text-green-400">${(settings?.power_rate_cash ?? 1.5).toFixed(2)}</span> is <span className="text-white">{remainingMin}:{String(remainingSec).padStart(2, "0")}</span> away!</>
-        ) : (
-          <>Next reward is <span className="text-yellow-400">{remainingMin}</span> minutes away! 🎁</>
-        )}
-      </p>
+          {/* Timer text */}
+          <p className={`text-center text-sm font-bold ${accentColor}`}>
+            {isPower ? (
+              <>Next <span className="text-green-400">${(settings?.power_rate_cash ?? 1.5).toFixed(2)}</span> is <span className="text-white">{remainingMin}:{String(remainingSec).padStart(2, "0")}</span> away!</>
+            ) : (
+              <>Next reward is <span className="text-yellow-400">{remainingMin}</span> minutes away! 🎁</>
+            )}
+          </p>
+        </>
+      )}
 
       {/* Payout history toggle */}
       {payouts.length > 0 && (
