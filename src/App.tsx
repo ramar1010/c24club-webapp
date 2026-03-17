@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,59 +8,61 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DirectCallInviteListenerWrapper } from "@/components/DirectCallInviteListenerWrapper";
 import DmNotificationListener from "@/components/DmNotificationListener";
 
-// Admin
-import AdminLayout from "@/components/admin/AdminLayout";
-import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
-import DashboardPage from "@/pages/admin/DashboardPage";
-import MembersPage from "@/pages/admin/MembersPage";
-import RewardsPage from "@/pages/admin/RewardsPage";
-import AddRewardPage from "@/pages/admin/AddRewardPage";
-import CategoriesPage from "@/pages/admin/CategoriesPage";
-import AddCategoryPage from "@/pages/admin/AddCategoryPage";
-import PromosPage from "@/pages/admin/PromosPage";
-import PlaceholderPage from "@/pages/admin/PlaceholderPage";
-import AdminLoginPage from "@/pages/admin/AdminLoginPage";
-import AdminResetPasswordPage from "@/pages/admin/AdminResetPasswordPage";
-import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
-import TopicsPage from "@/pages/admin/TopicsPage";
-import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
-import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
-import FreezeSettingsPage from "@/pages/admin/FreezeSettingsPage";
-import AdminChallengesPage from "@/pages/admin/AdminChallengesPage";
-import AdminMemberChallengesPage from "@/pages/admin/AdminMemberChallengesPage";
-import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
-import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
-import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
-import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
-import AdminEmailDashboardPage from "@/pages/admin/AdminEmailDashboardPage";
-import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
-import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
-import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
-import SystemHealthPage from "@/pages/admin/SystemHealthPage";
-import RevenuePage from "@/pages/admin/RevenuePage";
-import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
-import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
-import AdminDiscoverReviewPage from "@/pages/admin/AdminDiscoverReviewPage";
-import TapAnalyticsPage from "@/pages/admin/TapAnalyticsPage";
-import AdminDmMonitorPage from "@/pages/admin/AdminDmMonitorPage";
-// Public
+// Lightweight layout - keep eager
 import PublicLayout from "@/components/public/PublicLayout";
-import HomePage from "@/pages/public/HomePage";
-import VideoCallPage from "@/pages/public/VideoCallPage";
-import RewardStorePage from "@/pages/public/RewardStorePage";
-import ProfilePage from "@/pages/public/ProfilePage";
-import MyRewardsPage from "@/pages/public/MyRewardsPage";
-import SettingsPage from "@/pages/public/SettingsPage";
-import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
-import RulesPage from "@/pages/public/RulesPage";
-import DiscoverPage from "@/pages/public/DiscoverPage";
-import MessagesPage from "@/pages/public/MessagesPage";
 
-import NotFound from "./pages/NotFound";
-import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
-import HowToGuidePage from "@/pages/public/HowToGuidePage";
-import TermsPage from "@/pages/public/TermsPage";
-import PrivacyPolicyPage from "@/pages/public/PrivacyPolicyPage";
+// Lazy load ALL pages
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const ProtectedAdminRoute = lazy(() => import("@/components/admin/ProtectedAdminRoute"));
+const DashboardPage = lazy(() => import("@/pages/admin/DashboardPage"));
+const MembersPage = lazy(() => import("@/pages/admin/MembersPage"));
+const RewardsPage = lazy(() => import("@/pages/admin/RewardsPage"));
+const AddRewardPage = lazy(() => import("@/pages/admin/AddRewardPage"));
+const CategoriesPage = lazy(() => import("@/pages/admin/CategoriesPage"));
+const AddCategoryPage = lazy(() => import("@/pages/admin/AddCategoryPage"));
+const PromosPage = lazy(() => import("@/pages/admin/PromosPage"));
+const PlaceholderPage = lazy(() => import("@/pages/admin/PlaceholderPage"));
+const AdminLoginPage = lazy(() => import("@/pages/admin/AdminLoginPage"));
+const AdminResetPasswordPage = lazy(() => import("@/pages/admin/AdminResetPasswordPage"));
+const ManageMinutesPage = lazy(() => import("@/pages/admin/ManageMinutesPage"));
+const TopicsPage = lazy(() => import("@/pages/admin/TopicsPage"));
+const MemberRewardsPage = lazy(() => import("@/pages/admin/MemberRewardsPage"));
+const EditMemberRewardPage = lazy(() => import("@/pages/admin/EditMemberRewardPage"));
+const FreezeSettingsPage = lazy(() => import("@/pages/admin/FreezeSettingsPage"));
+const AdminChallengesPage = lazy(() => import("@/pages/admin/AdminChallengesPage"));
+const AdminMemberChallengesPage = lazy(() => import("@/pages/admin/AdminMemberChallengesPage"));
+const AdminSpinPrizesPage = lazy(() => import("@/pages/admin/AdminSpinPrizesPage"));
+const AdminSpinWinnersPage = lazy(() => import("@/pages/admin/AdminSpinWinnersPage"));
+const LegendaryCashoutPage = lazy(() => import("@/pages/admin/LegendaryCashoutPage"));
+const AdminEmailTemplatesPage = lazy(() => import("@/pages/admin/AdminEmailTemplatesPage"));
+const AdminEmailDashboardPage = lazy(() => import("@/pages/admin/AdminEmailDashboardPage"));
+const AdminGiftCardsPage = lazy(() => import("@/pages/admin/AdminGiftCardsPage"));
+const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
+const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
+const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
+const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
+const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPage"));
+const UserAnalyticsPage = lazy(() => import("@/pages/admin/UserAnalyticsPage"));
+const AdminDiscoverReviewPage = lazy(() => import("@/pages/admin/AdminDiscoverReviewPage"));
+const TapAnalyticsPage = lazy(() => import("@/pages/admin/TapAnalyticsPage"));
+const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage"));
+const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
+
+const HomePage = lazy(() => import("@/pages/public/HomePage"));
+const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
+const RewardStorePage = lazy(() => import("@/pages/public/RewardStorePage"));
+const ProfilePage = lazy(() => import("@/pages/public/ProfilePage"));
+const MyRewardsPage = lazy(() => import("@/pages/public/MyRewardsPage"));
+const SettingsPage = lazy(() => import("@/pages/public/SettingsPage"));
+const EarnHistoryPage = lazy(() => import("@/pages/public/EarnHistoryPage"));
+const RulesPage = lazy(() => import("@/pages/public/RulesPage"));
+const DiscoverPage = lazy(() => import("@/pages/public/DiscoverPage"));
+const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
+const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
+const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -71,85 +74,86 @@ const App = () => (
         <BrowserRouter>
           <DirectCallInviteListenerWrapper />
           <DmNotificationListener />
-          <Routes>
-            {/* Public site */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="how-to-guide" element={<HowToGuidePage />} />
-              <Route path="rules" element={<RulesPage />} />
-              <Route path="terms" element={<TermsPage />} />
-              <Route path="privacy" element={<PrivacyPolicyPage />} />
-              <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
-              <Route path="blog" element={<PlaceholderPage title="Blog" />} />
-              
-            </Route>
+          <Suspense fallback={<div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" /></div>}>
+            <Routes>
+              {/* Public site */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="how-to-guide" element={<HowToGuidePage />} />
+                <Route path="rules" element={<RulesPage />} />
+                <Route path="terms" element={<TermsPage />} />
+                <Route path="privacy" element={<PrivacyPolicyPage />} />
+                <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
+                <Route path="blog" element={<PlaceholderPage title="Blog" />} />
+              </Route>
 
-            {/* Video call (full-screen, no public layout) */}
-            <Route path="/videocall" element={<VideoCallPage />} />
-            <Route path="/store" element={<RewardStorePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/my-rewards" element={<MyRewardsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/earn-history" element={<EarnHistoryPage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
+              {/* Video call (full-screen, no public layout) */}
+              <Route path="/videocall" element={<VideoCallPage />} />
+              <Route path="/store" element={<RewardStorePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/my-rewards" element={<MyRewardsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/earn-history" element={<EarnHistoryPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
 
-            {/* Admin login */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
+              {/* Admin login */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
 
-            {/* Admin panel (protected) */}
-            <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
-              <Route index element={<DashboardPage />} />
-              <Route path="members" element={<MembersPage />} />
-              <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
-              <Route path="rooms" element={<AdminRoomsPage />} />
-              <Route path="rewards" element={<RewardsPage />} />
-              <Route path="rewards/new" element={<AddRewardPage />} />
-              <Route path="rewards/:id/edit" element={<AddRewardPage />} />
-              <Route path="member-rewards" element={<MemberRewardsPage />} />
-              <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
-              <Route path="promos" element={<PromosPage />} />
-              <Route path="reported-users" element={<ReportedUsersPage />} />
-              <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
-              <Route path="categories" element={<CategoriesPage />} />
-              <Route path="categories/new" element={<AddCategoryPage />} />
-              <Route path="categories/:id/edit" element={<AddCategoryPage />} />
-              <Route path="topics" element={<TopicsPage />} />
-              <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
-              <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
-              <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
-              <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
-              <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
-              <Route path="contests" element={<PlaceholderPage title="Contests" />} />
-              <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
-              <Route path="banned-users" element={<AdminBannedUsersPage />} />
-              <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
-              <Route path="challenges" element={<AdminChallengesPage />} />
-              <Route path="challenges/new" element={<AdminChallengesPage />} />
-              <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
-              <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
-              <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
-              <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
-              <Route path="gift-cards" element={<AdminGiftCardsPage />} />
-              <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
-              <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
-              <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
-              <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
-              <Route path="emails" element={<AdminEmailTemplatesPage />} />
-              <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
-              <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
-              <Route path="manage-minutes" element={<ManageMinutesPage />} />
-              <Route path="freeze-settings" element={<FreezeSettingsPage />} />
-              <Route path="system-health" element={<SystemHealthPage />} />
-              <Route path="revenue" element={<RevenuePage />} />
-              <Route path="user-analytics" element={<UserAnalyticsPage />} />
-              <Route path="tap-analytics" element={<TapAnalyticsPage />} />
-              <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
-            </Route>
+              {/* Admin panel (protected) */}
+              <Route path="/admin" element={<Suspense fallback={<div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" /></div>}><ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute></Suspense>}>
+                <Route index element={<DashboardPage />} />
+                <Route path="members" element={<MembersPage />} />
+                <Route path="members/new" element={<PlaceholderPage title="Add New Member" />} />
+                <Route path="rooms" element={<AdminRoomsPage />} />
+                <Route path="rewards" element={<RewardsPage />} />
+                <Route path="rewards/new" element={<AddRewardPage />} />
+                <Route path="rewards/:id/edit" element={<AddRewardPage />} />
+                <Route path="member-rewards" element={<MemberRewardsPage />} />
+                <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
+                <Route path="promos" element={<PromosPage />} />
+                <Route path="reported-users" element={<ReportedUsersPage />} />
+                <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
+                <Route path="categories/new" element={<AddCategoryPage />} />
+                <Route path="categories/:id/edit" element={<AddCategoryPage />} />
+                <Route path="topics" element={<TopicsPage />} />
+                <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
+                <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
+                <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
+                <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
+                <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
+                <Route path="contests" element={<PlaceholderPage title="Contests" />} />
+                <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
+                <Route path="banned-users" element={<AdminBannedUsersPage />} />
+                <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
+                <Route path="challenges" element={<AdminChallengesPage />} />
+                <Route path="challenges/new" element={<AdminChallengesPage />} />
+                <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
+                <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
+                <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
+                <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
+                <Route path="gift-cards" element={<AdminGiftCardsPage />} />
+                <Route path="referrals/invitations" element={<PlaceholderPage title="Referral Invitations" />} />
+                <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
+                <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
+                <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
+                <Route path="emails" element={<AdminEmailTemplatesPage />} />
+                <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
+                <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
+                <Route path="manage-minutes" element={<ManageMinutesPage />} />
+                <Route path="freeze-settings" element={<FreezeSettingsPage />} />
+                <Route path="system-health" element={<SystemHealthPage />} />
+                <Route path="revenue" element={<RevenuePage />} />
+                <Route path="user-analytics" element={<UserAnalyticsPage />} />
+                <Route path="tap-analytics" element={<TapAnalyticsPage />} />
+                <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
