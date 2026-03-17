@@ -30,6 +30,7 @@ import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
 import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
 import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
+import AdminEmailDashboardPage from "@/pages/admin/AdminEmailDashboardPage";
 import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
 import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
 import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
               <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
               <Route path="emails" element={<AdminEmailTemplatesPage />} />
+              <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
               <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
               <Route path="manage-minutes" element={<ManageMinutesPage />} />
               <Route path="freeze-settings" element={<FreezeSettingsPage />} />
