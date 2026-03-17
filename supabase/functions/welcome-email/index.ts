@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
         message_id: messageId,
         to: member.email,
         from: `C24Club <support@c24club.com>`,
-        sender_domain: SENDER_DOMAIN,
+        sender_domain: "c24club.com",
         subject,
         html: body,
         text: body.replace(/<[^>]*>/g, ""),
