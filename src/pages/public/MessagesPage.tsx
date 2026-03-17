@@ -296,22 +296,37 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             {/* Desktop header for selected convo */}
             {!isMobile && selectedConvo && (
               <div className="flex items-center gap-3 px-4 py-2.5 bg-neutral-900/50 border-b border-white/10">
-                <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
-                  {selectedConvo.other_user?.image_url ? (
-                    <img
-                      src={selectedConvo.other_user.image_url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-sm">
-                      {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => selectedConvo.other_user && setProfileCard(selectedConvo.other_user)}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+                    {selectedConvo.other_user?.image_url ? (
+                      <img
+                        src={selectedConvo.other_user.image_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-sm">
+                        {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at) && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-900 rounded-full" />
                   )}
                 </div>
-                <span className="font-semibold text-sm flex-1">
-                  {selectedConvo.other_user?.name}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-sm">{selectedConvo.other_user?.name}</span>
+                  <p className="text-[10px] text-white/40">
+                    {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at)
+                      ? "Online now"
+                      : selectedConvo.other_user?.last_active_at
+                        ? getTimeAgo(selectedConvo.other_user.last_active_at)
+                        : ""}
+                  </p>
+                </div>
                 {/* Video call button in desktop header */}
                 <button
                   onClick={handleStartCall}
