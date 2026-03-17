@@ -225,6 +225,7 @@ export const adminMenu: MenuItem[] = [
     title: "Emails",
     submenu: [
       { key: "email-templates", label: "Email Templates", path: "/admin/emails" },
+      { key: "email-dashboard", label: "Email Analytics", path: "/admin/email-analytics" },
     ],
   },
   {
