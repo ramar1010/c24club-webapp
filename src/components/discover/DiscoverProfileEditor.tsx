@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Pencil, Check, X, ChevronDown, ChevronUp, Camera, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import cashappIcon from "@/assets/socials/cashapp.png";
 import tiktokIcon from "@/assets/socials/tiktok.png";
 import instagramIcon from "@/assets/socials/instagram.png";
