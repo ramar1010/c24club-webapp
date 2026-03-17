@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const SENDER_DOMAIN = "notify.c24club.com";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -52,10 +54,49 @@ Deno.serve(async (req) => {
     const subject = template.subject;
     const body = template.body.replace(/\{\{user_name\}\}/g, member.name);
 
-    console.log(`📧 Welcome email to ${member.email}:`, { subject, body });
+    const messageId = crypto.randomUUID();
 
-    // Once email domain is configured, actual sending will happen here.
-    // For now, the email content is logged.
+    // Log pending before enqueue
+    await supabase.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: "welcome",
+      recipient_email: member.email,
+      status: "pending",
+    });
+
+    // Enqueue to transactional_emails queue
+    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: {
+        run_id: "",
+        message_id: messageId,
+        to: member.email,
+        from: `C24Club <noreply@c24club.com>`,
+        sender_domain: SENDER_DOMAIN,
+        subject,
+        html: body,
+        text: body.replace(/<[^>]*>/g, ""),
+        purpose: "transactional",
+        label: "welcome",
+        queued_at: new Date().toISOString(),
+      },
+    });
+
+    if (enqueueError) {
+      console.error("Failed to enqueue welcome email", { error: enqueueError });
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: "welcome",
+        recipient_email: member.email,
+        status: "failed",
+        error_message: "Failed to enqueue email",
+      });
+      return new Response(JSON.stringify({ error: "Failed to enqueue email" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`📧 Welcome email enqueued for ${member.email}`);
 
     return new Response(
       JSON.stringify({ success: true, message: `Welcome email queued for ${member.email}` }),
