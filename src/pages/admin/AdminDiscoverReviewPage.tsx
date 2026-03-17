@@ -98,6 +98,44 @@ const AdminDiscoverReviewPage = () => {
     },
   });
 
+  const banUser = useMutation({
+    mutationFn: async ({ member, reason }: { member: MemberImage; reason: string }) => {
+      // Get member's IP
+      const { data: memberData } = await supabase
+        .from("members")
+        .select("last_ip")
+        .eq("id", member.id)
+        .single();
+
+      // Insert ban
+      const { error: banError } = await supabase.from("user_bans").insert({
+        user_id: member.id,
+        reason,
+        ban_type: "standard",
+        is_active: true,
+        ip_address: (memberData as any)?.last_ip || null,
+        banned_by: user?.id || null,
+      });
+      if (banError) throw banError;
+
+      // Also deny their image and remove from discover
+      await supabase
+        .from("members")
+        .update({ image_status: "denied", is_discoverable: false } as any)
+        .eq("id", member.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "User Banned 🚫", description: `${banTarget?.name} has been banned and removed from Discover.` });
+      setBanTarget(null);
+      setBanReason("Inappropriate selfie (admin review)");
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
   const pendingCount = useQuery({
     queryKey: ["admin-discover-pending-count"],
     queryFn: async () => {
