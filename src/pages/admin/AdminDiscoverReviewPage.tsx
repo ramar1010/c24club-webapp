@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 type ImageStatus = "pending" | "approved" | "denied";
 
 interface MemberImage {
@@ -31,6 +32,9 @@ const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
+  const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
+  const { user } = useAuth();
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
@@ -88,6 +92,44 @@ const AdminDiscoverReviewPage = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
       queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
       toast({ title: "Image Deleted 🗑️", description: "The image has been removed and the user is no longer discoverable." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const banUser = useMutation({
+    mutationFn: async ({ member, reason }: { member: MemberImage; reason: string }) => {
+      // Get member's IP
+      const { data: memberData } = await supabase
+        .from("members")
+        .select("last_ip")
+        .eq("id", member.id)
+        .single();
+
+      // Insert ban
+      const { error: banError } = await supabase.from("user_bans").insert({
+        user_id: member.id,
+        reason,
+        ban_type: "standard",
+        is_active: true,
+        ip_address: (memberData as any)?.last_ip || null,
+        banned_by: user?.id || null,
+      });
+      if (banError) throw banError;
+
+      // Also deny their image and remove from discover
+      await supabase
+        .from("members")
+        .update({ image_status: "denied", is_discoverable: false } as any)
+        .eq("id", member.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "User Banned 🚫", description: `${banTarget?.name} has been banned and removed from Discover.` });
+      setBanTarget(null);
+      setBanReason("Inappropriate selfie (admin review)");
     },
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -235,6 +277,16 @@ const AdminDiscoverReviewPage = () => {
                       </Button>
                     )}
 
+                    {/* Ban button — available on all tabs */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                      onClick={() => setBanTarget(member)}
+                    >
+                      <ShieldX className="w-3.5 h-3.5 mr-1" /> Ban User
+                    </Button>
+
                     {/* Delete button — available on all tabs */}
                     <Button
                       size="sm"
@@ -270,6 +322,42 @@ const AdminDiscoverReviewPage = () => {
               className="w-full rounded-lg object-contain max-h-[70vh]"
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Ban Confirmation Dialog */}
+      <Dialog open={!!banTarget} onOpenChange={(open) => !open && setBanTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldX className="h-5 w-5 text-orange-500" />
+              Ban {banTarget?.name}?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              This will ban the user and remove them from Discover immediately.
+            </p>
+            <div>
+              <label className="text-sm font-medium">Ban Reason</label>
+              <Input
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Enter ban reason..."
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setBanTarget(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => banTarget && banUser.mutate({ member: banTarget, reason: banReason })}
+              disabled={banUser.isPending || !banReason.trim()}
+            >
+              {banUser.isPending ? "Banning..." : "Confirm Ban"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
