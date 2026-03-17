@@ -139,10 +139,15 @@ Deno.serve(async (req) => {
 
       // Enqueue email via pgmq
       try {
+        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`;
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
+            run_id: "",
+            message_id: dmMessageId,
             to: member.email,
+            from: `C24Club <noreply@notify.c24club.com>`,
+            sender_domain: "notify.c24club.com",
             subject,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
               <h2 style="color:#1a1a2e;">💬 ${subject}</h2>
@@ -152,6 +157,9 @@ Deno.serve(async (req) => {
               </a>
               <p style="color:#999;font-size:12px;margin-top:30px;">C24CLUB</p>
             </div>`,
+            purpose: "transactional",
+            label: "unread_dm_digest",
+            queued_at: new Date().toISOString(),
             idempotency_key: `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`,
           },
         });

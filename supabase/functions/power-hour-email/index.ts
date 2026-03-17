@@ -67,7 +67,9 @@ Deno.serve(async (req) => {
       const messageId = `power_hour_${member.id}_${new Date().toISOString().split("T")[0]}`;
 
       const emailPayload = {
+        run_id: "",
         to: member.email,
+        from: `C24Club <noreply@notify.c24club.com>`,
         subject,
         html: body.replace(/\n/g, "<br>"),
         purpose: "transactional",

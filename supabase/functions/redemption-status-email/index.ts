@@ -111,7 +111,9 @@ Deno.serve(async (req) => {
     // Enqueue email via pgmq
     const messageId = `redemption-${redemptionId}-${templateKey}-${Date.now()}`;
     const emailPayload = {
+      run_id: "",
       to: member.email,
+      from: `C24Club <noreply@notify.c24club.com>`,
       subject,
       html: body,
       purpose: "transactional",
