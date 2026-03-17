@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
           sender_domain: SENDER_DOMAIN,
           subject,
           html,
+          text: html.replace(/<[^>]*>/g, ""),
           purpose: "transactional",
           label: "discover_weekly_digest",
           queued_at: new Date().toISOString(),

@@ -154,6 +154,7 @@ serve(async (req) => {
           sender_domain: SENDER_DOMAIN,
           subject,
           html,
+          text: html.replace(/<[^>]*>/g, ""),
           purpose: "transactional",
           label: "discover_interest",
           queued_at: new Date().toISOString(),
