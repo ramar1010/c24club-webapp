@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
+const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.lovable.app";
 
 function buildInterestEmailHtml(interested: any, target: any): { subject: string; html: string } {
@@ -150,7 +150,7 @@ serve(async (req) => {
           run_id: crypto.randomUUID(),
           message_id: messageId,
           to: target.email,
-          from: `C24Club <noreply@${SENDER_DOMAIN}>`,
+          from: `C24Club <support@${SENDER_DOMAIN}>`,
           sender_domain: SENDER_DOMAIN,
           subject,
           html,
@@ -191,7 +191,7 @@ serve(async (req) => {
             run_id: crypto.randomUUID(),
             message_id: matchIdTarget,
             to: target.email,
-            from: `C24Club <noreply@${SENDER_DOMAIN}>`,
+            from: `C24Club <support@${SENDER_DOMAIN}>`,
             sender_domain: SENDER_DOMAIN,
             subject: matchEmailTarget.subject,
             html: matchEmailTarget.html,
@@ -227,7 +227,7 @@ serve(async (req) => {
                 run_id: crypto.randomUUID(),
                 message_id: matchIdInterested,
                 to: interestedEmail,
-                from: `C24Club <noreply@${SENDER_DOMAIN}>`,
+                from: `C24Club <support@${SENDER_DOMAIN}>`,
                 sender_domain: SENDER_DOMAIN,
                 subject: matchEmailInterested.subject,
                 html: matchEmailInterested.html,

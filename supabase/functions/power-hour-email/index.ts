@@ -70,13 +70,13 @@ Deno.serve(async (req) => {
       const emailPayload = {
         run_id: crypto.randomUUID(),
         to: member.email,
-        from: `C24Club <noreply@notify.c24club.com>`,
+        from: `C24Club <support@c24club.com>`,
         subject,
         html: htmlContent,
         text: body.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
         label: "power_hour_reminder",
-        sender_domain: "notify.c24club.com",
+        sender_domain: "c24club.com",
         message_id: messageId,
         queued_at: new Date().toISOString(),
       };

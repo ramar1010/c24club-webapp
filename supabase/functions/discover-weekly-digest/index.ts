@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const SENDER_DOMAIN = "notify.c24club.com";
+const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.lovable.app";
 
 function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number }): string {
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
           run_id: crypto.randomUUID(),
           message_id: messageId,
           to: member.email,
-          from: `C24Club <noreply@${SENDER_DOMAIN}>`,
+          from: `C24Club <support@${SENDER_DOMAIN}>`,
           sender_domain: SENDER_DOMAIN,
           subject,
           html,
