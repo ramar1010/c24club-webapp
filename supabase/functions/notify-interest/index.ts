@@ -150,7 +150,7 @@ serve(async (req) => {
           run_id: crypto.randomUUID(),
           message_id: messageId,
           to: target.email,
-          from: `C24Club <noreply@${SENDER_DOMAIN}>`,
+          from: `C24Club <support@${SENDER_DOMAIN}>`,
           sender_domain: SENDER_DOMAIN,
           subject,
           html,
