@@ -30,6 +30,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = searchParams.get("to");
+  const [profileCard, setProfileCard] = useState<Conversation["other_user"] | null>(null);
 
   // Direct call state
   const [activeCall, setActiveCall] = useState<{
