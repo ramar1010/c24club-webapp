@@ -30,6 +30,7 @@ import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
 import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
 import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
 import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
+import AdminEmailDashboardPage from "@/pages/admin/AdminEmailDashboardPage";
 import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
 import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
 import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
