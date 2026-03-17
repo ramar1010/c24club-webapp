@@ -277,6 +277,16 @@ const AdminDiscoverReviewPage = () => {
                       </Button>
                     )}
 
+                    {/* Ban button — available on all tabs */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                      onClick={() => setBanTarget(member)}
+                    >
+                      <ShieldX className="w-3.5 h-3.5 mr-1" /> Ban User
+                    </Button>
+
                     {/* Delete button — available on all tabs */}
                     <Button
                       size="sm"
