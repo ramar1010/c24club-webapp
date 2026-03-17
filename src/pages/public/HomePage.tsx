@@ -488,7 +488,8 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setNeedsOnboarding(false);
-    navigate("/videocall");
+    const returnTo = searchParams.get("returnTo");
+    navigate(returnTo || "/videocall", { replace: true });
   };
 
   return (
