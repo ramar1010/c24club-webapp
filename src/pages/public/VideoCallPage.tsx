@@ -1040,6 +1040,7 @@ const VideoCallPage = () => {
           rewardEarned={anchor.rewardEarned}
           cashEarned={anchor.cashEarned}
           settings={anchor.settings}
+          settingsLoaded={anchor.settingsLoaded}
           verificationRequired={anchor.verificationRequired}
           verificationWord={anchor.verificationWord}
           payouts={anchor.payouts}

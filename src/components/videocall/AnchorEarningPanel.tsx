@@ -28,6 +28,7 @@ interface AnchorEarningPanelProps {
   rewardEarned: AnchorReward | null;
   cashEarned: number;
   settings: AnchorSettings | null;
+  settingsLoaded: boolean;
   verificationRequired: boolean;
   verificationWord: string;
   payouts: AnchorPayout[];
@@ -49,6 +50,7 @@ const AnchorEarningPanel = ({
   rewardEarned,
   cashEarned,
   settings,
+  settingsLoaded,
   verificationRequired,
   verificationWord,
   payouts,
@@ -80,7 +82,7 @@ const AnchorEarningPanel = ({
     }
   }, [status]);
 
-  if (status === "not_eligible" || status === "loading") return null;
+  if (status === "not_eligible" || status === "loading" || !settingsLoaded) return null;
 
   {/* One-time explainer modal for new female users */}
   if (showExplainer) {
