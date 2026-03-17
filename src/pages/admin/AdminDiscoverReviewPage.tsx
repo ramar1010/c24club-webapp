@@ -12,7 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 type ImageStatus = "pending" | "approved" | "denied";
 
 interface MemberImage {
