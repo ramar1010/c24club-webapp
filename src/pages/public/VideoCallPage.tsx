@@ -900,14 +900,27 @@ const VideoCallPage = () => {
         }
       </div>
 
-      {/* Mobile slide toggle */}
+      {/* Mobile slide toggle – swipe up/down or tap */}
       {isMobile && !showRedeem &&
-      <button
+      <div
+        className="flex justify-center py-3 md:hidden cursor-grab active:cursor-grabbing"
+        onTouchStart={(e) => {
+          const startY = e.touches[0].clientY;
+          const el = e.currentTarget;
+          const handleMove = (ev: TouchEvent) => {
+            const dy = ev.touches[0].clientY - startY;
+            if (Math.abs(dy) > 20) {
+              setMobileNavHidden(dy < 0); // swipe up = hide, swipe down = show
+              el.removeEventListener("touchmove", handleMove);
+            }
+          };
+          el.addEventListener("touchmove", handleMove, { passive: true });
+          el.addEventListener("touchend", () => el.removeEventListener("touchmove", handleMove), { once: true });
+        }}
         onClick={() => setMobileNavHidden(!mobileNavHidden)}
-        className="flex justify-center py-1 md:hidden">
-        
-          <div className="w-10 h-1 rounded-full bg-neutral-600" />
-        </button>
+      >
+          <div className={`w-12 h-1.5 rounded-full bg-neutral-500 transition-transform ${mobileNavHidden ? 'scale-x-75' : ''}`} />
+        </div>
       }
 
       {/* Anchor "Tap Me" Banner (female users only) */}
