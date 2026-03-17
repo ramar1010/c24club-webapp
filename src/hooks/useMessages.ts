@@ -14,6 +14,7 @@ export interface Conversation {
     name: string;
     image_url: string | null;
     gender: string | null;
+    last_active_at: string | null;
   };
   last_message?: string;
   unread_count?: number;
