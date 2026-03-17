@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,6 +10,8 @@ import {
   type Conversation,
 } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import DirectCallModal from "@/components/discover/DirectCallModal";
+import { toast } from "sonner";
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const { user, loading } = useAuth();
@@ -27,6 +29,15 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = searchParams.get("to");
+
+  // Direct call state
+  const [activeCall, setActiveCall] = useState<{
+    inviteId: string;
+    partnerId: string;
+    partnerName: string;
+    isInitiator: boolean;
+  } | null>(null);
+  const [startingCall, setStartingCall] = useState(false);
 
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
@@ -74,6 +85,41 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     };
     loadNewConvo();
   }, [toUserId, user, conversations, loadingConvos]);
+
+  const handleStartCall = async () => {
+    if (!user || !selectedConvo?.other_user?.id || startingCall) return;
+    const partnerId = selectedConvo.other_user.id;
+    setStartingCall(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("direct_call_invites")
+        .insert({
+          inviter_id: user.id,
+          invitee_id: partnerId,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      // Notify the other user via edge function
+      supabase.functions.invoke("notify-direct-call", {
+        body: { inviteId: data.id, inviteeId: partnerId },
+      }).catch(() => {});
+
+      setActiveCall({
+        inviteId: data.id,
+        partnerId,
+        partnerName: selectedConvo.other_user.name || "User",
+        isInitiator: true,
+      });
+    } catch (err: any) {
+      toast.error("Failed to start call", { description: err.message });
+    } finally {
+      setStartingCall(false);
+    }
+  };
 
   const handleSend = () => {
     if (!messageText.trim() || !selectedConvo) return;
@@ -127,16 +173,38 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
 
   return (
     <div className="flex flex-col h-full min-h-screen bg-neutral-950 text-white">
+      {/* Active call overlay */}
+      {activeCall && user && (
+        <DirectCallModal
+          myUserId={user.id}
+          partnerId={activeCall.partnerId}
+          partnerName={activeCall.partnerName}
+          inviteId={activeCall.inviteId}
+          isInitiator={activeCall.isInitiator}
+          onClose={() => setActiveCall(null)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 bg-neutral-900 border-b border-white/10 shrink-0">
         <button onClick={handleBack} className="text-white/70 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-bold text-lg">
+        <h1 className="font-bold text-lg flex-1">
           {selectedConvo && isMobile
             ? selectedConvo.other_user?.name || "Chat"
             : "Messages"}
         </h1>
+        {/* Video call button in mobile header */}
+        {selectedConvo && isMobile && (
+          <button
+            onClick={handleStartCall}
+            disabled={startingCall}
+            className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+          >
+            <Video className="w-4.5 h-4.5 text-emerald-400" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -228,9 +296,18 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                     </div>
                   )}
                 </div>
-                <span className="font-semibold text-sm">
+                <span className="font-semibold text-sm flex-1">
                   {selectedConvo.other_user?.name}
                 </span>
+                {/* Video call button in desktop header */}
+                <button
+                  onClick={handleStartCall}
+                  disabled={startingCall}
+                  className="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+                  title="Start video call"
+                >
+                  <Video className="w-4 h-4 text-emerald-400" />
+                </button>
               </div>
             )}
 
