@@ -82,7 +82,7 @@ const AnchorEarningPanel = ({
     }
   }, [status]);
 
-  if (status === "not_eligible" || status === "loading") return null;
+  if (status === "not_eligible" || status === "loading" || !settingsLoaded) return null;
 
   {/* One-time explainer modal for new female users */}
   if (showExplainer) {
