@@ -132,6 +132,16 @@ export function useAnchorEarning({
         localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
         setCashBalance(Number(data.session?.cash_balance ?? 0));
         setMode(data.currentMode);
+        const currentMode = data.currentMode || "chill";
+        setThresholdSeconds(
+          currentMode === "power"
+            ? ((data.settings ?? settings)?.power_rate_time ?? 30) * 60
+            : ((data.settings ?? settings)?.chill_reward_time ?? 45) * 60
+        );
+        if (data.settings) {
+          setSettings(data.settings);
+          setSettingsLoaded(true);
+        }
       } else if (data.status === "queued") {
         setStatus("queued");
         setQueuePosition(data.queuePosition);
