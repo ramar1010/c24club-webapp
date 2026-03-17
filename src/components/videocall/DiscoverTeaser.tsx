@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 interface DiscoverTeaserProps {
   myGender: string | null;
@@ -8,7 +14,34 @@ interface DiscoverTeaserProps {
   onOpenDiscover: () => void;
 }
 
+const MemberCard = ({
+  m,
+  onOpenDiscover,
+}: {
+  m: { id: string; name: string; image_url: string | null; country: string | null };
+  onOpenDiscover: () => void;
+}) => (
+  <button
+    onClick={onOpenDiscover}
+    className="relative aspect-[3/4] w-full rounded-lg overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-colors"
+  >
+    <img
+      src={m.image_url!}
+      alt={m.name}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      loading="lazy"
+    />
+    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
+      <p className="text-white text-[10px] font-bold truncate">{m.name}</p>
+      {m.country && (
+        <p className="text-white/50 text-[8px] truncate">{m.country}</p>
+      )}
+    </div>
+  </button>
+);
+
 const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserProps) => {
+  const isMobile = useIsMobile();
   const oppositeGender = myGender?.toLowerCase() === "female" ? "male" : "female";
 
   const { data: members = [] } = useQuery({
@@ -24,7 +57,6 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
         .order("last_active_at", { ascending: false })
         .limit(6);
 
-      // Filter to opposite gender when known, otherwise show everyone
       if (myGender) {
         query = query.eq("gender", oppositeGender);
       }
@@ -45,28 +77,25 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
         <Sparkles className="w-3.5 h-3.5" />
         People waiting to chat
       </button>
-      <div className="grid grid-cols-3 gap-1.5">
-        {members.slice(0, 6).map((m) => (
-          <button
-            key={m.id}
-            onClick={onOpenDiscover}
-            className="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-colors"
-          >
-            <img
-              src={m.image_url!}
-              alt={m.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
-              <p className="text-white text-[10px] font-bold truncate">{m.name}</p>
-              {m.country && (
-                <p className="text-white/50 text-[8px] truncate">{m.country}</p>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
+
+      {isMobile ? (
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <CarouselContent className="-ml-2">
+            {members.slice(0, 6).map((m) => (
+              <CarouselItem key={m.id} className="basis-1/3 pl-2">
+                <MemberCard m={m} onOpenDiscover={onOpenDiscover} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      ) : (
+        <div className="grid grid-cols-3 gap-1.5">
+          {members.slice(0, 6).map((m) => (
+            <MemberCard key={m.id} m={m} onOpenDiscover={onOpenDiscover} />
+          ))}
+        </div>
+      )}
+
       <button
         onClick={onOpenDiscover}
         className="mt-2 w-full py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-colors"
