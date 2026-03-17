@@ -157,6 +157,7 @@ Deno.serve(async (req) => {
               </a>
               <p style="color:#999;font-size:12px;margin-top:30px;">C24CLUB</p>
             </div>`,
+            text: body,
             purpose: "transactional",
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),

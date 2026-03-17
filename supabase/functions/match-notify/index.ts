@@ -218,11 +218,17 @@ Deno.serve(async (req) => {
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
+                run_id: "",
                 to: target.email,
+                from: `C24Club <noreply@notify.c24club.com>`,
+                sender_domain: "notify.c24club.com",
                 subject: emailSubject,
                 html: emailBody,
-                purpose: "user_online_notify",
+                text: emailBody.replace(/<[^>]*>/g, ""),
+                purpose: "transactional",
+                label: "user_online_notify",
                 message_id: `online-notify-${segment}-${Date.now()}-${target.id}`,
+                queued_at: new Date().toISOString(),
               },
             });
             emailsSent++;

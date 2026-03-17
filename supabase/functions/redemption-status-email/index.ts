@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
       from: `C24Club <noreply@notify.c24club.com>`,
       subject,
       html: body,
+      text: body.replace(/<[^>]*>/g, ""),
       purpose: "transactional",
       label: templateKey,
       sender_domain: "notify.c24club.com",
