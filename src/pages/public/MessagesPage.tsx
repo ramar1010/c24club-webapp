@@ -238,18 +238,29 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                     selectedConvo?.id === convo.id ? "bg-white/10" : ""
                   }`}
                 >
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden shrink-0">
-                    {convo.other_user?.image_url ? (
-                      <img
-                        src={convo.other_user.image_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
-                        {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
-                      </div>
+                  {/* Avatar with online dot */}
+                  <div
+                    className="relative shrink-0 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (convo.other_user) setProfileCard(convo.other_user);
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden">
+                      {convo.other_user?.image_url ? (
+                        <img
+                          src={convo.other_user.image_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
+                          {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                    {convo.other_user?.last_active_at && isOnlineNow(convo.other_user.last_active_at) && (
+                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
                     )}
                   </div>
 
