@@ -231,6 +231,7 @@ serve(async (req) => {
                 sender_domain: SENDER_DOMAIN,
                 subject: matchEmailInterested.subject,
                 html: matchEmailInterested.html,
+                text: matchEmailInterested.html.replace(/<[^>]*>/g, ""),
                 purpose: "transactional",
                 label: "discover_mutual_match",
                 queued_at: new Date().toISOString(),
