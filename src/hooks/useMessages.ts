@@ -14,6 +14,7 @@ export interface Conversation {
     name: string;
     image_url: string | null;
     gender: string | null;
+    last_active_at: string | null;
   };
   last_message?: string;
   unread_count?: number;
@@ -55,7 +56,7 @@ export function useConversations() {
 
       const { data: members } = await supabase
         .from("members")
-        .select("id, name, image_url, gender")
+        .select("id, name, image_url, gender, last_active_at")
         .in("id", otherIds);
 
       const memberMap = new Map((members || []).map((m: any) => [m.id, m]));

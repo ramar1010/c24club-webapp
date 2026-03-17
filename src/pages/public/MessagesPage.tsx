@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,6 +10,7 @@ import {
   type Conversation,
 } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = searchParams.get("to");
+  const [profileCard, setProfileCard] = useState<Conversation["other_user"] | null>(null);
 
   // Direct call state
   const [activeCall, setActiveCall] = useState<{
@@ -66,7 +68,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     const loadNewConvo = async () => {
       const { data: member } = await supabase
         .from("members")
-        .select("id, name, image_url, gender")
+        .select("id, name, image_url, gender, last_active_at")
         .eq("id", toUserId)
         .single();
 
@@ -190,6 +192,25 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         <button onClick={handleBack} className="text-white/70 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </button>
+        {selectedConvo && isMobile && (
+          <div
+            className="relative cursor-pointer"
+            onClick={() => selectedConvo.other_user && setProfileCard(selectedConvo.other_user)}
+          >
+            <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+              {selectedConvo.other_user?.image_url ? (
+                <img src={selectedConvo.other_user.image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-xs">
+                  {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
+            </div>
+            {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at) && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-900 rounded-full" />
+            )}
+          </div>
+        )}
         <h1 className="font-bold text-lg flex-1">
           {selectedConvo && isMobile
             ? selectedConvo.other_user?.name || "Chat"
@@ -236,18 +257,29 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                     selectedConvo?.id === convo.id ? "bg-white/10" : ""
                   }`}
                 >
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden shrink-0">
-                    {convo.other_user?.image_url ? (
-                      <img
-                        src={convo.other_user.image_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
-                        {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
-                      </div>
+                  {/* Avatar with online dot */}
+                  <div
+                    className="relative shrink-0 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (convo.other_user) setProfileCard(convo.other_user);
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden">
+                      {convo.other_user?.image_url ? (
+                        <img
+                          src={convo.other_user.image_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
+                          {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                    {convo.other_user?.last_active_at && isOnlineNow(convo.other_user.last_active_at) && (
+                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
                     )}
                   </div>
 
@@ -283,22 +315,37 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             {/* Desktop header for selected convo */}
             {!isMobile && selectedConvo && (
               <div className="flex items-center gap-3 px-4 py-2.5 bg-neutral-900/50 border-b border-white/10">
-                <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
-                  {selectedConvo.other_user?.image_url ? (
-                    <img
-                      src={selectedConvo.other_user.image_url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-sm">
-                      {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => selectedConvo.other_user && setProfileCard(selectedConvo.other_user)}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+                    {selectedConvo.other_user?.image_url ? (
+                      <img
+                        src={selectedConvo.other_user.image_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-sm">
+                        {selectedConvo.other_user?.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at) && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-900 rounded-full" />
                   )}
                 </div>
-                <span className="font-semibold text-sm flex-1">
-                  {selectedConvo.other_user?.name}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-sm">{selectedConvo.other_user?.name}</span>
+                  <p className="text-[10px] text-white/40">
+                    {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at)
+                      ? "Online now"
+                      : selectedConvo.other_user?.last_active_at
+                        ? getTimeAgo(selectedConvo.other_user.last_active_at)
+                        : ""}
+                  </p>
+                </div>
                 {/* Video call button in desktop header */}
                 <button
                   onClick={handleStartCall}
@@ -386,6 +433,98 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         )}
       </div>
+
+      {/* Profile Card Modal */}
+      {profileCard && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setProfileCard(null)}
+        >
+          <div
+            className="relative w-80 max-w-[90vw] bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setProfileCard(null)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Photo */}
+            <div className="aspect-square bg-white/5 overflow-hidden">
+              {profileCard.image_url ? (
+                <img
+                  src={profileCard.image_url}
+                  alt={profileCard.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/20 text-6xl font-bold">
+                  {profileCard.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="p-4 space-y-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg text-white">{profileCard.name}</h3>
+                  {profileCard.last_active_at && isOnlineNow(profileCard.last_active_at) && (
+                    <span className="flex items-center gap-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Online
+                    </span>
+                  )}
+                </div>
+                <p className="text-white/40 text-xs mt-0.5">
+                  {profileCard.gender && <span className="capitalize">{profileCard.gender}</span>}
+                  {profileCard.last_active_at && !isOnlineNow(profileCard.last_active_at) && (
+                    <span> · Last seen {getTimeAgo(profileCard.last_active_at)}</span>
+                  )}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setProfileCard(null);
+                    navigate(`/messages?to=${profileCard.id}`);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                  Message
+                </button>
+                <button
+                  onClick={() => {
+                    setProfileCard(null);
+                    if (selectedConvo?.other_user?.id === profileCard.id) {
+                      handleStartCall();
+                    }
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  <Video className="w-4 h-4" />
+                  Video Call
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setProfileCard(null);
+                  navigate(`/discover`);
+                }}
+                className="w-full text-center text-white/40 hover:text-white/60 text-xs py-1 transition-colors"
+              >
+                View on Discover →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
