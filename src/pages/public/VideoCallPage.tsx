@@ -856,9 +856,16 @@ const VideoCallPage = () => {
                   {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                 </p>
                 {callState === "waiting" &&
-            <div className="mt-2 w-64">
-                    <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
-                  </div>
+            <>
+              <div className="mt-2 w-64">
+                      <NotifyMeToggle userId={memberId} userGender={memberGender ?? null} />
+                    </div>
+              <DiscoverTeaser
+                myGender={memberGender ?? null}
+                myUserId={memberId}
+                onOpenDiscover={() => setOverlayPage("discover")}
+              />
+            </>
             }
               </div>
           }
