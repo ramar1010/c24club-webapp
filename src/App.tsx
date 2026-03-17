@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,59 +8,61 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DirectCallInviteListenerWrapper } from "@/components/DirectCallInviteListenerWrapper";
 import DmNotificationListener from "@/components/DmNotificationListener";
 
-// Admin
-import AdminLayout from "@/components/admin/AdminLayout";
-import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
-import DashboardPage from "@/pages/admin/DashboardPage";
-import MembersPage from "@/pages/admin/MembersPage";
-import RewardsPage from "@/pages/admin/RewardsPage";
-import AddRewardPage from "@/pages/admin/AddRewardPage";
-import CategoriesPage from "@/pages/admin/CategoriesPage";
-import AddCategoryPage from "@/pages/admin/AddCategoryPage";
-import PromosPage from "@/pages/admin/PromosPage";
-import PlaceholderPage from "@/pages/admin/PlaceholderPage";
-import AdminLoginPage from "@/pages/admin/AdminLoginPage";
-import AdminResetPasswordPage from "@/pages/admin/AdminResetPasswordPage";
-import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
-import TopicsPage from "@/pages/admin/TopicsPage";
-import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
-import EditMemberRewardPage from "@/pages/admin/EditMemberRewardPage";
-import FreezeSettingsPage from "@/pages/admin/FreezeSettingsPage";
-import AdminChallengesPage from "@/pages/admin/AdminChallengesPage";
-import AdminMemberChallengesPage from "@/pages/admin/AdminMemberChallengesPage";
-import AdminSpinPrizesPage from "@/pages/admin/AdminSpinPrizesPage";
-import AdminSpinWinnersPage from "@/pages/admin/AdminSpinWinnersPage";
-import LegendaryCashoutPage from "@/pages/admin/LegendaryCashoutPage";
-import AdminEmailTemplatesPage from "@/pages/admin/AdminEmailTemplatesPage";
-import AdminEmailDashboardPage from "@/pages/admin/AdminEmailDashboardPage";
-import AdminGiftCardsPage from "@/pages/admin/AdminGiftCardsPage";
-import AdminRoomsPage from "@/pages/admin/AdminRoomsPage";
-import AnchorSettingsPage from "@/pages/admin/AnchorSettingsPage";
-import SystemHealthPage from "@/pages/admin/SystemHealthPage";
-import RevenuePage from "@/pages/admin/RevenuePage";
-import AdminBannedUsersPage from "@/pages/admin/AdminBannedUsersPage";
-import UserAnalyticsPage from "@/pages/admin/UserAnalyticsPage";
-import AdminDiscoverReviewPage from "@/pages/admin/AdminDiscoverReviewPage";
-import TapAnalyticsPage from "@/pages/admin/TapAnalyticsPage";
-import AdminDmMonitorPage from "@/pages/admin/AdminDmMonitorPage";
-// Public
+// Lightweight layout - keep eager
 import PublicLayout from "@/components/public/PublicLayout";
-import HomePage from "@/pages/public/HomePage";
-import VideoCallPage from "@/pages/public/VideoCallPage";
-import RewardStorePage from "@/pages/public/RewardStorePage";
-import ProfilePage from "@/pages/public/ProfilePage";
-import MyRewardsPage from "@/pages/public/MyRewardsPage";
-import SettingsPage from "@/pages/public/SettingsPage";
-import EarnHistoryPage from "@/pages/public/EarnHistoryPage";
-import RulesPage from "@/pages/public/RulesPage";
-import DiscoverPage from "@/pages/public/DiscoverPage";
-import MessagesPage from "@/pages/public/MessagesPage";
 
-import NotFound from "./pages/NotFound";
-import ReportedUsersPage from "@/pages/admin/ReportedUsersPage";
-import HowToGuidePage from "@/pages/public/HowToGuidePage";
-import TermsPage from "@/pages/public/TermsPage";
-import PrivacyPolicyPage from "@/pages/public/PrivacyPolicyPage";
+// Lazy load ALL pages
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const ProtectedAdminRoute = lazy(() => import("@/components/admin/ProtectedAdminRoute"));
+const DashboardPage = lazy(() => import("@/pages/admin/DashboardPage"));
+const MembersPage = lazy(() => import("@/pages/admin/MembersPage"));
+const RewardsPage = lazy(() => import("@/pages/admin/RewardsPage"));
+const AddRewardPage = lazy(() => import("@/pages/admin/AddRewardPage"));
+const CategoriesPage = lazy(() => import("@/pages/admin/CategoriesPage"));
+const AddCategoryPage = lazy(() => import("@/pages/admin/AddCategoryPage"));
+const PromosPage = lazy(() => import("@/pages/admin/PromosPage"));
+const PlaceholderPage = lazy(() => import("@/pages/admin/PlaceholderPage"));
+const AdminLoginPage = lazy(() => import("@/pages/admin/AdminLoginPage"));
+const AdminResetPasswordPage = lazy(() => import("@/pages/admin/AdminResetPasswordPage"));
+const ManageMinutesPage = lazy(() => import("@/pages/admin/ManageMinutesPage"));
+const TopicsPage = lazy(() => import("@/pages/admin/TopicsPage"));
+const MemberRewardsPage = lazy(() => import("@/pages/admin/MemberRewardsPage"));
+const EditMemberRewardPage = lazy(() => import("@/pages/admin/EditMemberRewardPage"));
+const FreezeSettingsPage = lazy(() => import("@/pages/admin/FreezeSettingsPage"));
+const AdminChallengesPage = lazy(() => import("@/pages/admin/AdminChallengesPage"));
+const AdminMemberChallengesPage = lazy(() => import("@/pages/admin/AdminMemberChallengesPage"));
+const AdminSpinPrizesPage = lazy(() => import("@/pages/admin/AdminSpinPrizesPage"));
+const AdminSpinWinnersPage = lazy(() => import("@/pages/admin/AdminSpinWinnersPage"));
+const LegendaryCashoutPage = lazy(() => import("@/pages/admin/LegendaryCashoutPage"));
+const AdminEmailTemplatesPage = lazy(() => import("@/pages/admin/AdminEmailTemplatesPage"));
+const AdminEmailDashboardPage = lazy(() => import("@/pages/admin/AdminEmailDashboardPage"));
+const AdminGiftCardsPage = lazy(() => import("@/pages/admin/AdminGiftCardsPage"));
+const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
+const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
+const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
+const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
+const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPage"));
+const UserAnalyticsPage = lazy(() => import("@/pages/admin/UserAnalyticsPage"));
+const AdminDiscoverReviewPage = lazy(() => import("@/pages/admin/AdminDiscoverReviewPage"));
+const TapAnalyticsPage = lazy(() => import("@/pages/admin/TapAnalyticsPage"));
+const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage"));
+const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
+
+const HomePage = lazy(() => import("@/pages/public/HomePage"));
+const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
+const RewardStorePage = lazy(() => import("@/pages/public/RewardStorePage"));
+const ProfilePage = lazy(() => import("@/pages/public/ProfilePage"));
+const MyRewardsPage = lazy(() => import("@/pages/public/MyRewardsPage"));
+const SettingsPage = lazy(() => import("@/pages/public/SettingsPage"));
+const EarnHistoryPage = lazy(() => import("@/pages/public/EarnHistoryPage"));
+const RulesPage = lazy(() => import("@/pages/public/RulesPage"));
+const DiscoverPage = lazy(() => import("@/pages/public/DiscoverPage"));
+const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
+const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
+const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
