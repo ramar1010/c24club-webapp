@@ -37,7 +37,6 @@ interface AnchorEarningPanelProps {
   onDismissReward: () => void;
   onDismissCash: () => void;
   onSubmitVerification: (input: string) => Promise<boolean>;
-  isFirstSession?: boolean;
 }
 
 const AnchorEarningPanel = ({
@@ -59,7 +58,6 @@ const AnchorEarningPanel = ({
   onDismissReward,
   onDismissCash,
   onSubmitVerification,
-  isFirstSession = false,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
