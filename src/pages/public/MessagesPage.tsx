@@ -414,6 +414,98 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         )}
       </div>
+
+      {/* Profile Card Modal */}
+      {profileCard && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setProfileCard(null)}
+        >
+          <div
+            className="relative w-80 max-w-[90vw] bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setProfileCard(null)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Photo */}
+            <div className="aspect-square bg-white/5 overflow-hidden">
+              {profileCard.image_url ? (
+                <img
+                  src={profileCard.image_url}
+                  alt={profileCard.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/20 text-6xl font-bold">
+                  {profileCard.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="p-4 space-y-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg text-white">{profileCard.name}</h3>
+                  {profileCard.last_active_at && isOnlineNow(profileCard.last_active_at) && (
+                    <span className="flex items-center gap-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Online
+                    </span>
+                  )}
+                </div>
+                <p className="text-white/40 text-xs mt-0.5">
+                  {profileCard.gender && <span className="capitalize">{profileCard.gender}</span>}
+                  {profileCard.last_active_at && !isOnlineNow(profileCard.last_active_at) && (
+                    <span> · Last seen {getTimeAgo(profileCard.last_active_at)}</span>
+                  )}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setProfileCard(null);
+                    navigate(`/messages?to=${profileCard.id}`);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                  Message
+                </button>
+                <button
+                  onClick={() => {
+                    setProfileCard(null);
+                    if (selectedConvo?.other_user?.id === profileCard.id) {
+                      handleStartCall();
+                    }
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  <Video className="w-4 h-4" />
+                  Video Call
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setProfileCard(null);
+                  navigate(`/discover`);
+                }}
+                className="w-full text-center text-white/40 hover:text-white/60 text-xs py-1 transition-colors"
+              >
+                View on Discover →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
