@@ -307,13 +307,6 @@ const VideoCallPage = () => {
     }
   }, [anchor.status]);
 
-  // Default to fullscreen video on mobile for females
-  useEffect(() => {
-    if (isMobile && isFemale && !mobileNavInitializedRef.current) {
-      mobileNavInitializedRef.current = true;
-      setMobileNavHidden(true);
-    }
-  }, [isMobile, isFemale]);
 
   // Reset gender filter if not VIP
   useEffect(() => {
