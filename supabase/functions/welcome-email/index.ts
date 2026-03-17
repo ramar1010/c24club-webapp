@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;padding:32px 28px;max-width:480px;">
         <tr><td>
           <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="120" style="margin-bottom:24px;" />
-          <h1 style="font-size:22px;font-weight:bold;color:#1a1a2e;margin:0 0 20px;">Welcome to C24 Club! 🎉</h1>
+          <h1 style="font-size:22px;font-weight:bold;color:#1a1a2e;margin:0 0 20px;">Welcome to C24Club! 🎉</h1>
           <div style="font-size:14px;color:#55575d;line-height:1.8;">
             ${rawBody.includes('<') ? rawBody : rawBody.replace(/\n/g, '<br/>')}
           </div>
