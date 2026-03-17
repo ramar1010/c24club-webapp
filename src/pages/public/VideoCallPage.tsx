@@ -71,6 +71,7 @@ const VideoCallPage = () => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
+  const mobileNavInitializedRef = useRef(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showAnchorPanel, setShowAnchorPanel] = useState(false);
   const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
@@ -306,6 +307,7 @@ const VideoCallPage = () => {
     }
   }, [anchor.status]);
 
+
   // Reset gender filter if not VIP
   useEffect(() => {
     if (!subscribed && genderFilter !== "both") {
@@ -331,6 +333,14 @@ const VideoCallPage = () => {
   }, [callState, overlayPage]);
 
   const isMobile = useIsMobile();
+
+  // Default to fullscreen video on mobile for females
+  useEffect(() => {
+    if (isMobile && isFemale && !mobileNavInitializedRef.current) {
+      mobileNavInitializedRef.current = true;
+      setMobileNavHidden(true);
+    }
+  }, [isMobile, isFemale]);
 
   const fetchPinnedTopics = async (userId: string) => {
     const { data: pins } = await supabase.
