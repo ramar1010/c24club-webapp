@@ -324,6 +324,42 @@ const AdminDiscoverReviewPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Ban Confirmation Dialog */}
+      <Dialog open={!!banTarget} onOpenChange={(open) => !open && setBanTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldX className="h-5 w-5 text-orange-500" />
+              Ban {banTarget?.name}?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              This will ban the user and remove them from Discover immediately.
+            </p>
+            <div>
+              <label className="text-sm font-medium">Ban Reason</label>
+              <Input
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Enter ban reason..."
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setBanTarget(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => banTarget && banUser.mutate({ member: banTarget, reason: banReason })}
+              disabled={banUser.isPending || !banReason.trim()}
+            >
+              {banUser.isPending ? "Banning..." : "Confirm Ban"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
