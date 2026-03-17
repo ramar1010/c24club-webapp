@@ -114,7 +114,23 @@ const AdminLoginPage = () => {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
+            {mode === "login" && (
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:underline block w-full"
+                onClick={async () => {
+                  if (!email) { toast.error("Enter your email first"); return; }
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/admin/reset-password`,
+                  });
+                  if (error) toast.error(error.message);
+                  else toast.success("Password reset link sent to your email");
+                }}
+              >
+                Forgot password?
+              </button>
+            )}
             <button
               type="button"
               className="text-sm text-primary hover:underline"
