@@ -293,6 +293,7 @@ export function useAnchorEarning({
     cashBalance,
     queuePosition,
     settings,
+    settingsLoaded,
     rewardEarned,
     cashEarned,
     verificationRequired,
