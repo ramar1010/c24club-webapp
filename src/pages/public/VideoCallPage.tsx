@@ -483,6 +483,11 @@ const VideoCallPage = () => {
     return <Navigate to="/" replace />;
   }
 
+  // Redirect users who haven't completed onboarding (no gender set)
+  if (!loading && user && memberGender === null && memberId !== "anonymous") {
+    return <Navigate to="/?needsOnboarding=1" replace />;
+  }
+
   if (!loading && banInfo) {
     return <BannedScreen reason={banInfo.reason} banType={banInfo.ban_type} createdAt={banInfo.created_at} />;
   }

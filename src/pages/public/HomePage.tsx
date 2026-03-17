@@ -456,7 +456,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
       return;
     }
 
-    const fetchMember = async () => {
+    const fetchMember = async (retries = 3) => {
       const { data } = await supabase
         .from("members")
         .select("name, gender")
@@ -467,8 +467,11 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
         setMemberName(hasProfile ? data.name : null);
         setNeedsOnboarding(!hasProfile);
         if (!hasProfile) setShowOnboarding(true);
+      } else if (retries > 0) {
+        // Member row may not exist yet (race with ensureMemberRow), retry
+        setTimeout(() => fetchMember(retries - 1), 600);
       } else {
-        // No member row yet — needs onboarding
+        // No member row after retries — show onboarding
         setMemberName(null);
         setNeedsOnboarding(true);
         setShowOnboarding(true);
