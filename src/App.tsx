@@ -19,6 +19,7 @@ import AddCategoryPage from "@/pages/admin/AddCategoryPage";
 import PromosPage from "@/pages/admin/PromosPage";
 import PlaceholderPage from "@/pages/admin/PlaceholderPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import AdminResetPasswordPage from "@/pages/admin/AdminResetPasswordPage";
 import ManageMinutesPage from "@/pages/admin/ManageMinutesPage";
 import TopicsPage from "@/pages/admin/TopicsPage";
 import MemberRewardsPage from "@/pages/admin/MemberRewardsPage";
