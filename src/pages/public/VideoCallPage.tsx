@@ -857,11 +857,20 @@ const VideoCallPage = () => {
               </div>
           }
             {callState !== "connected" &&
-          <div className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                <p className="text-neutral-400 text-sm">
-                  {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
-                </p>
+          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 overflow-y-auto">
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                  <p className="text-neutral-400 text-sm">
+                    {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
+                  </p>
+                  {callState === "waiting" &&
+                    <DiscoverTeaser
+                      myGender={memberGender ?? null}
+                      myUserId={memberId}
+                      onOpenDiscover={() => setOverlayPage("discover")}
+                    />
+                  }
+                </div>
               </div>
           }
             {partnerPinnedTopics.length > 0 && callState === "connected" &&
