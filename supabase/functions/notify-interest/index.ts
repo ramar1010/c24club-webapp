@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
+const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.lovable.app";
 
 function buildInterestEmailHtml(interested: any, target: any): { subject: string; html: string } {
