@@ -53,7 +53,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
       channelRef.current = null;
     }
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (remoteVideoElRef.current) remoteVideoElRef.current.srcObject = null;
     setCallState("ended");
   }, []);
 
