@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ShieldX, AlertTriangle, CreditCard, Loader2 } from "lucide-react";
+import { ShieldX, AlertTriangle, CreditCard, Loader2, MessageCircle, Send, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface BannedScreenProps {
   reason: string;
@@ -11,8 +12,33 @@ interface BannedScreenProps {
 
 const BannedScreen = ({ reason, banType, createdAt }: BannedScreenProps) => {
   const [loading, setLoading] = useState(false);
-  const { signOut } = useAuth();
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { user, signOut } = useAuth();
   const canAppeal = banType !== "underage";
+
+  const handleContactSubmit = async () => {
+    if (!contactMessage.trim() || !user) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("user_reports").insert({
+        reporter_id: user.id,
+        reported_user_id: user.id,
+        reason: "[BAN APPEAL] " + contactMessage.trim().slice(0, 500),
+        details: `Ban reason: ${reason} | Ban type: ${banType} | Banned on: ${createdAt}`,
+      });
+      if (error) throw error;
+      toast.success("Your appeal has been submitted. We'll review it shortly.");
+      setContactMessage("");
+      setShowContactForm(false);
+    } catch (err: any) {
+      toast.error("Failed to submit. Please try again.");
+      console.error("Ban appeal error:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handlePayToUnban = async () => {
     setLoading(true);
