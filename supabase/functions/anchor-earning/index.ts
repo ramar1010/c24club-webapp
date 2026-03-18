@@ -7,6 +7,9 @@ const corsHeaders = {
 };
 
 function getCurrentMode(settings: any): "chill" | "power" {
+  // If chill hours are disabled, always return power
+  if (settings.chill_disabled) return "power";
+
   // Get current Eastern Time (handles EST/EDT automatically)
   const now = new Date();
   const eastern = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));

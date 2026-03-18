@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ const AnchorSettingsPage = () => {
     power_rate_cash: 1.5,
     power_rate_time: 30,
     chill_reward_time: 45,
+    chill_disabled: false,
   });
 
   useEffect(() => {
@@ -38,6 +40,7 @@ const AnchorSettingsPage = () => {
         power_rate_cash: Number(settings.power_rate_cash),
         power_rate_time: settings.power_rate_time,
         chill_reward_time: settings.chill_reward_time,
+        chill_disabled: settings.chill_disabled ?? false,
       });
     }
   }, [settings]);
@@ -117,6 +120,18 @@ const AnchorSettingsPage = () => {
       <div className="bg-white dark:bg-neutral-900 rounded-xl border p-6 space-y-4">
         <h2 className="text-lg font-bold">Configuration</h2>
 
+        {/* Disable Chill Hours Toggle */}
+        <div className="flex items-center justify-between bg-muted/50 rounded-lg px-4 py-3">
+          <div>
+            <p className="font-medium text-sm">Disable Chill Hours</p>
+            <p className="text-xs text-muted-foreground">When enabled, only Power Hour mode will be active (always earns cash, no mystery rewards)</p>
+          </div>
+          <Switch
+            checked={form.chill_disabled}
+            onCheckedChange={(checked) => setForm({ ...form, chill_disabled: checked })}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Max Anchor Cap</label>
@@ -128,15 +143,17 @@ const AnchorSettingsPage = () => {
               className="w-full border rounded-lg px-3 py-2 bg-background"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Chill Hours Start (EST)</label>
-            <input
-              type="time"
-              value={form.chill_hour_start}
-              onChange={(e) => setForm({ ...form, chill_hour_start: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
+          {!form.chill_disabled && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Chill Hours Start (EST)</label>
+              <input
+                type="time"
+                value={form.chill_hour_start}
+                onChange={(e) => setForm({ ...form, chill_hour_start: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 bg-background"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1">Power Hours Start (EST)</label>
             <input
@@ -176,16 +193,18 @@ const AnchorSettingsPage = () => {
               className="w-full border rounded-lg px-3 py-2 bg-background"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Chill Reward Time (minutes)</label>
-            <input
-              type="number"
-              min={1}
-              value={form.chill_reward_time}
-              onChange={(e) => setForm({ ...form, chill_reward_time: parseInt(e.target.value) || 45 })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
+          {!form.chill_disabled && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Chill Reward Time (minutes)</label>
+              <input
+                type="number"
+                min={1}
+                value={form.chill_reward_time}
+                onChange={(e) => setForm({ ...form, chill_reward_time: parseInt(e.target.value) || 45 })}
+                className="w-full border rounded-lg px-3 py-2 bg-background"
+              />
+            </div>
+          )}
         </div>
 
         <button
