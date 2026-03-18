@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -30,7 +30,8 @@ export type DiscoverFilter = {
   onlineOnly: boolean;
 };
 
-const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
+const PAGE_SIZE = 50;
 
 export const isOnlineNow = (lastActive: string | null) => {
   if (!lastActive) return false;
@@ -38,7 +39,7 @@ export const isOnlineNow = (lastActive: string | null) => {
 };
 
 export const isNewListing = (createdAt: string) => {
-  return Date.now() - new Date(createdAt).getTime() < 48 * 60 * 60 * 1000; // 48 hours
+  return Date.now() - new Date(createdAt).getTime() < 48 * 60 * 60 * 1000;
 };
 
 export const getTimeAgo = (dateStr: string | null) => {
@@ -62,8 +63,10 @@ export const ICEBREAKER_MESSAGES = [
 
 export const useDiscover = () => {
   const { user } = useAuth();
-  const [members, setMembers] = useState<DiscoverableMember[]>([]);
+  const [allFetchedMembers, setAllFetchedMembers] = useState<DiscoverableMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [myInterests, setMyInterests] = useState<Map<string, string | null>>(new Map());
   const [interestedInMe, setInterestedInMe] = useState<Set<string>>(new Set());
   const [incomingInterestsList, setIncomingInterestsList] = useState<IncomingInterest[]>([]);
@@ -75,7 +78,81 @@ export const useDiscover = () => {
   const [countries, setCountries] = useState<string[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [vipUserIds, setVipUserIds] = useState<Set<string>>(new Set());
+  const pageRef = useRef(0);
+  const adminMembersFetchedRef = useRef(false);
 
+  // Fetch a page of members from the DB
+  const fetchMembersPage = useCallback(async (page: number, userId: string) => {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    const { data } = await supabase
+      .from("members")
+      .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
+      .eq("is_discoverable", true)
+      .filter("image_status", "eq", "approved")
+      .neq("id", userId)
+      .order("last_active_at", { ascending: false })
+      .range(from, to);
+
+    return (data ?? []) as DiscoverableMember[];
+  }, []);
+
+  // Sort members: admins first, VIP second, rest by order
+  const sortMembers = useCallback((list: DiscoverableMember[], adminIds: Set<string>, vipIds: Set<string>) => {
+    return [...list].sort((a, b) => {
+      const aAdmin = adminIds.has(a.id) ? 0 : 1;
+      const bAdmin = adminIds.has(b.id) ? 0 : 1;
+      if (aAdmin !== bAdmin) return aAdmin - bAdmin;
+      const aVip = vipIds.has(a.id) ? 0 : 1;
+      const bVip = vipIds.has(b.id) ? 0 : 1;
+      if (aVip !== bVip) return aVip - bVip;
+      return 0;
+    });
+  }, []);
+
+  // Load more members (next page)
+  const loadMore = useCallback(async () => {
+    if (!user || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = pageRef.current + 1;
+    const newMembers = await fetchMembersPage(nextPage, user.id);
+    
+    if (newMembers.length < PAGE_SIZE) {
+      setHasMore(false);
+    }
+
+    if (newMembers.length > 0) {
+      pageRef.current = nextPage;
+      setAllFetchedMembers(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const unique = newMembers.filter(m => !existingIds.has(m.id));
+        const combined = [...prev, ...unique];
+        return sortMembers(combined, adminUserIds, vipUserIds);
+      });
+
+      // Load socials for new members
+      const newIds = newMembers.map(m => m.id);
+      const { data: socials } = await supabase
+        .from("vip_settings")
+        .select("user_id, pinned_socials")
+        .in("user_id", newIds);
+
+      if (socials?.length) {
+        setMutualSocials(prev => {
+          const next = new Map(prev);
+          socials.forEach((s: any) => {
+            if (s.pinned_socials?.length) next.set(s.user_id, s.pinned_socials);
+          });
+          return next;
+        });
+      }
+    }
+
+    setLoadingMore(false);
+  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, fetchMembersPage, sortMembers]);
+
+  // Initial load
   useEffect(() => {
     if (!user) return;
 
@@ -90,15 +167,10 @@ export const useDiscover = () => {
       setIsDiscoverable(!!me?.is_discoverable && !!me?.image_url);
       setMyGender(me?.gender?.toLowerCase() || null);
 
-      // Fetch discoverable members
-      const { data: membersList } = await supabase
-        .from("members")
-        .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
-        .eq("is_discoverable", true)
-        .filter("image_status", "eq", "approved")
-        .neq("id", user.id)
-        .order("last_active_at", { ascending: false })
-        .limit(100);
+      // Fetch first page of members
+      const membersList = await fetchMembersPage(0, user.id);
+      pageRef.current = 0;
+      setHasMore(membersList.length >= PAGE_SIZE);
 
       // Fetch all admin user IDs
       const { data: allAdminRoles } = await supabase
@@ -109,7 +181,7 @@ export const useDiscover = () => {
       const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
       setAdminUserIds(adminIds);
 
-      // Fetch VIP user IDs to sort them to top of Discover
+      // Fetch VIP user IDs
       const { data: vipRows } = await supabase
         .from("member_minutes")
         .select("user_id")
@@ -118,7 +190,7 @@ export const useDiscover = () => {
       setVipUserIds(vipIds);
 
       // Fetch admin members who aren't already in the discoverable list
-      const discoverableIds = new Set((membersList || []).map(m => m.id));
+      const discoverableIds = new Set(membersList.map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
 
       let adminMembers: DiscoverableMember[] = [];
@@ -129,26 +201,17 @@ export const useDiscover = () => {
           .in("id", missingAdminIds);
         adminMembers = (adminProfiles || []) as DiscoverableMember[];
       }
+      adminMembersFetchedRef.current = true;
 
-      const combined = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
-      // Sort: admins first, then VIP users, then everyone else
-      combined.sort((a, b) => {
-        const aAdmin = adminIds.has(a.id) ? 0 : 1;
-        const bAdmin = adminIds.has(b.id) ? 0 : 1;
-        if (aAdmin !== bAdmin) return aAdmin - bAdmin;
-        const aVip = vipIds.has(a.id) ? 0 : 1;
-        const bVip = vipIds.has(b.id) ? 0 : 1;
-        if (aVip !== bVip) return aVip - bVip;
-        return 0; // preserve existing order (last_active_at desc)
-      });
-      const list = combined;
-      setMembers(list);
+      const combined = [...membersList, ...adminMembers];
+      const sorted = sortMembers(combined, adminIds, vipIds);
+      setAllFetchedMembers(sorted);
 
       // Extract unique countries
-      const uniqueCountries = [...new Set(list.map(m => m.country).filter(Boolean))] as string[];
+      const uniqueCountries = [...new Set(sorted.map(m => m.country).filter(Boolean))] as string[];
       setCountries(uniqueCountries.sort());
 
-      // Fetch my interests (with icebreaker)
+      // Fetch my interests
       const { data: interests } = await supabase
         .from("member_interests")
         .select("interested_in_user_id, icebreaker_message")
@@ -158,7 +221,7 @@ export const useDiscover = () => {
       (interests || []).forEach((i: any) => interestsMap.set(i.interested_in_user_id, i.icebreaker_message));
       setMyInterests(interestsMap);
 
-      // Fetch who is interested in me (with icebreaker + member details)
+      // Fetch who is interested in me
       const { data: incomingInterests } = await supabase
         .from("member_interests")
         .select("user_id, icebreaker_message, created_at")
@@ -169,7 +232,6 @@ export const useDiscover = () => {
       const incomingSet = new Set(incomingUserIds);
       setInterestedInMe(incomingSet);
 
-      // Fetch member info for incoming interests
       if (incomingUserIds.length > 0) {
         const { data: incomingMembers } = await supabase
           .from("members")
@@ -196,8 +258,8 @@ export const useDiscover = () => {
         setIncomingInterestsList([]);
       }
 
-      // Load pinned socials for all discoverable members
-      const allMemberIds = list.map(m => m.id);
+      // Load pinned socials
+      const allMemberIds = sorted.map(m => m.id);
       if (allMemberIds.length > 0) {
         const { data: socials } = await supabase
           .from("vip_settings")
@@ -209,15 +271,13 @@ export const useDiscover = () => {
           if (s.pinned_socials?.length) socialsMap.set(s.user_id, s.pinned_socials);
         });
         setMutualSocials(socialsMap);
-
-        // Admin IDs already loaded above
       }
 
       setLoading(false);
     };
 
     load();
-  }, [user]);
+  }, [user, fetchMembersPage, sortMembers]);
 
   const isMutualMatch = useCallback((memberId: string) => {
     return myInterests.has(memberId) && interestedInMe.has(memberId);
@@ -245,7 +305,6 @@ export const useDiscover = () => {
       } else {
         setMyInterests(prev => new Map([...prev, [targetId, icebreaker || null]]));
 
-        // Check for mutual match
         if (interestedInMe.has(targetId)) {
           toast({ title: "It's a match! 🎉", description: "You both expressed interest! Check their profile for socials." });
         } else {
@@ -279,7 +338,7 @@ export const useDiscover = () => {
     toast({ title: "Listing removed 👋", description: "Your selfie has been deleted and you're no longer discoverable." });
   }, [user]);
 
-  const filteredMembers = members
+  const filteredMembers = allFetchedMembers
     .filter(m => {
       if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
       if (filters.country && m.country !== filters.country) return false;
@@ -290,8 +349,11 @@ export const useDiscover = () => {
   return {
     user,
     members: filteredMembers,
-    allMembers: members,
+    allMembers: allFetchedMembers,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     myInterests,
     interestedInMe,
     incomingInterestsList,
