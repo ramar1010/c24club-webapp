@@ -244,12 +244,18 @@ export const useDiscover = () => {
     toast({ title: "Listing removed 👋", description: "Your selfie has been deleted and you're no longer discoverable." });
   }, [user]);
 
-  const filteredMembers = members.filter(m => {
-    if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
-    if (filters.country && m.country !== filters.country) return false;
-    if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
-    return true;
-  });
+  const filteredMembers = members
+    .filter(m => {
+      if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
+      if (filters.country && m.country !== filters.country) return false;
+      if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aAdmin = adminUserIds.has(a.id) ? 1 : 0;
+      const bAdmin = adminUserIds.has(b.id) ? 1 : 0;
+      return bAdmin - aAdmin; // admins first
+    });
 
   return {
     user,
