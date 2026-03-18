@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp, Gift, Pencil, Copy, Check } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Gift, Pencil, Copy, Check, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "text-white",
