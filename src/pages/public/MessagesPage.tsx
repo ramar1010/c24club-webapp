@@ -421,6 +421,13 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
               </div>
             )}
 
+            {/* Privacy & monitoring notice */}
+            <div className="mx-4 mt-2 mb-1 flex items-start gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
+              <span className="text-[11px] text-white/40 leading-relaxed">
+                🔒 All video chats are encrypted and private — not even C24Club can see them. DM text messages are monitored. No solicitation for gifts.{" "}
+                <button onClick={() => navigate("/rules")} className="text-white/60 underline hover:text-white/80">Rules</button>
+              </span>
+            </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
