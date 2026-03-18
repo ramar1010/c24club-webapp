@@ -172,16 +172,6 @@ const AnchorEarningPanel = ({
     );
   }
 
-  // Cash earned — auto-dismiss with toast instead of blocking overlay
-  useEffect(() => {
-    if (cashEarned > 0) {
-      toast.success(`💰 You earned $${cashEarned.toFixed(2)}!`, {
-        description: "Added to your pending balance. Keep earning! 💪",
-        duration: 4000,
-      });
-      onDismissCash();
-    }
-  }, [cashEarned, onDismissCash]);
 
 
   // Verification challenge popup
