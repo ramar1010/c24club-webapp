@@ -93,6 +93,12 @@ const DiscoverMemberCard = ({
               💕 Match!
             </span>
           )}
+          {isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Crown className="w-2.5 h-2.5" />
+              Owner
+            </span>
+          )}
         </div>
 
         {/* Photo */}
