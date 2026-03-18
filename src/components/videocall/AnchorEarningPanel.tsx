@@ -161,27 +161,17 @@ const AnchorEarningPanel = ({
     );
   }
 
-  // Cash earned toast
-  if (cashEarned > 0) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-        <div className="bg-neutral-900 border-2 border-green-500 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95">
-          <div className="text-5xl mb-3">💰</div>
-          <h3 className="text-xl font-black text-white mb-2 uppercase">Cash Earned!</h3>
-          <p className="text-green-400 font-black text-3xl">${cashEarned.toFixed(2)}</p>
-          <p className="text-neutral-400 text-sm mt-2">
-            Added to your pending balance
-          </p>
-          <button
-            onClick={onDismissCash}
-            className="mt-4 w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-black text-lg uppercase transition-colors"
-          >
-            Keep Earning! 💪
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Cash earned — auto-dismiss with toast instead of blocking overlay
+  useEffect(() => {
+    if (cashEarned > 0) {
+      toast.success(`💰 You earned $${cashEarned.toFixed(2)}!`, {
+        description: "Added to your pending balance. Keep earning! 💪",
+        duration: 4000,
+      });
+      onDismissCash();
+    }
+  }, [cashEarned, onDismissCash]);
+
 
   // Verification challenge popup
   if (verificationRequired) {
