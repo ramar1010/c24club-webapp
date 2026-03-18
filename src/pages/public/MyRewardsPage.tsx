@@ -205,9 +205,20 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Title */}
-      <h1 className="text-4xl font-black text-center italic mt-2 mb-6">
+      <h1 className="text-4xl font-black text-center italic mt-2 mb-4">
         My Rewards
       </h1>
+
+      {/* Cash Out button */}
+      <div className="px-6 mb-4">
+        <button
+          onClick={() => setShowCashout(true)}
+          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-3 rounded-full flex items-center justify-center gap-2 transition-colors shadow-lg"
+        >
+          <DollarSign className="w-4 h-4" />
+          Cash Out Minutes ({balance ?? 0} available)
+        </button>
+      </div>
 
       {/* Dropdown filter */}
       <div className="px-6 mb-6">
