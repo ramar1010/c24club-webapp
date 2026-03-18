@@ -6,8 +6,8 @@ import slotMachine from "@/assets/profile/slot-machine.png";
 import challengesPin from "@/assets/profile/challenges-pin.png";
 import challengesTarget from "@/assets/profile/challenges-target.png";
 
-const EventsPage = ({ onClose }: { onClose?: () => void }) => {
-  const [view, setView] = useState<"hub" | "spin" | "challenges">("hub");
+const EventsPage = ({ onClose, initialView }: { onClose?: () => void; initialView?: "hub" | "spin" | "challenges" }) => {
+  const [view, setView] = useState<"hub" | "spin" | "challenges">(initialView ?? "hub");
 
   if (view === "spin") {
     return <SpinToWinPage onClose={() => setView("hub")} />;
