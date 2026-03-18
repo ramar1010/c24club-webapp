@@ -44,7 +44,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("Not authenticated");
 
-    const { action, tier, recipient_id, session_id } = await req.json();
+    const { action, tier, recipient_id, session_id, minutes_amount } = await req.json();
 
     if (action === "create-checkout") {
       const giftTier = GIFT_TIERS[tier as keyof typeof GIFT_TIERS];
