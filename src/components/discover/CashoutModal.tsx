@@ -30,8 +30,8 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
   const cashValue = settings ? (minutes * settings.rate_per_minute).toFixed(2) : "—";
   const maxAllowed = settings
-    ? Math.min(currentMinutes, settings.max_cashout_minutes)
-    : currentMinutes;
+    ? Math.min(giftedMinutes, settings.max_cashout_minutes)
+    : giftedMinutes;
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
