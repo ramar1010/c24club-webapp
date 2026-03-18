@@ -91,7 +91,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   }, [remoteStream]);
 
   useEffect(() => {
-
+    let cancelled = false;
     async function start() {
       try {
         // Get local media
