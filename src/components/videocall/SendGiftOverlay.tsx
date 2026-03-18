@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,8 +10,8 @@ interface SendGiftOverlayProps {
 }
 
 const GIFT_TIERS = [
-  { tier: "100", minutes: 100, price: "$1.99", label: "100 Minutes $1.99" },
-  { tier: "400", minutes: 400, price: "$4.99", label: "400 Minutes $4.99", bonus: "Send 400 Minutes & Get +100 Minutes Back!" },
+  { tier: "100", minutes: 100, price: "$1.99", cashValue: "$1.00", label: "Gift $1.00 Cash", sublabel: "100 Minutes • You pay $1.99" },
+  { tier: "400", minutes: 400, price: "$4.99", cashValue: "$4.00", label: "Gift $4.00 Cash", sublabel: "400 Minutes • You pay $4.99", bonus: "Send $4.00 Cash & Get +100 Minutes Back!" },
 ];
 
 const SendGiftOverlay = ({ onClose, recipientId }: SendGiftOverlayProps) => {
@@ -48,20 +48,23 @@ const SendGiftOverlay = ({ onClose, recipientId }: SendGiftOverlayProps) => {
         {/* Header */}
         <div className="text-center mb-4">
           <h2 className="text-white text-xl font-black tracking-wider leading-tight">
-            SEND A GIFT
+            SEND CASH
           </h2>
           <p className="text-white text-lg font-black tracking-wider">TO THIS USER!</p>
         </div>
 
         {/* Gift Box */}
-        <div className="flex justify-center mb-5 relative">
+        <div className="flex justify-center mb-3 relative">
           <span className="absolute -left-2 top-0 text-2xl">🎉</span>
           <img src={giftBoxIcon} alt="Gift" className="w-20 h-20 object-contain" />
         </div>
 
-        {/* Star icon */}
-        <div className="flex justify-center mb-3">
-          <span className="text-yellow-400 text-2xl">⭐</span>
+        {/* Cash info */}
+        <div className="flex items-center justify-center gap-1.5 mb-4">
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <p className="text-emerald-400 text-xs font-bold text-center">
+            They receive real cash via PayPal
+          </p>
         </div>
 
         {/* Gift Tiers */}
@@ -71,12 +74,15 @@ const SendGiftOverlay = ({ onClose, recipientId }: SendGiftOverlayProps) => {
               <button
                 onClick={() => handleGift(gift.tier)}
                 disabled={loading !== null}
-                className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black text-sm tracking-wider py-3 rounded-full transition-colors disabled:opacity-50 shadow-lg"
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm tracking-wider py-3 rounded-full transition-colors disabled:opacity-50 shadow-lg"
               >
                 {loading === gift.tier ? "Loading..." : gift.label}
               </button>
+              <p className="text-white/50 text-[10px] text-center mt-1">
+                {gift.sublabel}
+              </p>
               {gift.bonus && (
-                <p className="text-yellow-400 text-[10px] font-bold text-center mt-1">
+                <p className="text-yellow-400 text-[10px] font-bold text-center mt-0.5">
                   {gift.bonus}
                 </p>
               )}
