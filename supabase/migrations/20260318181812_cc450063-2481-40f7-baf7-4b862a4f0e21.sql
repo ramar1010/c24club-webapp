@@ -1,0 +1,1 @@
+ALTER TABLE public.anchor_settings ADD COLUMN chill_disabled boolean NOT NULL DEFAULT false;

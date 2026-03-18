@@ -171,6 +171,7 @@ export type Database = {
       }
       anchor_settings: {
         Row: {
+          chill_disabled: boolean
           chill_hour_start: string
           chill_reward_time: number
           id: string
@@ -182,6 +183,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
           id?: string
@@ -193,6 +195,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
           id?: string
