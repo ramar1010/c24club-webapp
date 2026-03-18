@@ -111,6 +111,42 @@ const BannedScreen = ({ reason, banType, createdAt }: BannedScreenProps) => {
           </div>
         )}
 
+        {/* Contact Support */}
+        {!showContactForm ? (
+          <button
+            onClick={() => setShowContactForm(true)}
+            className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2 border border-neutral-700"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Contact Support
+          </button>
+        ) : (
+          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-white font-bold text-sm">Appeal your ban</span>
+              <button onClick={() => setShowContactForm(false)} className="text-neutral-500 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <textarea
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              placeholder="Explain why you believe this ban was wrongful..."
+              maxLength={500}
+              rows={3}
+              className="w-full bg-neutral-800 border border-neutral-600 rounded-xl p-3 text-white text-sm placeholder:text-neutral-500 resize-none focus:outline-none focus:border-neutral-400"
+            />
+            <button
+              onClick={handleContactSubmit}
+              disabled={submitting || !contactMessage.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white font-bold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Submit Appeal
+            </button>
+          </div>
+        )}
+
         {/* Sign out */}
         <button
           onClick={signOut}
