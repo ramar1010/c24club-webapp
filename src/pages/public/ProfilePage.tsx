@@ -22,6 +22,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEvents, setShowEvents] = useState(false);
+  const [eventsInitialView, setEventsInitialView] = useState<"hub" | "spin" | "challenges">("hub");
   const [showVipSettings, setShowVipSettings] = useState(false);
 
   useEffect(() => {
