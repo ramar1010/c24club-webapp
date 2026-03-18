@@ -27,6 +27,7 @@ interface DiscoverMemberCardProps {
   mutualSocials: string[] | undefined;
   onInterest: (id: string, icebreaker?: string) => void;
   myGender: string | null;
+  isOwner?: boolean;
 }
 
 const DiscoverMemberCard = ({
