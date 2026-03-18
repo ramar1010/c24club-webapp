@@ -38,6 +38,7 @@ const DiscoverMemberCard = ({
   mutualSocials,
   onInterest,
   myGender,
+  isOwner,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
