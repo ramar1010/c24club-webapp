@@ -50,6 +50,24 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   );
   const sendMessage = useSendMessage();
 
+  // Fetch gifted minutes received from selected conversation partner
+  const otherUserId = selectedConvo?.other_user?.id || null;
+  const { data: giftedFromUser = 0 } = useQuery({
+    queryKey: ["gifted_from_user", user?.id, otherUserId],
+    enabled: !!user && !!otherUserId,
+    queryFn: async () => {
+      if (!user || !otherUserId) return 0;
+      const { data } = await supabase
+        .from("gift_transactions")
+        .select("minutes_amount")
+        .eq("sender_id", otherUserId)
+        .eq("recipient_id", user.id)
+        .eq("status", "completed");
+      if (!data || data.length === 0) return 0;
+      return data.reduce((sum, row) => sum + (row.minutes_amount || 0), 0);
+    },
+  });
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
