@@ -72,9 +72,33 @@ Deno.serve(async (req) => {
       .replace(/\{\{caller_name\}\}/g, callerName)
       .replace(/\{\{user_name\}\}/g, userName);
 
-    const html = template.body
+    const rawBody = template.body
       .replace(/\{\{caller_name\}\}/g, callerName)
       .replace(/\{\{user_name\}\}/g, userName);
+
+    // Convert plain-text newlines to HTML paragraphs and wrap in branded layout
+    const bodyHtml = rawBody
+      .split(/\n\n+/)
+      .map((p: string) => `<p style="margin:0 0 16px;line-height:1.6;color:#333333;font-size:15px;">${p.replace(/\n/g, "<br/>")}</p>`)
+      .join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+        <tr><td style="padding:32px 28px;">
+          <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="120" style="display:block;margin-bottom:24px;"/>
+          ${bodyHtml}
+        </td></tr>
+      </table>
+      <p style="margin:24px 0 0;font-size:12px;color:#999999;text-align:center;">© ${new Date().getFullYear()} C24 Club</p>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
     // Deduplicate: max 1 missed-call email per inviter→invitee pair per hour
     const dedupeKey = `missed-call-${inviterId}-${inviteeId}-${new Date().toISOString().slice(0, 13)}`;
