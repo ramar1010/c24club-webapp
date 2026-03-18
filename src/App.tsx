@@ -98,6 +98,7 @@ const App = () => (
               <Route path="/earn-history" element={<EarnHistoryPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/gift-success" element={<GiftSuccessPage />} />
 
               {/* Admin login */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
