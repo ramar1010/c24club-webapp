@@ -223,7 +223,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Dropdown filter */}
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-6 max-w-lg mx-auto w-full">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="w-full bg-black border-2 border-white rounded-full py-3 px-6 flex items-center justify-center gap-2 font-black text-lg tracking-wide"
