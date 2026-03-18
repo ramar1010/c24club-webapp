@@ -41,6 +41,49 @@ Deno.serve(async (req) => {
     const callerName = inviter?.name || "Someone";
     const userName = invitee.name || "there";
 
+    // --- Auto-send a missed-call DM ---
+    try {
+      // Find existing conversation between the two users
+      const { data: existingConvo } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(
+          `and(participant_1.eq.${inviterId},participant_2.eq.${inviteeId}),and(participant_1.eq.${inviteeId},participant_2.eq.${inviterId})`
+        )
+        .maybeSingle();
+
+      let convoId = existingConvo?.id;
+
+      // Create conversation if it doesn't exist
+      if (!convoId) {
+        const { data: newConvo } = await supabase
+          .from("conversations")
+          .insert({ participant_1: inviterId, participant_2: inviteeId })
+          .select("id")
+          .single();
+        convoId = newConvo?.id;
+      }
+
+      if (convoId) {
+        await supabase.from("dm_messages").insert({
+          conversation_id: convoId,
+          sender_id: inviterId,
+          content: `📹 ${callerName} tried to video chat with you!`,
+        });
+
+        // Update last_message_at
+        await supabase
+          .from("conversations")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", convoId);
+
+        console.log(`📹 Missed call DM sent in conversation ${convoId}`);
+      }
+    } catch (dmErr) {
+      console.error("Failed to send missed-call DM:", dmErr);
+      // Don't block the email flow
+    }
+
     // Check suppression
     const { data: suppressed } = await supabase
       .from("suppressed_emails")
