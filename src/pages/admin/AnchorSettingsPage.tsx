@@ -27,6 +27,7 @@ const AnchorSettingsPage = () => {
     power_rate_cash: 1.5,
     power_rate_time: 30,
     chill_reward_time: 45,
+    chill_disabled: false,
   });
 
   useEffect(() => {
