@@ -111,12 +111,21 @@ const DiscoverMemberCard = ({
         </div>
 
         {/* Photo — clickable for full view */}
-        <div className="aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => member.image_url && setShowFullImage(true)}>
+        <div
+          className="aspect-[3/4] overflow-hidden cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (member.image_url) setShowFullImage(true);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
+        >
           {member.image_url ? (
             <img
               src={member.image_url}
               alt={member.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
               loading="lazy"
             />
           ) : (
