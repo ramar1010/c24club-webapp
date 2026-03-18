@@ -525,7 +525,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       )}
 
       {/* Unlock Rewards Early */}
-      <div className="px-6 pb-8 pt-4">
+      <div className="px-6 pb-8 pt-4 max-w-lg mx-auto w-full">
         <button className="w-full bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-lg py-3 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide">
           Unlock Rewards Early
         </button>
