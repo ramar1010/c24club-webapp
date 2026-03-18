@@ -73,6 +73,7 @@ export const useDiscover = () => {
   const [filters, setFilters] = useState<DiscoverFilter>({ gender: "all", country: "", onlineOnly: false });
   const [mutualSocials, setMutualSocials] = useState<Map<string, string[]>>(new Map());
   const [countries, setCountries] = useState<string[]>([]);
+  const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
