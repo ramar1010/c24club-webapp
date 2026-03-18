@@ -43,23 +43,21 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      logStep("Auth failed, returning not subscribed", { error: claimsError?.message });
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData?.user) {
+      logStep("Auth failed, returning not subscribed", { error: userError?.message });
       return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email as string;
-    if (!userEmail) {
-      logStep("No email in claims, returning not subscribed");
+    const user = userData.user;
+    if (!user.email) {
+      logStep("No email found, returning not subscribed");
       return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const user = { id: userId, email: userEmail };
     logStep("User authenticated", { userId: user.id });
 
     // First check if user has admin-granted VIP (no stripe_customer_id but is_vip = true)
