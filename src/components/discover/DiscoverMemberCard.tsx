@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
@@ -45,6 +45,7 @@ const DiscoverMemberCard = ({
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const [showGift, setShowGift] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
@@ -109,8 +110,8 @@ const DiscoverMemberCard = ({
           )}
         </div>
 
-        {/* Photo */}
-        <div className="aspect-[3/4] overflow-hidden">
+        {/* Photo — clickable for full view */}
+        <div className="aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => member.image_url && setShowFullImage(true)}>
           {member.image_url ? (
             <img
               src={member.image_url}
@@ -243,6 +244,28 @@ const DiscoverMemberCard = ({
           recipientName={member.name}
           onClose={() => setShowGift(false)}
         />
+      )}
+
+      {/* Full image viewer */}
+      {showFullImage && member.image_url && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center" onClick={() => setShowFullImage(false)}>
+          <button
+            onClick={() => setShowFullImage(false)}
+            className="absolute top-4 right-4 z-[101] bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          <div className="absolute bottom-6 left-0 right-0 text-center">
+            <p className="text-white font-bold text-lg">{member.name}</p>
+            {member.country && <p className="text-white/50 text-sm">{member.country}</p>}
+          </div>
+          <img
+            src={member.image_url}
+            alt={member.name}
+            className="max-w-full max-h-full object-contain p-4"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </>
   );
