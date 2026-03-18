@@ -6,6 +6,7 @@ import { toast } from "sonner";
 interface CashoutModalProps {
   onClose: () => void;
   currentMinutes: number;
+  giftedMinutes: number;
   onSuccess: () => void;
 }
 
