@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, Mail } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, Mail, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
+import DiscoverGiftModal from "./DiscoverGiftModal";
 
 interface DiscoverMemberCardProps {
   member: {
@@ -39,6 +40,7 @@ const DiscoverMemberCard = ({
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
+  const [showGift, setShowGift] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
@@ -164,7 +166,14 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-
+              {/* Gift button */}
+              <button
+                onClick={() => setShowGift(true)}
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-amber-500/80 hover:bg-amber-500 text-white transition-all"
+                title="Gift Minutes"
+              >
+                <Gift className="w-4 h-4" />
+              </button>
 
 
               {/* Heart button */}
@@ -207,6 +216,15 @@ const DiscoverMemberCard = ({
           inviteId={directCall.inviteId}
           isInitiator={true}
           onClose={() => setDirectCall(null)}
+        />
+      )}
+
+      {/* Gift modal */}
+      {showGift && (
+        <DiscoverGiftModal
+          recipientId={member.id}
+          recipientName={member.name}
+          onClose={() => setShowGift(false)}
         />
       )}
     </>
