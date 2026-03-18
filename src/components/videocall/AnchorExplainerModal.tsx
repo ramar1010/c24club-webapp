@@ -67,7 +67,7 @@ const AnchorExplainerModal = ({ onClose }: AnchorExplainerModalProps) => {
             <ul className="space-y-1 text-xs text-neutral-400">
               <li className="flex items-start gap-1.5">
                 <Clock className="h-3 w-3 text-neutral-500 mt-0.5 flex-shrink-0" />
-                <span>Timer counts while matched with a male partner</span>
+                <span>Timer counts while matched with a male partner or just waiting for partner</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="text-neutral-500 mt-0.5 flex-shrink-0 text-[10px]">⚠️</span>
