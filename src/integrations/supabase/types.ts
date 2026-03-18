@@ -235,6 +235,69 @@ export type Database = {
         }
         Relationships: []
       }
+      cashout_requests: {
+        Row: {
+          cash_amount: number
+          created_at: string
+          id: string
+          minutes_amount: number
+          paypal_email: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_amount: number
+          created_at?: string
+          id?: string
+          minutes_amount: number
+          paypal_email: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_amount?: number
+          created_at?: string
+          id?: string
+          minutes_amount?: number
+          paypal_email?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cashout_settings: {
+        Row: {
+          id: string
+          max_cashout_minutes: number
+          min_cashout_minutes: number
+          rate_per_minute: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          max_cashout_minutes?: number
+          min_cashout_minutes?: number
+          rate_per_minute?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          max_cashout_minutes?: number
+          min_cashout_minutes?: number
+          rate_per_minute?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       challenge_submissions: {
         Row: {
           challenge_id: string
