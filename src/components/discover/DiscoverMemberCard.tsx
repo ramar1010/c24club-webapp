@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, Mail } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, Mail, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
+import DiscoverGiftModal from "./DiscoverGiftModal";
 
 interface DiscoverMemberCardProps {
   member: {

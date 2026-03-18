@@ -183,13 +183,8 @@ serve(async (req) => {
     if (action === "gift-from-balance") {
       if (!recipient_id) throw new Error("No recipient specified");
       if (recipient_id === user.id) throw new Error("Cannot gift yourself");
-      const { minutes_amount, reward_id } = await req.json().catch(() => ({}));
 
-      // Parse from original body
-      const body = { action, tier, recipient_id, session_id, ...({ minutes_amount, reward_id } as any) };
-      const giftMinutes = body.minutes_amount;
-      const giftRewardId = body.reward_id;
-
+      const giftMinutes = minutes_amount;
       if (!giftMinutes || giftMinutes < 10) throw new Error("Minimum gift is 10 minutes");
       if (giftMinutes > 500) throw new Error("Maximum gift is 500 minutes");
 
