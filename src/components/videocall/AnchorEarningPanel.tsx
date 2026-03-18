@@ -111,6 +111,25 @@ const AnchorEarningPanel = ({
     );
   }
 
+  // Show loading skeleton while settings are being fetched to avoid flashing fallback numbers
+  if (status === "active" && !settingsLoaded) {
+    return (
+      <div className="w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 p-3 backdrop-blur">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-5 h-5 rounded-full bg-neutral-700 animate-pulse" />
+          <div className="h-4 w-28 rounded bg-neutral-700 animate-pulse" />
+        </div>
+        <div className="h-2 w-full rounded-full bg-neutral-800 mb-3">
+          <div className="h-2 w-1/3 rounded-full bg-neutral-700 animate-pulse" />
+        </div>
+        <div className="flex justify-between">
+          <div className="h-3 w-16 rounded bg-neutral-700 animate-pulse" />
+          <div className="h-3 w-20 rounded bg-neutral-700 animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   const remainingSeconds = Math.max(0, thresholdSeconds - elapsedSeconds);
   const remainingMin = Math.floor(remainingSeconds / 60);
   const remainingSec = remainingSeconds % 60;
