@@ -110,8 +110,8 @@ const DiscoverMemberCard = ({
           )}
         </div>
 
-        {/* Photo */}
-        <div className="aspect-[3/4] overflow-hidden">
+        {/* Photo — clickable for full view */}
+        <div className="aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => member.image_url && setShowFullImage(true)}>
           {member.image_url ? (
             <img
               src={member.image_url}
