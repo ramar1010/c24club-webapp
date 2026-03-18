@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
             purpose: "transactional",
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),
-            idempotency_key: `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`,
+            idempotency_key: `dm-digest-${member.id}-${new Date().toISOString().slice(0, 10)}`,
           },
         });
         emailsSent++;
