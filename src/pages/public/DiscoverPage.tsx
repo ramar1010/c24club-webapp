@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
@@ -13,18 +13,37 @@ import MessagesPage from "@/pages/public/MessagesPage";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
-    user, members, allMembers, loading, myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
+    user, members, allMembers, loading, loadingMore, hasMore, loadMore,
+    myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
     myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds, vipUserIds,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
     setIsDiscoverable(true);
   };
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   if (showMessages) {
     return <MessagesPage onClose={() => setShowMessages(false)} />;
@@ -134,22 +153,37 @@ const DiscoverPage = () => {
             <p className="text-white/40 text-sm">Be the first to get listed!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {members.map((member) => (
-              <DiscoverMemberCard
-                key={member.id}
-                member={member}
-                alreadyInterested={myInterests.has(member.id)}
-                isMutualMatch={isMutualMatch(member.id)}
-                sendingInterest={sendingInterest === member.id}
-                mutualSocials={mutualSocials.get(member.id)}
-                onInterest={handleInterest}
-                myGender={myGender}
-                isOwner={adminUserIds.has(member.id)}
-                isVip={vipUserIds.has(member.id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {members.map((member) => (
+                <DiscoverMemberCard
+                  key={member.id}
+                  member={member}
+                  alreadyInterested={myInterests.has(member.id)}
+                  isMutualMatch={isMutualMatch(member.id)}
+                  sendingInterest={sendingInterest === member.id}
+                  mutualSocials={mutualSocials.get(member.id)}
+                  onInterest={handleInterest}
+                  myGender={myGender}
+                  isOwner={adminUserIds.has(member.id)}
+                  isVip={vipUserIds.has(member.id)}
+                />
+              ))}
+            </div>
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="py-6 flex justify-center">
+              {loadingMore && (
+                <div className="flex items-center gap-2 text-white/40 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading more...
+                </div>
+              )}
+              {!hasMore && members.length > 0 && (
+                <p className="text-white/30 text-xs">You've seen everyone 🎉</p>
+              )}
+            </div>
+          </>
         )}
       </div>
 
