@@ -212,7 +212,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       </h1>
 
       {/* Cash Out button */}
-      <div className="px-6 mb-4">
+      <div className="px-6 mb-4 max-w-lg mx-auto w-full">
         <button
           onClick={() => setShowCashout(true)}
           className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-3 rounded-full flex items-center justify-center gap-2 transition-colors shadow-lg"
@@ -223,7 +223,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Dropdown filter */}
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-6 max-w-lg mx-auto w-full">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="w-full bg-black border-2 border-white rounded-full py-3 px-6 flex items-center justify-center gap-2 font-black text-lg tracking-wide"
