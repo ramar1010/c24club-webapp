@@ -15,11 +15,16 @@ interface TapSummary {
   last_tap: string;
 }
 
+type SortKey = "name" | "email" | "gender" | "tap_count" | "first_tap" | "last_tap";
+type SortDir = "asc" | "desc";
+
 const TapAnalyticsPage = () => {
   const [summaries, setSummaries] = useState<TapSummary[]>([]);
   const [totalTaps, setTotalTaps] = useState(0);
   const [uniqueUsers, setUniqueUsers] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>("tap_count");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   useEffect(() => {
     const fetchData = async () => {
