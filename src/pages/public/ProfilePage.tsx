@@ -22,6 +22,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const { user, signOut } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEvents, setShowEvents] = useState(false);
+  const [eventsInitialView, setEventsInitialView] = useState<"hub" | "spin" | "challenges">("hub");
   const [showVipSettings, setShowVipSettings] = useState(false);
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   }
 
   if (showEvents) {
-    return <EventsPage onClose={() => setShowEvents(false)} />;
+    return <EventsPage onClose={() => setShowEvents(false)} initialView={eventsInitialView} />;
   }
 
   return (
@@ -130,7 +131,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
-        <IconButton src={eventsIcon} label="EVENTS" onClick={() => setShowEvents(true)} />
+        <IconButton src={eventsIcon} label="EVENTS" onClick={() => { setEventsInitialView("hub"); setShowEvents(true); }} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
         <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={ceData?.is_vip ? () => setShowVipSettings(true) : undefined} disabled={!ceData?.is_vip} />
       </div>
@@ -138,7 +139,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       {/* Feature Cards */}
       <div className="flex gap-4 w-full max-w-sm mb-8">
         {/* Weekly Challenges */}
-        <button onClick={() => navigate("/weekly-challenges")} className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
+        <button onClick={() => { setEventsInitialView("challenges"); setShowEvents(true); }} className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
           <span className="font-black text-sm tracking-wide text-center leading-tight">
             WEEKLY<br />CHALLENGES
           </span>
