@@ -45,6 +45,7 @@ export const VIP_TIERS = {
     product_id: "prod_U8FBD9R49k8Kvd",
     features: [
       { label: "Choose a Gender to Connect With", icon: genderSelectIcon },
+      { label: "Top of Discover Feed", icon: discoverIcon },
       { label: "Get Gifted by Anyone", icon: getGiftedIcon },
       { label: "400 Ad Points Every Month", icon: starEyesIcon },
       { label: "Disable All Promos + Add Images", icon: disablePromosIcon },
