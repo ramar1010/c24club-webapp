@@ -83,8 +83,8 @@ serve(async (req) => {
         customer_email: customerId ? undefined : user.email,
         line_items: [{ price: giftTier.price_id, quantity: 1 }],
         mode: "payment",
-        success_url: `${req.headers.get("origin")}/videocall?gift=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.get("origin")}/videocall?gift=cancelled`,
+        success_url: `${req.headers.get("origin")}/gift-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.get("origin")}/gift-success?cancelled=true`,
         metadata: {
           gift_id: gift.id,
           recipient_id,
