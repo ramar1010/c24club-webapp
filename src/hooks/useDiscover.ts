@@ -128,7 +128,18 @@ export const useDiscover = () => {
         adminMembers = (adminProfiles || []) as DiscoverableMember[];
       }
 
-      const list = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
+      const combined = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
+      // Sort: admins first, then VIP users, then everyone else
+      combined.sort((a, b) => {
+        const aAdmin = adminIds.has(a.id) ? 0 : 1;
+        const bAdmin = adminIds.has(b.id) ? 0 : 1;
+        if (aAdmin !== bAdmin) return aAdmin - bAdmin;
+        const aVip = vipIds.has(a.id) ? 0 : 1;
+        const bVip = vipIds.has(b.id) ? 0 : 1;
+        if (aVip !== bVip) return aVip - bVip;
+        return 0; // preserve existing order (last_active_at desc)
+      });
+      const list = combined;
       setMembers(list);
 
       // Extract unique countries
