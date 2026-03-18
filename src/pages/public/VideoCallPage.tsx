@@ -270,7 +270,47 @@ const VideoCallPage = () => {
   });
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
-  
+
+  // Real-time listener for incoming gift notifications
+  useEffect(() => {
+    if (memberId === "anonymous") return;
+
+    const channel = supabase
+      .channel("gift-received-" + memberId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "gift_transactions",
+          filter: `recipient_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const gift = payload.new as any;
+          if (gift.status === "completed") {
+            const minutes = gift.minutes_amount || 0;
+            const cashValue = (minutes * 0.01).toFixed(2);
+            toast.success(
+              `🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`,
+              {
+                description: "Cash out via PayPal now!",
+                action: {
+                  label: "Cash Out",
+                  onClick: () => setOverlayPage("my-rewards"),
+                },
+                duration: 10000,
+              }
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [memberId]);
+
 
   // Show voice mode explainer once per session when female connects with voice mode
   useEffect(() => {
