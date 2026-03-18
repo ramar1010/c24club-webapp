@@ -536,6 +536,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
         <CashoutModal
           onClose={() => setShowCashout(false)}
           currentMinutes={balance ?? 0}
+          giftedMinutes={giftedBalance ?? 0}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ["cashout-balance"] })}
         />
       )}
