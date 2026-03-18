@@ -48,6 +48,7 @@ const sections = [
     items: [
       "No Begging for Gifts: Soliciting, begging, or pressuring other users to send you gifts or cash is strictly prohibited. This includes repeatedly asking for gifts in DMs, video calls, or profile bios. Violations will result in a warning or account suspension.",
       "No Guilt-Tripping or Manipulation: Using emotional manipulation, fake stories, or guilt-tripping to pressure others into gifting is not allowed and will result in a ban.",
+      "No Sexual Advances for Gifts: Offering, requesting, or implying sexual acts or favors in exchange for gifts is strictly forbidden. This will result in an immediate and permanent ban.",
     ],
   },
   {
