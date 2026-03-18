@@ -28,6 +28,7 @@ interface DiscoverMemberCardProps {
   onInterest: (id: string, icebreaker?: string) => void;
   myGender: string | null;
   isOwner?: boolean;
+  isVip?: boolean;
 }
 
 const DiscoverMemberCard = ({
