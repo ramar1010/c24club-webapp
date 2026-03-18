@@ -145,6 +145,7 @@ const DiscoverPage = () => {
                 mutualSocials={mutualSocials.get(member.id)}
                 onInterest={handleInterest}
                 myGender={myGender}
+                isOwner={adminUserIds.has(member.id)}
               />
             ))}
           </div>

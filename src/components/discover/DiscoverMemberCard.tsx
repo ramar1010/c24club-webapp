@@ -125,7 +125,10 @@ const DiscoverMemberCard = ({
 
           <div className="flex items-end justify-between gap-1">
             <div className="min-w-0">
-              <p className="font-bold text-white text-sm truncate">{member.name}</p>
+              <p className="font-bold text-white text-sm truncate">
+                {member.name}
+                {isOwner && <Crown className="inline w-3.5 h-3.5 ml-1 text-amber-400" />}
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 {member.country && (
                   <span className="text-white/50 text-xs">{member.country}</span>
