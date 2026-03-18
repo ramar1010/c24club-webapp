@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
