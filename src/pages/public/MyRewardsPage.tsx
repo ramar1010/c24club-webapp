@@ -54,7 +54,21 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("Products");
 
   const [showGifts, setShowGifts] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
   const { subscribed } = useVipStatus(user?.id ?? null);
+
+  const { data: balance } = useQuery({
+    queryKey: ["cashout-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", user!.id)
+        .single();
+      return data?.total_minutes ?? 0;
+    },
+  });
 
   const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<any>(null);
