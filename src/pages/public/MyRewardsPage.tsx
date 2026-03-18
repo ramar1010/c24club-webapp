@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp, Gift, Pencil, Copy, Check } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Gift, Pencil, Copy, Check, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "text-white",
@@ -53,7 +54,21 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("Products");
 
   const [showGifts, setShowGifts] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
   const { subscribed } = useVipStatus(user?.id ?? null);
+
+  const { data: balance } = useQuery({
+    queryKey: ["cashout-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", user!.id)
+        .single();
+      return data?.total_minutes ?? 0;
+    },
+  });
 
   const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -190,9 +205,20 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Title */}
-      <h1 className="text-4xl font-black text-center italic mt-2 mb-6">
+      <h1 className="text-4xl font-black text-center italic mt-2 mb-4">
         My Rewards
       </h1>
+
+      {/* Cash Out button */}
+      <div className="px-6 mb-4">
+        <button
+          onClick={() => setShowCashout(true)}
+          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-3 rounded-full flex items-center justify-center gap-2 transition-colors shadow-lg"
+        >
+          <DollarSign className="w-4 h-4" />
+          Cash Out Minutes ({balance ?? 0} available)
+        </button>
+      </div>
 
       {/* Dropdown filter */}
       <div className="px-6 mb-6">
@@ -502,6 +528,15 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
           Unlock Rewards Early
         </button>
       </div>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={balance ?? 0}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["cashout-balance"] })}
+        />
+      )}
     </div>
   );
 };
