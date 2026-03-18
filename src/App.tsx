@@ -150,6 +150,7 @@ const App = () => (
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />
                 <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
+                <Route path="user-roles" element={<AdminUserRolesPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

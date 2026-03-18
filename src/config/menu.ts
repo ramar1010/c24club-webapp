@@ -254,6 +254,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "user-roles",
+    icon: Shield,
+    title: "User Roles",
+    submenu: [
+      { key: "user-roles", label: "Manage Roles", path: "/admin/user-roles" },
+    ],
+  },
+  {
     key: "settings",
     icon: Settings,
     title: "Settings",
