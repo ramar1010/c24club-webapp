@@ -32,11 +32,14 @@ const DirectCallModal = ({
   } = useDirectCall({ myUserId, partnerId, inviteId, isInitiator });
 
   const handleEnd = () => {
-    // If initiator ends before connection, send missed-call email
+    // If initiator ends before connection, notify the other person
     if (isInitiator && callState !== "connected") {
       supabase.functions.invoke("missed-call-email", {
         body: { inviteId, inviterId: myUserId, inviteeId: partnerId },
       }).catch(() => {});
+      toast(`We'll notify ${partnerName} that you tried calling. They can text you back or call you!`, {
+        duration: 5000,
+      });
     }
     endCall();
     onClose();
