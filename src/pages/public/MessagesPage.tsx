@@ -395,7 +395,25 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
               </div>
             )}
 
-            {/* Messages */}
+            {/* Gifted minutes banner */}
+            {giftedFromUser > 0 && (
+              <div className="mx-4 mt-3 mb-1 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm text-emerald-300">
+                    <span className="font-bold">{giftedFromUser}</span> mins earned from {selectedConvo?.other_user?.name || "this user"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate("/my-rewards")}
+                  className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <DollarSign className="w-3 h-3" />
+                  Cash Out
+                </button>
+              </div>
+            )}
+
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
                 <div className="flex items-center justify-center py-20 text-white/40">
