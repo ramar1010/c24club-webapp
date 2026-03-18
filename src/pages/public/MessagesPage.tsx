@@ -543,6 +543,14 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         </div>
       )}
+
+      {/* Send Gift Overlay */}
+      {showGiftOverlay && selectedConvo?.other_user?.id && (
+        <SendGiftOverlay
+          recipientId={selectedConvo.other_user.id}
+          onClose={() => setShowGiftOverlay(false)}
+        />
+      )}
     </div>
   );
 };
