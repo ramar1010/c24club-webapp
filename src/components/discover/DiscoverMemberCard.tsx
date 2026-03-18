@@ -101,6 +101,12 @@ const DiscoverMemberCard = ({
               Owner
             </span>
           )}
+          {isVip && !isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Sparkles className="w-2.5 h-2.5" />
+              VIP
+            </span>
+          )}
         </div>
 
         {/* Photo */}

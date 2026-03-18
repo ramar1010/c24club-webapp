@@ -146,6 +146,7 @@ const DiscoverPage = () => {
                 onInterest={handleInterest}
                 myGender={myGender}
                 isOwner={adminUserIds.has(member.id)}
+                isVip={vipUserIds.has(member.id)}
               />
             ))}
           </div>
