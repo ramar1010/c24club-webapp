@@ -79,7 +79,10 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
           </div>
           <h2 className="text-white font-bold text-lg">Cash Out Minutes</h2>
           <p className="text-white/50 text-xs mt-0.5">
-            Convert your minutes to real money
+            Convert gifted minutes to real money
+          </p>
+          <p className="text-emerald-400/70 text-[11px] mt-1">
+            🎁 Gifted balance: {giftedMinutes} min
           </p>
         </div>
 
