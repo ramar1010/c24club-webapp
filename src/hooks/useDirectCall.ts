@@ -22,6 +22,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   const [callState, setCallState] = useState<DirectCallState>("connecting");
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
