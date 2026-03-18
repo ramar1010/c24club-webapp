@@ -1,3 +1,4 @@
+import discoverIcon from "@/assets/discover-icon.png";
 import spinLegendaryIcon from "@/assets/vip/spin-legendary.png";
 import secondSpinIcon from "@/assets/vip/2nd-spin.png";
 import capIcon from "@/assets/vip/30min-cap.png";
