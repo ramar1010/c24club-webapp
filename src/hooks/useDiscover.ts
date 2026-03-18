@@ -108,6 +108,13 @@ export const useDiscover = () => {
       const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
       setAdminUserIds(adminIds);
 
+      // Fetch VIP user IDs to sort them to top of Discover
+      const { data: vipRows } = await supabase
+        .from("member_minutes")
+        .select("user_id")
+        .eq("is_vip", true);
+      const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
+
       // Fetch admin members who aren't already in the discoverable list
       const discoverableIds = new Set((membersList || []).map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
