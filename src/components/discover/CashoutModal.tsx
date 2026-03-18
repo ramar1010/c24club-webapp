@@ -136,6 +136,9 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
         <p className="text-white/30 text-[10px] text-center mt-2">
           Paid via PayPal • Admin approval required
         </p>
+        <p className="text-white/20 text-[9px] text-center mt-1">
+          Only minutes received as gifts can be cashed out
+        </p>
       </div>
     </div>
   );

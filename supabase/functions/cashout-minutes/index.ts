@@ -75,10 +75,13 @@ serve(async (req) => {
 
       const cashAmount = Number((minutes_amount * settings.rate_per_minute).toFixed(2));
 
-      // Deduct minutes
+      // Deduct from both total and gifted minutes
       await supabaseAdmin
         .from("member_minutes")
-        .update({ total_minutes: userMinutes.total_minutes - minutes_amount })
+        .update({
+          total_minutes: userMinutes.total_minutes - minutes_amount,
+          gifted_minutes: (userMinutes as any).gifted_minutes - minutes_amount,
+        })
         .eq("user_id", user.id);
 
       // Create cashout request
