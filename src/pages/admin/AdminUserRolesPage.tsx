@@ -254,10 +254,10 @@ const AdminUserRolesPage = () => {
       {/* Delete confirmation */}
       <DeleteDialog
         open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={() => deleteTarget && removeRole.mutate(deleteTarget.id)}
-        title="Remove Role"
-        description={`Remove the "${deleteTarget?.role}" role from ${deleteTarget?.member_name}? They will lose all associated permissions.`}
+        title={`${deleteTarget?.role} role from ${deleteTarget?.member_name}`}
+        isPending={removeRole.isPending}
       />
     </div>
   );
