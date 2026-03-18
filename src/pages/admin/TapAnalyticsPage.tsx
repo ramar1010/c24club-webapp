@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { MousePointerClick, TrendingUp, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, MousePointerClick, TrendingUp, Users } from "lucide-react";
 
 interface TapSummary {
   user_id: string;
@@ -14,11 +15,16 @@ interface TapSummary {
   last_tap: string;
 }
 
+type SortKey = "name" | "email" | "gender" | "tap_count" | "first_tap" | "last_tap";
+type SortDir = "asc" | "desc";
+
 const TapAnalyticsPage = () => {
   const [summaries, setSummaries] = useState<TapSummary[]>([]);
   const [totalTaps, setTotalTaps] = useState(0);
   const [uniqueUsers, setUniqueUsers] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>("tap_count");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +89,34 @@ const TapAnalyticsPage = () => {
     fetchData();
   }, []);
 
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "tap_count" ? "desc" : "asc");
+    }
+  };
+
+  const sorted = useMemo(() => {
+    return [...summaries].sort((a, b) => {
+      let cmp = 0;
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (av == null && bv == null) cmp = 0;
+      else if (av == null) cmp = -1;
+      else if (bv == null) cmp = 1;
+      else if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+      else cmp = String(av).localeCompare(String(bv));
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [summaries, sortKey, sortDir]);
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return null;
+    return sortDir === "asc" ? <ArrowUp className="inline h-3 w-3 ml-1" /> : <ArrowDown className="inline h-3 w-3 ml-1" />;
+  };
+
   const avgTaps = uniqueUsers > 0 ? (totalTaps / uniqueUsers).toFixed(1) : "0";
 
   return (
@@ -123,22 +157,22 @@ const TapAnalyticsPage = () => {
         <CardContent>
           {loading ? (
             <p className="text-muted-foreground">Loading...</p>
-          ) : summaries.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <p className="text-muted-foreground">No tap events recorded yet.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Gender</TableHead>
-                  <TableHead className="text-right">Tap Count</TableHead>
-                  <TableHead>First Tap</TableHead>
-                  <TableHead>Last Tap</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("name")}>Name<SortIcon col="name" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("email")}>Email<SortIcon col="email" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("gender")}>Gender<SortIcon col="gender" /></TableHead>
+                  <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("tap_count")}>Tap Count<SortIcon col="tap_count" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("first_tap")}>First Tap<SortIcon col="first_tap" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("last_tap")}>Last Tap<SortIcon col="last_tap" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {summaries.map((s) => (
+                {sorted.map((s) => (
                   <TableRow key={s.user_id}>
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell>{s.email || "—"}</TableCell>
