@@ -220,13 +220,21 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         </h1>
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
-          <button
-            onClick={handleStartCall}
-            disabled={startingCall}
-            className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
-          >
-            <Video className="w-4.5 h-4.5 text-emerald-400" />
-          </button>
+          <>
+            <button
+              onClick={() => setShowGiftOverlay(true)}
+              className="w-9 h-9 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
+            >
+              <Gift className="w-4 h-4 text-yellow-400" />
+            </button>
+            <button
+              onClick={handleStartCall}
+              disabled={startingCall}
+              className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+            >
+              <Video className="w-4.5 h-4.5 text-emerald-400" />
+            </button>
+          </>
         )}
       </div>
 
