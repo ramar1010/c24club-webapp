@@ -138,7 +138,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       {/* Feature Cards */}
       <div className="flex gap-4 w-full max-w-sm mb-8">
         {/* Weekly Challenges */}
-        <button className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
+        <button onClick={() => navigate("/weekly-challenges")} className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
           <span className="font-black text-sm tracking-wide text-center leading-tight">
             WEEKLY<br />CHALLENGES
           </span>
