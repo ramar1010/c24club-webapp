@@ -225,7 +225,7 @@ const AdminDiscoverReviewPage = () => {
                   {/* Info */}
                   <div className="p-2.5 space-y-1.5">
                     <div>
-                      <p className="font-medium text-sm truncate">{member.name}</p>
+                      <p className="font-medium text-sm truncate text-foreground">{member.name}</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {member.gender || "Unknown"} · {member.country || "N/A"}
                       </p>
