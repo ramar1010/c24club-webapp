@@ -40,6 +40,7 @@ const DiscoverMemberCard = ({
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
+  const [showGift, setShowGift] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
