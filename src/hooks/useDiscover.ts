@@ -99,7 +99,29 @@ export const useDiscover = () => {
         .order("last_active_at", { ascending: false })
         .limit(100);
 
-      const list = (membersList || []) as DiscoverableMember[];
+      // Fetch all admin user IDs
+      const { data: allAdminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
+      setAdminUserIds(adminIds);
+
+      // Fetch admin members who aren't already in the discoverable list
+      const discoverableIds = new Set((membersList || []).map(m => m.id));
+      const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
+
+      let adminMembers: DiscoverableMember[] = [];
+      if (missingAdminIds.length > 0) {
+        const { data: adminProfiles } = await supabase
+          .from("members")
+          .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
+          .in("id", missingAdminIds);
+        adminMembers = (adminProfiles || []) as DiscoverableMember[];
+      }
+
+      const list = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
       setMembers(list);
 
       // Extract unique countries
