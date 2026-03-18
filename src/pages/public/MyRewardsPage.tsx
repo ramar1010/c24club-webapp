@@ -528,6 +528,15 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
           Unlock Rewards Early
         </button>
       </div>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={balance ?? 0}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["cashout-balance"] })}
+        />
+      )}
     </div>
   );
 };
