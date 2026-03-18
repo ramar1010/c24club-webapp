@@ -83,8 +83,14 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
     }
   }, []);
 
+  // Attach remote stream to video element whenever either becomes available
   useEffect(() => {
-    let cancelled = false;
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
+  useEffect(() => {
 
     async function start() {
       try {
