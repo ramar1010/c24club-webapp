@@ -25,7 +25,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoElRef = useRef<HTMLVideoElement | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -53,7 +53,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
       channelRef.current = null;
     }
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (remoteVideoElRef.current) remoteVideoElRef.current.srcObject = null;
     setCallState("ended");
   }, []);
 
@@ -83,10 +83,21 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
     }
   }, []);
 
-  // Attach remote stream to video element whenever either becomes available
+  // Callback ref: attaches stream the instant the DOM element mounts
+  const remoteVideoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      remoteVideoElRef.current = el;
+      if (el && remoteStream) {
+        el.srcObject = remoteStream;
+      }
+    },
+    [remoteStream],
+  );
+
+  // Also re-attach when remoteStream changes after element is already mounted
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteVideoElRef.current && remoteStream) {
+      remoteVideoElRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
 
