@@ -161,7 +161,7 @@ const DiscoverMemberCard = ({
                 className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/80 hover:bg-blue-500 text-white transition-all"
                 title="Send Message"
               >
-                <Mail className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4" />
               </button>
 
               {/* Socials button */}
