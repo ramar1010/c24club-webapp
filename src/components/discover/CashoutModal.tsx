@@ -10,7 +10,7 @@ interface CashoutModalProps {
   onSuccess: () => void;
 }
 
-const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps) => {
+const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(false);
