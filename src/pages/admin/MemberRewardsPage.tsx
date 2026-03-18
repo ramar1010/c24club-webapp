@@ -104,6 +104,8 @@ const MemberRewardsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<MemberRedemption | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin_member_redemptions"],
@@ -141,19 +143,48 @@ const MemberRewardsPage = () => {
     onError: () => toast.error("Failed to delete redemption"),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("member_redemptions").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`${selectedIds.size} redemption(s) deleted`);
+      queryClient.invalidateQueries({ queryKey: ["admin_member_redemptions"] });
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+    },
+    onError: () => toast.error("Failed to delete redemptions"),
+  });
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">All Member Rewards</h2>
-        <p className="text-muted-foreground mt-1">
-          {isLoading ? "Loading..." : `${data?.length ?? 0} redemptions total.`}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">All Member Rewards</h2>
+          <p className="text-muted-foreground mt-1">
+            {isLoading ? "Loading..." : `${data?.length ?? 0} redemptions total.`}
+          </p>
+        </div>
+        {selectedIds.size > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete {selectedIds.size} selected
+          </Button>
+        )}
       </div>
 
       <DataTable
         data={data ?? []}
         columns={columns}
         searchKeys={["reward_title", "status"]}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         actions={(row) => (
           <div className="flex gap-1">
             <Button
@@ -182,6 +213,14 @@ const MemberRewardsPage = () => {
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
         title={deleteTarget?.reward_title || "this redemption"}
         isPending={deleteMutation.isPending}
+      />
+
+      <DeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+        title={`${selectedIds.size} selected redemption(s)`}
+        isPending={bulkDeleteMutation.isPending}
       />
     </div>
   );
