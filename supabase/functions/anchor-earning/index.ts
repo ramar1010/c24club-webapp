@@ -112,6 +112,15 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Force-update all active sessions to "power" mode when chill is disabled
+    if (settings.chill_disabled) {
+      await supabase
+        .from("anchor_sessions")
+        .update({ current_mode: "power", updated_at: new Date().toISOString() })
+        .eq("status", "active")
+        .neq("current_mode", "power");
+    }
+
     // GET_STATUS: Check if user is eligible, active, or queued
     if (type === "get_status") {
       // Check if user is female
