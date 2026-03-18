@@ -41,6 +41,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     isInitiator: boolean;
   } | null>(null);
   const [startingCall, setStartingCall] = useState(false);
+  const [showGiftOverlay, setShowGiftOverlay] = useState(false);
 
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
