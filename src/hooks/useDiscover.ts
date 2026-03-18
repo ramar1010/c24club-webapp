@@ -73,6 +73,7 @@ export const useDiscover = () => {
   const [filters, setFilters] = useState<DiscoverFilter>({ gender: "all", country: "", onlineOnly: false });
   const [mutualSocials, setMutualSocials] = useState<Map<string, string[]>>(new Map());
   const [countries, setCountries] = useState<string[]>([]);
+  const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
@@ -166,6 +167,15 @@ export const useDiscover = () => {
           if (s.pinned_socials?.length) socialsMap.set(s.user_id, s.pinned_socials);
         });
         setMutualSocials(socialsMap);
+
+        // Load admin/owner users
+        const { data: adminRoles } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin")
+          .in("user_id", allMemberIds);
+
+        setAdminUserIds(new Set((adminRoles || []).map((r: any) => r.user_id)));
       }
 
       setLoading(false);
@@ -234,12 +244,18 @@ export const useDiscover = () => {
     toast({ title: "Listing removed 👋", description: "Your selfie has been deleted and you're no longer discoverable." });
   }, [user]);
 
-  const filteredMembers = members.filter(m => {
-    if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
-    if (filters.country && m.country !== filters.country) return false;
-    if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
-    return true;
-  });
+  const filteredMembers = members
+    .filter(m => {
+      if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
+      if (filters.country && m.country !== filters.country) return false;
+      if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aAdmin = adminUserIds.has(a.id) ? 1 : 0;
+      const bAdmin = adminUserIds.has(b.id) ? 1 : 0;
+      return bAdmin - aAdmin; // admins first
+    });
 
   return {
     user,
@@ -257,6 +273,7 @@ export const useDiscover = () => {
     setFilters,
     countries,
     mutualSocials,
+    adminUserIds,
     isMutualMatch,
     handleInterest,
     handleRemoveListing,

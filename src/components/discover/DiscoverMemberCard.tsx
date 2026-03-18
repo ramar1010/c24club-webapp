@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, Mail, Gift } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, Mail, Gift, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
@@ -27,6 +27,7 @@ interface DiscoverMemberCardProps {
   mutualSocials: string[] | undefined;
   onInterest: (id: string, icebreaker?: string) => void;
   myGender: string | null;
+  isOwner?: boolean;
 }
 
 const DiscoverMemberCard = ({
@@ -37,6 +38,7 @@ const DiscoverMemberCard = ({
   mutualSocials,
   onInterest,
   myGender,
+  isOwner,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
@@ -71,7 +73,7 @@ const DiscoverMemberCard = ({
 
   return (
     <>
-      <div className="relative group rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
+      <div className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors`}>
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
           {online && (
@@ -89,6 +91,12 @@ const DiscoverMemberCard = ({
           {isMutualMatch && (
             <span className="flex items-center gap-1 bg-pink-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
               💕 Match!
+            </span>
+          )}
+          {isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Crown className="w-2.5 h-2.5" />
+              Owner
             </span>
           )}
         </div>
@@ -117,7 +125,10 @@ const DiscoverMemberCard = ({
 
           <div className="flex items-end justify-between gap-1">
             <div className="min-w-0">
-              <p className="font-bold text-white text-sm truncate">{member.name}</p>
+              <p className="font-bold text-white text-sm truncate">
+                {member.name}
+                {isOwner && <Crown className="inline w-3.5 h-3.5 ml-1 text-amber-400" />}
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 {member.country && (
                   <span className="text-white/50 text-xs">{member.country}</span>
