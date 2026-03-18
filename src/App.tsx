@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DirectCallInviteListenerWrapper } from "@/components/DirectCallInviteListenerWrapper";
 import DmNotificationListener from "@/components/DmNotificationListener";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 // Lightweight layout - keep eager
 import PublicLayout from "@/components/public/PublicLayout";
