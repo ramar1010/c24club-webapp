@@ -20,6 +20,18 @@ const GIFT_TIERS = {
     cents: 499,
     sender_bonus: 100,
   },
+  "600": {
+    price_id: "price_1TCLHKA5n8uAZoY1ENfhv2PI",
+    minutes: 600,
+    cents: 799,
+    sender_bonus: 150,
+  },
+  "1000": {
+    price_id: "price_1TCLI0A5n8uAZoY146CTVt6v",
+    minutes: 1000,
+    cents: 1299,
+    sender_bonus: 250,
+  },
 };
 
 serve(async (req) => {
