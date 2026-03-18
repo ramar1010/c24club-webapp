@@ -89,10 +89,11 @@ export function useAnchorEarning({
       setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
       localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
       setCashBalance(Number(data.session?.cash_balance ?? 0));
+      const s = data.settings || settings;
       setThresholdSeconds(
         data.currentMode === "power"
-          ? (data.settings?.power_rate_time ?? 30) * 60
-          : (data.settings?.chill_reward_time ?? 45) * 60
+          ? (s?.power_rate_time ?? 30) * 60
+          : (s?.chill_reward_time ?? 45) * 60
       );
     } else if (data.status === "queued") {
       setStatus("queued");
