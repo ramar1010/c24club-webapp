@@ -185,8 +185,14 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           })
           .on("broadcast", { event: "peer-ready" }, () => {
             console.log("[DirectCall] Peer ready received, isInitiator:", isInitiator);
-            // The other peer is subscribed — initiator can now safely send offer
-            sendOffer();
+            if (isInitiator) {
+              // The other peer is subscribed — initiator can now safely send offer
+              sendOffer();
+            } else {
+              // Echo back peer-ready so the initiator knows we're here
+              console.log("[DirectCall] Echoing peer-ready back to initiator");
+              channel.send({ type: "broadcast", event: "peer-ready", payload: {} });
+            }
           })
           .subscribe((status) => {
             console.log("[DirectCall] Channel status:", status);
