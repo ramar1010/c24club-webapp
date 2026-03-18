@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import DeleteDialog from "@/components/admin/DeleteDialog";
+import { toast } from "sonner";
 
 type MemberRedemption = {
   id: string;
@@ -100,19 +102,18 @@ const columns: DataTableColumn<MemberRedemption>[] = [
 
 const MemberRewardsPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [deleteTarget, setDeleteTarget] = useState<MemberRedemption | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin_member_redemptions"],
     queryFn: async () => {
-      // member_redemptions.user_id references auth.users, not members table directly
-      // So we fetch redemptions first, then enrich with member data
       const { data: redemptions, error } = await supabase
         .from("member_redemptions")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Get unique user_ids and fetch member info
       const userIds = [...new Set((redemptions || []).map(r => r.user_id))];
       const { data: members } = await supabase
         .from("members")
@@ -125,6 +126,19 @@ const MemberRewardsPage = () => {
         members: memberMap.get(r.user_id) || null,
       })) as MemberRedemption[];
     },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("member_redemptions").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Redemption deleted");
+      queryClient.invalidateQueries({ queryKey: ["admin_member_redemptions"] });
+      setDeleteTarget(null);
+    },
+    onError: () => toast.error("Failed to delete redemption"),
   });
 
   return (
@@ -141,15 +155,33 @@ const MemberRewardsPage = () => {
         columns={columns}
         searchKeys={["reward_title", "status"]}
         actions={(row) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => navigate(`/admin/member-rewards/${row.id}/edit`)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => navigate(`/admin/member-rewards/${row.id}/edit`)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              onClick={() => setDeleteTarget(row)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         )}
+      />
+
+      <DeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        title={deleteTarget?.reward_title || "this redemption"}
+        isPending={deleteMutation.isPending}
       />
     </div>
   );
