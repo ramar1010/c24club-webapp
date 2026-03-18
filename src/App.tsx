@@ -62,6 +62,7 @@ const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
 const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
 const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
+const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
