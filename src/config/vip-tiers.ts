@@ -1,3 +1,4 @@
+import discoverIcon from "@/assets/discover-icon.png";
 import spinLegendaryIcon from "@/assets/vip/spin-legendary.png";
 import secondSpinIcon from "@/assets/vip/2nd-spin.png";
 import capIcon from "@/assets/vip/30min-cap.png";
@@ -33,6 +34,7 @@ export const VIP_TIERS = {
       { label: "Add Custom Topics", icon: customTopicsIcon },
       { label: "50 Ad Points a Week", icon: starEyesIcon },
       { label: "Auto-Unfreeze Minutes", icon: frozenFaceIcon },
+      { label: "Top of Discover Feed", icon: discoverIcon },
     ] as VipFeature[],
   },
   premium: {
@@ -43,6 +45,7 @@ export const VIP_TIERS = {
     product_id: "prod_U8FBD9R49k8Kvd",
     features: [
       { label: "Choose a Gender to Connect With", icon: genderSelectIcon },
+      { label: "Top of Discover Feed", icon: discoverIcon },
       { label: "Get Gifted by Anyone", icon: getGiftedIcon },
       { label: "400 Ad Points Every Month", icon: starEyesIcon },
       { label: "Disable All Promos + Add Images", icon: disablePromosIcon },

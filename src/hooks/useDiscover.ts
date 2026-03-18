@@ -108,6 +108,13 @@ export const useDiscover = () => {
       const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
       setAdminUserIds(adminIds);
 
+      // Fetch VIP user IDs to sort them to top of Discover
+      const { data: vipRows } = await supabase
+        .from("member_minutes")
+        .select("user_id")
+        .eq("is_vip", true);
+      const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
+
       // Fetch admin members who aren't already in the discoverable list
       const discoverableIds = new Set((membersList || []).map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
@@ -121,7 +128,18 @@ export const useDiscover = () => {
         adminMembers = (adminProfiles || []) as DiscoverableMember[];
       }
 
-      const list = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
+      const combined = [...(membersList || []), ...adminMembers] as DiscoverableMember[];
+      // Sort: admins first, then VIP users, then everyone else
+      combined.sort((a, b) => {
+        const aAdmin = adminIds.has(a.id) ? 0 : 1;
+        const bAdmin = adminIds.has(b.id) ? 0 : 1;
+        if (aAdmin !== bAdmin) return aAdmin - bAdmin;
+        const aVip = vipIds.has(a.id) ? 0 : 1;
+        const bVip = vipIds.has(b.id) ? 0 : 1;
+        if (aVip !== bVip) return aVip - bVip;
+        return 0; // preserve existing order (last_active_at desc)
+      });
+      const list = combined;
       setMembers(list);
 
       // Extract unique countries
