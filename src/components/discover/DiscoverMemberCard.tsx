@@ -73,10 +73,16 @@ const DiscoverMemberCard = ({
     }
   };
 
+  const openFullImage = () => {
+    if (member.image_url) setShowFullImage(true);
+  };
 
   return (
     <>
-      <div className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors`}>
+      <div
+        className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors ${member.image_url ? "cursor-pointer" : ""}`}
+        onClick={openFullImage}
+      >
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
           {online && (
@@ -110,22 +116,13 @@ const DiscoverMemberCard = ({
           )}
         </div>
 
-        {/* Photo — clickable for full view */}
-        <div
-          className="aspect-[3/4] overflow-hidden cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (member.image_url) setShowFullImage(true);
-          }}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-          }}
-        >
+        {/* Photo */}
+        <div className="aspect-[3/4] overflow-hidden">
           {member.image_url ? (
             <img
               src={member.image_url}
               alt={member.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
           ) : (
@@ -166,7 +163,10 @@ const DiscoverMemberCard = ({
             <div className="flex flex-col gap-1.5 shrink-0">
               {/* Video Chat button — always visible */}
               <button
-                onClick={handleVideoChat}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleVideoChat();
+                }}
                 className="w-9 h-9 rounded-full flex items-center justify-center bg-emerald-500/80 hover:bg-emerald-500 text-white transition-all"
                 title="Request Video Chat"
               >
@@ -175,7 +175,10 @@ const DiscoverMemberCard = ({
 
               {/* DM button */}
               <button
-                onClick={() => navigate(`/messages?to=${member.id}`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/messages?to=${member.id}`);
+                }}
                 className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/80 hover:bg-blue-500 text-white transition-all"
                 title="Send Message"
               >
@@ -185,7 +188,10 @@ const DiscoverMemberCard = ({
               {/* Socials button */}
               {mutualSocials && mutualSocials.length > 0 && (
                 <button
-                  onClick={() => setShowSocials(!showSocials)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSocials(!showSocials);
+                  }}
                   className="w-9 h-9 rounded-full flex items-center justify-center bg-purple-500/80 hover:bg-purple-500 text-white transition-all"
                   title="View socials"
                 >
@@ -195,17 +201,22 @@ const DiscoverMemberCard = ({
 
               {/* Gift button */}
               <button
-                onClick={() => setShowGift(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowGift(true);
+                }}
                 className="w-9 h-9 rounded-full flex items-center justify-center bg-amber-500/80 hover:bg-amber-500 text-white transition-all"
                 title="Gift Minutes"
               >
                 <Gift className="w-4 h-4" />
               </button>
 
-
               {/* Heart button */}
               <button
-                onClick={() => !alreadyInterested && onInterest(member.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!alreadyInterested) onInterest(member.id);
+                }}
                 disabled={alreadyInterested || sendingInterest}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                   alreadyInterested
@@ -224,7 +235,12 @@ const DiscoverMemberCard = ({
 
           {/* Socials reveal */}
           {showSocials && mutualSocials && (
-            <div className="mt-2">
+            <div
+              className="mt-2"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <PinnedSocialsDisplay pinnedSocials={mutualSocials} />
             </div>
           )}
