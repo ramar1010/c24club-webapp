@@ -127,7 +127,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
         <button
           onClick={handleCashout}
-          disabled={loading || minutes < settings.min_cashout_minutes || currentMinutes < settings.min_cashout_minutes}
+          disabled={loading || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
           className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
         >
           {loading ? "Submitting..." : `Cash Out $${cashValue}`}
