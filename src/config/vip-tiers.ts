@@ -34,6 +34,7 @@ export const VIP_TIERS = {
       { label: "Add Custom Topics", icon: customTopicsIcon },
       { label: "50 Ad Points a Week", icon: starEyesIcon },
       { label: "Auto-Unfreeze Minutes", icon: frozenFaceIcon },
+      { label: "Top of Discover Feed", icon: discoverIcon },
     ] as VipFeature[],
   },
   premium: {
