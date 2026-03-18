@@ -218,6 +218,15 @@ const DiscoverMemberCard = ({
           onClose={() => setDirectCall(null)}
         />
       )}
+
+      {/* Gift modal */}
+      {showGift && (
+        <DiscoverGiftModal
+          recipientId={member.id}
+          recipientName={member.name}
+          onClose={() => setShowGift(false)}
+        />
+      )}
     </>
   );
 };
