@@ -1,5 +1,6 @@
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
 import { useDirectCall } from "@/hooks/useDirectCall";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DirectCallModalProps {
   myUserId: string;
@@ -30,6 +31,12 @@ const DirectCallModal = ({
   } = useDirectCall({ myUserId, partnerId, inviteId, isInitiator });
 
   const handleEnd = () => {
+    // If initiator ends before connection, send missed-call email
+    if (isInitiator && callState !== "connected") {
+      supabase.functions.invoke("missed-call-email", {
+        body: { inviteId, inviterId: myUserId, inviteeId: partnerId },
+      }).catch(() => {});
+    }
     endCall();
     onClose();
   };
