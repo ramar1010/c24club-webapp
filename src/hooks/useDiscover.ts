@@ -189,21 +189,25 @@ export const useDiscover = () => {
       const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
       setVipUserIds(vipIds);
 
-      // Fetch admin members who aren't already in the discoverable list
+      // Fetch admin & VIP members who aren't already in the discoverable list
       const discoverableIds = new Set(membersList.map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
+      const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id) && id !== user.id);
 
-      let adminMembers: DiscoverableMember[] = [];
-      if (missingAdminIds.length > 0) {
-        const { data: adminProfiles } = await supabase
+      let priorityMembers: DiscoverableMember[] = [];
+      const missingPriorityIds = [...missingAdminIds, ...missingVipIds];
+      if (missingPriorityIds.length > 0) {
+        const { data: priorityProfiles } = await supabase
           .from("members")
           .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
-          .in("id", missingAdminIds);
-        adminMembers = (adminProfiles || []) as DiscoverableMember[];
+          .in("id", missingPriorityIds);
+        priorityMembers = ((priorityProfiles || []) as DiscoverableMember[]).filter(
+          m => m.image_url // Only include members with photos
+        );
       }
       adminMembersFetchedRef.current = true;
 
-      const combined = [...membersList, ...adminMembers];
+      const combined = [...membersList, ...priorityMembers];
       const sorted = sortMembers(combined, adminIds, vipIds);
       setAllFetchedMembers(sorted);
 
