@@ -83,10 +83,21 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
     }
   }, []);
 
-  // Attach remote stream to video element whenever either becomes available
+  // Callback ref: attaches stream the instant the DOM element mounts
+  const remoteVideoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      remoteVideoElRef.current = el;
+      if (el && remoteStream) {
+        el.srcObject = remoteStream;
+      }
+    },
+    [remoteStream],
+  );
+
+  // Also re-attach when remoteStream changes after element is already mounted
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteVideoElRef.current && remoteStream) {
+      remoteVideoElRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
 
