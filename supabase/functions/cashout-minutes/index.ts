@@ -50,15 +50,15 @@ serve(async (req) => {
         throw new Error(`Maximum cashout is ${settings.max_cashout_minutes} minutes`);
       }
 
-      // Check user balance
+      // Check user gifted minutes balance (only gifted minutes can be cashed out)
       const { data: userMinutes } = await supabaseAdmin
         .from("member_minutes")
-        .select("total_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", user.id)
         .single();
 
-      if (!userMinutes || userMinutes.total_minutes < minutes_amount) {
-        throw new Error("Insufficient minutes balance");
+      if (!userMinutes || (userMinutes as any).gifted_minutes < minutes_amount) {
+        throw new Error("Insufficient gifted minutes balance. You can only cash out minutes received as gifts.");
       }
 
       // Check for pending cashout
