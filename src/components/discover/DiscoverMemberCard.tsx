@@ -73,7 +73,7 @@ const DiscoverMemberCard = ({
 
   return (
     <>
-      <div className="relative group rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
+      <div className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors`}>
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
           {online && (
