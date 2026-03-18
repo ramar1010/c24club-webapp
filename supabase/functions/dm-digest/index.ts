@@ -139,7 +139,27 @@ Deno.serve(async (req) => {
 
       // Enqueue email via pgmq
       try {
-        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`;
+        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
+
+        // Skip if already sent today
+        const { data: alreadySent } = await supabase
+          .from("email_send_log")
+          .select("id")
+          .eq("message_id", dmMessageId)
+          .maybeSingle();
+
+        if (alreadySent) {
+          console.log(`Skipping dm-digest for ${member.id} — already sent today`);
+          continue;
+        }
+
+        await supabase.from("email_send_log").insert({
+          message_id: dmMessageId,
+          template_name: "unread_dm_digest",
+          recipient_email: member.email,
+          status: "pending",
+        });
+
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
@@ -161,7 +181,7 @@ Deno.serve(async (req) => {
             purpose: "transactional",
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),
-            idempotency_key: `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`,
+            idempotency_key: dmMessageId,
           },
         });
         emailsSent++;
