@@ -111,12 +111,21 @@ const DiscoverMemberCard = ({
         </div>
 
         {/* Photo — clickable for full view */}
-        <div className="aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => member.image_url && setShowFullImage(true)}>
+        <div
+          className="aspect-[3/4] overflow-hidden cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (member.image_url) setShowFullImage(true);
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
+        >
           {member.image_url ? (
             <img
               src={member.image_url}
               alt={member.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
               loading="lazy"
             />
           ) : (
@@ -248,14 +257,19 @@ const DiscoverMemberCard = ({
 
       {/* Full image viewer */}
       {showFullImage && member.image_url && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center" onClick={() => setShowFullImage(false)}>
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowFullImage(false);
+          }}
+        >
           <button
             onClick={() => setShowFullImage(false)}
             className="absolute top-4 right-4 z-[101] bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
           >
             <X className="w-6 h-6 text-white" />
           </button>
-          <div className="absolute bottom-6 left-0 right-0 text-center">
+          <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
             <p className="text-white font-bold text-lg">{member.name}</p>
             {member.country && <p className="text-white/50 text-sm">{member.country}</p>}
           </div>
@@ -263,7 +277,6 @@ const DiscoverMemberCard = ({
             src={member.image_url}
             alt={member.name}
             className="max-w-full max-h-full object-contain p-4"
-            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
