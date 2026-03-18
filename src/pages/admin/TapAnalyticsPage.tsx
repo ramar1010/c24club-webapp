@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { MousePointerClick, TrendingUp, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, MousePointerClick, TrendingUp, Users } from "lucide-react";
 
 interface TapSummary {
   user_id: string;
