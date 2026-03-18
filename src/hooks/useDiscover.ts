@@ -115,6 +115,7 @@ export const useDiscover = () => {
         .select("user_id")
         .eq("is_vip", true);
       const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
+      setVipUserIds(vipIds);
 
       // Fetch admin members who aren't already in the discoverable list
       const discoverableIds = new Set((membersList || []).map(m => m.id));

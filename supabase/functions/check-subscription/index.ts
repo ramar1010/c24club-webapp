@@ -109,7 +109,16 @@ serve(async (req) => {
 
     if (hasActive) {
       const sub = subscriptions.data[0];
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+      try {
+        const endVal = sub.current_period_end;
+        if (typeof endVal === "number") {
+          subscriptionEnd = new Date(endVal * 1000).toISOString();
+        } else if (typeof endVal === "string") {
+          subscriptionEnd = new Date(endVal).toISOString();
+        }
+      } catch {
+        logStep("Could not parse current_period_end, skipping");
+      }
       const productId = sub.items.data[0].price.product as string;
       vipTier = VIP_TIERS[productId] || "basic";
       logStep("Active subscription", { vipTier, subscriptionEnd });
