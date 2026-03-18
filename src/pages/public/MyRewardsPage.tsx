@@ -57,18 +57,20 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   const [showCashout, setShowCashout] = useState(false);
   const { subscribed } = useVipStatus(user?.id ?? null);
 
-  const { data: balance } = useQuery({
+  const { data: balanceData } = useQuery({
     queryKey: ["cashout-balance", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", user!.id)
         .single();
-      return data?.total_minutes ?? 0;
+      return { total: data?.total_minutes ?? 0, gifted: (data as any)?.gifted_minutes ?? 0 };
     },
   });
+  const balance = balanceData?.total ?? 0;
+  const giftedBalance = balanceData?.gifted ?? 0;
 
   const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -534,6 +536,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
         <CashoutModal
           onClose={() => setShowCashout(false)}
           currentMinutes={balance ?? 0}
+          giftedMinutes={giftedBalance ?? 0}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ["cashout-balance"] })}
         />
       )}

@@ -6,10 +6,11 @@ import { toast } from "sonner";
 interface CashoutModalProps {
   onClose: () => void;
   currentMinutes: number;
+  giftedMinutes: number;
   onSuccess: () => void;
 }
 
-const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps) => {
+const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,8 +30,8 @@ const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps)
 
   const cashValue = settings ? (minutes * settings.rate_per_minute).toFixed(2) : "—";
   const maxAllowed = settings
-    ? Math.min(currentMinutes, settings.max_cashout_minutes)
-    : currentMinutes;
+    ? Math.min(giftedMinutes, settings.max_cashout_minutes)
+    : giftedMinutes;
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
@@ -78,7 +79,10 @@ const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps)
           </div>
           <h2 className="text-white font-bold text-lg">Cash Out Minutes</h2>
           <p className="text-white/50 text-xs mt-0.5">
-            Convert your minutes to real money
+            Convert gifted minutes to real money
+          </p>
+          <p className="text-emerald-400/70 text-[11px] mt-1">
+            🎁 Gifted balance: {giftedMinutes} min
           </p>
         </div>
 
@@ -123,7 +127,7 @@ const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps)
 
         <button
           onClick={handleCashout}
-          disabled={loading || minutes < settings.min_cashout_minutes || currentMinutes < settings.min_cashout_minutes}
+          disabled={loading || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
           className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
         >
           {loading ? "Submitting..." : `Cash Out $${cashValue}`}
@@ -131,6 +135,9 @@ const CashoutModal = ({ onClose, currentMinutes, onSuccess }: CashoutModalProps)
 
         <p className="text-white/30 text-[10px] text-center mt-2">
           Paid via PayPal • Admin approval required
+        </p>
+        <p className="text-white/20 text-[9px] text-center mt-1">
+          Only minutes received as gifts can be cashed out
         </p>
       </div>
     </div>
