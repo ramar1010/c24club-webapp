@@ -190,14 +190,7 @@ export const useDiscover = () => {
         });
         setMutualSocials(socialsMap);
 
-        // Load admin/owner users
-        const { data: adminRoles } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin")
-          .in("user_id", allMemberIds);
-
-        setAdminUserIds(new Set((adminRoles || []).map((r: any) => r.user_id)));
+        // Admin IDs already loaded above
       }
 
       setLoading(false);
