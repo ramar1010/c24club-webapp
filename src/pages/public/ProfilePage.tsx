@@ -83,7 +83,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   }
 
   if (showEvents) {
-    return <EventsPage onClose={() => setShowEvents(false)} />;
+    return <EventsPage onClose={() => setShowEvents(false)} initialView={eventsInitialView} />;
   }
 
   return (
