@@ -74,6 +74,7 @@ export const useDiscover = () => {
   const [mutualSocials, setMutualSocials] = useState<Map<string, string[]>>(new Map());
   const [countries, setCountries] = useState<string[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
+  const [vipUserIds, setVipUserIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
