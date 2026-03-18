@@ -1,6 +1,7 @@
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface DirectCallModalProps {
   myUserId: string;
