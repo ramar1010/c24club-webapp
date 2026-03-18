@@ -283,11 +283,6 @@ export const useDiscover = () => {
       if (filters.country && m.country !== filters.country) return false;
       if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
       return true;
-    })
-    .sort((a, b) => {
-      const aAdmin = adminUserIds.has(a.id) ? 1 : 0;
-      const bAdmin = adminUserIds.has(b.id) ? 1 : 0;
-      return bAdmin - aAdmin; // admins first
     });
 
   return {
