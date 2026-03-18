@@ -40,6 +40,7 @@ const AnchorSettingsPage = () => {
         power_rate_cash: Number(settings.power_rate_cash),
         power_rate_time: settings.power_rate_time,
         chill_reward_time: settings.chill_reward_time,
+        chill_disabled: settings.chill_disabled ?? false,
       });
     }
   }, [settings]);
