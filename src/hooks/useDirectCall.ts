@@ -102,8 +102,8 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
 
         pc.ontrack = (event) => {
           console.log("[DirectCall] Remote track received", event.streams.length);
-          if (remoteVideoRef.current && event.streams[0]) {
-            remoteVideoRef.current.srcObject = event.streams[0];
+          if (event.streams[0]) {
+            setRemoteStream(event.streams[0]);
           }
         };
 
