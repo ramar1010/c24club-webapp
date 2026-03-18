@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
 
       // Enqueue email via pgmq
       try {
-        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 13)}`;
+        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
