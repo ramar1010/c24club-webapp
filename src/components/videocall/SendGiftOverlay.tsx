@@ -12,6 +12,8 @@ interface SendGiftOverlayProps {
 const GIFT_TIERS = [
   { tier: "100", minutes: 100, price: "$1.99", cashValue: "$1.00", label: "Gift $1.00 Cash", sublabel: "100 Minutes • You pay $1.99" },
   { tier: "400", minutes: 400, price: "$4.99", cashValue: "$4.00", label: "Gift $4.00 Cash", sublabel: "400 Minutes • You pay $4.99", bonus: "Send $4.00 Cash & Get +100 Minutes Back!" },
+  { tier: "600", minutes: 600, price: "$7.99", cashValue: "$6.00", label: "Gift $6.00 Cash", sublabel: "600 Minutes • You pay $7.99", bonus: "Send $6.00 Cash & Get +150 Minutes Back!" },
+  { tier: "1000", minutes: 1000, price: "$12.99", cashValue: "$10.00", label: "Gift $10.00 Cash", sublabel: "1000 Minutes • You pay $12.99", bonus: "Send $10.00 Cash & Get +250 Minutes Back!" },
 ];
 
 const SendGiftOverlay = ({ onClose, recipientId }: SendGiftOverlayProps) => {

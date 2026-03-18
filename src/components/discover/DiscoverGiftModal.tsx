@@ -18,6 +18,20 @@ const GIFT_TIERS = [
     label: "🎁 Gift 400 Minutes — $4.99",
     bonus: "You get +100 Minutes back!",
   },
+  {
+    tier: "600",
+    minutes: 600,
+    price: "$7.99",
+    label: "🎁 Gift 600 Minutes — $7.99",
+    bonus: "You get +150 Minutes back!",
+  },
+  {
+    tier: "1000",
+    minutes: 1000,
+    price: "$12.99",
+    label: "🎁 Gift 1000 Minutes — $12.99",
+    bonus: "You get +250 Minutes back!",
+  },
 ];
 
 const DiscoverGiftModal = ({ recipientId, recipientName, onClose }: DiscoverGiftModalProps) => {
