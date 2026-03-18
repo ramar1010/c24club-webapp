@@ -273,6 +273,7 @@ export const useDiscover = () => {
     setFilters,
     countries,
     mutualSocials,
+    adminUserIds,
     isMutualMatch,
     handleInterest,
     handleRemoveListing,
