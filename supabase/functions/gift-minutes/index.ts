@@ -180,6 +180,64 @@ serve(async (req) => {
       });
     }
 
+    if (action === "gift-from-balance") {
+      if (!recipient_id) throw new Error("No recipient specified");
+      if (recipient_id === user.id) throw new Error("Cannot gift yourself");
+      const { minutes_amount, reward_id } = await req.json().catch(() => ({}));
+
+      // Parse from original body
+      const body = { action, tier, recipient_id, session_id, ...({ minutes_amount, reward_id } as any) };
+      const giftMinutes = body.minutes_amount;
+      const giftRewardId = body.reward_id;
+
+      if (!giftMinutes || giftMinutes < 10) throw new Error("Minimum gift is 10 minutes");
+      if (giftMinutes > 500) throw new Error("Maximum gift is 500 minutes");
+
+      // Check sender balance
+      const { data: senderMinutes } = await supabaseAdmin
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!senderMinutes || senderMinutes.total_minutes < giftMinutes) {
+        throw new Error("Insufficient minutes balance");
+      }
+
+      // Deduct from sender
+      await supabaseAdmin
+        .from("member_minutes")
+        .update({ total_minutes: senderMinutes.total_minutes - giftMinutes })
+        .eq("user_id", user.id);
+
+      // Credit recipient
+      const { data: recipientMins } = await supabaseAdmin
+        .from("member_minutes")
+        .select("total_minutes")
+        .eq("user_id", recipient_id)
+        .single();
+
+      if (recipientMins) {
+        await supabaseAdmin
+          .from("member_minutes")
+          .update({ total_minutes: recipientMins.total_minutes + giftMinutes })
+          .eq("user_id", recipient_id);
+      }
+
+      // Record transaction
+      await supabaseAdmin.from("gift_transactions").insert({
+        sender_id: user.id,
+        recipient_id,
+        minutes_amount: giftMinutes,
+        price_cents: 0,
+        status: "completed",
+      });
+
+      return new Response(JSON.stringify({ success: true, minutes_gifted: giftMinutes }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     throw new Error("Invalid action");
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
