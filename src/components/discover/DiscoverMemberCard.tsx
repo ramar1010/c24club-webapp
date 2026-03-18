@@ -166,7 +166,14 @@ const DiscoverMemberCard = ({
                 </button>
               )}
 
-
+              {/* Gift button */}
+              <button
+                onClick={() => setShowGift(true)}
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-amber-500/80 hover:bg-amber-500 text-white transition-all"
+                title="Gift Minutes"
+              >
+                <Gift className="w-4 h-4" />
+              </button>
 
 
               {/* Heart button */}
