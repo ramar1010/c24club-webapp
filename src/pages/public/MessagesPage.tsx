@@ -356,6 +356,14 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                         : ""}
                   </p>
                 </div>
+                {/* Gift button in desktop header */}
+                <button
+                  onClick={() => setShowGiftOverlay(true)}
+                  className="w-8 h-8 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
+                  title="Send gift"
+                >
+                  <Gift className="w-4 h-4 text-yellow-400" />
+                </button>
                 {/* Video call button in desktop header */}
                 <button
                   onClick={handleStartCall}
