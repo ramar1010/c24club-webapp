@@ -22,6 +22,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   const [callState, setCallState] = useState<DirectCallState>("connecting");
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -82,9 +83,15 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
     }
   }, []);
 
+  // Attach remote stream to video element whenever either becomes available
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
   useEffect(() => {
     let cancelled = false;
-
     async function start() {
       try {
         // Get local media
@@ -101,8 +108,8 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
 
         pc.ontrack = (event) => {
           console.log("[DirectCall] Remote track received", event.streams.length);
-          if (remoteVideoRef.current && event.streams[0]) {
-            remoteVideoRef.current.srcObject = event.streams[0];
+          if (event.streams[0]) {
+            setRemoteStream(event.streams[0]);
           }
         };
 
