@@ -315,6 +315,87 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         status: "completed",
       });
 
+      // Send gift notification email to recipient
+      try {
+        const { data: recipientMember } = await supabaseAdmin
+          .from("members")
+          .select("name, email")
+          .eq("id", recipient_id)
+          .single();
+
+        const { data: senderMember } = await supabaseAdmin
+          .from("members")
+          .select("name")
+          .eq("id", user.id)
+          .single();
+
+        if (recipientMember?.email) {
+          const senderName = senderMember?.name || "Someone";
+          const recipientName = recipientMember.name || "there";
+          const subject = `🎁 ${senderName} just gifted you ${giftMinutes} minutes!`;
+          const body = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>body{margin:0;padding:0;font-family:'Inter',Arial,sans-serif;background:#f4f4f5}
+.wrap{max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;margin-top:24px;margin-bottom:24px}
+.header{background:#18181b;padding:24px;text-align:center}
+.header img{height:32px}
+.content{padding:32px 24px}
+h1{color:#18181b;font-size:22px;margin:0 0 16px}
+p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
+.highlight{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:20px;text-align:center;margin:20px 0}
+.highlight .amount{font-size:36px;font-weight:800;color:#059669}
+.highlight .label{font-size:13px;color:#6b7280;margin-top:4px}
+.cta{display:inline-block;background:#059669;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:10px;font-weight:700;font-size:15px;margin-top:16px}
+.footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}
+</style></head>
+<body><div class="wrap">
+<div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
+<div class="content">
+<h1>Hey ${recipientName}! 🎉</h1>
+<p><strong>${senderName}</strong> just sent you a gift on C24Club!</p>
+<div class="highlight">
+<div class="amount">${giftMinutes} min</div>
+<div class="label">Minutes gifted to you</div>
+</div>
+<p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
+<div style="text-align:center">
+<a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
+</div>
+</div>
+<div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div>
+</div></body></html>`;
+
+          const messageId = crypto.randomUUID();
+
+          await supabaseAdmin.from("email_send_log").insert({
+            message_id: messageId,
+            template_name: "gift-received",
+            recipient_email: recipientMember.email,
+            status: "pending",
+          });
+
+          await supabaseAdmin.rpc("enqueue_email", {
+            queue_name: "transactional_emails",
+            payload: {
+              run_id: crypto.randomUUID(),
+              message_id: messageId,
+              to: recipientMember.email,
+              from: "C24Club <support@c24club.com>",
+              sender_domain: "c24club.com",
+              subject,
+              html: body,
+              text: `Hey ${recipientName}! ${senderName} just gifted you ${giftMinutes} minutes on C24Club! You can cash these out for real money via PayPal. Go to My Rewards > Cash Out Minutes to convert them. https://c24club.lovable.app/my-rewards`,
+              purpose: "transactional",
+              label: "gift-received",
+              queued_at: new Date().toISOString(),
+            },
+          });
+        }
+      } catch (emailErr) {
+        console.error("Gift notification email error:", emailErr);
+      }
+
       return new Response(JSON.stringify({ success: true, minutes_gifted: giftMinutes }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
