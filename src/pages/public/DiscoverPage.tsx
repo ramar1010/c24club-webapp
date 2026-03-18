@@ -14,7 +14,7 @@ const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
     user, members, allMembers, loading, myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
-    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds,
+    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds, vipUserIds,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
@@ -146,6 +146,7 @@ const DiscoverPage = () => {
                 onInterest={handleInterest}
                 myGender={myGender}
                 isOwner={adminUserIds.has(member.id)}
+                isVip={vipUserIds.has(member.id)}
               />
             ))}
           </div>

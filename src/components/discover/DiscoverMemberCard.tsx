@@ -28,6 +28,7 @@ interface DiscoverMemberCardProps {
   onInterest: (id: string, icebreaker?: string) => void;
   myGender: string | null;
   isOwner?: boolean;
+  isVip?: boolean;
 }
 
 const DiscoverMemberCard = ({
@@ -39,6 +40,7 @@ const DiscoverMemberCard = ({
   onInterest,
   myGender,
   isOwner,
+  isVip,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
@@ -97,6 +99,12 @@ const DiscoverMemberCard = ({
             <span className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
               <Crown className="w-2.5 h-2.5" />
               Owner
+            </span>
+          )}
+          {isVip && !isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Sparkles className="w-2.5 h-2.5" />
+              VIP
             </span>
           )}
         </div>
