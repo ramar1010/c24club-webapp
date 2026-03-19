@@ -121,8 +121,6 @@ const VideoCallPage = () => {
 
   const isFemale = memberGender?.toLowerCase() === "female";
 
-  const hasAutoStartedRef = useRef(false);
-
   const {
     callState,
     error,
