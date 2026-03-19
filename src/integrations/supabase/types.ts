@@ -238,6 +238,66 @@ export type Database = {
         }
         Relationships: []
       }
+      camera_unlock_requests: {
+        Row: {
+          created_at: string
+          id: string
+          price_cents: number
+          recipient_cut_cents: number
+          recipient_id: string
+          requester_id: string
+          room_id: string | null
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price_cents?: number
+          recipient_cut_cents?: number
+          recipient_id: string
+          requester_id: string
+          room_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price_cents?: number
+          recipient_cut_cents?: number
+          recipient_id?: string
+          requester_id?: string
+          room_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      camera_unlock_settings: {
+        Row: {
+          id: string
+          price_cents: number
+          recipient_cut_percent: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          price_cents?: number
+          recipient_cut_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          price_cents?: number
+          recipient_cut_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cashout_requests: {
         Row: {
           cash_amount: number
