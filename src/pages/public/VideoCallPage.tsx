@@ -73,21 +73,13 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const mobileNavInitializedRef = useRef(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
-  const [showAnchorPanel, setShowAnchorPanel] = useState(false);
-  const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
-    // Hide anchor banner on mobile for first-time female users to reduce clutter
-    if (window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen")) {
-      return false;
-    }
-    return true;
-  });
+  const [femaleHasSlot, setFemaleHasSlot] = useState(false);
+  const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
-  const [pulseAnchorBtn, setPulseAnchorBtn] = useState(false);
-  const retentionModalRef = useRef<FemaleRetentionModalRef>(null);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
