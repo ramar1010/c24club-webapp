@@ -255,10 +255,8 @@ const FemaleEarningPanel = ({
         </div>
       </div>
 
-      {/* Helper text below panel */}
-      <p className="text-neutral-400 text-[11px] text-center mt-1.5 font-semibold">
-        Chat with guys or <span className="text-pink-400">"wait for a partner"</span> to earn!
-      </p>
+      {/* Rotating earning tips */}
+      <EarningTip />
 
       {/* Cashout Modal */}
       {showCashout && (
