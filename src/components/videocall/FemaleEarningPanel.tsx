@@ -129,13 +129,10 @@ const FemaleEarningPanel = ({
 
   return (
     <div className="w-full mb-2 relative">
-      {/* Floating emojis — above & around the panel (no overflow-hidden on this wrapper) */}
-      <span className="absolute -top-3 left-2 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0s' }}>💰</span>
-      <span className="absolute -top-2 left-10 text-base animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '1.2s' }}>✨</span>
-      <span className="absolute -top-4 right-8 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0.6s' }}>🤑</span>
-      <span className="absolute -top-2 right-2 text-base animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '1.8s' }}>💎</span>
-      <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0.3s' }}>🪙</span>
-      <span className="absolute -top-1 left-1/3 text-sm animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '2.1s' }}>💸</span>
+      {/* Floating emojis — hover up and down above panel */}
+      <span className="absolute -top-3 left-4 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '0s' }}>💰</span>
+      <span className="absolute -top-3 right-6 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '0.8s' }}>✨</span>
+      <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '1.5s' }}>💸</span>
 
       {/* Panel container — rounded corners on inner divs, no overflow-hidden here */}
       <div className="relative rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(255, 45, 149, 0.15)' }}>
