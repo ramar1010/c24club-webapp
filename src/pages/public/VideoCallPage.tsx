@@ -389,6 +389,15 @@ const VideoCallPage = () => {
     }
   }, [callState]);
 
+  // Toast for females connected to same gender
+  useEffect(() => {
+    if (callState === "connected" && isFemale && partnerGender?.toLowerCase() === "female") {
+      toast.info("You don't earn cashable minutes when connected to the same gender", {
+        duration: 5000,
+      });
+    }
+  }, [callState, isFemale, partnerGender]);
+
   // Auto-close Discover overlay when a match is found
   useEffect(() => {
     if (callState === "connected" && overlayPage === "discover") {
