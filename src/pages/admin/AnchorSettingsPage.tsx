@@ -138,30 +138,32 @@ const AnchorSettingsPage = () => {
 
   const clearSlotsMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("anchor_sessions")
-        .delete()
-        .eq("status", "active");
+      const { data, error } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "admin_clear_slots", userId: "admin" },
+      });
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast.success("All active slots cleared!");
+    onSuccess: (data: any) => {
+      toast.success(`Slots cleared! ${data?.promoted ?? 0} queued users promoted.`);
       queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["anchor-queue-admin"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
   const clearSingleSlotMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const { error } = await supabase
-        .from("anchor_sessions")
-        .delete()
-        .eq("id", sessionId);
+      const { data, error } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "admin_clear_slots", userId: "admin", sessionId },
+      });
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast.success("Slot cleared!");
+    onSuccess: (data: any) => {
+      toast.success(`Slot cleared! ${data?.promoted ?? 0} queued users promoted.`);
       queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["anchor-queue-admin"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
