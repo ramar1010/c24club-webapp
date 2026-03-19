@@ -58,6 +58,11 @@ const DirectCallModal = ({
           {callState === "connected" && `Connected with ${partnerName}`}
           {callState === "ended" && "Call ended"}
         </p>
+        {callState === "connected" && (
+          <p className="text-emerald-400 text-xs font-bold mt-1 animate-pulse">
+            💸 Tap the gift button to send cash!
+          </p>
+        )}
       </div>
 
       {/* Videos */}
