@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 
-const TURNSTILE_SITE_KEY = "0x4AAAAAACq2hFFseq9xTdN1";
+
 
 const AdminLoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
