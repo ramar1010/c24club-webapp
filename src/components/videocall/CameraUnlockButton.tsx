@@ -16,11 +16,11 @@ const CameraUnlockButton = ({ recipientId, roomId }: CameraUnlockButtonProps) =>
     queryKey: ["camera_unlock_settings"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("camera_unlock_settings" as any)
+        .from("camera_unlock_settings")
         .select("*")
         .limit(1)
         .single();
-      return data as unknown as { price_cents: number; recipient_cut_percent: number } | null;
+      return data;
     },
   });
 
