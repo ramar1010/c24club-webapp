@@ -22,6 +22,7 @@ import FullScreenOverlay from "@/components/videocall/FullScreenOverlay";
 import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
 import MyRewardsPage from "@/pages/public/MyRewardsPage";
+import MessagesPage from "@/pages/public/MessagesPage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
@@ -54,6 +55,7 @@ import giftIcon from "@/assets/videocall/gift-icon.svg";
 import discoverIcon from "@/assets/discover-icon.png";
 import reportIconImg from "@/assets/videocall/report-icon.png";
 import frozenEmoji from "@/assets/videocall/frozen-emoji.png";
+import dmIcon from "@/assets/videocall/dm-icon.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
@@ -94,7 +96,7 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
 
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | null>(null);
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
@@ -1078,6 +1080,7 @@ const VideoCallPage = () => {
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
             <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} badge={unreadDmCount > 0 ? `${unreadDmCount > 9 ? "9+" : unreadDmCount} DMs` : null} />
+            <NavIcon src={dmIcon} label="DMs" onClick={() => setOverlayPage("messages")} badge={unreadDmCount > 0 ? `${unreadDmCount > 9 ? "9+" : unreadDmCount}` : null} />
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
@@ -1148,6 +1151,11 @@ const VideoCallPage = () => {
       {overlayPage === "discover" &&
       <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <DiscoverOverlayContent onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      }
+      {overlayPage === "messages" &&
+      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <MessagesPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
 
