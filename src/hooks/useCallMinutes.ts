@@ -95,6 +95,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
 
     if (data?.success) {
       setTotalMinutes(data.totalMinutes);
+      if (data.giftedMinutes !== undefined) setGiftedMinutes(data.giftedMinutes);
 
       // For frozen users: only show popup when server explicitly says to (once ever)
       // For normal users: show popup on first cap_reached per partner
