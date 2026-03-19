@@ -26,6 +26,7 @@ const FemaleEarningPanel = ({
   const [verificationWord, setVerificationWord] = useState("");
   const [verifyInput, setVerifyInput] = useState("");
   const [verifyError, setVerifyError] = useState(false);
+  const [lastRequest, setLastRequest] = useState<{ status: string; cash_amount: number } | null>(null);
   const lastVerifiedRef = useRef(Date.now());
   const verifyTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
