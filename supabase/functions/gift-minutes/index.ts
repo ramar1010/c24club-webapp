@@ -12,24 +12,28 @@ const GIFT_TIERS = {
     price_id: "price_1TA0FzA5n8uAZoY1b3jUsE4G",
     minutes: 100,
     cents: 199,
+    cash_value_cents: 100, // $1.00
     sender_bonus: 0,
   },
   "400": {
     price_id: "price_1TA0GjA5n8uAZoY1rrg7cW9q",
     minutes: 400,
     cents: 499,
+    cash_value_cents: 400, // $4.00
     sender_bonus: 100,
   },
   "600": {
     price_id: "price_1TCLHKA5n8uAZoY1ENfhv2PI",
     minutes: 600,
     cents: 799,
+    cash_value_cents: 600, // $6.00
     sender_bonus: 150,
   },
   "1000": {
     price_id: "price_1TCLI0A5n8uAZoY146CTVt6v",
     minutes: 1000,
     cents: 1299,
+    cash_value_cents: 1000, // $10.00
     sender_bonus: 250,
   },
 };
