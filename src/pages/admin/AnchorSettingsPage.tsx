@@ -87,6 +87,19 @@ const AnchorSettingsPage = () => {
   });
 
   // Queue data
+  const { data: activeEarners } = useQuery({
+    queryKey: ["anchor-active-earners-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_sessions")
+        .select("*")
+        .eq("status", "active")
+        .order("created_at");
+      return data ?? [];
+    },
+    refetchInterval: 10000,
+  });
+
   const { data: queueData } = useQuery({
     queryKey: ["anchor-queue-admin"],
     queryFn: async () => {
@@ -221,26 +234,45 @@ const AnchorSettingsPage = () => {
         </button>
       </div>
 
-      {/* Active Queue */}
+      {/* Active Earners (from anchor_sessions) */}
       <div className="bg-card rounded-xl border border-border p-6">
         <h2 className="text-lg font-bold mb-3 text-foreground">
-          Active Earners ({queueData?.length ?? 0}/{maxCap})
+          Active Earners ({activeEarners?.length ?? 0}/{maxCap})
         </h2>
-        {(!queueData || queueData.length === 0) ? (
+        {(!activeEarners || activeEarners.length === 0) ? (
           <p className="text-muted-foreground text-sm">No active female earners</p>
         ) : (
           <div className="space-y-2">
-            {queueData.map((q, i) => (
-              <div key={q.id} className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-lg px-4 py-2">
-                <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(q.user_id)}</span>
+            {activeEarners.map((s, i) => (
+              <div key={s.id} className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-lg px-4 py-2">
+                <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(s.user_id)}</span>
                 <span className="text-xs text-muted-foreground">
-                  Joined {new Date(q.created_at).toLocaleTimeString()}
+                  {s.elapsed_seconds}s elapsed · ${Number(s.cash_balance).toFixed(2)} earned
                 </span>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Waiting Queue */}
+      {(queueData && queueData.length > 0) && (
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-bold mb-3 text-foreground">
+            Waiting Queue ({queueData.length})
+          </h2>
+          <div className="space-y-2">
+            {queueData.map((q, i) => (
+              <div key={q.id} className="flex items-center justify-between bg-muted/30 border border-border rounded-lg px-4 py-2">
+                <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(q.user_id)}</span>
+                <span className="text-xs text-muted-foreground">
+                  Queued {new Date(q.created_at).toLocaleTimeString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Pending Cashout Requests */}
       {pendingRequests.length > 0 && (
