@@ -187,14 +187,15 @@ const FemaleEarningPanel = ({
               animation: 'shimmer-bg 3s ease-in-out infinite',
             }}
           />
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex flex-col items-start gap-0.5">
             <span className="text-[10px] font-bold uppercase tracking-widest text-pink-300/80">Female Earning Bonus</span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-xl">💰</span>
               <span className="text-white font-black text-base uppercase tracking-wide drop-shadow-sm">
                 Your Earnings
               </span>
             </div>
+          </div>
           <div className="relative">
             <span className="text-white font-black text-base drop-shadow-sm">
               Earning: <span className="text-yellow-300 text-xl font-black">${cashValue}</span>
