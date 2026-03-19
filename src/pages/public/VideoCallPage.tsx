@@ -818,7 +818,7 @@ const VideoCallPage = () => {
           {isMobile ?
           <>
               {partnerVoiceMode && callState === "connected" &&
-            <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20 absolute inset-0" />
+            <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20 absolute inset-0" />
             }
               <video ref={remoteVideoRef} autoPlay playsInline
             className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
