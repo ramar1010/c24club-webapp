@@ -138,74 +138,78 @@ const FemaleEarningPanel = ({
       <span className="absolute -top-1 left-1/3 text-sm animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '2.1s' }}>💸</span>
 
       {/* Panel container — rounded corners on inner divs, no overflow-hidden here */}
-      <div className="relative rounded-xl" style={{ boxShadow: '0 0 20px rgba(236, 72, 153, 0.35), 0 0 40px rgba(236, 72, 153, 0.1)' }}>
+      <div className="relative rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(255, 45, 149, 0.15)' }}>
 
-        {/* ── Row 1: Header — hot pink */}
+        {/* ── Row 1: Header — neon hot pink */}
         <div
-          className="relative flex items-center justify-between px-4 py-2.5 rounded-t-xl overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)' }}
+          className="relative flex items-center justify-between px-4 py-3 rounded-t-xl overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)' }}
         >
           {/* Shimmer */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer-bg 3s ease-in-out infinite',
             }}
           />
           <div className="relative flex items-center gap-2">
-            <span className="text-lg">💰</span>
-            <span className="text-white font-black text-sm uppercase tracking-wide drop-shadow-sm">
+            <span className="text-xl">💰</span>
+            <span className="text-white font-black text-base uppercase tracking-wide drop-shadow-sm">
               Your Earnings
             </span>
           </div>
           <div className="relative">
             <span className="text-white font-black text-base drop-shadow-sm">
-              Earning: <span className="text-yellow-200 text-lg">${cashValue}</span>
+              Earning: <span className="text-yellow-300 text-xl font-black">${cashValue}</span>
             </span>
           </div>
         </div>
 
-        {/* ── Row 2: Rate info — purple/indigo */}
+        {/* ── Row 2: Rate info — neon purple/magenta */}
         <div
-          className="flex items-center justify-between px-4 py-2"
-          style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
+          className="flex items-center justify-between px-4 py-2.5"
+          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #c026d3 100%)' }}
         >
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">✨</span>
-            <span className="text-white/90 font-bold text-xs">
+            <span className="text-base">✨</span>
+            <span className="text-white font-bold text-sm">
               Rate: ${rate}/min
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">🎁</span>
-            <span className="text-white/90 font-bold text-xs">
+            <span className="text-base">🎁</span>
+            <span className="text-white font-bold text-sm">
               {giftedMinutes} cashable min
             </span>
           </div>
         </div>
 
-        {/* ── Row 3: Cash out — orange/amber */}
+        {/* ── Row 3: Cash out — neon orange/yellow */}
         <div
-          className="flex items-center justify-between px-4 py-2.5 rounded-b-xl"
-          style={{ background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)' }}
+          className="flex items-center justify-between px-4 py-3 rounded-b-xl"
+          style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ffab00 100%)' }}
         >
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">🔥</span>
-            <span className="text-white font-black text-xs uppercase">
+            <span className="text-base">🔥</span>
+            <span className="text-white font-black text-sm uppercase drop-shadow-sm">
               {totalMinutes} total minutes
             </span>
           </div>
           {giftedMinutes > 0 ? (
             <button
               onClick={() => setShowCashout(true)}
-              className="px-4 py-1.5 rounded-lg bg-white/25 hover:bg-white/35 text-white font-black text-xs uppercase transition-colors border border-white/20 backdrop-blur-sm"
+              className="px-5 py-2 rounded-lg text-white font-black text-sm uppercase transition-colors border-2 border-white/30"
+              style={{
+                background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)',
+                boxShadow: '0 0 15px rgba(255, 45, 149, 0.5)',
+              }}
             >
               💰 Cash Out ${cashValue}
             </button>
           ) : (
-            <span className="text-white/70 font-bold text-xs">
+            <span className="text-white/80 font-bold text-sm">
               🏦 ${cashValue} / {giftedMinutes}min
             </span>
           )}
