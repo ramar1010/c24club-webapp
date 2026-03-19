@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const AnchorSettingsPage = () => {
   const queryClient = useQueryClient();
 
+  // Anchor settings (slot cap)
   const { data: settings, isLoading } = useQuery({
     queryKey: ["anchor-settings"],
     queryFn: async () => {
@@ -19,79 +19,97 @@ const AnchorSettingsPage = () => {
     },
   });
 
-  const [form, setForm] = useState({
-    max_anchor_cap: 5,
-    chill_hour_start: "00:00",
-    power_hour_start: "19:00",
-    power_hour_end: "00:00",
-    power_rate_cash: 1.5,
-    power_rate_time: 30,
-    chill_reward_time: 45,
-    chill_disabled: false,
+  // Cashout settings (earning rate)
+  const { data: cashoutSettings, isLoading: cashoutLoading } = useQuery({
+    queryKey: ["cashout-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("cashout_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
   });
 
+  const [maxCap, setMaxCap] = useState(5);
+  const [ratePerMinute, setRatePerMinute] = useState(0.01);
+  const [minCashout, setMinCashout] = useState(100);
+  const [maxCashout, setMaxCashout] = useState(5000);
+
   useEffect(() => {
-    if (settings) {
-      setForm({
-        max_anchor_cap: settings.max_anchor_cap,
-        chill_hour_start: settings.chill_hour_start,
-        power_hour_start: settings.power_hour_start,
-        power_hour_end: settings.power_hour_end,
-        power_rate_cash: Number(settings.power_rate_cash),
-        power_rate_time: settings.power_rate_time,
-        chill_reward_time: settings.chill_reward_time,
-        chill_disabled: settings.chill_disabled ?? false,
-      });
-    }
+    if (settings) setMaxCap(settings.max_anchor_cap);
   }, [settings]);
 
-  const saveMutation = useMutation({
+  useEffect(() => {
+    if (cashoutSettings) {
+      setRatePerMinute(Number(cashoutSettings.rate_per_minute));
+      setMinCashout(cashoutSettings.min_cashout_minutes);
+      setMaxCashout(cashoutSettings.max_cashout_minutes);
+    }
+  }, [cashoutSettings]);
+
+  const saveCapMutation = useMutation({
     mutationFn: async () => {
       if (!settings?.id) return;
       const { error } = await supabase
         .from("anchor_settings")
-        .update({
-          ...form,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ max_anchor_cap: maxCap, updated_at: new Date().toISOString() })
         .eq("id", settings.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Anchor settings saved!");
+      toast.success("Slot cap saved!");
       queryClient.invalidateQueries({ queryKey: ["anchor-settings"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updatePayoutMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+  const saveRateMutation = useMutation({
+    mutationFn: async () => {
+      if (!cashoutSettings?.id) return;
       const { error } = await supabase
-        .from("anchor_payouts")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", id);
+        .from("cashout_settings")
+        .update({
+          rate_per_minute: ratePerMinute,
+          min_cashout_minutes: minCashout,
+          max_cashout_minutes: maxCashout,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", cashoutSettings.id);
       if (error) throw error;
     },
-    onSuccess: (_, { status }) => {
-      toast.success(`Payout marked as ${status}`);
-      queryClient.invalidateQueries({ queryKey: ["anchor-admin-data"] });
+    onSuccess: () => {
+      toast.success("Earning rate settings saved!");
+      queryClient.invalidateQueries({ queryKey: ["cashout-settings"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Fetch active sessions and queue
-  const { data: anchorData } = useQuery({
-    queryKey: ["anchor-admin-data"],
+  // Queue data
+  const { data: queueData } = useQuery({
+    queryKey: ["anchor-queue-admin"],
     queryFn: async () => {
-      const { data } = await supabase.functions.invoke("anchor-earning", {
-        body: { type: "admin_get_all", userId: "admin" },
-      });
-      return data;
+      const { data } = await supabase.from("anchor_queue").select("*").order("created_at");
+      return data ?? [];
     },
     refetchInterval: 10000,
   });
 
-  // Member name lookup
+  // Cashout requests
+  const { data: cashoutRequests } = useQuery({
+    queryKey: ["cashout-requests-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("cashout_requests")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data ?? [];
+    },
+    refetchInterval: 15000,
+  });
+
   const { data: members } = useQuery({
     queryKey: ["admin-members-lookup-anchor"],
     queryFn: async () => {
@@ -105,193 +123,173 @@ const AnchorSettingsPage = () => {
     return m?.name || m?.email || id?.slice(0, 8) + "...";
   };
 
-  if (isLoading) return <div className="p-6 text-center text-neutral-400">Loading...</div>;
+  const updateCashoutMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("cashout_requests")
+        .update({ status, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      toast.success(`Request marked as ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["cashout-requests-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
-  const activeSessions = anchorData?.sessions?.filter((s: any) => s.status === "active") ?? [];
-  const pausedSessions = anchorData?.sessions?.filter((s: any) => s.status === "paused") ?? [];
-  const queue = anchorData?.queue ?? [];
-  const payouts = anchorData?.payouts ?? [];
+  if (isLoading || cashoutLoading) return <div className="p-6 text-center text-muted-foreground">Loading...</div>;
+
+  const pendingRequests = cashoutRequests?.filter((r) => r.status === "pending") ?? [];
+  const recentRequests = cashoutRequests?.filter((r) => r.status !== "pending") ?? [];
 
   return (
     <div className="p-6 space-y-8 max-w-4xl">
-      <h1 className="text-2xl font-bold">Anchor User System</h1>
+      <h1 className="text-2xl font-bold text-foreground">Female Earning System</h1>
 
-      {/* Settings form */}
-      <div className="bg-white dark:bg-neutral-900 rounded-xl border p-6 space-y-4">
-        <h2 className="text-lg font-bold">Configuration</h2>
-
-        {/* Disable Chill Hours Toggle */}
-        <div className="flex items-center justify-between bg-muted/50 rounded-lg px-4 py-3">
-          <div>
-            <p className="font-medium text-sm">Disable Chill Hours</p>
-            <p className="text-xs text-muted-foreground">When enabled, only Power Hour mode will be active (always earns cash, no mystery rewards)</p>
-          </div>
-          <Switch
-            checked={form.chill_disabled}
-            onCheckedChange={(checked) => setForm({ ...form, chill_disabled: checked })}
+      {/* Slot Cap */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-lg font-bold text-foreground">Concurrent Earner Slots</h2>
+        <p className="text-sm text-muted-foreground">
+          Maximum number of female users who can earn simultaneously. Others will be queued.
+        </p>
+        <div className="max-w-xs">
+          <label className="block text-sm font-medium mb-1 text-foreground">Max Slots</label>
+          <input
+            type="number"
+            min={1}
+            value={maxCap}
+            onChange={(e) => setMaxCap(parseInt(e.target.value) || 5)}
+            className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
           />
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Max Anchor Cap</label>
-            <input
-              type="number"
-              min={1}
-              value={form.max_anchor_cap}
-              onChange={(e) => setForm({ ...form, max_anchor_cap: parseInt(e.target.value) || 5 })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
-          {!form.chill_disabled && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Chill Hours Start (EST)</label>
-              <input
-                type="time"
-                value={form.chill_hour_start}
-                onChange={(e) => setForm({ ...form, chill_hour_start: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2 bg-background"
-              />
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-1">Power Hours Start (EST)</label>
-            <input
-              type="time"
-              value={form.power_hour_start}
-              onChange={(e) => setForm({ ...form, power_hour_start: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Power Hours End (EST)</label>
-            <input
-              type="time"
-              value={form.power_hour_end}
-              onChange={(e) => setForm({ ...form, power_hour_end: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Power Rate ($ per block)</label>
-            <input
-              type="number"
-              step="0.01"
-              min={0}
-              value={form.power_rate_cash}
-              onChange={(e) => setForm({ ...form, power_rate_cash: parseFloat(e.target.value) || 1.5 })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Power Rate Time (minutes)</label>
-            <input
-              type="number"
-              min={1}
-              value={form.power_rate_time}
-              onChange={(e) => setForm({ ...form, power_rate_time: parseInt(e.target.value) || 30 })}
-              className="w-full border rounded-lg px-3 py-2 bg-background"
-            />
-          </div>
-          {!form.chill_disabled && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Chill Reward Time (minutes)</label>
-              <input
-                type="number"
-                min={1}
-                value={form.chill_reward_time}
-                onChange={(e) => setForm({ ...form, chill_reward_time: parseInt(e.target.value) || 45 })}
-                className="w-full border rounded-lg px-3 py-2 bg-background"
-              />
-            </div>
-          )}
-        </div>
-
         <button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
+          onClick={() => saveCapMutation.mutate()}
+          disabled={saveCapMutation.isPending}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
         >
-          {saveMutation.isPending ? "Saving..." : "Save Settings"}
+          {saveCapMutation.isPending ? "Saving..." : "Save Slot Cap"}
         </button>
       </div>
 
-      {/* Active Sessions */}
-      <div className="bg-white dark:bg-neutral-900 rounded-xl border p-6">
-        <h2 className="text-lg font-bold mb-3">
-          Active Anchors ({activeSessions.length}/{form.max_anchor_cap})
+      {/* Earning Rate Settings */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-lg font-bold text-foreground">Earning & Cashout Rate</h2>
+        <p className="text-sm text-muted-foreground">
+          Controls how much each minute is worth when females cash out. Also sets min/max cashout limits.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-foreground">Rate per Minute ($)</label>
+            <input
+              type="number"
+              step="0.001"
+              min={0}
+              value={ratePerMinute}
+              onChange={(e) => setRatePerMinute(parseFloat(e.target.value) || 0.01)}
+              className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+            />
+            <p className="text-xs text-muted-foreground mt-1">e.g. 0.01 = $0.01/min</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-foreground">Min Cashout (minutes)</label>
+            <input
+              type="number"
+              min={1}
+              value={minCashout}
+              onChange={(e) => setMinCashout(parseInt(e.target.value) || 100)}
+              className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-foreground">Max Cashout (minutes)</label>
+            <input
+              type="number"
+              min={1}
+              value={maxCashout}
+              onChange={(e) => setMaxCashout(parseInt(e.target.value) || 5000)}
+              className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+            />
+          </div>
+        </div>
+        <button
+          onClick={() => saveRateMutation.mutate()}
+          disabled={saveRateMutation.isPending}
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
+        >
+          {saveRateMutation.isPending ? "Saving..." : "Save Rate Settings"}
+        </button>
+      </div>
+
+      {/* Active Queue */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-bold mb-3 text-foreground">
+          Active Earners ({queueData?.length ?? 0}/{maxCap})
         </h2>
-        {activeSessions.length === 0 ? (
-          <p className="text-neutral-500 text-sm">No active anchor users</p>
+        {(!queueData || queueData.length === 0) ? (
+          <p className="text-muted-foreground text-sm">No active female earners</p>
         ) : (
           <div className="space-y-2">
-            {activeSessions.map((s: any) => (
-              <div key={s.id} className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
-                <div>
-                  <span className="font-bold text-sm">{memberName(s.user_id)}</span>
-                  <span className="text-xs text-neutral-500 ml-2">
-                    {Math.floor(s.elapsed_seconds / 60)}m elapsed · ${Number(s.cash_balance).toFixed(2)} balance
-                  </span>
-                </div>
-                <span className="text-xs font-bold text-green-400 uppercase">{s.current_mode}</span>
+            {queueData.map((q, i) => (
+              <div key={q.id} className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-lg px-4 py-2">
+                <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(q.user_id)}</span>
+                <span className="text-xs text-muted-foreground">
+                  Joined {new Date(q.created_at).toLocaleTimeString()}
+                </span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Queue */}
-      {queue.length > 0 && (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border p-6">
-          <h2 className="text-lg font-bold mb-3">Queue ({queue.length})</h2>
+      {/* Pending Cashout Requests */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-bold mb-3 text-foreground">Pending Cashout Requests ({pendingRequests.length})</h2>
           <div className="space-y-2">
-            {queue.map((q: any, i: number) => (
-              <div key={q.id} className="flex items-center justify-between bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-2">
-                <span className="font-bold text-sm">#{i + 1} — {memberName(q.user_id)}</span>
-                <span className="text-xs text-neutral-500">
-                  Joined {new Date(q.created_at).toLocaleTimeString()}
-                </span>
+            {pendingRequests.map((r) => (
+              <div key={r.id} className="flex items-center justify-between border border-warning/30 bg-warning/5 rounded-lg px-4 py-2">
+                <div>
+                  <span className="font-bold text-sm text-foreground">{memberName(r.user_id)}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{r.paypal_email}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{r.minutes_amount} min → ${Number(r.cash_amount).toFixed(2)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateCashoutMutation.mutate({ id: r.id, status: "approved" })}
+                    disabled={updateCashoutMutation.isPending}
+                    className="px-3 py-1 text-xs font-bold bg-success text-success-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => updateCashoutMutation.mutate({ id: r.id, status: "rejected" })}
+                    disabled={updateCashoutMutation.isPending}
+                    className="px-3 py-1 text-xs font-bold bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Pending Payouts */}
-      {payouts.length > 0 && (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border p-6">
-          <h2 className="text-lg font-bold mb-3">Recent Payouts</h2>
+      {/* Recent Cashout History */}
+      {recentRequests.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-bold mb-3 text-foreground">Recent Cashout History</h2>
           <div className="space-y-2">
-            {payouts.map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between border border-neutral-700 rounded-lg px-4 py-2">
+            {recentRequests.map((r) => (
+              <div key={r.id} className="flex items-center justify-between border border-border rounded-lg px-4 py-2">
                 <div>
-                  <span className="font-bold text-sm">{memberName(p.user_id)}</span>
-                  <span className="text-xs text-neutral-500 ml-2">{p.paypal_email}</span>
+                  <span className="font-bold text-sm text-foreground">{memberName(r.user_id)}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{r.minutes_amount} min → ${Number(r.cash_amount).toFixed(2)}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-green-400">${Number(p.amount).toFixed(2)}</span>
-                  <span className={`text-xs font-bold ${p.status === "pending" ? "text-yellow-400" : p.status === "paid" ? "text-green-400" : "text-red-400"}`}>
-                    {p.status.toUpperCase()}
-                  </span>
-                  {p.status === "pending" && (
-                    <>
-                      <button
-                        onClick={() => updatePayoutMutation.mutate({ id: p.id, status: "paid" })}
-                        disabled={updatePayoutMutation.isPending}
-                        className="px-3 py-1 text-xs font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                      >
-                        Mark Paid
-                      </button>
-                      <button
-                        onClick={() => updatePayoutMutation.mutate({ id: p.id, status: "rejected" })}
-                        disabled={updatePayoutMutation.isPending}
-                        className="px-3 py-1 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
-                </div>
+                <span className={`text-xs font-bold uppercase ${r.status === "approved" ? "text-success" : "text-destructive"}`}>
+                  {r.status}
+                </span>
               </div>
             ))}
           </div>
