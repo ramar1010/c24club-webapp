@@ -105,45 +105,77 @@ const FemaleEarningPanel = ({
   }
 
   return (
-    <div className="w-full mb-2 rounded-xl border border-emerald-500/30 bg-neutral-900/90 backdrop-blur-sm px-4 py-3">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+    <div className="w-full mb-2 relative">
+      {/* Floating emojis */}
+      <span className="absolute -top-2 -left-1 text-lg animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0s' }}>💰</span>
+      <span className="absolute -top-1 right-3 text-base animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.8s' }}>✨</span>
+      <span className="absolute top-4 -right-1 text-lg animate-float-coin pointer-events-none select-none" style={{ animationDelay: '1.6s' }}>🪙</span>
+      <span className="absolute bottom-2 -left-2 text-base animate-float-coin pointer-events-none select-none" style={{ animationDelay: '2.4s' }}>💎</span>
+      <span className="absolute bottom-6 right-0 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.4s' }}>🤑</span>
+
+      <div
+        className="relative rounded-xl px-4 py-3 overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #064e3b 0%, #065f46 30%, #047857 60%, #059669 100%)',
+          boxShadow: '0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1)',
+        }}
+      >
+        {/* Shimmer overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer-bg 3s ease-in-out infinite',
+          }}
+        />
+
+        {/* Header */}
+        <div className="relative flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-emerald-300" />
+            </div>
+            <span className="text-white font-black text-sm uppercase tracking-wide">Your Earnings</span>
           </div>
-          <span className="text-white font-black text-sm uppercase tracking-wide">Your Earnings</span>
+          <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
         </div>
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+
+        {/* Minutes = Cash value */}
+        <div className="relative text-center mb-3">
+          <p className="text-white text-xs mb-1">
+            <span className="text-emerald-300 font-black text-2xl">{giftedMinutes}</span>
+            <span className="text-emerald-100/70 ml-1">cashable minutes</span>
+          </p>
+          <p className="text-emerald-300 font-black text-lg">
+            = ${cashValue}
+          </p>
+          <p className="text-emerald-200/40 text-[10px]">
+            Rate: ${rate}/min • {totalMinutes} total minutes
+          </p>
+        </div>
+
+        {/* Cash Out Button */}
+        {giftedMinutes > 0 && (
+          <button
+            onClick={() => setShowCashout(true)}
+            className="relative w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-sm uppercase transition-colors backdrop-blur-sm border border-white/10"
+            style={{
+              boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
+            }}
+          >
+            💰 Cash Out ${cashValue}
+          </button>
+        )}
+
+        {/* Helper text */}
+        <p className="relative text-emerald-200/60 text-[10px] text-center mt-2 leading-relaxed">
+          You earn by chatting with guys or <span className="text-emerald-300 font-semibold">"waiting to connect in queue"</span>
+        </p>
+        <p className="relative text-emerald-200/40 text-[10px] text-center mt-0.5">
+          Cash out via PayPal or spend on rewards — your choice!
+        </p>
       </div>
-
-      {/* Minutes = Cash value */}
-      <div className="text-center mb-3">
-        <p className="text-white text-xs mb-1">
-          <span className="text-emerald-400 font-black text-2xl">{giftedMinutes}</span>
-          <span className="text-neutral-400 ml-1">cashable minutes</span>
-        </p>
-        <p className="text-emerald-400 font-black text-lg">
-          = ${cashValue}
-        </p>
-        <p className="text-neutral-500 text-[10px]">
-          Rate: ${rate}/min • {totalMinutes} total minutes
-        </p>
-      </div>
-
-      {/* Cash Out Button */}
-      {giftedMinutes > 0 && (
-        <button
-          onClick={() => setShowCashout(true)}
-          className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm uppercase transition-colors"
-        >
-          💰 Cash Out ${cashValue}
-        </button>
-      )}
-
-      <p className="text-neutral-500 text-[10px] text-center mt-2">
-        Cash out via PayPal or spend on rewards — your choice!
-      </p>
 
       {/* Cashout Modal */}
       {showCashout && (
