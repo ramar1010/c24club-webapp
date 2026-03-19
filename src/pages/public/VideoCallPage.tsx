@@ -933,6 +933,13 @@ const VideoCallPage = () => {
             </button>
           }
 
+          {/* Camera Unlock Button - mobile, shows when partner is in voice mode */}
+          {callState === "connected" && partnerVoiceMode && !isFemale && currentPartnerId && !cameraUnlocked && isMobile &&
+          <div className="absolute bottom-14 left-3 z-20">
+              <CameraUnlockButton recipientId={currentPartnerId} />
+            </div>
+          }
+
           {isActive &&
           <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
