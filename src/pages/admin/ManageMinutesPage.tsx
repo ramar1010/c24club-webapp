@@ -5,13 +5,14 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, Search, Star } from "lucide-react";
+import { Coins, DollarSign, Search, Star } from "lucide-react";
 
 const ManageMinutesPage = () => {
   const [searchEmail, setSearchEmail] = useState("");
-  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number; cash_balance: number } | null>(null);
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [adPointsToAdd, setAdPointsToAdd] = useState("");
+  const [cashBalanceToAdd, setCashBalanceToAdd] = useState("");
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
 
@@ -27,6 +28,18 @@ const ManageMinutesPage = () => {
     },
   });
 
+  const fetchCashBalance = async (userId: string): Promise<number> => {
+    const { data } = await supabase
+      .from("anchor_sessions")
+      .select("cash_balance")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data?.cash_balance ?? 0;
+  };
+
   const handleSearch = async () => {
     if (!searchEmail.trim()) return;
     setSearching(true);
@@ -37,10 +50,12 @@ const ManageMinutesPage = () => {
         .eq("user_id", searchEmail.trim())
         .maybeSingle();
 
+      const cashBal = await fetchCashBalance(searchEmail.trim());
+
       if (data) {
-        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: (data as any).ad_points ?? 0 });
+        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal });
       } else {
-        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0 });
+        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal });
         toast.info("No existing record — values will be created on add.");
       }
     } catch {
@@ -121,14 +136,68 @@ const ManageMinutesPage = () => {
     setLoading(false);
   };
 
+  const upsertCashBalance = async (newBalance: number) => {
+    const { data: existing } = await supabase
+      .from("anchor_sessions")
+      .select("id")
+      .eq("user_id", selectedUser!.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .update({ cash_balance: newBalance })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .insert({ user_id: selectedUser!.id, cash_balance: newBalance, status: "active" });
+      if (error) throw error;
+    }
+    return newBalance;
+  };
+
+  const handleAddCashBalance = async () => {
+    if (!selectedUser || !cashBalanceToAdd) return;
+    setLoading(true);
+    try {
+      const amount = parseFloat(cashBalanceToAdd);
+      const newBalance = await upsertCashBalance(selectedUser.cash_balance + amount);
+      toast.success(`Added $${amount.toFixed(2)}. New balance: $${newBalance.toFixed(2)}`);
+      setSelectedUser({ ...selectedUser, cash_balance: newBalance });
+      setCashBalanceToAdd("");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to add cash balance");
+    }
+    setLoading(false);
+  };
+
+  const handleSetCashBalance = async () => {
+    if (!selectedUser || !cashBalanceToAdd) return;
+    setLoading(true);
+    try {
+      const amount = parseFloat(cashBalanceToAdd);
+      const newBalance = await upsertCashBalance(amount);
+      toast.success(`Set cash balance to $${newBalance.toFixed(2)}`);
+      setSelectedUser({ ...selectedUser, cash_balance: newBalance });
+      setCashBalanceToAdd("");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to set cash balance");
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Manage Minutes & Ad Points</h2>
-        <p className="text-muted-foreground mt-1">Add or set minutes and ad points for any user.</p>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Manage Minutes, Ad Points & Cash</h2>
+        <p className="text-muted-foreground mt-1">Add or set minutes, ad points, and anchor cash balance for any user.</p>
       </div>
 
-      {/* Search by User ID */}
       <div className="bg-card border border-border rounded-lg p-6 space-y-4">
         <Label className="text-sm font-medium">User ID</Label>
         <div className="flex gap-2">
@@ -160,6 +229,10 @@ const ManageMinutesPage = () => {
                   <p className="text-sm text-muted-foreground">Ad Points</p>
                   <p className="text-2xl font-bold text-yellow-500">{selectedUser.ad_points}</p>
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Cash Balance</p>
+                  <p className="text-2xl font-bold text-green-500">${selectedUser.cash_balance.toFixed(2)}</p>
+                </div>
               </div>
             </div>
 
@@ -186,11 +259,22 @@ const ManageMinutesPage = () => {
               </Button>
               <Button variant="outline" onClick={handleSetAdPoints} disabled={loading || !adPointsToAdd}>Set To</Button>
             </div>
+
+            {/* Cash Balance controls */}
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label className="text-sm">Cash Balance ($)</Label>
+                <Input type="number" step="0.01" placeholder="e.g. 25.00" value={cashBalanceToAdd} onChange={(e) => setCashBalanceToAdd(e.target.value)} />
+              </div>
+              <Button onClick={handleAddCashBalance} disabled={loading || !cashBalanceToAdd} className="bg-green-500 hover:bg-green-600 text-white">
+                <DollarSign className="w-4 h-4 mr-2" />Add
+              </Button>
+              <Button variant="outline" onClick={handleSetCashBalance} disabled={loading || !cashBalanceToAdd}>Set To</Button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* All users with minutes */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h3 className="font-semibold mb-4">All Users with Minutes</h3>
         {allMinutes.length === 0 ? (
@@ -201,9 +285,10 @@ const ManageMinutesPage = () => {
               <div
                 key={m.id}
                 className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
-                onClick={() => {
+                onClick={async () => {
                   setSearchEmail(m.user_id);
-                  setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0 });
+                  const cashBal = await fetchCashBalance(m.user_id);
+                  setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal });
                 }}
               >
                 <div>
