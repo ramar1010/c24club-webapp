@@ -121,6 +121,50 @@ Deno.serve(async (req) => {
         .neq("current_mode", "power");
     }
 
+    // --- Auto-promote queued users into free slots on EVERY request ---
+    const { count: currentActiveCount } = await supabase
+      .from("anchor_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active");
+
+    const availableSlots = settings.max_anchor_cap - (currentActiveCount ?? 0);
+    if (availableSlots > 0) {
+      const { data: queuedUsers } = await supabase
+        .from("anchor_queue")
+        .select("*")
+        .order("created_at", { ascending: true })
+        .limit(availableSlots);
+
+      if (queuedUsers && queuedUsers.length > 0) {
+        console.log(`[ANCHOR] Auto-promoting ${queuedUsers.length} queued users into ${availableSlots} free slots`);
+        for (const q of queuedUsers) {
+          const { data: pausedSession } = await supabase
+            .from("anchor_sessions")
+            .select("id")
+            .eq("user_id", q.user_id)
+            .eq("status", "paused")
+            .maybeSingle();
+
+          if (pausedSession) {
+            await supabase.from("anchor_sessions").update({
+              status: "active",
+              current_mode: currentMode,
+              updated_at: new Date().toISOString(),
+            }).eq("id", pausedSession.id);
+          } else {
+            await supabase.from("anchor_sessions").insert({
+              user_id: q.user_id,
+              status: "active",
+              current_mode: currentMode,
+              elapsed_seconds: 0,
+              cash_balance: 0,
+            });
+          }
+          await supabase.from("anchor_queue").delete().eq("user_id", q.user_id);
+        }
+      }
+    }
+
     // GET_STATUS: Check if user is eligible, active, or queued
     if (type === "get_status") {
       // Check if user is female
