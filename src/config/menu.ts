@@ -86,6 +86,7 @@ export const adminMenu: MenuItem[] = [
     title: "Member Rewards",
     submenu: [
       { key: "member-rewards", label: "All Member Rewards", path: "/admin/member-rewards" },
+      { key: "gift-history", label: "Gift History", path: "/admin/gift-history" },
     ],
   },
   {

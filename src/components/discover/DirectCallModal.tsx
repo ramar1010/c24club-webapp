@@ -1,7 +1,9 @@
-import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Gift } from "lucide-react";
+import { useState } from "react";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 
 interface DirectCallModalProps {
   myUserId: string;
@@ -20,6 +22,8 @@ const DirectCallModal = ({
   isInitiator,
   onClose,
 }: DirectCallModalProps) => {
+  const [showGift, setShowGift] = useState(false);
+
   const {
     callState,
     localVideoRef,
@@ -32,7 +36,6 @@ const DirectCallModal = ({
   } = useDirectCall({ myUserId, partnerId, inviteId, isInitiator });
 
   const handleEnd = () => {
-    // If initiator ends before connection, notify the other person
     if (isInitiator && callState !== "connected") {
       supabase.functions.invoke("missed-call-email", {
         body: { inviteId, inviterId: myUserId, inviteeId: partnerId },
@@ -103,6 +106,16 @@ const DirectCallModal = ({
           {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </button>
 
+        {/* Gift button - only show when connected */}
+        {callState === "connected" && (
+          <button
+            onClick={() => setShowGift(true)}
+            className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white transition-all"
+          >
+            <Gift className="w-5 h-5" />
+          </button>
+        )}
+
         <button
           onClick={handleEnd}
           className="w-14 h-14 rounded-full flex items-center justify-center bg-red-500 hover:bg-red-600 text-white transition-all"
@@ -119,6 +132,14 @@ const DirectCallModal = ({
           {isCameraOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
         </button>
       </div>
+
+      {/* Gift overlay */}
+      {showGift && (
+        <SendGiftOverlay
+          recipientId={partnerId}
+          onClose={() => setShowGift(false)}
+        />
+      )}
     </div>
   );
 };

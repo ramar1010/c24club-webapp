@@ -49,6 +49,7 @@ const TapAnalyticsPage = lazy(() => import("@/pages/admin/TapAnalyticsPage"));
 const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage"));
 const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
 const AdminUserRolesPage = lazy(() => import("@/pages/admin/AdminUserRolesPage"));
+const AdminGiftHistoryPage = lazy(() => import("@/pages/admin/AdminGiftHistoryPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -116,6 +117,7 @@ const App = () => (
                 <Route path="rewards/:id/edit" element={<AddRewardPage />} />
                 <Route path="member-rewards" element={<MemberRewardsPage />} />
                 <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
+                <Route path="gift-history" element={<AdminGiftHistoryPage />} />
                 <Route path="promos" element={<PromosPage />} />
                 <Route path="reported-users" element={<ReportedUsersPage />} />
                 <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
