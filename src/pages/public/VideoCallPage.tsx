@@ -55,6 +55,7 @@ import giftIcon from "@/assets/videocall/gift-icon.svg";
 import discoverIcon from "@/assets/discover-icon.png";
 import reportIconImg from "@/assets/videocall/report-icon.png";
 import frozenEmoji from "@/assets/videocall/frozen-emoji.png";
+import dmIcon from "@/assets/videocall/dm-icon.png";
 
 type GenderFilter = "girls" | "both" | "guys";
 
