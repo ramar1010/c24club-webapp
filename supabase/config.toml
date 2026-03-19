@@ -9,3 +9,5 @@ project_id = "ncpbiymnafxdfsvpxirb"
     verify_jwt = true
   [functions.dm-digest]
     verify_jwt = false
+  [functions.camera-unlock]
+    verify_jwt = false
