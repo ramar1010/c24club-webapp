@@ -50,6 +50,8 @@ const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage")
 const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
 const AdminUserRolesPage = lazy(() => import("@/pages/admin/AdminUserRolesPage"));
 const AdminGiftHistoryPage = lazy(() => import("@/pages/admin/AdminGiftHistoryPage"));
+const CameraUnlockSettingsPage = lazy(() => import("@/pages/admin/CameraUnlockSettingsPage"));
+const CameraUnlockSuccessPage = lazy(() => import("@/pages/public/CameraUnlockSuccessPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
