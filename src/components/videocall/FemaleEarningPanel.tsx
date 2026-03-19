@@ -42,6 +42,30 @@ const FemaleEarningPanel = ({
       });
   }, []);
 
+  // Fetch last cashout request
+  const fetchLastRequest = useCallback(() => {
+    supabase
+      .from("cashout_requests")
+      .select("status, cash_amount")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setLastRequest(data ? { status: data.status, cash_amount: Number(data.cash_amount) } : null);
+      });
+  }, []);
+
+  useEffect(() => { fetchLastRequest(); }, [fetchLastRequest]);
+
+  // Realtime updates for cashout status
+  useEffect(() => {
+    const channel = supabase
+      .channel("female-panel-cashout")
+      .on("postgres_changes", { event: "*", schema: "public", table: "cashout_requests" }, () => fetchLastRequest())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchLastRequest]);
+
   // Anti-AFK verification timer
   useEffect(() => {
     verifyTimerRef.current = setInterval(() => {
@@ -128,14 +152,26 @@ const FemaleEarningPanel = ({
     );
   }
 
+  const statusBadge = lastRequest ? (
+    <div className="flex items-center gap-1 ml-6">
+      <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full ${
+        lastRequest.status === "pending" ? "bg-yellow-400/30 text-yellow-200" :
+        lastRequest.status === "approved" || lastRequest.status === "paid" ? "bg-emerald-400/30 text-emerald-200" :
+        "bg-red-400/30 text-red-200"
+      }`}>
+        {lastRequest.status === "pending" ? "⏳" : lastRequest.status === "paid" || lastRequest.status === "approved" ? "✅" : "❌"}{" "}
+        ${lastRequest.cash_amount.toFixed(2)} {lastRequest.status}
+      </span>
+    </div>
+  ) : null;
+
   return (
     <div className="w-full mb-2 relative">
-      {/* Floating emojis — hover up and down above panel */}
+      {/* Floating emojis */}
       <span className="absolute -top-3 left-4 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '0s' }}>💰</span>
       <span className="absolute -top-3 right-6 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '0.8s' }}>✨</span>
       <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-lg pointer-events-none select-none z-10" style={{ animation: 'float-coin 2.5s ease-in-out infinite', animationDelay: '1.5s' }}>💸</span>
 
-      {/* Panel container — rounded corners on inner divs, no overflow-hidden here */}
       <div className="relative rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(255, 45, 149, 0.15)' }}>
 
         {/* ── Row 1: Header — neon hot pink */}
@@ -143,7 +179,6 @@ const FemaleEarningPanel = ({
           className="relative flex items-center justify-between px-4 py-3 rounded-t-xl overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)' }}
         >
-          {/* Shimmer */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -184,21 +219,24 @@ const FemaleEarningPanel = ({
           </div>
         </div>
 
-        {/* ── Row 3: Cash out — neon orange/yellow */}
+        {/* ── Row 3: Cash out + status — neon orange/yellow */}
         <div
           className="flex items-center justify-between px-4 py-3 rounded-b-xl"
           style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ffab00 100%)' }}
         >
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">🔥</span>
-            <span className="text-white font-black text-sm uppercase drop-shadow-sm">
-              {totalMinutes} total minutes
-            </span>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">🔥</span>
+              <span className="text-white font-black text-sm uppercase drop-shadow-sm">
+                {totalMinutes} total minutes
+              </span>
+            </div>
+            {statusBadge}
           </div>
           {giftedMinutes > 0 ? (
             <button
               onClick={() => setShowCashout(true)}
-              className="px-5 py-2 rounded-lg text-white font-black text-sm uppercase transition-colors border-2 border-white/30"
+              className="px-5 py-2 rounded-lg text-white font-black text-sm uppercase transition-colors border-2 border-white/30 shrink-0"
               style={{
                 background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)',
                 boxShadow: '0 0 15px rgba(255, 45, 149, 0.5)',
