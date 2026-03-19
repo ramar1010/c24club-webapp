@@ -144,40 +144,9 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If user is an active anchor, skip normal minute earning
-      const { data: anchorSession } = await supabase
-        .from("anchor_sessions")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .maybeSingle();
-
-      if (anchorSession) {
-        const { data: memberData } = await supabase
-          .from("member_minutes")
-          .select("total_minutes")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: "anchor_active",
-            earned: 0,
-            totalMinutes: memberData?.total_minutes ?? 0,
-            totalEarnedWithPartner: 0,
-            cap: 0,
-            isVip: false,
-            isFrozen: false,
-            showCapPopup: false,
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
       const { data: memberData } = await supabase
         .from("member_minutes")
-         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points")
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes")
          .eq("user_id", userId)
          .maybeSingle();
 
