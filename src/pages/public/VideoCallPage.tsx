@@ -809,14 +809,19 @@ const VideoCallPage = () => {
           }} />
           }
 
-          {/* Voice mode: show avatar instead of local video (desktop only — on mobile this box shows partner) */}
+          {/* Voice mode: show avatar + earning tip instead of local video (desktop only) */}
           {!isMobile && isFemale && voiceMode && isActive &&
-          <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center px-4">
               <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3">
                 <span className="text-4xl md:text-5xl">🎙️</span>
               </div>
-              <span className="text-pink-400 text-xs font-bold">Voice Mode Active</span>
+              <span className="text-pink-400 text-xs font-bold mb-2">Voice Mode Active</span>
+              <div className="bg-green-900/40 border border-green-500/30 rounded-lg px-3 py-2 max-w-[280px] text-center">
+                <p className="text-green-400 text-[11px] font-bold">💰 Guys pay to see you!</p>
+                <p className="text-neutral-400 text-[10px] mt-0.5">Chat & flirt to get camera unlock requests and earn a cut.</p>
+              </div>
             </div>
+          }
           }
 
           {/* Partner video (big box) on mobile, local video on desktop */}
