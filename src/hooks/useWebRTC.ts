@@ -149,6 +149,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         roomIdRef.current = data.roomId;
         setCurrentPartnerId(data.partnerId);
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
+        setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
