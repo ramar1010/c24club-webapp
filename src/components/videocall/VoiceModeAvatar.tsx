@@ -1,25 +1,42 @@
 import { useEffect, useRef, useState, RefObject } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VoiceModeAvatarProps {
   videoRef: RefObject<HTMLVideoElement>;
+  partnerId?: string | null;
   className?: string;
 }
 
 /**
  * Displays a stylized avatar with live audio waveform bars
  * when the partner is in voice-only mode.
+ * Shows the partner's Discover selfie if available.
  */
-const VoiceModeAvatar = ({ videoRef, className = "" }: VoiceModeAvatarProps) => {
+const VoiceModeAvatar = ({ videoRef, partnerId, className = "" }: VoiceModeAvatarProps) => {
   const [levels, setLevels] = useState<number[]>(Array(12).fill(0.1));
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
+  // Fetch partner's Discover selfie
+  const { data: partnerImage } = useQuery({
+    queryKey: ["voice-mode-partner-image", partnerId],
+    enabled: !!partnerId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("image_url, image_thumb_url")
+        .eq("id", partnerId!)
+        .maybeSingle();
+      return data?.image_thumb_url || data?.image_url || null;
+    },
+  });
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Wait for the video to have a srcObject
     const stream = video.srcObject as MediaStream | null;
     if (!stream) return;
 
@@ -60,8 +77,16 @@ const VoiceModeAvatar = ({ videoRef, className = "" }: VoiceModeAvatarProps) => 
     <div className={`absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center ${className}`}>
       {/* Avatar circle */}
       <div className="relative mb-4">
-        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center shadow-lg shadow-pink-500/20">
-          <span className="text-5xl md:text-6xl">🎙️</span>
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center shadow-lg shadow-pink-500/20 overflow-hidden">
+          {partnerImage ? (
+            <img
+              src={partnerImage}
+              alt="Partner"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-5xl md:text-6xl">🎙️</span>
+          )}
         </div>
         {/* Pulse ring */}
         <div className="absolute inset-0 rounded-full border-2 border-pink-400/30 animate-ping" />

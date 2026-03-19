@@ -818,7 +818,7 @@ const VideoCallPage = () => {
           {isMobile ?
           <>
               {partnerVoiceMode && callState === "connected" &&
-            <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20 absolute inset-0" />
+            <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20 absolute inset-0" />
             }
               <video ref={remoteVideoRef} autoPlay playsInline
             className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
@@ -994,7 +994,7 @@ const VideoCallPage = () => {
         <div className="flex-none w-[420px] aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
             {/* Partner voice mode avatar - desktop */}
             {partnerVoiceMode && callState === "connected" &&
-          <VoiceModeAvatar videoRef={remoteVideoRef} className="z-20" />
+          <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20" />
           }
             <video ref={remoteVideoRef} autoPlay playsInline
           className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
