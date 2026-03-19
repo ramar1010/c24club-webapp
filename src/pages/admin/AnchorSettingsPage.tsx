@@ -87,6 +87,19 @@ const AnchorSettingsPage = () => {
   });
 
   // Queue data
+  const { data: activeEarners } = useQuery({
+    queryKey: ["anchor-active-earners-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_sessions")
+        .select("*")
+        .eq("status", "active")
+        .order("created_at");
+      return data ?? [];
+    },
+    refetchInterval: 10000,
+  });
+
   const { data: queueData } = useQuery({
     queryKey: ["anchor-queue-admin"],
     queryFn: async () => {
