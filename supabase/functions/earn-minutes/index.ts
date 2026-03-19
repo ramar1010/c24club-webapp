@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier, gifted_minutes")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
+          giftedMinutes: data?.gifted_minutes ?? 0,
           adPoints: data?.ad_points ?? 0,
           isVip: data?.is_vip ?? false,
           vipTier: data?.vip_tier ?? null,
@@ -143,40 +144,9 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If user is an active anchor, skip normal minute earning
-      const { data: anchorSession } = await supabase
-        .from("anchor_sessions")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .maybeSingle();
-
-      if (anchorSession) {
-        const { data: memberData } = await supabase
-          .from("member_minutes")
-          .select("total_minutes")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: "anchor_active",
-            earned: 0,
-            totalMinutes: memberData?.total_minutes ?? 0,
-            totalEarnedWithPartner: 0,
-            cap: 0,
-            isVip: false,
-            isFrozen: false,
-            showCapPopup: false,
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
       const { data: memberData } = await supabase
         .from("member_minutes")
-         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points")
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes")
          .eq("user_id", userId)
          .maybeSingle();
 
@@ -261,6 +231,20 @@ Deno.serve(async (req) => {
         p_user_id: userId,
         p_amount: safeCapped,
       });
+
+      // Female users: auto-increment gifted_minutes for cashout eligibility
+      const { data: genderCheck } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (genderCheck?.gender?.toLowerCase() === "female") {
+        await supabase
+          .from("member_minutes")
+          .update({ gifted_minutes: (memberData?.gifted_minutes ?? 0) + safeCapped })
+          .eq("user_id", userId);
+      }
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
       const capPopupAlreadyShownNow = memberData?.cap_popup_shown ?? false;

@@ -8,8 +8,7 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
-import { useAnchorEarning } from "@/hooks/useAnchorEarning";
-import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
+import FemaleEarningPanel from "@/components/videocall/FemaleEarningPanel";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
@@ -38,7 +37,6 @@ import QuickStartGuide from "@/components/videocall/QuickStartGuide";
 import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
-import FemaleRetentionModal, { type FemaleRetentionModalRef } from "@/components/videocall/FemaleRetentionModal";
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
@@ -74,21 +72,13 @@ const VideoCallPage = () => {
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const mobileNavInitializedRef = useRef(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
-  const [showAnchorPanel, setShowAnchorPanel] = useState(false);
-  const [showAnchorBanner, setShowAnchorBanner] = useState(() => {
-    // Hide anchor banner on mobile for first-time female users to reduce clutter
-    if (window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen")) {
-      return false;
-    }
-    return true;
-  });
+  const [femaleHasSlot, setFemaleHasSlot] = useState(false);
+  const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
-  const [pulseAnchorBtn, setPulseAnchorBtn] = useState(false);
-  const retentionModalRef = useRef<FemaleRetentionModalRef>(null);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -129,8 +119,6 @@ const VideoCallPage = () => {
   const needsSelfie = hasSelfie === false;
 
   const isFemale = memberGender?.toLowerCase() === "female";
-
-  const hasAutoStartedRef = useRef(false);
 
   const {
     callState,
@@ -234,8 +222,11 @@ const VideoCallPage = () => {
     banUser();
   }, [nsfwStrikes, currentPartnerId, memberId]);
 
+  const femaleEarning = isFemale && femaleHasSlot && !femaleVerificationPaused;
+
   const {
     totalMinutes,
+    giftedMinutes,
     elapsedSeconds,
     showCapPopup,
     capInfo,
@@ -245,8 +236,8 @@ const VideoCallPage = () => {
     refreshBalance: refreshMinutesBalance
   } = useCallMinutes({
     userId: memberId,
-    partnerId: currentPartnerId,
-    isConnected: callState === "connected",
+    partnerId: currentPartnerId || (femaleEarning && callState !== "idle" ? "queue" : null),
+    isConnected: callState === "connected" || (femaleEarning && callState !== "idle"),
     voiceMode: isFemale ? voiceMode : false
   });
 
@@ -320,34 +311,33 @@ const VideoCallPage = () => {
     }
   }, [callState, isFemale, voiceMode]);
 
-  // Fetch partner gender for anchor system
-  const { data: partnerGenderData } = useQuery({
-    queryKey: ["partner_gender", currentPartnerId],
-    enabled: !!currentPartnerId && callState === "connected",
-    queryFn: async () => {
-      const { data } = await supabase.from("members").select("gender").eq("id", currentPartnerId!).maybeSingle();
-      return data?.gender ?? null;
-    }
-  });
-
-  // Anchor earning system (female-only)
-  const anchor = useAnchorEarning({
-    userId: memberId,
-    isOnCall: callState === "waiting" || callState === "connected",
-    partnerGender: partnerGenderData
-  });
-
-  // Auto-start anchor earning for eligible female users
+  // Manage female anchor slot (cap on concurrent female earners)
   useEffect(() => {
-    if (anchor.status === "idle" && !hasAutoStartedRef.current) {
-      hasAutoStartedRef.current = true;
-      anchor.joinAnchor();
-      // On mobile first visit, keep the panel collapsed to reduce clutter
-      const isMobileFirstVisit = window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen");
-      setShowAnchorPanel(!isMobileFirstVisit);
-      setShowAnchorBanner(true);
+    if (!isFemale || memberId === "anonymous") {
+      setFemaleHasSlot(false);
+      return;
     }
-  }, [anchor.status]);
+
+    const tryJoinSlot = async () => {
+      const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
+      const { data: settings } = await supabase.from("anchor_settings").select("max_anchor_cap").limit(1).maybeSingle();
+      const maxCap = settings?.max_anchor_cap ?? 5;
+
+      if ((count ?? 0) < maxCap) {
+        const { data: existing } = await supabase.from("anchor_queue").select("id").eq("user_id", memberId).maybeSingle();
+        if (!existing) {
+          await supabase.from("anchor_queue").insert({ user_id: memberId });
+        }
+        setFemaleHasSlot(true);
+      }
+    };
+
+    tryJoinSlot();
+
+    return () => {
+      supabase.from("anchor_queue").delete().eq("user_id", memberId).then(() => {});
+    };
+  }, [isFemale, memberId]);
 
 
   // Reset gender filter if not VIP
@@ -585,10 +575,6 @@ const VideoCallPage = () => {
   };
 
   const handleBack = () => {
-    // Intercept for female retention modal (once per session)
-    if (isFemale && retentionModalRef.current?.tryShow()) {
-      return; // modal shown, wait for user decision
-    }
     doLeave();
   };
 
@@ -992,127 +978,17 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Anchor "Tap Me" Banner (female users only) */}
-      {showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" &&
-      <div className="mx-3 md:mx-auto md:w-[420px] relative">
-          {/* First-time coach mark tooltip */}
-          {!sessionStorage.getItem("tapme_tooltip_dismissed") && anchor.status !== "active" &&
-        <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-              <div className="bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                👇 Tap here to start earning cash!
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-white" />
-              </div>
-            </div>
-        }
-          {/* Hide button */}
-          <div className="mb-1 flex justify-end">
-            <button
-            onClick={() => {setShowAnchorBanner(false);localStorage.setItem("anchor_banner_seen", "1");}}
-            className="text-neutral-500 hover:text-neutral-300 text-xs px-2 py-1 flex items-center gap-1"
-            title="Hide earning banner">
-            
-              👁‍🗨 Hide Earning Banner
-            </button>
-          </div>
-          <button
-          id="anchor-tap-me-btn"
-          onClick={() => {
-            setShowAnchorPanel(!showAnchorPanel);
-            sessionStorage.setItem("tapme_tooltip_dismissed", "1");
-            // Auto-join if idle
-            if (anchor.status === "idle" || anchor.status === "slots_full") {
-              anchor.joinAnchor();
-            }
-            // Log tap event for analytics
-            if (user?.id) {
-              supabase.from("tap_me_events").insert({ user_id: user.id }).then(() => {});
-            }
-          }}
-          className={`w-full mb-1 rounded-xl transition-all relative ${pulseAnchorBtn ? "animate-[pulse_0.6s_ease-in-out_5] ring-4 ring-pink-400 ring-opacity-75" : "hover:scale-[1.02]"}`}
-          style={{ animation: pulseAnchorBtn ? undefined : "tapme-glow 2s ease-in-out infinite" }}>
-          
-            {/* Floating coin particles - above content */}
-            <div className="absolute inset-0 z-10 overflow-visible pointer-events-none">
-              <span className="absolute text-lg animate-[float-coin_3s_ease-in-out_infinite]" style={{ left: "10%", top: "-10px" }}>💰</span>
-              <span className="absolute text-lg animate-[float-coin_2.5s_ease-in-out_infinite_0.5s]" style={{ right: "8%", top: "-8px" }}>💵</span>
-              <span className="absolute text-sm animate-[float-coin_3.5s_ease-in-out_infinite_1s]" style={{ left: "50%", top: "-12px" }}>✨</span>
-            </div>
-            {/* Main Tap Me row */}
-            <div className="bg-gradient-to-r from-pink-600 via-fuchsia-500 to-pink-600 py-3 px-4 flex items-center justify-between relative rounded-t-xl" style={{ backgroundSize: "200% 100%", animation: "shimmer-bg 3s linear infinite" }}>
-              <span className="text-white text-base font-black tracking-wide drop-shadow-lg">
-                🎉💰 TAP ME!
-              </span>
-              <span className="text-white font-black text-sm">
-                {anchor.status === "active" ?
-              <>Earning: <span className="text-green-300 text-base">${anchor.cashBalance.toFixed(2)}</span></> :
-
-              <>Earn up to <span className="text-green-300 text-base">${anchor.settings?.power_rate_cash ?? 1.5}/hr</span></>
-              }
-              </span>
-            </div>
-            {/* Schedule rows */}
-            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.mode === "chill" ? "bg-gradient-to-r from-purple-700/90 to-indigo-600/90" : "bg-gradient-to-r from-purple-900/60 to-indigo-800/60"}`}>
-              <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-purple-200 animate-pulse" : "text-purple-300/70"}`}>
-                {anchor.mode === "chill" ? "✨ CHILL HOURS (NOW)" : "✨ CHILL: 12 AM – 7 PM EST"}
-              </span>
-              <span className={`text-xs font-bold ${anchor.mode === "chill" ? "text-white" : "text-white/60"}`}>
-                🎁 Mystery Reward / {anchor.settings?.chill_reward_time ?? 45}min
-              </span>
-            </div>
-            <div className={`py-1.5 px-3 flex items-center justify-between ${anchor.status !== "active" ? "rounded-b-xl" : ""} ${anchor.mode === "power" ? "bg-gradient-to-r from-red-600/90 to-orange-500/90" : "bg-gradient-to-r from-red-900/60 to-orange-800/60"}`}>
-              <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-yellow-200 animate-pulse" : "text-yellow-300/70"}`}>
-                {anchor.mode === "power" ? "🔥 POWER HOUR (LIVE!)" : "⚡ POWER: 7 PM – 12 AM EST"}
-              </span>
-              <span className={`text-xs font-bold ${anchor.mode === "power" ? "text-white" : "text-white/60"}`}>
-                💵 ${anchor.settings?.power_rate_cash ?? 1.5} / {anchor.settings?.power_rate_time ?? 30}min
-              </span>
-            </div>
-            {/* Minutes paused notice */}
-            {anchor.status === "active" &&
-          <div className="bg-gray-900/90 py-1 px-3 text-center rounded-b-xl">
-                <span className="text-white/90 text-[10px] font-semibold">
-                  Chat with guys or "wait for a partner" to earn!
-                </span>
-              </div>
-          }
-          </button>
-          {showAnchorPanel &&
-        <AnchorEarningPanel
-          status={anchor.status}
-          mode={anchor.mode}
-          elapsedSeconds={anchor.elapsedSeconds}
-          thresholdSeconds={anchor.thresholdSeconds}
-          cashBalance={anchor.cashBalance}
-          queuePosition={anchor.queuePosition}
-          rewardEarned={anchor.rewardEarned}
-          cashEarned={anchor.cashEarned}
-          settings={anchor.settings}
-          settingsLoaded={anchor.settingsLoaded}
-          verificationRequired={anchor.verificationRequired}
-          verificationWord={anchor.verificationWord}
-          payouts={anchor.payouts}
-          onJoin={anchor.joinAnchor}
-          onLeave={anchor.leaveAnchor}
-          onCashout={anchor.cashout}
-          onDismissReward={anchor.dismissReward}
-          onDismissCash={anchor.dismissCashEarned}
-          onSubmitVerification={anchor.submitVerification} />
-
-        }
+      {/* Female Earning Panel */}
+      {isFemale && femaleHasSlot && (
+        <div className="mx-3 md:mx-auto md:w-[420px]">
+          <FemaleEarningPanel
+            totalMinutes={totalMinutes}
+            giftedMinutes={giftedMinutes}
+            onPauseEarning={setFemaleVerificationPaused}
+            onCashoutSuccess={refreshMinutesBalance}
+          />
         </div>
-      }
-
-      {/* Show Earning Banner button (when hidden) */}
-      {!showAnchorBanner && anchor.status !== "not_eligible" && anchor.status !== "loading" &&
-      <div className="mx-3 md:mx-auto md:w-[420px]">
-          <button
-          onClick={() => {setShowAnchorBanner(true);localStorage.setItem("anchor_banner_seen", "1");}}
-          className="w-full mb-2 flex items-center justify-center gap-1 rounded-full bg-neutral-800/80 border border-neutral-700 px-3 py-1 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors">
-          
-            <span>👁</span> Show Earning Dashboard
-          </button>
-        </div>
-      }
+      )}
 
       {/* Panels */}
       {showRedeem ?
@@ -1309,22 +1185,6 @@ const VideoCallPage = () => {
           </div>
         </div>
       }
-
-      {/* Female Retention Modal */}
-      <FemaleRetentionModal
-        ref={retentionModalRef}
-        isFemale={isFemale}
-        callState={callState}
-        isMobile={isMobile}
-        onStayAndEarn={() => {
-          setPulseAnchorBtn(true);
-          setShowAnchorBanner(true);
-          setTimeout(() => setPulseAnchorBtn(false), 3000);
-          const anchorBanner = document.getElementById("anchor-tap-me-btn");
-          anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }}
-        onLeaveAnyway={doLeave} />
-      
 
       {/* Mandatory Selfie Capture Modal */}
       <SelfieCaptureModal

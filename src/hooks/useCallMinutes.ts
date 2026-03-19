@@ -24,6 +24,7 @@ interface FreezeInfo {
 
 export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
+  const [giftedMinutes, setGiftedMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
@@ -53,6 +54,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
       .then(({ data }) => {
         if (data?.success) {
           setTotalMinutes(data.totalMinutes);
+          setGiftedMinutes(data.giftedMinutes ?? 0);
           setFreezeInfo({ isFrozen: data.isFrozen ?? false, earnRate: data.earnRate ?? 10 });
         }
       });
@@ -155,6 +157,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
 
   return {
     totalMinutes,
+    giftedMinutes,
     elapsedSeconds,
     capReached,
     capInfo,
