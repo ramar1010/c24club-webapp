@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
+import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
