@@ -311,6 +311,79 @@ const VideoCallPage = () => {
     };
   }, [memberId]);
 
+  // Reset camera unlock state when partner changes
+  useEffect(() => {
+    setCameraUnlockRequest(null);
+    setCameraUnlocked(false);
+  }, [currentPartnerId]);
+
+  // Listen for incoming camera unlock requests (for females receiving requests)
+  useEffect(() => {
+    if (memberId === "anonymous" || !isFemale) return;
+
+    const channel = supabase
+      .channel("camera-unlock-" + memberId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "camera_unlock_requests",
+          filter: `recipient_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const req = payload.new as any;
+          if (req.status === "paid" && currentPartnerId === req.requester_id) {
+            setCameraUnlockRequest({
+              id: req.id,
+              recipient_cut_cents: req.recipient_cut_cents,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [memberId, isFemale, currentPartnerId]);
+
+  // Listen for camera unlock acceptance (for males who sent request)
+  useEffect(() => {
+    if (memberId === "anonymous" || isFemale) return;
+
+    const channel = supabase
+      .channel("camera-unlock-response-" + memberId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "camera_unlock_requests",
+          filter: `requester_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const req = payload.new as any;
+          if (req.status === "accepted") {
+            toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
+            setCameraUnlocked(true);
+          } else if (req.status === "declined") {
+            toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [memberId, isFemale]);
+
+  // Handle camera unlock verification from success page redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("camera_unlock") === "success") {
+      toast.success("Payment verified! Waiting for partner to accept...", { duration: 5000 });
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, []);
+
 
   // Show voice mode explainer once per session when female connects with voice mode
   useEffect(() => {
