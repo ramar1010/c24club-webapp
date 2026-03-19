@@ -73,11 +73,11 @@ const DmNotificationListener = () => {
               label: "View",
               onClick: () => {
                 // Dispatch custom event so VideoCallPage can open DMs overlay
-                const handled = window.dispatchEvent(
+                const notCancelled = window.dispatchEvent(
                   new CustomEvent("open-dm-overlay", { cancelable: true })
                 );
-                // If no listener caught it (not on video call page), navigate normally
-                if (handled) {
+                // If no listener cancelled it (not on video call page), navigate normally
+                if (notCancelled) {
                   navigate("/messages");
                 }
               },
