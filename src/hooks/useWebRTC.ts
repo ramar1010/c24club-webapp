@@ -103,6 +103,60 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
     return stream;
   }
+  const autoReconnectingRef = useRef(false);
+
+  async function handlePartnerLeft() {
+    if (autoReconnectingRef.current) return;
+    autoReconnectingRef.current = true;
+
+    cleanupPeerConnection();
+    cleanupSignalingChannel();
+    clearPolling();
+
+    // Notify server of disconnect
+    await supabase.functions.invoke("videocall-match", {
+      body: { type: "disconnect", memberId: memberIdRef.current },
+    }).catch(() => {});
+
+    roomIdRef.current = null;
+    setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
+
+    // Immediately re-queue with a new channel ID
+    channelIdRef.current = crypto.randomUUID();
+    setCallState("waiting");
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke("videocall-match", {
+        body: {
+          type: "join",
+          memberId: memberIdRef.current,
+          channelId: channelIdRef.current,
+          genderPreference: genderPreferenceRef.current,
+          memberGender: memberGenderRef.current,
+          voiceMode: voiceModeRef.current,
+        },
+      });
+
+      if (invokeError) throw invokeError;
+
+      if (data?.message === "partner_found") {
+        roomIdRef.current = data.roomId;
+        setCurrentPartnerId(data.partnerId);
+        setPartnerVoiceMode(data.partnerVoiceMode ?? false);
+        setCallState("connecting");
+        createPeerConnection();
+        await setupSignaling(data.roomId);
+      } else if (data?.message === "added_to_queue") {
+        await pollForMatch();
+      }
+    } catch (err) {
+      console.error("[WebRTC] Auto-reconnect failed:", err);
+      setCallState("idle");
+    } finally {
+      autoReconnectingRef.current = false;
+    }
+  }
 
   function createPeerConnection() {
     cleanupPeerConnection();
@@ -147,7 +201,8 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       }
 
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
-        setCallState("disconnected");
+        // Don't set to disconnected — auto-cycle to next partner
+        handlePartnerLeft();
       }
     };
 
@@ -201,8 +256,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
           }
         })
         .on("broadcast", { event: "partner-disconnected" }, () => {
-          setCallState("disconnected");
-          cleanupPeerConnection();
+          handlePartnerLeft();
         })
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
@@ -332,7 +386,26 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   async function next() {
-    await disconnect();
+    // Clean up current connection without going to "idle" state
+    signalingChannelRef.current?.send({
+      type: "broadcast",
+      event: "partner-disconnected",
+      payload: { from: channelIdRef.current },
+    });
+
+    cleanupPeerConnection();
+    cleanupSignalingChannel();
+    clearPolling();
+
+    await supabase.functions.invoke("videocall-match", {
+      body: { type: "disconnect", memberId: memberIdRef.current },
+    });
+
+    roomIdRef.current = null;
+    setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
+    setCallState("waiting");
+
     channelIdRef.current = crypto.randomUUID();
     await startCall();
   }
