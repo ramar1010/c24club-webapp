@@ -72,34 +72,57 @@ const FemaleEarningPanel = ({
 
   const cashValue = (giftedMinutes * rate).toFixed(2);
 
-  // Verification challenge
+  // Verification challenge — pink themed
   if (verificationRequired) {
     return (
-      <div className="w-full mb-2 rounded-xl border-2 border-yellow-500 bg-neutral-900/90 backdrop-blur-sm p-4 text-center">
-        <div className="text-3xl mb-2">⏸️</div>
-        <h3 className="text-white font-black text-base uppercase mb-1">Still There?</h3>
-        <p className="text-neutral-400 text-xs mb-3">Type the word below to keep earning</p>
-        <p className="text-yellow-400 font-black text-xl tracking-widest mb-3 select-none">
-          {verificationWord.toUpperCase()}
-        </p>
-        <input
-          type="text"
-          value={verifyInput}
-          onChange={(e) => { setVerifyInput(e.target.value); setVerifyError(false); }}
-          placeholder="Type the word here..."
-          autoFocus
-          className={`w-full bg-neutral-800 border ${verifyError ? "border-red-500" : "border-neutral-600"} rounded-lg px-3 py-2.5 text-white text-center text-sm font-bold mb-2 focus:outline-none focus:border-yellow-500`}
-          onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+      <div
+        className="w-full mb-2 rounded-xl p-4 text-center relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 50%, #c026d3 100%)',
+          boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(192, 38, 211, 0.2)',
+          border: '2px solid rgba(255, 255, 255, 0.25)',
+        }}
+      >
+        {/* Shimmer */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer-bg 3s ease-in-out infinite',
+          }}
         />
-        {verifyError && <p className="text-red-400 text-xs mb-2">Wrong word — try again!</p>}
-        <button
-          onClick={handleVerify}
-          disabled={!verifyInput.trim()}
-          className="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-neutral-900 font-black text-sm uppercase transition-colors disabled:opacity-50"
-        >
-          Confirm ✅
-        </button>
-        <p className="text-neutral-600 text-[10px] mt-2">Your earning is paused until you verify</p>
+        <div className="relative">
+          <div className="text-3xl mb-2">⏸️</div>
+          <h3 className="text-white font-black text-base uppercase mb-1 drop-shadow-sm">Still There?</h3>
+          <p className="text-white/70 text-xs mb-3">Type the word below to keep earning</p>
+          <p className="text-yellow-300 font-black text-xl tracking-widest mb-3 select-none drop-shadow-sm">
+            {verificationWord.toUpperCase()}
+          </p>
+          <input
+            type="text"
+            value={verifyInput}
+            onChange={(e) => { setVerifyInput(e.target.value); setVerifyError(false); }}
+            placeholder="Type the word here..."
+            autoFocus
+            className={`w-full bg-white/15 backdrop-blur-sm border-2 ${verifyError ? "border-red-400" : "border-white/30"} rounded-lg px-3 py-2.5 text-white text-center text-sm font-bold mb-2 focus:outline-none focus:border-yellow-300 placeholder:text-white/40`}
+            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+          />
+          {verifyError && <p className="text-yellow-200 text-xs mb-2 font-bold">Wrong word — try again!</p>}
+          <button
+            onClick={handleVerify}
+            disabled={!verifyInput.trim()}
+            className="w-full py-2.5 rounded-xl font-black text-sm uppercase transition-colors disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 100%)',
+              color: '#831843',
+              boxShadow: '0 0 15px rgba(250, 204, 21, 0.4)',
+            }}
+          >
+            Confirm ✅
+          </button>
+          <p className="text-white/40 text-[10px] mt-2">Your earning is paused until you verify</p>
+        </div>
       </div>
     );
   }
@@ -115,74 +138,78 @@ const FemaleEarningPanel = ({
       <span className="absolute -top-1 left-1/3 text-sm animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '2.1s' }}>💸</span>
 
       {/* Panel container — rounded corners on inner divs, no overflow-hidden here */}
-      <div className="relative rounded-xl" style={{ boxShadow: '0 0 20px rgba(236, 72, 153, 0.35), 0 0 40px rgba(236, 72, 153, 0.1)' }}>
+      <div className="relative rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(255, 45, 149, 0.15)' }}>
 
-        {/* ── Row 1: Header — hot pink */}
+        {/* ── Row 1: Header — neon hot pink */}
         <div
-          className="relative flex items-center justify-between px-4 py-2.5 rounded-t-xl overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)' }}
+          className="relative flex items-center justify-between px-4 py-3 rounded-t-xl overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)' }}
         >
           {/* Shimmer */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer-bg 3s ease-in-out infinite',
             }}
           />
           <div className="relative flex items-center gap-2">
-            <span className="text-lg">💰</span>
-            <span className="text-white font-black text-sm uppercase tracking-wide drop-shadow-sm">
+            <span className="text-xl">💰</span>
+            <span className="text-white font-black text-base uppercase tracking-wide drop-shadow-sm">
               Your Earnings
             </span>
           </div>
           <div className="relative">
             <span className="text-white font-black text-base drop-shadow-sm">
-              Earning: <span className="text-yellow-200 text-lg">${cashValue}</span>
+              Earning: <span className="text-yellow-300 text-xl font-black">${cashValue}</span>
             </span>
           </div>
         </div>
 
-        {/* ── Row 2: Rate info — purple/indigo */}
+        {/* ── Row 2: Rate info — neon purple/magenta */}
         <div
-          className="flex items-center justify-between px-4 py-2"
-          style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
+          className="flex items-center justify-between px-4 py-2.5"
+          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #c026d3 100%)' }}
         >
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">✨</span>
-            <span className="text-white/90 font-bold text-xs">
+            <span className="text-base">✨</span>
+            <span className="text-white font-bold text-sm">
               Rate: ${rate}/min
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">🎁</span>
-            <span className="text-white/90 font-bold text-xs">
+            <span className="text-base">🎁</span>
+            <span className="text-white font-bold text-sm">
               {giftedMinutes} cashable min
             </span>
           </div>
         </div>
 
-        {/* ── Row 3: Cash out — orange/amber */}
+        {/* ── Row 3: Cash out — neon orange/yellow */}
         <div
-          className="flex items-center justify-between px-4 py-2.5 rounded-b-xl"
-          style={{ background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)' }}
+          className="flex items-center justify-between px-4 py-3 rounded-b-xl"
+          style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ffab00 100%)' }}
         >
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">🔥</span>
-            <span className="text-white font-black text-xs uppercase">
+            <span className="text-base">🔥</span>
+            <span className="text-white font-black text-sm uppercase drop-shadow-sm">
               {totalMinutes} total minutes
             </span>
           </div>
           {giftedMinutes > 0 ? (
             <button
               onClick={() => setShowCashout(true)}
-              className="px-4 py-1.5 rounded-lg bg-white/25 hover:bg-white/35 text-white font-black text-xs uppercase transition-colors border border-white/20 backdrop-blur-sm"
+              className="px-5 py-2 rounded-lg text-white font-black text-sm uppercase transition-colors border-2 border-white/30"
+              style={{
+                background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 100%)',
+                boxShadow: '0 0 15px rgba(255, 45, 149, 0.5)',
+              }}
             >
               💰 Cash Out ${cashValue}
             </button>
           ) : (
-            <span className="text-white/70 font-bold text-xs">
+            <span className="text-white/80 font-bold text-sm">
               🏦 ${cashValue} / {giftedMinutes}min
             </span>
           )}
