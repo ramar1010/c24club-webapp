@@ -103,6 +103,7 @@ const App = () => (
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/gift-success" element={<GiftSuccessPage />} />
+              <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
 
               {/* Admin login */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
