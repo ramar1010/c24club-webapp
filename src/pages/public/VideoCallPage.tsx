@@ -38,7 +38,6 @@ import NotifyMeToggle from "@/components/videocall/NotifyMeToggle";
 import VoiceModeAvatar from "@/components/videocall/VoiceModeAvatar";
 import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPopup";
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
-import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import { useUnreadCount } from "@/hooks/useMessages";
