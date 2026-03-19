@@ -20,7 +20,7 @@ const CameraUnlockButton = ({ recipientId, roomId }: CameraUnlockButtonProps) =>
         .select("*")
         .limit(1)
         .single();
-      return data as { price_cents: number; recipient_cut_percent: number } | null;
+      return data as unknown as { price_cents: number; recipient_cut_percent: number } | null;
     },
   });
 

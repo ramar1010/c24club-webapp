@@ -159,6 +159,7 @@ const App = () => (
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />
                 <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
+                <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
