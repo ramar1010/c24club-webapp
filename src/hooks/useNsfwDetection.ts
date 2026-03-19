@@ -199,9 +199,10 @@ export function useNsfwDetection({
 
         const pornScore =
           predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
-        const sexyScore =
-          predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
-        const nudityScore = Math.max(pornScore, sexyScore);
+        const hentaiScore =
+          predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
+        // Only use Porn + Hentai — "Sexy" causes too many false positives
+        const nudityScore = Math.max(pornScore, hentaiScore);
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
