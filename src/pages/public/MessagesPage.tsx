@@ -58,6 +58,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
       return data || { total_minutes: 0, gifted_minutes: 0 };
     },
   });
+
+  // Fetch current user's gender
+  const { data: myGender } = useQuery({
+    queryKey: ["my-gender-messages", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data?.gender?.toLowerCase() || null;
+    },
+  });
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
     selectedConvo?.id || null
