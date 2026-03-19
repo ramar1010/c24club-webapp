@@ -211,8 +211,19 @@ const AnchorSettingsPage = () => {
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
         <h2 className="text-lg font-bold text-foreground">Earning & Cashout Rate</h2>
         <p className="text-sm text-muted-foreground">
-          Controls how much each minute is worth when females cash out. Also sets min/max cashout limits.
+          Controls how much each minute is worth when females cash out, and the limits per cashout request.
         </p>
+
+        {/* Live preview */}
+        {ratePerMinute > 0 && (
+          <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 text-sm text-foreground">
+            <p className="font-bold mb-1">💡 Quick Preview</p>
+            <p className="text-muted-foreground text-xs">100 minutes × ${ratePerMinute} = <span className="text-foreground font-bold">${(100 * ratePerMinute).toFixed(2)}</span></p>
+            <p className="text-muted-foreground text-xs">Users must have at least <span className="text-foreground font-bold">{minCashout} minutes</span> to request a cashout</p>
+            <p className="text-muted-foreground text-xs">Users can cash out up to <span className="text-foreground font-bold">{maxCashout} minutes</span> per request</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-foreground">Rate per Minute ($)</label>
@@ -224,7 +235,7 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setRatePerMinute(parseFloat(e.target.value) || 0.01)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
-            <p className="text-xs text-muted-foreground mt-1">e.g. 0.01 = $0.01/min</p>
+            <p className="text-xs text-muted-foreground mt-1">Dollar value of each gifted minute (e.g. 0.35 = $0.35/min)</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-foreground">Min Cashout (minutes)</label>
@@ -235,6 +246,7 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setMinCashout(parseInt(e.target.value) || 100)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
+            <p className="text-xs text-muted-foreground mt-1">Minimum gifted minutes needed before a user can request a cashout</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-foreground">Max Cashout (minutes)</label>
@@ -245,6 +257,7 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setMaxCashout(parseInt(e.target.value) || 5000)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
+            <p className="text-xs text-muted-foreground mt-1">Maximum minutes a user can cash out in a single request</p>
           </div>
         </div>
         <button
