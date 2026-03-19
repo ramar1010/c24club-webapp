@@ -31,6 +31,7 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -115,7 +116,7 @@ const AdminNotifications = () => {
             )}
           </div>
         </div>
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <Bell className="h-8 w-8 mb-2 opacity-40" />
@@ -123,7 +124,7 @@ const AdminNotifications = () => {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((n) => {
+              {(showAll ? notifications : notifications.slice(0, 8)).map((n) => {
                 const config = typeConfig[n.type] || { icon: Bell, color: "text-muted-foreground" };
                 const Icon = config.icon;
                 return (
@@ -155,6 +156,20 @@ const AdminNotifications = () => {
             </div>
           )}
         </ScrollArea>
+        {notifications.length > 8 && !showAll && (
+          <div className="border-t px-4 py-2">
+            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setShowAll(true)}>
+              See all ({notifications.length})
+            </Button>
+          </div>
+        )}
+        {showAll && notifications.length > 8 && (
+          <div className="border-t px-4 py-2">
+            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setShowAll(false)}>
+              Show less
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
