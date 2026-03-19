@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import CashoutModal from "@/components/discover/CashoutModal";
