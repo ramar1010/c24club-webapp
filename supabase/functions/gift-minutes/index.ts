@@ -290,7 +290,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
       // Check sender balance
       const { data: senderMinutes } = await supabaseAdmin
         .from("member_minutes")
-        .select("total_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", user.id)
         .single();
 
@@ -298,10 +298,13 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         throw new Error("Insufficient minutes balance");
       }
 
-      // Deduct from sender
+      // Deduct from sender (reduce gifted_minutes proportionally)
+      const senderGifted = (senderMinutes as any)?.gifted_minutes ?? 0;
+      const newSenderTotal = senderMinutes.total_minutes - giftMinutes;
+      const newSenderGifted = Math.min(Math.max(0, senderGifted - giftMinutes), newSenderTotal);
       await supabaseAdmin
         .from("member_minutes")
-        .update({ total_minutes: senderMinutes.total_minutes - giftMinutes })
+        .update({ total_minutes: newSenderTotal, gifted_minutes: newSenderGifted })
         .eq("user_id", user.id);
 
       // Credit recipient

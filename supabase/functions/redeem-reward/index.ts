@@ -109,13 +109,15 @@ Deno.serve(async (req) => {
         throw new Error("Only Premium VIP members can cash out legendary items");
       }
 
-      // Deduct minutes
-      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes").eq("user_id", user.id).maybeSingle();
+      // Deduct minutes (and proportionally reduce gifted_minutes)
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, gifted_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;
+      const giftedMins = (memberData as any)?.gifted_minutes ?? 0;
       if (totalMinutes < reward.minutes_cost) {
         throw new Error("Not enough minutes");
       }
-      await supabase.from("member_minutes").update({ total_minutes: totalMinutes - reward.minutes_cost, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+      const newGifted = Math.max(0, giftedMins - reward.minutes_cost);
+      await supabase.from("member_minutes").update({ total_minutes: totalMinutes - reward.minutes_cost, gifted_minutes: Math.min(newGifted, totalMinutes - reward.minutes_cost), updated_at: new Date().toISOString() }).eq("user_id", user.id);
 
       // Create redemption with cashout info
       const { error: insertErr } = await supabase.from("member_redemptions").insert({
@@ -153,14 +155,17 @@ Deno.serve(async (req) => {
       await checkDuplicateAddress(shipping);
 
       // Check user has enough minutes
-      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes").eq("user_id", user.id).maybeSingle();
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, gifted_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;
+      const giftedMins = (memberData as any)?.gifted_minutes ?? 0;
       if (totalMinutes < reward.minutes_cost) {
         return new Response(JSON.stringify({ error: "Not enough minutes" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Deduct minutes
-      await supabase.from("member_minutes").update({ total_minutes: totalMinutes - reward.minutes_cost, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+      // Deduct minutes (and proportionally reduce gifted_minutes)
+      const newTotal = totalMinutes - reward.minutes_cost;
+      const newGifted = Math.min(Math.max(0, giftedMins - reward.minutes_cost), newTotal);
+      await supabase.from("member_minutes").update({ total_minutes: newTotal, gifted_minutes: newGifted, updated_at: new Date().toISOString() }).eq("user_id", user.id);
 
       // Create redemption
       const { data: redemption, error: insertErr } = await supabase.from("member_redemptions").insert({
@@ -256,15 +261,19 @@ Deno.serve(async (req) => {
       }
 
       // Check user has enough minutes
-      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, purchased_spins, ad_points").eq("user_id", user.id).maybeSingle();
+      const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, purchased_spins, ad_points, gifted_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;
+      const giftedMins = (memberData as any)?.gifted_minutes ?? 0;
       if (totalMinutes < reward.minutes_cost) {
         return new Response(JSON.stringify({ error: "Not enough minutes" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Deduct minutes and credit spins or ad points
+      const newTotal = totalMinutes - reward.minutes_cost;
+      const newGifted = Math.min(Math.max(0, giftedMins - reward.minutes_cost), newTotal);
       const updatePayload: Record<string, any> = {
-        total_minutes: totalMinutes - reward.minutes_cost,
+        total_minutes: newTotal,
+        gifted_minutes: newGifted,
         updated_at: new Date().toISOString(),
       };
 
