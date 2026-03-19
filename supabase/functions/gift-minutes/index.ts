@@ -105,6 +105,7 @@ serve(async (req) => {
           recipient_id,
           minutes_amount: String(giftTier.minutes),
           sender_bonus: String(giftTier.sender_bonus),
+          is_direct_call: is_direct_call ? "true" : "false",
         },
       });
 
