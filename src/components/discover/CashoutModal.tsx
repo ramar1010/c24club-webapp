@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, DollarSign } from "lucide-react";
+import { X, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CashoutModalProps {
   onClose: () => void;
@@ -10,10 +11,21 @@ interface CashoutModalProps {
   onSuccess: () => void;
 }
 
+interface CashoutRequest {
+  id: string;
+  minutes_amount: number;
+  cash_amount: number;
+  paypal_email: string;
+  status: string;
+  created_at: string;
+}
+
 const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
+  const { user } = useAuth();
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<CashoutRequest[]>([]);
   const [settings, setSettings] = useState<{
     rate_per_minute: number;
     min_cashout_minutes: number;
@@ -28,10 +40,25 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
       });
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("cashout_requests")
+      .select("id, minutes_amount, cash_amount, paypal_email, status, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setHistory(data);
+      });
+  }, [user]);
+
   const cashValue = settings ? (minutes * settings.rate_per_minute).toFixed(2) : "—";
   const maxAllowed = settings
     ? Math.min(giftedMinutes, settings.max_cashout_minutes)
     : giftedMinutes;
+
+  const hasPending = history.some((h) => h.status === "pending");
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
@@ -55,6 +82,18 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
     }
   };
 
+  const statusIcon = (status: string) => {
+    if (status === "pending") return <Clock className="w-3.5 h-3.5 text-amber-400" />;
+    if (status === "approved" || status === "paid") return <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />;
+    return <XCircle className="w-3.5 h-3.5 text-red-400" />;
+  };
+
+  const statusColor = (status: string) => {
+    if (status === "pending") return "text-amber-400";
+    if (status === "approved" || status === "paid") return "text-emerald-400";
+    return "text-red-400";
+  };
+
   if (!settings) {
     return (
       <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center">
@@ -66,7 +105,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
   return (
     <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center px-4" onClick={onClose}>
       <div
-        className="bg-neutral-900 border border-white/10 rounded-2xl p-5 w-full max-w-xs relative"
+        className="bg-neutral-900 border border-white/10 rounded-2xl p-5 w-full max-w-xs relative max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 right-3 text-white/40 hover:text-white">
@@ -127,10 +166,10 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
         <button
           onClick={handleCashout}
-          disabled={loading || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
+          disabled={loading || hasPending || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
           className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
         >
-          {loading ? "Submitting..." : `Cash Out $${cashValue}`}
+          {loading ? "Submitting..." : hasPending ? "Pending Request..." : `Cash Out $${cashValue}`}
         </button>
 
         <p className="text-white/30 text-[10px] text-center mt-2">
@@ -139,6 +178,31 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
         <p className="text-white/20 text-[9px] text-center mt-1">
           Only minutes received as gifts can be cashed out
         </p>
+
+        {/* Cashout History */}
+        {history.length > 0 && (
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <h3 className="text-white/70 text-xs font-bold uppercase tracking-wider mb-3">Cashout History</h3>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {history.map((req) => (
+                <div key={req.id} className="bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between">
+                  <div>
+                    <p className="text-white text-xs font-bold">${Number(req.cash_amount).toFixed(2)}</p>
+                    <p className="text-white/30 text-[10px]">
+                      {req.minutes_amount} min • {new Date(req.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {statusIcon(req.status)}
+                    <span className={`text-[10px] font-bold uppercase ${statusColor(req.status)}`}>
+                      {req.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
