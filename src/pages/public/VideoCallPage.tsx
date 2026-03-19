@@ -312,34 +312,33 @@ const VideoCallPage = () => {
     }
   }, [callState, isFemale, voiceMode]);
 
-  // Fetch partner gender for anchor system
-  const { data: partnerGenderData } = useQuery({
-    queryKey: ["partner_gender", currentPartnerId],
-    enabled: !!currentPartnerId && callState === "connected",
-    queryFn: async () => {
-      const { data } = await supabase.from("members").select("gender").eq("id", currentPartnerId!).maybeSingle();
-      return data?.gender ?? null;
-    }
-  });
-
-  // Anchor earning system (female-only)
-  const anchor = useAnchorEarning({
-    userId: memberId,
-    isOnCall: callState === "waiting" || callState === "connected",
-    partnerGender: partnerGenderData
-  });
-
-  // Auto-start anchor earning for eligible female users
+  // Manage female anchor slot (cap on concurrent female earners)
   useEffect(() => {
-    if (anchor.status === "idle" && !hasAutoStartedRef.current) {
-      hasAutoStartedRef.current = true;
-      anchor.joinAnchor();
-      // On mobile first visit, keep the panel collapsed to reduce clutter
-      const isMobileFirstVisit = window.innerWidth < 768 && !localStorage.getItem("anchor_banner_seen");
-      setShowAnchorPanel(!isMobileFirstVisit);
-      setShowAnchorBanner(true);
+    if (!isFemale || memberId === "anonymous") {
+      setFemaleHasSlot(false);
+      return;
     }
-  }, [anchor.status]);
+
+    const tryJoinSlot = async () => {
+      const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
+      const { data: settings } = await supabase.from("anchor_settings").select("max_anchor_cap").limit(1).maybeSingle();
+      const maxCap = settings?.max_anchor_cap ?? 5;
+
+      if ((count ?? 0) < maxCap) {
+        const { data: existing } = await supabase.from("anchor_queue").select("id").eq("user_id", memberId).maybeSingle();
+        if (!existing) {
+          await supabase.from("anchor_queue").insert({ user_id: memberId });
+        }
+        setFemaleHasSlot(true);
+      }
+    };
+
+    tryJoinSlot();
+
+    return () => {
+      supabase.from("anchor_queue").delete().eq("user_id", memberId).then(() => {});
+    };
+  }, [isFemale, memberId]);
 
 
   // Reset gender filter if not VIP
