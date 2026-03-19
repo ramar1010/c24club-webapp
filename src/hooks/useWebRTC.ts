@@ -103,8 +103,62 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
     return stream;
   }
+  const autoReconnectingRef = useRef(false);
 
-  function createPeerConnection() {
+  async function handlePartnerLeft() {
+    if (autoReconnectingRef.current) return;
+    autoReconnectingRef.current = true;
+
+    cleanupPeerConnection();
+    cleanupSignalingChannel();
+    clearPolling();
+
+    // Notify server of disconnect
+    await supabase.functions.invoke("videocall-match", {
+      body: { type: "disconnect", memberId: memberIdRef.current },
+    }).catch(() => {});
+
+    roomIdRef.current = null;
+    setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
+
+    // Immediately re-queue with a new channel ID
+    channelIdRef.current = crypto.randomUUID();
+    setCallState("waiting");
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke("videocall-match", {
+        body: {
+          type: "join",
+          memberId: memberIdRef.current,
+          channelId: channelIdRef.current,
+          genderPreference: genderPreferenceRef.current,
+          memberGender: memberGenderRef.current,
+          voiceMode: voiceModeRef.current,
+        },
+      });
+
+      if (invokeError) throw invokeError;
+
+      if (data?.message === "partner_found") {
+        roomIdRef.current = data.roomId;
+        setCurrentPartnerId(data.partnerId);
+        setPartnerVoiceMode(data.partnerVoiceMode ?? false);
+        setCallState("connecting");
+        createPeerConnection();
+        await setupSignaling(data.roomId);
+      } else if (data?.message === "added_to_queue") {
+        await pollForMatch();
+      }
+    } catch (err) {
+      console.error("[WebRTC] Auto-reconnect failed:", err);
+      setCallState("idle");
+    } finally {
+      autoReconnectingRef.current = false;
+    }
+  }
+
+
     cleanupPeerConnection();
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
