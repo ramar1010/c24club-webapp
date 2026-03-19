@@ -31,6 +31,7 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
