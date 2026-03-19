@@ -79,6 +79,16 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
+          {/* Cash Out button */}
+          {(minutesData?.gifted_minutes ?? 0) > 0 && (
+            <button
+              onClick={() => setShowCashout(true)}
+              className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-2.5 py-2 rounded-lg transition-colors border border-emerald-500/30"
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Cash Out</span>
+            </button>
+          )}
           {/* DMs button */}
           <button
             onClick={() => setShowMessages(true)}
