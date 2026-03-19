@@ -24,9 +24,9 @@ export function useNsfwDetection({
   userId,
   viewerUserId,
   checkIntervalMs = 5000,
-  nudityThreshold = 0.8,
-  maxStrikes = 5,
-  strikeCooldownMs = 15000,
+  nudityThreshold = 0.85,
+  maxStrikes = 7,
+  strikeCooldownMs = 30000,
 }: UseNsfwDetectionOptions) {
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
@@ -199,9 +199,10 @@ export function useNsfwDetection({
 
         const pornScore =
           predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
-        const sexyScore =
-          predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
-        const nudityScore = Math.max(pornScore, sexyScore);
+        const hentaiScore =
+          predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
+        // Only use Porn + Hentai — "Sexy" causes too many false positives
+        const nudityScore = Math.max(pornScore, hentaiScore);
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
