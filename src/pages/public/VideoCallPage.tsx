@@ -395,7 +395,7 @@ const VideoCallPage = () => {
 
   // Show voice mode explainer when female starts searching for a partner
   useEffect(() => {
-    if (isFemale && callState === "searching" && !voiceModeExplainerShownRef.current) {
+    if (isFemale && callState === "waiting" && !voiceModeExplainerShownRef.current) {
       voiceModeExplainerShownRef.current = true;
       setShowVoiceModeExplainer(true);
     }
