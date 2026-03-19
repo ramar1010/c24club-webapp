@@ -106,18 +106,11 @@ const FemaleEarningPanel = ({
 
   return (
     <div className="w-full mb-2 relative">
-      {/* Floating emojis */}
-      <span className="absolute -top-2 -left-1 text-lg animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0s' }}>💰</span>
-      <span className="absolute -top-1 right-3 text-base animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.8s' }}>✨</span>
-      <span className="absolute top-4 -right-1 text-lg animate-float-coin pointer-events-none select-none" style={{ animationDelay: '1.6s' }}>🪙</span>
-      <span className="absolute bottom-2 -left-2 text-base animate-float-coin pointer-events-none select-none" style={{ animationDelay: '2.4s' }}>💎</span>
-      <span className="absolute bottom-6 right-0 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.4s' }}>🤑</span>
-
       <div
         className="relative rounded-xl px-4 py-3 overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #064e3b 0%, #065f46 30%, #047857 60%, #059669 100%)',
-          boxShadow: '0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1)',
+          background: 'linear-gradient(135deg, #831843 0%, #9d174d 30%, #be185d 60%, #db2777 100%)',
+          boxShadow: '0 0 15px rgba(236, 72, 153, 0.3), 0 0 30px rgba(236, 72, 153, 0.1)',
         }}
       >
         {/* Shimmer overlay */}
@@ -134,23 +127,23 @@ const FemaleEarningPanel = ({
         <div className="relative flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-emerald-300" />
+              <DollarSign className="w-4 h-4 text-pink-300" />
             </div>
             <span className="text-white font-black text-sm uppercase tracking-wide">Your Earnings</span>
           </div>
-          <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-pink-300 animate-pulse" />
         </div>
 
         {/* Minutes = Cash value */}
         <div className="relative text-center mb-3">
           <p className="text-white text-xs mb-1">
-            <span className="text-emerald-300 font-black text-2xl">{giftedMinutes}</span>
-            <span className="text-emerald-100/70 ml-1">cashable minutes</span>
+            <span className="text-pink-200 font-black text-2xl">{giftedMinutes}</span>
+            <span className="text-pink-100/70 ml-1">cashable minutes</span>
           </p>
-          <p className="text-emerald-300 font-black text-lg">
+          <p className="text-pink-200 font-black text-lg">
             = ${cashValue}
           </p>
-          <p className="text-emerald-200/40 text-[10px]">
+          <p className="text-pink-200/40 text-[10px]">
             Rate: ${rate}/min • {totalMinutes} total minutes
           </p>
         </div>
@@ -161,7 +154,7 @@ const FemaleEarningPanel = ({
             onClick={() => setShowCashout(true)}
             className="relative w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-sm uppercase transition-colors backdrop-blur-sm border border-white/10"
             style={{
-              boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 0 12px rgba(236, 72, 153, 0.4)',
             }}
           >
             💰 Cash Out ${cashValue}
@@ -169,12 +162,21 @@ const FemaleEarningPanel = ({
         )}
 
         {/* Helper text */}
-        <p className="relative text-emerald-200/60 text-[10px] text-center mt-2 leading-relaxed">
-          You earn by chatting with guys or <span className="text-emerald-300 font-semibold">"waiting to connect in queue"</span>
+        <p className="relative text-pink-200/60 text-[10px] text-center mt-2 leading-relaxed">
+          You earn by chatting with guys or <span className="text-pink-200 font-semibold">"waiting to connect in queue"</span>
         </p>
-        <p className="relative text-emerald-200/40 text-[10px] text-center mt-0.5">
+        <p className="relative text-pink-200/40 text-[10px] text-center mt-0.5">
           Cash out via PayPal or spend on rewards — your choice!
         </p>
+      </div>
+
+      {/* Floating emojis below the panel */}
+      <div className="relative h-6 w-full">
+        <span className="absolute top-0 left-4 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0s' }}>💰</span>
+        <span className="absolute top-1 left-1/4 text-xs animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.8s' }}>✨</span>
+        <span className="absolute top-0 left-1/2 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '1.6s' }}>🪙</span>
+        <span className="absolute top-1 left-3/4 text-xs animate-float-coin pointer-events-none select-none" style={{ animationDelay: '2.4s' }}>💎</span>
+        <span className="absolute top-0 right-4 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.4s' }}>🤑</span>
       </div>
 
       {/* Cashout Modal */}
