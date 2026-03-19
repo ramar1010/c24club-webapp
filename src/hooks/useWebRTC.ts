@@ -202,8 +202,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
           }
         })
         .on("broadcast", { event: "partner-disconnected" }, () => {
-          setCallState("disconnected");
-          cleanupPeerConnection();
+          handlePartnerLeft();
         })
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
