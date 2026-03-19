@@ -158,7 +158,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
-
+  function createPeerConnection() {
     cleanupPeerConnection();
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
