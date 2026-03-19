@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { attachStreamToVideo, getTrackEventStream } from "@/lib/mediaStream";
 
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
@@ -27,6 +28,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const signalingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const channelIdRef = useRef<string>(crypto.randomUUID());
@@ -53,6 +55,11 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     voiceModeRef.current = voiceMode;
   }, [voiceMode]);
 
+  useEffect(() => {
+    attachStreamToVideo(localVideoRef.current, localStreamRef.current, { muted: true });
+    attachStreamToVideo(remoteVideoRef.current, remoteStreamRef.current);
+  });
+
   function clearPolling() {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
@@ -61,6 +68,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   function clearRemoteVideo() {
+    remoteStreamRef.current = null;
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
     }
@@ -90,16 +98,13 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       return localStreamRef.current;
     }
 
-    // Voice mode: audio only, no video
     const stream = await navigator.mediaDevices.getUserMedia({
       video: !voiceModeRef.current,
       audio: true,
     });
 
     localStreamRef.current = stream;
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
-    }
+    attachStreamToVideo(localVideoRef.current, stream, { muted: true });
 
     return stream;
   }
@@ -113,7 +118,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     cleanupSignalingChannel();
     clearPolling();
 
-    // Notify server of disconnect
     await supabase.functions.invoke("videocall-match", {
       body: { type: "disconnect", memberId: memberIdRef.current },
     }).catch(() => {});
@@ -122,7 +126,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
 
-    // Immediately re-queue with a new channel ID
     channelIdRef.current = crypto.randomUUID();
     setCallState("waiting");
 
@@ -169,17 +172,14 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       });
     }
 
-    // In voice mode (no video track), add a recvonly video transceiver
-    // so we can still receive the partner's video stream
     if (voiceModeRef.current) {
-      pc.addTransceiver('video', { direction: 'recvonly' });
+      pc.addTransceiver("video", { direction: "recvonly" });
     }
 
     pc.ontrack = (event) => {
-      const [stream] = event.streams;
-      if (stream && remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = stream;
-      }
+      const stream = getTrackEventStream(event, remoteStreamRef.current);
+      remoteStreamRef.current = stream;
+      attachStreamToVideo(remoteVideoRef.current, stream);
     };
 
     pc.onicecandidate = (event) => {
@@ -197,11 +197,11 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "connected") {
+        attachStreamToVideo(remoteVideoRef.current, remoteStreamRef.current);
         setCallState("connected");
       }
 
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
-        // Don't set to disconnected — auto-cycle to next partner
         handlePartnerLeft();
       }
     };
@@ -287,7 +287,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       console.log("[WebRTC] Room found via polling:", room.id);
       clearPolling();
       roomIdRef.current = room.id;
-      // Determine partner ID and voice mode from the room
       const pid = room.member1 === mid ? room.member2 : room.member1;
       const pVoiceMode = room.member1 === mid ? room.member2_voice_mode : room.member1_voice_mode;
       setCurrentPartnerId(pid);
@@ -386,7 +385,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   async function next() {
-    // Clean up current connection without going to "idle" state
     signalingChannelRef.current?.send({
       type: "broadcast",
       event: "partner-disconnected",
