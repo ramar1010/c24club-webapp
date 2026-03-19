@@ -12,24 +12,28 @@ const GIFT_TIERS = {
     price_id: "price_1TA0FzA5n8uAZoY1b3jUsE4G",
     minutes: 100,
     cents: 199,
+    cash_value_cents: 100, // $1.00
     sender_bonus: 0,
   },
   "400": {
     price_id: "price_1TA0GjA5n8uAZoY1rrg7cW9q",
     minutes: 400,
     cents: 499,
+    cash_value_cents: 400, // $4.00
     sender_bonus: 100,
   },
   "600": {
     price_id: "price_1TCLHKA5n8uAZoY1ENfhv2PI",
     minutes: 600,
     cents: 799,
+    cash_value_cents: 600, // $6.00
     sender_bonus: 150,
   },
   "1000": {
     price_id: "price_1TCLI0A5n8uAZoY146CTVt6v",
     minutes: 1000,
     cents: 1299,
+    cash_value_cents: 1000, // $10.00
     sender_bonus: 250,
   },
 };
@@ -104,6 +108,7 @@ serve(async (req) => {
           gift_id: gift.id,
           recipient_id,
           minutes_amount: String(giftTier.minutes),
+          cash_value_cents: String(giftTier.cash_value_cents),
           sender_bonus: String(giftTier.sender_bonus),
           is_direct_call: is_direct_call ? "true" : "false",
         },
@@ -152,15 +157,30 @@ serve(async (req) => {
       }
 
       const minutesAmount = parseInt(session.metadata?.minutes_amount || "0");
+      const cashValueCents = parseInt(session.metadata?.cash_value_cents || "0");
       const senderBonus = parseInt(session.metadata?.sender_bonus || "0");
       const recipientId = session.metadata?.recipient_id;
       const isDirectCall = session.metadata?.is_direct_call === "true";
 
-      // Apply 20% bonus for direct/private call gifts
+      // Apply 20% bonus for direct/private call gifts (on calling minutes only)
       const directCallBonus = isDirectCall ? Math.floor(minutesAmount * DIRECT_CALL_BONUS_RATE) : 0;
       const totalMinutesForRecipient = minutesAmount + directCallBonus;
 
-      // Credit recipient minutes
+      // Calculate cashable gifted minutes based on actual cash value and cashout rate
+      // e.g. $1.00 cash value at $0.35/min rate = ~2.86 cashable minutes
+      const { data: cashoutSettings } = await supabaseAdmin
+        .from("cashout_settings")
+        .select("rate_per_minute")
+        .limit(1)
+        .single();
+
+      const ratePerMinute = cashoutSettings?.rate_per_minute || 0.01;
+      const cashValue = cashValueCents / 100;
+      // Include direct call bonus on cash value too (20% more cash value)
+      const totalCashValue = isDirectCall ? cashValue * (1 + DIRECT_CALL_BONUS_RATE) : cashValue;
+      const cashableGiftedMinutes = Math.floor(totalCashValue / ratePerMinute);
+
+      // Credit recipient: full calling minutes + only cashable gifted minutes
       const { data: recipientMinutes } = await supabaseAdmin
         .from("member_minutes")
         .select("total_minutes, gifted_minutes")
@@ -172,9 +192,7 @@ serve(async (req) => {
           .from("member_minutes")
           .update({
             total_minutes: recipientMinutes.total_minutes + totalMinutesForRecipient,
-            gifted_minutes: (recipientMinutes as any).gifted_minutes
-              ? (recipientMinutes as any).gifted_minutes + totalMinutesForRecipient
-              : totalMinutesForRecipient,
+            gifted_minutes: ((recipientMinutes as any).gifted_minutes || 0) + cashableGiftedMinutes,
           })
           .eq("user_id", recipientId);
       }
@@ -218,7 +236,7 @@ serve(async (req) => {
         if (recipientMember?.email) {
           const senderName = senderMember?.name || "Someone";
           const recipientName = recipientMember.name || "there";
-          const subject = `🎁 ${senderName} just gifted you ${minutesAmount} minutes!`;
+          const subject = `🎁 ${senderName} just sent you $${totalCashValue.toFixed(2)} cash!`;
           const body = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -239,12 +257,12 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 <div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
 <div class="content">
 <h1>Hey ${recipientName}! 🎉</h1>
-<p><strong>${senderName}</strong> just sent you a gift on C24Club!</p>
+<p><strong>${senderName}</strong> just sent you a cash gift on C24Club!</p>
 <div class="highlight">
-<div class="amount">${minutesAmount} min</div>
-<div class="label">Minutes gifted to you</div>
+<div class="amount">$${totalCashValue.toFixed(2)}</div>
+<div class="label">Cash value (+ ${totalMinutesForRecipient} calling minutes)</div>
 </div>
-<p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
+<p>You can <strong>cash out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
 <div style="text-align:center">
 <a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
 </div>
@@ -271,7 +289,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
               sender_domain: "c24club.com",
               subject,
               html: body,
-              text: `Hey ${recipientName}! ${senderName} just gifted you ${minutesAmount} minutes on C24Club! You can cash these out for real money via PayPal. Go to My Rewards > Cash Out Minutes to convert them. https://c24club.lovable.app/my-rewards`,
+              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.lovable.app/my-rewards`,
               purpose: "transactional",
               label: "gift-received",
               queued_at: new Date().toISOString(),
@@ -283,7 +301,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         console.error("Gift notification email error:", emailErr);
       }
 
-      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
+      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, cashable_minutes: cashableGiftedMinutes, cash_value: totalCashValue, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
