@@ -822,7 +822,6 @@ const VideoCallPage = () => {
               </div>
             </div>
           }
-          }
 
           {/* Partner video (big box) on mobile, local video on desktop */}
           {isMobile ?
