@@ -41,6 +41,8 @@ import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPo
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
+import CameraUnlockButton from "@/components/videocall/CameraUnlockButton";
+import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
@@ -87,6 +89,8 @@ const VideoCallPage = () => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
+  const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
+  const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const { data: unreadDmCount = 0 } = useUnreadCount();
 
   // Skip penalty state
@@ -306,6 +310,79 @@ const VideoCallPage = () => {
       supabase.removeChannel(channel);
     };
   }, [memberId]);
+
+  // Reset camera unlock state when partner changes
+  useEffect(() => {
+    setCameraUnlockRequest(null);
+    setCameraUnlocked(false);
+  }, [currentPartnerId]);
+
+  // Listen for incoming camera unlock requests (for females receiving requests)
+  useEffect(() => {
+    if (memberId === "anonymous" || !isFemale) return;
+
+    const channel = supabase
+      .channel("camera-unlock-" + memberId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "camera_unlock_requests",
+          filter: `recipient_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const req = payload.new as any;
+          if (req.status === "paid" && currentPartnerId === req.requester_id) {
+            setCameraUnlockRequest({
+              id: req.id,
+              recipient_cut_cents: req.recipient_cut_cents,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [memberId, isFemale, currentPartnerId]);
+
+  // Listen for camera unlock acceptance (for males who sent request)
+  useEffect(() => {
+    if (memberId === "anonymous" || isFemale) return;
+
+    const channel = supabase
+      .channel("camera-unlock-response-" + memberId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "camera_unlock_requests",
+          filter: `requester_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const req = payload.new as any;
+          if (req.status === "accepted") {
+            toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
+            setCameraUnlocked(true);
+          } else if (req.status === "declined") {
+            toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [memberId, isFemale]);
+
+  // Handle camera unlock verification from success page redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("camera_unlock") === "success") {
+      toast.success("Payment verified! Waiting for partner to accept...", { duration: 5000 });
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, []);
 
 
   // Show voice mode explainer once per session when female connects with voice mode
@@ -856,6 +933,13 @@ const VideoCallPage = () => {
             </button>
           }
 
+          {/* Camera Unlock Button - mobile, shows when partner is in voice mode */}
+          {callState === "connected" && partnerVoiceMode && !isFemale && currentPartnerId && !cameraUnlocked && isMobile &&
+          <div className="absolute bottom-14 left-3 z-20">
+              <CameraUnlockButton recipientId={currentPartnerId} />
+            </div>
+          }
+
           {isActive &&
           <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
@@ -992,6 +1076,12 @@ const VideoCallPage = () => {
             
                 <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
               </button>
+          }
+            {/* Camera Unlock Button - desktop, shows when partner is in voice mode */}
+            {callState === "connected" && partnerVoiceMode && !isFemale && currentPartnerId && !cameraUnlocked &&
+          <div className="absolute bottom-14 left-2 z-20">
+                <CameraUnlockButton recipientId={currentPartnerId} />
+              </div>
           }
             {/* NEXT Button - inside partner box, bottom-right, above overlays */}
             {isActive &&
@@ -1276,7 +1366,21 @@ const VideoCallPage = () => {
           </div>
         </div>
       }
-
+      
+      {/* Camera Consent Modal */}
+      {cameraUnlockRequest && (
+        <CameraConsentModal
+          requestId={cameraUnlockRequest.id}
+          recipientCutCents={cameraUnlockRequest.recipient_cut_cents}
+          onAccept={() => {
+            setCameraUnlockRequest(null);
+            setCameraUnlocked(true);
+            toast.success("📹 Camera enabled!");
+          }}
+          onDecline={() => setCameraUnlockRequest(null)}
+        />
+      )}
+      
       {/* Mandatory Selfie Capture Modal */}
       <SelfieCaptureModal
         open={showSelfieCapture}
