@@ -82,7 +82,7 @@ const VideoCallPage = () => {
   const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(isFemale);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
   const voiceModeExplainerShownRef = useRef(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
