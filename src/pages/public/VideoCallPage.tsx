@@ -223,8 +223,11 @@ const VideoCallPage = () => {
     banUser();
   }, [nsfwStrikes, currentPartnerId, memberId]);
 
+  const femaleEarning = isFemale && femaleHasSlot && !femaleVerificationPaused;
+
   const {
     totalMinutes,
+    giftedMinutes,
     elapsedSeconds,
     showCapPopup,
     capInfo,
@@ -234,8 +237,8 @@ const VideoCallPage = () => {
     refreshBalance: refreshMinutesBalance
   } = useCallMinutes({
     userId: memberId,
-    partnerId: currentPartnerId,
-    isConnected: callState === "connected",
+    partnerId: currentPartnerId || (femaleEarning && callState !== "idle" ? "queue" : null),
+    isConnected: callState === "connected" || (femaleEarning && callState !== "idle"),
     voiceMode: isFemale ? voiceMode : false
   });
 
