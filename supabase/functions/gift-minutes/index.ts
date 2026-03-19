@@ -236,7 +236,7 @@ serve(async (req) => {
         if (recipientMember?.email) {
           const senderName = senderMember?.name || "Someone";
           const recipientName = recipientMember.name || "there";
-          const subject = `🎁 ${senderName} just gifted you ${minutesAmount} minutes!`;
+          const subject = `🎁 ${senderName} just sent you $${totalCashValue.toFixed(2)} cash!`;
           const body = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
