@@ -386,6 +386,13 @@ const VideoCallPage = () => {
   }, []);
 
 
+  // Force voice mode ON for females
+  useEffect(() => {
+    if (isFemale && !voiceMode) {
+      setVoiceMode(true);
+    }
+  }, [isFemale, voiceMode]);
+
   // Show voice mode explainer once per session when female connects with voice mode
   useEffect(() => {
     if (callState === "connected" && isFemale && voiceMode && !voiceModeExplainerShownRef.current) {
