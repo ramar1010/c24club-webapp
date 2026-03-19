@@ -23,6 +23,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const [error, setError] = useState<string | null>(null);
   const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
   const [partnerVoiceMode, setPartnerVoiceMode] = useState(false);
+  const [partnerGender, setPartnerGender] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -125,6 +126,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
+    setPartnerGender(null);
 
     channelIdRef.current = crypto.randomUUID();
     setCallState("waiting");
@@ -147,6 +149,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         roomIdRef.current = data.roomId;
         setCurrentPartnerId(data.partnerId);
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
+        setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
@@ -289,8 +292,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       roomIdRef.current = room.id;
       const pid = room.member1 === mid ? room.member2 : room.member1;
       const pVoiceMode = room.member1 === mid ? room.member2_voice_mode : room.member1_voice_mode;
+      const pGender = room.member1 === mid ? room.member2_gender : room.member1_gender;
       setCurrentPartnerId(pid);
       setPartnerVoiceMode(pVoiceMode ?? false);
+      setPartnerGender(pGender ?? null);
       setCallState("connecting");
 
       const pc = createPeerConnection();
@@ -326,6 +331,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
+    setPartnerGender(null);
     setCallState("idle");
   }
 
@@ -362,6 +368,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         roomIdRef.current = data.roomId;
         setCurrentPartnerId(data.partnerId);
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
+        setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
         createPeerConnection();
         await setupSignaling(data.roomId);
@@ -402,6 +409,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
+    setPartnerGender(null);
     setCallState("waiting");
 
     channelIdRef.current = crypto.randomUUID();
@@ -442,6 +450,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     error,
     currentPartnerId,
     partnerVoiceMode,
+    partnerGender,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,

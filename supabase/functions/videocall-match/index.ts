@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
               partnerId: partner.member_id,
               partnerChannelId: partner.channel_id,
               partnerVoiceMode: partner.voice_mode ?? false,
+              partnerGender: partner.member_gender ?? null,
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
@@ -145,6 +146,7 @@ Deno.serve(async (req) => {
             partnerId: partner.member_id,
             partnerChannelId: partner.channel_id,
             partnerVoiceMode: partner.voice_mode ?? false,
+            partnerGender: partner.member_gender ?? null,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

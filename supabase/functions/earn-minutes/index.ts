@@ -243,19 +243,30 @@ Deno.serve(async (req) => {
 
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       if (genderCheck?.gender?.toLowerCase() === "female") {
-        const { data: activeSession } = await supabase
-          .from("anchor_sessions")
-          .select("id")
-          .eq("user_id", userId)
-          .eq("status", "active")
+        // Check partner gender — females don't earn cashable minutes from other females
+        const { data: partnerGenderCheck } = await supabase
+          .from("members")
+          .select("gender")
+          .eq("id", partnerId)
           .maybeSingle();
 
-        if (activeSession) {
-          updatedGiftedMinutes += safeCapped;
-          await supabase
-            .from("member_minutes")
-            .update({ gifted_minutes: updatedGiftedMinutes })
-            .eq("user_id", userId);
+        const partnerIsFemale = partnerGenderCheck?.gender?.toLowerCase() === "female";
+
+        if (!partnerIsFemale) {
+          const { data: activeSession } = await supabase
+            .from("anchor_sessions")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("status", "active")
+            .maybeSingle();
+
+          if (activeSession) {
+            updatedGiftedMinutes += safeCapped;
+            await supabase
+              .from("member_minutes")
+              .update({ gifted_minutes: updatedGiftedMinutes })
+              .eq("user_id", userId);
+          }
         }
       }
 
