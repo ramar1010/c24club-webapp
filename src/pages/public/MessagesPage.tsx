@@ -459,6 +459,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                   Cash Out
                 </button>
               </div>
+            ) : myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male" ? (
+              <div className="mx-4 mt-3 mb-1 flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-xl px-4 py-2.5">
+                <Video className="w-4 h-4 text-pink-400 shrink-0" />
+                <span className="text-xs text-pink-300/90 flex-1">
+                  💡 Start a <strong>private video call</strong> — gifts received in private calls give you a <strong className="text-pink-300">20% bonus</strong>!
+                </span>
+                <button
+                  onClick={handleStartCall}
+                  disabled={startingCall}
+                  className="shrink-0 bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                >
+                  Call Now
+                </button>
+              </div>
             ) : (
               <div className="mx-4 mt-3 mb-1 flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/15 rounded-xl px-4 py-2.5">
                 <Gift className="w-4 h-4 text-yellow-400 shrink-0" />

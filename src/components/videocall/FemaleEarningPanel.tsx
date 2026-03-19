@@ -274,4 +274,29 @@ const FemaleEarningPanel = ({
   );
 };
 
+const EARNING_TIPS = [
+  "💡 Invite guys from Discover to a private call — gifts earn you more!",
+  "🔥 Message your matches and start a private video call to boost earnings!",
+  "💸 Private call gifts give you a 20% bonus — tap the gift hint!",
+  "📲 The more private calls you do, the more you earn. DM someone now!",
+  "✨ Tip: Share your Discover profile to attract more gifters!",
+];
+
+const EarningTip = () => {
+  const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * EARNING_TIPS.length));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTipIdx((prev) => (prev + 1) % EARNING_TIPS.length);
+    }, 12000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <p className="text-pink-300/70 text-[11px] text-center mt-1.5 font-semibold animate-fade-in">
+      {EARNING_TIPS[tipIdx]}
+    </p>
+  );
+};
+
 export default FemaleEarningPanel;
