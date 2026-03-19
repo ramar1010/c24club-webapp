@@ -576,10 +576,6 @@ const VideoCallPage = () => {
   };
 
   const handleBack = () => {
-    // Intercept for female retention modal (once per session)
-    if (isFemale && retentionModalRef.current?.tryShow()) {
-      return; // modal shown, wait for user decision
-    }
     doLeave();
   };
 
