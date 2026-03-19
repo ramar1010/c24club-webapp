@@ -374,6 +374,16 @@ const VideoCallPage = () => {
     };
   }, [isFemale, memberId]);
 
+  // Listen for DM toast clicks to open messages overlay instead of navigating away
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setOverlayPage("messages");
+    };
+    window.addEventListener("open-dm-overlay", handler);
+    return () => window.removeEventListener("open-dm-overlay", handler);
+  }, []);
+
 
   // Reset gender filter if not VIP
   useEffect(() => {
