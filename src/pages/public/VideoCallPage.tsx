@@ -822,7 +822,7 @@ const VideoCallPage = () => {
               <span className="text-pink-400 text-xs font-bold mb-2">Voice Mode Active</span>
               <div className="bg-green-900/40 border border-green-500/30 rounded-lg px-3 py-2 max-w-[280px] text-center">
                 <p className="text-green-400 text-[11px] font-bold">💰 Guys pay to see you!</p>
-                <p className="text-neutral-400 text-[10px] mt-0.5">Chat & have fun to get more camera unlock requests and earn a cut.</p>
+                <p className="text-neutral-400 text-[10px] mt-0.5">Chat & have fun to get more camera unlock requests and earn a cut. Just tell him "if you want to see me click unlock camera"</p>
               </div>
             </div>
           }
