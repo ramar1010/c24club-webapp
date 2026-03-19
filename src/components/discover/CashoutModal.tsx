@@ -195,6 +195,21 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
           />
         </div>
 
+        {giftedMinutes < settings.min_cashout_minutes && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-4">
+            <p className="text-amber-400 text-xs font-bold mb-1">⚠️ Not enough cashable minutes</p>
+            <p className="text-white/50 text-[11px] leading-relaxed">
+              You need at least <span className="text-white font-bold">{settings.min_cashout_minutes} gifted minutes</span> to cash out. 
+              You currently have <span className="text-white font-bold">{giftedMinutes}</span>.
+            </p>
+            {currentMinutes > giftedMinutes && (
+              <p className="text-white/40 text-[10px] mt-1.5 leading-relaxed">
+                💡 Your other {currentMinutes - giftedMinutes} minutes (from spins, rewards, or chatting) can be used in the Reward Store but <span className="text-white/60 font-bold">cannot be cashed out</span> — only gifted minutes are cashable.
+              </p>
+            )}
+          </div>
+        )}
+
         <button
           onClick={handleCashout}
           disabled={loading || hasPending || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
@@ -207,7 +222,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
           Paid via PayPal • Admin approval required
         </p>
         <p className="text-white/20 text-[9px] text-center mt-1">
-          Only minutes received as gifts can be cashed out
+          Only gifted minutes can be cashed out — spin wins, chat earnings & rewards are store-only
         </p>
 
         {/* Cashout History */}
