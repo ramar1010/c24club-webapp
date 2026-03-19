@@ -136,6 +136,36 @@ const AnchorSettingsPage = () => {
     return m?.name || m?.email || id?.slice(0, 8) + "...";
   };
 
+  const clearSlotsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .delete()
+        .eq("status", "active");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("All active slots cleared!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const clearSingleSlotMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .delete()
+        .eq("id", sessionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Slot cleared!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const updateCashoutMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
