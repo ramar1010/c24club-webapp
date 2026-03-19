@@ -24,7 +24,22 @@ const DiscoverPage = () => {
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const { user: authUser } = useAuth();
+  const { data: minutesData, refetch: refetchMinutes } = useQuery({
+    queryKey: ["cashout-minutes-discover", authUser?.id],
+    enabled: !!authUser,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", authUser!.id)
+        .single();
+      return data || { total_minutes: 0, gifted_minutes: 0 };
+    },
+  });
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
