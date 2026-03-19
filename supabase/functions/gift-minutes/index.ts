@@ -257,12 +257,12 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 <div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
 <div class="content">
 <h1>Hey ${recipientName}! 🎉</h1>
-<p><strong>${senderName}</strong> just sent you a gift on C24Club!</p>
+<p><strong>${senderName}</strong> just sent you a cash gift on C24Club!</p>
 <div class="highlight">
-<div class="amount">${minutesAmount} min</div>
-<div class="label">Minutes gifted to you</div>
+<div class="amount">$${totalCashValue.toFixed(2)}</div>
+<div class="label">Cash value (+ ${totalMinutesForRecipient} calling minutes)</div>
 </div>
-<p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
+<p>You can <strong>cash out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
 <div style="text-align:center">
 <a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
 </div>
