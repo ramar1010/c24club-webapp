@@ -387,12 +387,12 @@ const VideoCallPage = () => {
   }, []);
 
 
-  // Force voice mode ON for females
+  // Default voice mode ON for females on first load (they can toggle it off)
   useEffect(() => {
-    if (isFemale && !voiceMode) {
+    if (isFemale && !voiceMode && !sessionStorage.getItem("c24_voice_mode_toggled")) {
       setVoiceMode(true);
     }
-  }, [isFemale, voiceMode]);
+  }, [isFemale]);
 
 
   // Manage female anchor slot via backend queue/session logic
