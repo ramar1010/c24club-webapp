@@ -38,7 +38,7 @@ const AdminLoginPage = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!captchaToken) { toast.error("Please complete the CAPTCHA verification"); return; }
+    
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
