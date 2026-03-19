@@ -1046,7 +1046,7 @@ const VideoCallPage = () => {
                 ⏳ Slots Full — You're #{femaleQueuePosition > 0 ? femaleQueuePosition : 1} in Queue
               </p>
               <p className="text-white/60 text-xs mt-1.5">
-                We'll start your earning automatically when a slot opens up!
+                We'll start your earning cash automatically when a slot opens up! Stay here to save your spot and connect with people as you wait
               </p>
             </div>
           </div>
