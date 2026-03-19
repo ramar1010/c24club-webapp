@@ -405,6 +405,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
+    setPartnerGender(null);
     setCallState("waiting");
 
     channelIdRef.current = crypto.randomUUID();
