@@ -239,10 +239,12 @@ Deno.serve(async (req) => {
         .eq("id", userId)
         .maybeSingle();
 
+      let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       if (genderCheck?.gender?.toLowerCase() === "female") {
+        updatedGiftedMinutes += safeCapped;
         await supabase
           .from("member_minutes")
-          .update({ gifted_minutes: (memberData?.gifted_minutes ?? 0) + safeCapped })
+          .update({ gifted_minutes: updatedGiftedMinutes })
           .eq("user_id", userId);
       }
 
@@ -279,6 +281,7 @@ Deno.serve(async (req) => {
           message: partnerCapReached ? "cap_reached" : "earned",
           earned: safeCapped,
           totalMinutes: newTotal,
+          giftedMinutes: updatedGiftedMinutes,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
           isVip,
