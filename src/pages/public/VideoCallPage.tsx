@@ -73,6 +73,8 @@ const VideoCallPage = () => {
   const mobileNavInitializedRef = useRef(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [femaleHasSlot, setFemaleHasSlot] = useState(false);
+  const [femaleQueued, setFemaleQueued] = useState(false);
+  const [femaleQueuePosition, setFemaleQueuePosition] = useState(0);
   const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
