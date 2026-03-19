@@ -264,6 +264,15 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
+            {(minutesData?.gifted_minutes ?? 0) > 0 && (
+              <button
+                onClick={() => setShowCashout(true)}
+                className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors"
+                title="Cash Out"
+              >
+                <DollarSign className="w-4 h-4 text-emerald-400" />
+              </button>
+            )}
             <button
               onClick={() => setShowGiftOverlay(true)}
               className="w-9 h-9 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
