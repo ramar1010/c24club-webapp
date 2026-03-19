@@ -60,7 +60,7 @@ const CameraUnlockButton = ({ recipientId, roomId }: CameraUnlockButtonProps) =>
       ) : (
         <Lock className="w-4 h-4" />
       )}
-      <span>Unlock Camera ${priceDisplay}</span>
+      <span>Unlock Her Camera ${priceDisplay}</span>
     </button>
   );
 };
