@@ -317,8 +317,11 @@ const VideoCallPage = () => {
   useEffect(() => {
     if (!isFemale || memberId === "anonymous") {
       setFemaleHasSlot(false);
+      setFemaleQueued(false);
       return;
     }
+
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const tryJoinSlot = async () => {
       const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
@@ -331,12 +334,27 @@ const VideoCallPage = () => {
           await supabase.from("anchor_queue").insert({ user_id: memberId });
         }
         setFemaleHasSlot(true);
+        setFemaleQueued(false);
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+      } else {
+        // Slots full — show queue position
+        setFemaleHasSlot(false);
+        setFemaleQueued(true);
+        // Estimate position: count how many are already in queue
+        const { data: queueEntries } = await supabase.from("anchor_queue").select("created_at").order("created_at");
+        setFemaleQueuePosition((queueEntries?.length ?? count ?? 0) - maxCap + 1);
+
+        // Poll every 10s to check if a slot opens
+        if (!pollInterval) {
+          pollInterval = setInterval(tryJoinSlot, 10000);
+        }
       }
     };
 
     tryJoinSlot();
 
     return () => {
+      if (pollInterval) clearInterval(pollInterval);
       supabase.from("anchor_queue").delete().eq("user_id", memberId).then(() => {});
     };
   }, [isFemale, memberId]);
