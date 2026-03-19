@@ -377,7 +377,7 @@ const AnchorEarningPanel = ({
             onClick={() => setShowCashoutModal(true)}
             className="text-xs font-bold text-green-400 hover:text-green-300 bg-green-500/10 px-2 py-1 rounded-lg border border-green-500/30"
           >
-            💰 ${cashBalance.toFixed(2)}
+            💰 Cash out ${cashBalance.toFixed(2)}
           </button>
         )}
       </div>
