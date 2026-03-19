@@ -292,8 +292,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       roomIdRef.current = room.id;
       const pid = room.member1 === mid ? room.member2 : room.member1;
       const pVoiceMode = room.member1 === mid ? room.member2_voice_mode : room.member1_voice_mode;
+      const pGender = room.member1 === mid ? room.member2_gender : room.member1_gender;
       setCurrentPartnerId(pid);
       setPartnerVoiceMode(pVoiceMode ?? false);
+      setPartnerGender(pGender ?? null);
       setCallState("connecting");
 
       const pc = createPeerConnection();
