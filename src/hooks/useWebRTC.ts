@@ -147,7 +147,8 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       }
 
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
-        setCallState("disconnected");
+        // Don't set to disconnected — auto-cycle to next partner
+        handlePartnerLeft();
       }
     };
 
