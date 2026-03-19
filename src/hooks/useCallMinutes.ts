@@ -24,6 +24,7 @@ interface FreezeInfo {
 
 export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
+  const [giftedMinutes, setGiftedMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
