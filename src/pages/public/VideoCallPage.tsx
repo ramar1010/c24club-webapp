@@ -139,7 +139,8 @@ const VideoCallPage = () => {
     localStreamRef,
     startCall,
     next,
-    stop
+    stop,
+    enableCamera
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],

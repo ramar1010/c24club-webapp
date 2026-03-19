@@ -445,6 +445,62 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     };
   }, []);
 
+  // Enable camera mid-call (for voice-mode users who accept a camera unlock)
+  async function enableCamera() {
+    try {
+      const pc = peerConnectionRef.current;
+      if (!pc) return;
+
+      // Get video stream
+      const videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (!videoTrack) return;
+
+      // Add track to local stream
+      if (localStreamRef.current) {
+        localStreamRef.current.addTrack(videoTrack);
+      } else {
+        localStreamRef.current = videoStream;
+      }
+
+      // Show local video
+      if (localVideoRef.current && localStreamRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+      }
+
+      // Find the recvonly video transceiver and replace/add
+      const videoTransceiver = pc.getTransceivers().find(
+        (t) => t.receiver.track?.kind === "video" && t.direction === "recvonly"
+      );
+
+      if (videoTransceiver) {
+        videoTransceiver.direction = "sendrecv";
+        await videoTransceiver.sender.replaceTrack(videoTrack);
+      } else {
+        pc.addTrack(videoTrack, localStreamRef.current!);
+      }
+
+      // Renegotiate
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      if (signalingChannelRef.current) {
+        signalingChannelRef.current.send({
+          type: "broadcast",
+          event: "offer",
+          payload: {
+            from: channelIdRef.current,
+            sdp: pc.localDescription?.sdp,
+          },
+        });
+      }
+
+      voiceModeRef.current = false;
+    } catch (err) {
+      console.error("[WebRTC] Failed to enable camera:", err);
+    }
+  }
+
   return {
     callState,
     error,
@@ -458,5 +514,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     next,
     stop,
     disconnect,
+    enableCamera,
   };
 }
