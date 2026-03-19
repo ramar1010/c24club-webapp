@@ -72,34 +72,57 @@ const FemaleEarningPanel = ({
 
   const cashValue = (giftedMinutes * rate).toFixed(2);
 
-  // Verification challenge
+  // Verification challenge — pink themed
   if (verificationRequired) {
     return (
-      <div className="w-full mb-2 rounded-xl border-2 border-yellow-500 bg-neutral-900/90 backdrop-blur-sm p-4 text-center">
-        <div className="text-3xl mb-2">⏸️</div>
-        <h3 className="text-white font-black text-base uppercase mb-1">Still There?</h3>
-        <p className="text-neutral-400 text-xs mb-3">Type the word below to keep earning</p>
-        <p className="text-yellow-400 font-black text-xl tracking-widest mb-3 select-none">
-          {verificationWord.toUpperCase()}
-        </p>
-        <input
-          type="text"
-          value={verifyInput}
-          onChange={(e) => { setVerifyInput(e.target.value); setVerifyError(false); }}
-          placeholder="Type the word here..."
-          autoFocus
-          className={`w-full bg-neutral-800 border ${verifyError ? "border-red-500" : "border-neutral-600"} rounded-lg px-3 py-2.5 text-white text-center text-sm font-bold mb-2 focus:outline-none focus:border-yellow-500`}
-          onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+      <div
+        className="w-full mb-2 rounded-xl p-4 text-center relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 50%, #c026d3 100%)',
+          boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(192, 38, 211, 0.2)',
+          border: '2px solid rgba(255, 255, 255, 0.25)',
+        }}
+      >
+        {/* Shimmer */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer-bg 3s ease-in-out infinite',
+          }}
         />
-        {verifyError && <p className="text-red-400 text-xs mb-2">Wrong word — try again!</p>}
-        <button
-          onClick={handleVerify}
-          disabled={!verifyInput.trim()}
-          className="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-neutral-900 font-black text-sm uppercase transition-colors disabled:opacity-50"
-        >
-          Confirm ✅
-        </button>
-        <p className="text-neutral-600 text-[10px] mt-2">Your earning is paused until you verify</p>
+        <div className="relative">
+          <div className="text-3xl mb-2">⏸️</div>
+          <h3 className="text-white font-black text-base uppercase mb-1 drop-shadow-sm">Still There?</h3>
+          <p className="text-white/70 text-xs mb-3">Type the word below to keep earning</p>
+          <p className="text-yellow-300 font-black text-xl tracking-widest mb-3 select-none drop-shadow-sm">
+            {verificationWord.toUpperCase()}
+          </p>
+          <input
+            type="text"
+            value={verifyInput}
+            onChange={(e) => { setVerifyInput(e.target.value); setVerifyError(false); }}
+            placeholder="Type the word here..."
+            autoFocus
+            className={`w-full bg-white/15 backdrop-blur-sm border-2 ${verifyError ? "border-red-400" : "border-white/30"} rounded-lg px-3 py-2.5 text-white text-center text-sm font-bold mb-2 focus:outline-none focus:border-yellow-300 placeholder:text-white/40`}
+            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+          />
+          {verifyError && <p className="text-yellow-200 text-xs mb-2 font-bold">Wrong word — try again!</p>}
+          <button
+            onClick={handleVerify}
+            disabled={!verifyInput.trim()}
+            className="w-full py-2.5 rounded-xl font-black text-sm uppercase transition-colors disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 100%)',
+              color: '#831843',
+              boxShadow: '0 0 15px rgba(250, 204, 21, 0.4)',
+            }}
+          >
+            Confirm ✅
+          </button>
+          <p className="text-white/40 text-[10px] mt-2">Your earning is paused until you verify</p>
+        </div>
       </div>
     );
   }
