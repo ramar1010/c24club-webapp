@@ -1010,6 +1010,37 @@ const VideoCallPage = () => {
         </div>
       )}
 
+      {/* Female Queue Indicator */}
+      {isFemale && femaleQueued && !femaleHasSlot && (
+        <div className="mx-3 md:mx-auto md:w-[420px] mb-2">
+          <div
+            className="w-full rounded-xl p-4 text-center relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 50%, #c026d3 100%)',
+              boxShadow: '0 0 25px rgba(255, 45, 149, 0.5), 0 0 50px rgba(192, 38, 211, 0.2)',
+              border: '2px solid rgba(255, 255, 255, 0.25)',
+            }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer-bg 3s ease-in-out infinite',
+              }}
+            />
+            <div className="relative">
+              <p className="text-yellow-300 font-black text-sm uppercase tracking-wide animate-pulse">
+                ⏳ Slots Full — You're #{femaleQueuePosition > 0 ? femaleQueuePosition : 1} in Queue
+              </p>
+              <p className="text-white/60 text-xs mt-1.5">
+                We'll start your earning automatically when a slot opens up!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Panels */}
       {showRedeem ?
       <div className="px-3 pb-4">
