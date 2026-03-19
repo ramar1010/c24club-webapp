@@ -127,6 +127,7 @@ const VideoCallPage = () => {
     error,
     currentPartnerId,
     partnerVoiceMode,
+    partnerGender,
     localVideoRef,
     remoteVideoRef,
     localStreamRef,
