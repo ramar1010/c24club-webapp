@@ -44,7 +44,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   } | null>(null);
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
+  const { data: minutesData, refetch: refetchMinutes } = useQuery({
+    queryKey: ["cashout-minutes-messages", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", user!.id)
+        .single();
+      return data || { total_minutes: 0, gifted_minutes: 0 };
+    },
+  });
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
     selectedConvo?.id || null
