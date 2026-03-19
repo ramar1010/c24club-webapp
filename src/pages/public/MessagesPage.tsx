@@ -58,6 +58,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
       return data || { total_minutes: 0, gifted_minutes: 0 };
     },
   });
+
+  // Fetch current user's gender
+  const { data: myGender } = useQuery({
+    queryKey: ["my-gender-messages", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data?.gender?.toLowerCase() || null;
+    },
+  });
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
     selectedConvo?.id || null
@@ -443,6 +457,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                 >
                   <DollarSign className="w-3 h-3" />
                   Cash Out
+                </button>
+              </div>
+            ) : myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male" ? (
+              <div className="mx-4 mt-3 mb-1 flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-xl px-4 py-2.5">
+                <Video className="w-4 h-4 text-pink-400 shrink-0" />
+                <span className="text-xs text-pink-300/90 flex-1">
+                  💡 Start a <strong>private video call</strong> — gifts received in private calls give you a <strong className="text-pink-300">20% bonus</strong>!
+                </span>
+                <button
+                  onClick={handleStartCall}
+                  disabled={startingCall}
+                  className="shrink-0 bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                >
+                  Call Now
                 </button>
               </div>
             ) : (

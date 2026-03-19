@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import CashoutModal from "@/components/discover/CashoutModal";
@@ -255,10 +255,8 @@ const FemaleEarningPanel = ({
         </div>
       </div>
 
-      {/* Helper text below panel */}
-      <p className="text-neutral-400 text-[11px] text-center mt-1.5 font-semibold">
-        Chat with guys or <span className="text-pink-400">"wait for a partner"</span> to earn!
-      </p>
+      {/* Rotating earning tips */}
+      <EarningTip />
 
       {/* Cashout Modal */}
       {showCashout && (
@@ -273,6 +271,31 @@ const FemaleEarningPanel = ({
         />
       )}
     </div>
+  );
+};
+
+const EARNING_TIPS = [
+  "💡 Invite guys from Discover to a private call — gifts earn you more!",
+  "🔥 Message your matches and start a private video call to boost earnings!",
+  "💸 Private call gifts give you a 20% bonus — tap the gift hint!",
+  "📲 The more private calls you do, the more you earn. DM someone now!",
+  "✨ Tip: Share your Discover profile to attract more gifters!",
+];
+
+const EarningTip = () => {
+  const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * EARNING_TIPS.length));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTipIdx((prev) => (prev + 1) % EARNING_TIPS.length);
+    }, 12000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <p className="text-pink-300/70 text-[11px] text-center mt-1.5 font-semibold animate-fade-in">
+      {EARNING_TIPS[tipIdx]}
+    </p>
   );
 };
 

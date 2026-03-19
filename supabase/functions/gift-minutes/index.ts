@@ -56,7 +56,10 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("Not authenticated");
 
-    const { action, tier, recipient_id, session_id, minutes_amount } = await req.json();
+    const { action, tier, recipient_id, session_id, minutes_amount, is_direct_call } = await req.json();
+
+    // Direct/private call gifts give recipient a 20% bonus
+    const DIRECT_CALL_BONUS_RATE = 0.2;
 
     if (action === "create-checkout") {
       const giftTier = GIFT_TIERS[tier as keyof typeof GIFT_TIERS];
@@ -102,6 +105,7 @@ serve(async (req) => {
           recipient_id,
           minutes_amount: String(giftTier.minutes),
           sender_bonus: String(giftTier.sender_bonus),
+          is_direct_call: is_direct_call ? "true" : "false",
         },
       });
 
@@ -150,6 +154,11 @@ serve(async (req) => {
       const minutesAmount = parseInt(session.metadata?.minutes_amount || "0");
       const senderBonus = parseInt(session.metadata?.sender_bonus || "0");
       const recipientId = session.metadata?.recipient_id;
+      const isDirectCall = session.metadata?.is_direct_call === "true";
+
+      // Apply 20% bonus for direct/private call gifts
+      const directCallBonus = isDirectCall ? Math.floor(minutesAmount * DIRECT_CALL_BONUS_RATE) : 0;
+      const totalMinutesForRecipient = minutesAmount + directCallBonus;
 
       // Credit recipient minutes
       const { data: recipientMinutes } = await supabaseAdmin
@@ -162,10 +171,10 @@ serve(async (req) => {
         await supabaseAdmin
           .from("member_minutes")
           .update({
-            total_minutes: recipientMinutes.total_minutes + minutesAmount,
+            total_minutes: recipientMinutes.total_minutes + totalMinutesForRecipient,
             gifted_minutes: (recipientMinutes as any).gifted_minutes
-              ? (recipientMinutes as any).gifted_minutes + minutesAmount
-              : minutesAmount,
+              ? (recipientMinutes as any).gifted_minutes + totalMinutesForRecipient
+              : totalMinutesForRecipient,
           })
           .eq("user_id", recipientId);
       }
@@ -274,7 +283,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         console.error("Gift notification email error:", emailErr);
       }
 
-      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, sender_bonus: senderBonus }), {
+      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
