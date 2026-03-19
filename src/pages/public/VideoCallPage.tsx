@@ -1070,6 +1070,12 @@ const VideoCallPage = () => {
                 <img src={frozenEmoji} alt="Frozen" className="w-full h-full object-contain" />
               </button>
           }
+            {/* Camera Unlock Button - desktop, shows when partner is in voice mode */}
+            {callState === "connected" && partnerVoiceMode && !isFemale && currentPartnerId && !cameraUnlocked &&
+          <div className="absolute bottom-14 left-2 z-20">
+                <CameraUnlockButton recipientId={currentPartnerId} />
+              </div>
+          }
             {/* NEXT Button - inside partner box, bottom-right, above overlays */}
             {isActive &&
           <button onClick={handleNext} className="absolute bottom-3 right-3 z-40 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-5 py-2 transition-colors">
