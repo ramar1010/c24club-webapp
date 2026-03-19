@@ -766,19 +766,12 @@ const VideoCallPage = () => {
           <div className="flex flex-col items-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
               
-              {/* Voice Mode toggle - females only */}
+              {/* Voice Mode indicator - females always in voice mode */}
               {isFemale &&
-            <button
-              onClick={() => setVoiceMode(!voiceMode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-              voiceMode ?
-              "bg-pink-600 text-white shadow-lg shadow-pink-500/30" :
-              "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white border border-neutral-600"}`
-              }>
-              
-                  <span>{voiceMode ? "🎙️" : "📹"}</span>
-                  <span>{voiceMode ? "Voice Mode ON" : "Voice Mode (Hide Face)"}</span>
-                </button>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-pink-600 text-white shadow-lg shadow-pink-500/30">
+              <span>🎙️</span>
+              <span>Voice Mode ON</span>
+            </div>
             }
 
               {needsSelfie ?
