@@ -157,15 +157,30 @@ serve(async (req) => {
       }
 
       const minutesAmount = parseInt(session.metadata?.minutes_amount || "0");
+      const cashValueCents = parseInt(session.metadata?.cash_value_cents || "0");
       const senderBonus = parseInt(session.metadata?.sender_bonus || "0");
       const recipientId = session.metadata?.recipient_id;
       const isDirectCall = session.metadata?.is_direct_call === "true";
 
-      // Apply 20% bonus for direct/private call gifts
+      // Apply 20% bonus for direct/private call gifts (on calling minutes only)
       const directCallBonus = isDirectCall ? Math.floor(minutesAmount * DIRECT_CALL_BONUS_RATE) : 0;
       const totalMinutesForRecipient = minutesAmount + directCallBonus;
 
-      // Credit recipient minutes
+      // Calculate cashable gifted minutes based on actual cash value and cashout rate
+      // e.g. $1.00 cash value at $0.35/min rate = ~2.86 cashable minutes
+      const { data: cashoutSettings } = await supabaseAdmin
+        .from("cashout_settings")
+        .select("rate_per_minute")
+        .limit(1)
+        .single();
+
+      const ratePerMinute = cashoutSettings?.rate_per_minute || 0.01;
+      const cashValue = cashValueCents / 100;
+      // Include direct call bonus on cash value too (20% more cash value)
+      const totalCashValue = isDirectCall ? cashValue * (1 + DIRECT_CALL_BONUS_RATE) : cashValue;
+      const cashableGiftedMinutes = Math.floor(totalCashValue / ratePerMinute);
+
+      // Credit recipient: full calling minutes + only cashable gifted minutes
       const { data: recipientMinutes } = await supabaseAdmin
         .from("member_minutes")
         .select("total_minutes, gifted_minutes")
@@ -177,9 +192,7 @@ serve(async (req) => {
           .from("member_minutes")
           .update({
             total_minutes: recipientMinutes.total_minutes + totalMinutesForRecipient,
-            gifted_minutes: (recipientMinutes as any).gifted_minutes
-              ? (recipientMinutes as any).gifted_minutes + totalMinutesForRecipient
-              : totalMinutesForRecipient,
+            gifted_minutes: ((recipientMinutes as any).gifted_minutes || 0) + cashableGiftedMinutes,
           })
           .eq("user_id", recipientId);
       }
