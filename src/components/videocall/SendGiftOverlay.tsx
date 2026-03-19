@@ -7,6 +7,7 @@ import giftBoxIcon from "@/assets/videocall/gift-icon.svg";
 interface SendGiftOverlayProps {
   onClose: () => void;
   recipientId: string;
+  isDirectCall?: boolean;
 }
 
 const GIFT_TIERS = [
