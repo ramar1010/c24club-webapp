@@ -313,55 +313,61 @@ const VideoCallPage = () => {
     }
   }, [callState, isFemale, voiceMode]);
 
-  // Manage female anchor slot (cap on concurrent female earners)
+  // Manage female anchor slot via backend queue/session logic
   useEffect(() => {
     if (!isFemale || memberId === "anonymous") {
       setFemaleHasSlot(false);
       setFemaleQueued(false);
+      setFemaleQueuePosition(0);
       return;
     }
 
+    let isMounted = true;
     let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-    const tryJoinSlot = async () => {
-      const { data: settings } = await supabase.from("anchor_settings").select("max_anchor_cap").limit(1).maybeSingle();
-      const maxCap = settings?.max_anchor_cap ?? 5;
+    const applyAnchorState = (status: string, queuePosition = 0) => {
+      if (!isMounted) return;
+      setFemaleHasSlot(status === "active");
+      setFemaleQueued(status === "queued");
+      setFemaleQueuePosition(status === "queued" ? Math.max(1, queuePosition) : 0);
+    };
 
-      // Check if user already has a slot
-      const { data: existing } = await supabase.from("anchor_queue").select("id").eq("user_id", memberId).maybeSingle();
-      if (existing) {
-        // User already has a slot from a previous session or concurrent tab
-        setFemaleHasSlot(true);
-        setFemaleQueued(false);
-        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    const syncAnchorState = async () => {
+      const { data: statusData, error: statusError } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "get_status", userId: memberId },
+      });
+
+      if (statusError || !statusData?.success || !statusData?.eligible) {
+        applyAnchorState("idle", 0);
         return;
       }
 
-      const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
-
-      if ((count ?? 0) < maxCap) {
-        await supabase.from("anchor_queue").insert({ user_id: memberId });
-        setFemaleHasSlot(true);
-        setFemaleQueued(false);
-        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-      } else {
-        // Slots full — show queue position
-        setFemaleHasSlot(false);
-        setFemaleQueued(true);
-        setFemaleQueuePosition(Math.max(1, (count ?? 0) - maxCap + 1));
-
-        // Poll every 10s to check if a slot opens
-        if (!pollInterval) {
-          pollInterval = setInterval(tryJoinSlot, 10000);
-        }
+      if (statusData.status === "active" || statusData.status === "queued") {
+        applyAnchorState(statusData.status, statusData.queuePosition ?? 0);
+        return;
       }
+
+      const { data: joinData, error: joinError } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "join", userId: memberId },
+      });
+
+      if (joinError || !joinData?.success) {
+        applyAnchorState("idle", 0);
+        return;
+      }
+
+      applyAnchorState(joinData.status ?? "idle", joinData.queuePosition ?? 0);
     };
 
-    tryJoinSlot();
+    syncAnchorState();
+    pollInterval = setInterval(syncAnchorState, 5000);
 
     return () => {
+      isMounted = false;
       if (pollInterval) clearInterval(pollInterval);
-      supabase.from("anchor_queue").delete().eq("user_id", memberId).then(() => {});
+      supabase.functions.invoke("anchor-earning", {
+        body: { type: "leave", userId: memberId },
+      }).catch(() => {});
     };
   }, [isFemale, memberId]);
 

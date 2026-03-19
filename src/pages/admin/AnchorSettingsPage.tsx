@@ -86,27 +86,17 @@ const AnchorSettingsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Queue data
-  const { data: activeEarners } = useQuery({
-    queryKey: ["anchor-active-earners-admin"],
+  // Queue/session state via backend function so auto-promotion runs before admin data renders
+  const { data: anchorAdminState } = useQuery({
+    queryKey: ["anchor-admin-state"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("anchor_sessions")
-        .select("*")
-        .eq("status", "active")
-        .order("created_at");
-      return data ?? [];
+      const { data, error } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "admin_get_all", userId: "admin" },
+      });
+      if (error) throw error;
+      return data;
     },
-    refetchInterval: 10000,
-  });
-
-  const { data: queueData } = useQuery({
-    queryKey: ["anchor-queue-admin"],
-    queryFn: async () => {
-      const { data } = await supabase.from("anchor_queue").select("*").order("created_at");
-      return data ?? [];
-    },
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   // Cashout requests
@@ -146,8 +136,7 @@ const AnchorSettingsPage = () => {
     },
     onSuccess: (data: any) => {
       toast.success(`Slots cleared! ${data?.promoted ?? 0} queued users promoted.`);
-      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
-      queryClient.invalidateQueries({ queryKey: ["anchor-queue-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["anchor-admin-state"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -162,8 +151,7 @@ const AnchorSettingsPage = () => {
     },
     onSuccess: (data: any) => {
       toast.success(`Slot cleared! ${data?.promoted ?? 0} queued users promoted.`);
-      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
-      queryClient.invalidateQueries({ queryKey: ["anchor-queue-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["anchor-admin-state"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -185,6 +173,8 @@ const AnchorSettingsPage = () => {
 
   if (isLoading || cashoutLoading) return <div className="p-6 text-center text-muted-foreground">Loading...</div>;
 
+  const activeEarners = anchorAdminState?.sessions?.filter((session: any) => session.status === "active") ?? [];
+  const queueData = anchorAdminState?.queue ?? [];
   const pendingRequests = cashoutRequests?.filter((r) => r.status === "pending") ?? [];
   const recentRequests = cashoutRequests?.filter((r) => r.status !== "pending") ?? [];
 
