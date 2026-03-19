@@ -251,6 +251,16 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             ? selectedConvo.other_user?.name || "Chat"
             : "Messages"}
         </h1>
+        {/* Cash Out button - show when not in a convo thread */}
+        {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
+          <button
+            onClick={() => setShowCashout(true)}
+            className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-emerald-500/30"
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            Cash Out
+          </button>
+        )}
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
