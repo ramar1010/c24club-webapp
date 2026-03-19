@@ -216,6 +216,15 @@ const DiscoverPage = () => {
       </div>
 
       <SelfieCaptureModal open={showSelfie} onClose={() => setShowSelfie(false)} onComplete={handleSelfieComplete} />
+
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={minutesData?.total_minutes ?? 0}
+          giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          onSuccess={() => refetchMinutes()}
+        />
+      )}
     </div>
   );
 };
