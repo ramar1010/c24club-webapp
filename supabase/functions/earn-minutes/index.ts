@@ -232,7 +232,9 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
-      // Female users: auto-increment gifted_minutes for cashout eligibility
+      // Female users: only increment gifted_minutes (cash-eligible) if they
+      // hold an ACTIVE anchor earning slot — queued females earn normal
+      // reward minutes but no cash until promoted.
       const { data: genderCheck } = await supabase
         .from("members")
         .select("gender")
@@ -241,11 +243,20 @@ Deno.serve(async (req) => {
 
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       if (genderCheck?.gender?.toLowerCase() === "female") {
-        updatedGiftedMinutes += safeCapped;
-        await supabase
-          .from("member_minutes")
-          .update({ gifted_minutes: updatedGiftedMinutes })
-          .eq("user_id", userId);
+        const { data: activeSession } = await supabase
+          .from("anchor_sessions")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (activeSession) {
+          updatedGiftedMinutes += safeCapped;
+          await supabase
+            .from("member_minutes")
+            .update({ gifted_minutes: updatedGiftedMinutes })
+            .eq("user_id", userId);
+        }
       }
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
