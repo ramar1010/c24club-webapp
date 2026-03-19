@@ -23,6 +23,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const [error, setError] = useState<string | null>(null);
   const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
   const [partnerVoiceMode, setPartnerVoiceMode] = useState(false);
+  const [partnerGender, setPartnerGender] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
