@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
-
+import CashoutModal from "@/components/discover/CashoutModal";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
@@ -21,7 +24,22 @@ const DiscoverPage = () => {
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const { user: authUser } = useAuth();
+  const { data: minutesData, refetch: refetchMinutes } = useQuery({
+    queryKey: ["cashout-minutes-discover", authUser?.id],
+    enabled: !!authUser,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", authUser!.id)
+        .single();
+      return data || { total_minutes: 0, gifted_minutes: 0 };
+    },
+  });
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
@@ -61,6 +79,16 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
+          {/* Cash Out button */}
+          {(minutesData?.gifted_minutes ?? 0) > 0 && (
+            <button
+              onClick={() => setShowCashout(true)}
+              className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-2.5 py-2 rounded-lg transition-colors border border-emerald-500/30"
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Cash Out</span>
+            </button>
+          )}
           {/* DMs button */}
           <button
             onClick={() => setShowMessages(true)}
@@ -188,6 +216,15 @@ const DiscoverPage = () => {
       </div>
 
       <SelfieCaptureModal open={showSelfie} onClose={() => setShowSelfie(false)} onComplete={handleSelfieComplete} />
+
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={minutesData?.total_minutes ?? 0}
+          giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          onSuccess={() => refetchMinutes()}
+        />
+      )}
     </div>
   );
 };

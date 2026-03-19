@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
+import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
@@ -43,7 +44,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   } | null>(null);
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
+  const { data: minutesData, refetch: refetchMinutes } = useQuery({
+    queryKey: ["cashout-minutes-messages", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", user!.id)
+        .single();
+      return data || { total_minutes: 0, gifted_minutes: 0 };
+    },
+  });
   const { data: conversations = [], isLoading: loadingConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
     selectedConvo?.id || null
@@ -237,6 +251,16 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             ? selectedConvo.other_user?.name || "Chat"
             : "Messages"}
         </h1>
+        {/* Cash Out button - show when not in a convo thread */}
+        {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
+          <button
+            onClick={() => setShowCashout(true)}
+            className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-emerald-500/30"
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            Cash Out
+          </button>
+        )}
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
@@ -601,6 +625,16 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         <SendGiftOverlay
           recipientId={selectedConvo.other_user.id}
           onClose={() => setShowGiftOverlay(false)}
+        />
+      )}
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={minutesData?.total_minutes ?? 0}
+          giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          onSuccess={() => refetchMinutes()}
         />
       )}
     </div>
