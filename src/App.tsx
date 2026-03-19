@@ -117,6 +117,7 @@ const App = () => (
                 <Route path="rewards/:id/edit" element={<AddRewardPage />} />
                 <Route path="member-rewards" element={<MemberRewardsPage />} />
                 <Route path="member-rewards/:id/edit" element={<EditMemberRewardPage />} />
+                <Route path="gift-history" element={<AdminGiftHistoryPage />} />
                 <Route path="promos" element={<PromosPage />} />
                 <Route path="reported-users" element={<ReportedUsersPage />} />
                 <Route path="discover-review" element={<AdminDiscoverReviewPage />} />
