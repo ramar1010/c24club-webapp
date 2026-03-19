@@ -374,6 +374,16 @@ const VideoCallPage = () => {
     };
   }, [isFemale, memberId]);
 
+  // Listen for DM toast clicks to open messages overlay instead of navigating away
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setOverlayPage("messages");
+    };
+    window.addEventListener("open-dm-overlay", handler);
+    return () => window.removeEventListener("open-dm-overlay", handler);
+  }, []);
+
 
   // Reset gender filter if not VIP
   useEffect(() => {
@@ -1080,7 +1090,7 @@ const VideoCallPage = () => {
             <NavIcon src={profileIcon} label="PROFILE" onClick={() => isActive ? setOverlayPage("profile") : navigate("/profile")} />
             <NavIcon src={vipIcon} label={subscribed ? "VIP ✓" : "VIP"} onClick={() => setOverlayPage("vip" as any)} />
             <NavIcon src={discoverIcon} label="DISCOVER" onClick={() => isActive ? setOverlayPage("discover") : navigate("/discover")} badge={unreadDmCount > 0 ? `${unreadDmCount > 9 ? "9+" : unreadDmCount} DMs` : null} />
-            <NavIcon src={dmIcon} label="DMs" onClick={() => setOverlayPage("messages")} badge={unreadDmCount > 0 ? `${unreadDmCount > 9 ? "9+" : unreadDmCount}` : null} />
+            
           </div>
           <div className="flex justify-center items-center gap-8 md:gap-14 pb-6 md:pt-4 text-sm md:text-lg font-bold tracking-wider">
             <button onClick={() => {
