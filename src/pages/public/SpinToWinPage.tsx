@@ -255,7 +255,7 @@ const SpinToWinPage = ({ onClose }: { onClose?: () => void }) => {
         body: { type: "create_checkout", spins },
       });
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
       } else {
         toast.error("Could not create checkout");
       }
