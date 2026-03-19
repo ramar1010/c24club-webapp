@@ -83,8 +83,6 @@ const VideoCallPage = () => {
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
-  const [showVoiceModeExplainer, setShowVoiceModeExplainer] = useState(false);
-  const voiceModeExplainerShownRef = useRef(false);
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -393,13 +391,6 @@ const VideoCallPage = () => {
     }
   }, [isFemale, voiceMode]);
 
-  // Show voice mode explainer when female starts searching for a partner
-  useEffect(() => {
-    if (isFemale && callState === "waiting" && !voiceModeExplainerShownRef.current) {
-      voiceModeExplainerShownRef.current = true;
-      setShowVoiceModeExplainer(true);
-    }
-  }, [isFemale, callState]);
 
   // Manage female anchor slot via backend queue/session logic
   useEffect(() => {
@@ -809,13 +800,17 @@ const VideoCallPage = () => {
           }} />
           }
 
-          {/* Voice mode: show avatar instead of local video (desktop only — on mobile this box shows partner) */}
+          {/* Voice mode: show avatar + earning tip instead of local video (desktop only) */}
           {!isMobile && isFemale && voiceMode && isActive &&
-          <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center px-4">
               <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3">
                 <span className="text-4xl md:text-5xl">🎙️</span>
               </div>
-              <span className="text-pink-400 text-xs font-bold">Voice Mode Active</span>
+              <span className="text-pink-400 text-xs font-bold mb-2">Voice Mode Active</span>
+              <div className="bg-green-900/40 border border-green-500/30 rounded-lg px-3 py-2 max-w-[280px] text-center">
+                <p className="text-green-400 text-[11px] font-bold">💰 Guys pay to see you!</p>
+                <p className="text-neutral-400 text-[10px] mt-0.5">Chat & flirt to get camera unlock requests and earn a cut.</p>
+              </div>
             </div>
           }
 
@@ -1281,12 +1276,6 @@ const VideoCallPage = () => {
       {showCapPopup && capInfo &&
       <CapReachedPopup isVip={capInfo.isVip} cap={capInfo.cap} onDismiss={dismissCapPopup} voiceMode={isFemale && voiceMode} />
       }
-
-      {/* Voice Mode Explainer Popup */}
-      {showVoiceModeExplainer &&
-      <VoiceModeExplainerPopup onDismiss={() => setShowVoiceModeExplainer(false)} />
-      }
-
       {/* Minutes Frozen Popup */}
       {showFrozenPopup &&
       <MinutesFrozenPopup
