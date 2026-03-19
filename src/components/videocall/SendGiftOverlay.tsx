@@ -17,14 +17,14 @@ const GIFT_TIERS = [
   { tier: "1000", minutes: 1000, price: "$12.99", cashValue: "$10.00", label: "Gift $10.00 Cash", sublabel: "1000 Minutes • You pay $12.99", bonus: "Send $10.00 Cash & Get +250 Minutes Back!" },
 ];
 
-const SendGiftOverlay = ({ onClose, recipientId }: SendGiftOverlayProps) => {
+const SendGiftOverlay = ({ onClose, recipientId, isDirectCall = false }: SendGiftOverlayProps) => {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleGift = async (tier: string) => {
     setLoading(tier);
     try {
       const { data, error } = await supabase.functions.invoke("gift-minutes", {
-        body: { action: "create-checkout", tier, recipient_id: recipientId },
+        body: { action: "create-checkout", tier, recipient_id: recipientId, is_direct_call: isDirectCall },
       });
       if (error) throw error;
       if (data?.url) {
