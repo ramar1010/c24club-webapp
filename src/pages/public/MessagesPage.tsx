@@ -223,7 +223,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const showThread = !!selectedConvo;
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-neutral-950 text-white">
+    <div className="flex flex-col h-screen max-h-screen bg-neutral-950 text-white overflow-hidden">
       {/* Active call overlay */}
       {activeCall && user && (
         <DirectCallModal
