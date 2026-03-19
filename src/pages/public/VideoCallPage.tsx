@@ -1366,7 +1366,21 @@ const VideoCallPage = () => {
           </div>
         </div>
       }
-
+      
+      {/* Camera Consent Modal */}
+      {cameraUnlockRequest && (
+        <CameraConsentModal
+          requestId={cameraUnlockRequest.id}
+          recipientCutCents={cameraUnlockRequest.recipient_cut_cents}
+          onAccept={() => {
+            setCameraUnlockRequest(null);
+            setCameraUnlocked(true);
+            toast.success("📹 Camera enabled!");
+          }}
+          onDecline={() => setCameraUnlockRequest(null)}
+        />
+      )}
+      
       {/* Mandatory Selfie Capture Modal */}
       <SelfieCaptureModal
         open={showSelfieCapture}
