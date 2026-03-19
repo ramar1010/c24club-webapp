@@ -301,7 +301,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         console.error("Gift notification email error:", emailErr);
       }
 
-      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
+      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, cashable_minutes: cashableGiftedMinutes, cash_value: totalCashValue, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
