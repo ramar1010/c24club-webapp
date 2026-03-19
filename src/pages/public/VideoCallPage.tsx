@@ -324,15 +324,23 @@ const VideoCallPage = () => {
     let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const tryJoinSlot = async () => {
-      const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
       const { data: settings } = await supabase.from("anchor_settings").select("max_anchor_cap").limit(1).maybeSingle();
       const maxCap = settings?.max_anchor_cap ?? 5;
 
+      // Check if user already has a slot
+      const { data: existing } = await supabase.from("anchor_queue").select("id").eq("user_id", memberId).maybeSingle();
+      if (existing) {
+        // User already has a slot from a previous session or concurrent tab
+        setFemaleHasSlot(true);
+        setFemaleQueued(false);
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        return;
+      }
+
+      const { count } = await supabase.from("anchor_queue").select("id", { count: "exact", head: true });
+
       if ((count ?? 0) < maxCap) {
-        const { data: existing } = await supabase.from("anchor_queue").select("id").eq("user_id", memberId).maybeSingle();
-        if (!existing) {
-          await supabase.from("anchor_queue").insert({ user_id: memberId });
-        }
+        await supabase.from("anchor_queue").insert({ user_id: memberId });
         setFemaleHasSlot(true);
         setFemaleQueued(false);
         if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
@@ -340,9 +348,7 @@ const VideoCallPage = () => {
         // Slots full — show queue position
         setFemaleHasSlot(false);
         setFemaleQueued(true);
-        // Estimate position: count how many are already in queue
-        const { data: queueEntries } = await supabase.from("anchor_queue").select("created_at").order("created_at");
-        setFemaleQueuePosition((queueEntries?.length ?? count ?? 0) - maxCap + 1);
+        setFemaleQueuePosition(Math.max(1, (count ?? 0) - maxCap + 1));
 
         // Poll every 10s to check if a slot opens
         if (!pollInterval) {
