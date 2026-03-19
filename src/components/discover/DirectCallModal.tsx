@@ -142,6 +142,7 @@ const DirectCallModal = ({
       {showGift && (
         <SendGiftOverlay
           recipientId={partnerId}
+          isDirectCall={true}
           onClose={() => setShowGift(false)}
         />
       )}
