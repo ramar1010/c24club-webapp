@@ -16,7 +16,7 @@ const AdminLoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
