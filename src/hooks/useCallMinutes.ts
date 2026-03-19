@@ -54,6 +54,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
       .then(({ data }) => {
         if (data?.success) {
           setTotalMinutes(data.totalMinutes);
+          setGiftedMinutes(data.giftedMinutes ?? 0);
           setFreezeInfo({ isFrozen: data.isFrozen ?? false, earnRate: data.earnRate ?? 10 });
         }
       });
