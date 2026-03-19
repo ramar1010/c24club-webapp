@@ -41,6 +41,8 @@ import VoiceModeExplainerPopup from "@/components/videocall/VoiceModeExplainerPo
 import DiscoverOverlayContent from "@/components/discover/DiscoverOverlayContent";
 import DiscoverTeaser from "@/components/videocall/DiscoverTeaser";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
+import CameraUnlockButton from "@/components/videocall/CameraUnlockButton";
+import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
