@@ -386,7 +386,26 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   async function next() {
-    await disconnect();
+    // Clean up current connection without going to "idle" state
+    signalingChannelRef.current?.send({
+      type: "broadcast",
+      event: "partner-disconnected",
+      payload: { from: channelIdRef.current },
+    });
+
+    cleanupPeerConnection();
+    cleanupSignalingChannel();
+    clearPolling();
+
+    await supabase.functions.invoke("videocall-match", {
+      body: { type: "disconnect", memberId: memberIdRef.current },
+    });
+
+    roomIdRef.current = null;
+    setCurrentPartnerId(null);
+    setPartnerVoiceMode(false);
+    setCallState("waiting");
+
     channelIdRef.current = crypto.randomUUID();
     await startCall();
   }
