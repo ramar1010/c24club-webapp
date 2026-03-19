@@ -106,78 +106,93 @@ const FemaleEarningPanel = ({
 
   return (
     <div className="w-full mb-2 relative">
-      <div
-        className="relative rounded-xl px-4 py-3 overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #831843 0%, #9d174d 30%, #be185d 60%, #db2777 100%)',
-          boxShadow: '0 0 15px rgba(236, 72, 153, 0.3), 0 0 30px rgba(236, 72, 153, 0.1)',
-        }}
-      >
-        {/* Shimmer overlay */}
+      {/* Floating emojis — above & around the panel (no overflow-hidden on this wrapper) */}
+      <span className="absolute -top-3 left-2 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0s' }}>💰</span>
+      <span className="absolute -top-2 left-10 text-base animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '1.2s' }}>✨</span>
+      <span className="absolute -top-4 right-8 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0.6s' }}>🤑</span>
+      <span className="absolute -top-2 right-2 text-base animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '1.8s' }}>💎</span>
+      <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-lg animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '0.3s' }}>🪙</span>
+      <span className="absolute -top-1 left-1/3 text-sm animate-float-coin pointer-events-none select-none z-10" style={{ animationDelay: '2.1s' }}>💸</span>
+
+      {/* Panel container — rounded corners on inner divs, no overflow-hidden here */}
+      <div className="relative rounded-xl" style={{ boxShadow: '0 0 20px rgba(236, 72, 153, 0.35), 0 0 40px rgba(236, 72, 153, 0.1)' }}>
+
+        {/* ── Row 1: Header — hot pink */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer-bg 3s ease-in-out infinite',
-          }}
-        />
-
-        {/* Header */}
-        <div className="relative flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-pink-300" />
-            </div>
-            <span className="text-white font-black text-sm uppercase tracking-wide">Your Earnings</span>
-          </div>
-          <div className="w-2 h-2 rounded-full bg-pink-300 animate-pulse" />
-        </div>
-
-        {/* Minutes = Cash value */}
-        <div className="relative text-center mb-3">
-          <p className="text-white text-xs mb-1">
-            <span className="text-pink-200 font-black text-2xl">{giftedMinutes}</span>
-            <span className="text-pink-100/70 ml-1">cashable minutes</span>
-          </p>
-          <p className="text-pink-200 font-black text-lg">
-            = ${cashValue}
-          </p>
-          <p className="text-pink-200/40 text-[10px]">
-            Rate: ${rate}/min • {totalMinutes} total minutes
-          </p>
-        </div>
-
-        {/* Cash Out Button */}
-        {giftedMinutes > 0 && (
-          <button
-            onClick={() => setShowCashout(true)}
-            className="relative w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-sm uppercase transition-colors backdrop-blur-sm border border-white/10"
+          className="relative flex items-center justify-between px-4 py-2.5 rounded-t-xl overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)' }}
+        >
+          {/* Shimmer */}
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              boxShadow: '0 0 12px rgba(236, 72, 153, 0.4)',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer-bg 3s ease-in-out infinite',
             }}
-          >
-            💰 Cash Out ${cashValue}
-          </button>
-        )}
+          />
+          <div className="relative flex items-center gap-2">
+            <span className="text-lg">💰</span>
+            <span className="text-white font-black text-sm uppercase tracking-wide drop-shadow-sm">
+              Your Earnings
+            </span>
+          </div>
+          <div className="relative">
+            <span className="text-white font-black text-base drop-shadow-sm">
+              Earning: <span className="text-yellow-200 text-lg">${cashValue}</span>
+            </span>
+          </div>
+        </div>
 
-        {/* Helper text */}
-        <p className="relative text-pink-200/60 text-[10px] text-center mt-2 leading-relaxed">
-          You earn by chatting with guys or <span className="text-pink-200 font-semibold">"waiting to connect in queue"</span>
-        </p>
-        <p className="relative text-pink-200/40 text-[10px] text-center mt-0.5">
-          Cash out via PayPal or spend on rewards — your choice!
-        </p>
+        {/* ── Row 2: Rate info — purple/indigo */}
+        <div
+          className="flex items-center justify-between px-4 py-2"
+          style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">✨</span>
+            <span className="text-white/90 font-bold text-xs">
+              Rate: ${rate}/min
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">🎁</span>
+            <span className="text-white/90 font-bold text-xs">
+              {giftedMinutes} cashable min
+            </span>
+          </div>
+        </div>
+
+        {/* ── Row 3: Cash out — orange/amber */}
+        <div
+          className="flex items-center justify-between px-4 py-2.5 rounded-b-xl"
+          style={{ background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">🔥</span>
+            <span className="text-white font-black text-xs uppercase">
+              {totalMinutes} total minutes
+            </span>
+          </div>
+          {giftedMinutes > 0 ? (
+            <button
+              onClick={() => setShowCashout(true)}
+              className="px-4 py-1.5 rounded-lg bg-white/25 hover:bg-white/35 text-white font-black text-xs uppercase transition-colors border border-white/20 backdrop-blur-sm"
+            >
+              💰 Cash Out ${cashValue}
+            </button>
+          ) : (
+            <span className="text-white/70 font-bold text-xs">
+              🏦 ${cashValue} / {giftedMinutes}min
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Floating emojis below the panel */}
-      <div className="relative h-6 w-full">
-        <span className="absolute top-0 left-4 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0s' }}>💰</span>
-        <span className="absolute top-1 left-1/4 text-xs animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.8s' }}>✨</span>
-        <span className="absolute top-0 left-1/2 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '1.6s' }}>🪙</span>
-        <span className="absolute top-1 left-3/4 text-xs animate-float-coin pointer-events-none select-none" style={{ animationDelay: '2.4s' }}>💎</span>
-        <span className="absolute top-0 right-4 text-sm animate-float-coin pointer-events-none select-none" style={{ animationDelay: '0.4s' }}>🤑</span>
-      </div>
+      {/* Helper text below panel */}
+      <p className="text-neutral-400 text-[11px] text-center mt-1.5 font-semibold">
+        Chat with guys or <span className="text-pink-400">"wait for a partner"</span> to earn!
+      </p>
 
       {/* Cashout Modal */}
       {showCashout && (
