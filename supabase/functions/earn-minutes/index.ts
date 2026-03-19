@@ -232,6 +232,20 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
+      // Female users: auto-increment gifted_minutes for cashout eligibility
+      const { data: genderCheck } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (genderCheck?.gender?.toLowerCase() === "female") {
+        await supabase
+          .from("member_minutes")
+          .update({ gifted_minutes: (memberData?.gifted_minutes ?? 0) + safeCapped })
+          .eq("user_id", userId);
+      }
+
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
       const capPopupAlreadyShownNow = memberData?.cap_popup_shown ?? false;
       let shouldShowCapPopup = false;

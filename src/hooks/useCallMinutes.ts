@@ -157,6 +157,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
 
   return {
     totalMinutes,
+    giftedMinutes,
     elapsedSeconds,
     capReached,
     capInfo,
