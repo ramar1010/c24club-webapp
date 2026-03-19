@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier, gifted_minutes")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
+          giftedMinutes: data?.gifted_minutes ?? 0,
           adPoints: data?.ad_points ?? 0,
           isVip: data?.is_vip ?? false,
           vipTier: data?.vip_tier ?? null,
