@@ -56,7 +56,10 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("Not authenticated");
 
-    const { action, tier, recipient_id, session_id, minutes_amount } = await req.json();
+    const { action, tier, recipient_id, session_id, minutes_amount, is_direct_call } = await req.json();
+
+    // Direct/private call gifts give recipient a 20% bonus
+    const DIRECT_CALL_BONUS_RATE = 0.2;
 
     if (action === "create-checkout") {
       const giftTier = GIFT_TIERS[tier as keyof typeof GIFT_TIERS];
