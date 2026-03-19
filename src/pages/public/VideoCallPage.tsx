@@ -139,7 +139,8 @@ const VideoCallPage = () => {
     localStreamRef,
     startCall,
     next,
-    stop
+    stop,
+    enableCamera
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
@@ -1375,7 +1376,8 @@ const VideoCallPage = () => {
           onAccept={() => {
             setCameraUnlockRequest(null);
             setCameraUnlocked(true);
-            toast.success("📹 Camera enabled!");
+            setVoiceMode(false);
+            enableCamera();
           }}
           onDecline={() => setCameraUnlockRequest(null)}
         />
