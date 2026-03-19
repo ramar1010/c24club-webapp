@@ -627,6 +627,16 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           onClose={() => setShowGiftOverlay(false)}
         />
       )}
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={minutesData?.total_minutes ?? 0}
+          giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          onSuccess={() => refetchMinutes()}
+        />
+      )}
     </div>
   );
 };
