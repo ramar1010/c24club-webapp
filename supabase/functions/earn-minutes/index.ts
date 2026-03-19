@@ -457,16 +457,18 @@ Deno.serve(async (req) => {
 
       const { data: existing } = await supabase
         .from("member_minutes")
-        .select("total_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", userId)
         .maybeSingle();
 
       const currentTotal = existing?.total_minutes ?? 0;
+      const currentGifted = existing?.gifted_minutes ?? 0;
       const newTotal = Math.max(0, currentTotal - amount);
+      const newGifted = Math.min(Math.max(0, currentGifted - amount), newTotal);
 
       await supabase
         .from("member_minutes")
-        .update({ total_minutes: newTotal, updated_at: new Date().toISOString() })
+        .update({ total_minutes: newTotal, gifted_minutes: newGifted, updated_at: new Date().toISOString() })
         .eq("user_id", userId);
 
       return new Response(
