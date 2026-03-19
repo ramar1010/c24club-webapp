@@ -1187,22 +1187,6 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Female Retention Modal */}
-      <FemaleRetentionModal
-        ref={retentionModalRef}
-        isFemale={isFemale}
-        callState={callState}
-        isMobile={isMobile}
-        onStayAndEarn={() => {
-          setPulseAnchorBtn(true);
-          setShowAnchorBanner(true);
-          setTimeout(() => setPulseAnchorBtn(false), 3000);
-          const anchorBanner = document.getElementById("anchor-tap-me-btn");
-          anchorBanner?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }}
-        onLeaveAnyway={doLeave} />
-      
-
       {/* Mandatory Selfie Capture Modal */}
       <SelfieCaptureModal
         open={showSelfieCapture}
