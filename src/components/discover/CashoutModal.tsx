@@ -40,7 +40,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
       });
   }, []);
 
-  useEffect(() => {
+  const fetchHistory = () => {
     if (!user) return;
     supabase
       .from("cashout_requests")
@@ -51,6 +51,28 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
       .then(({ data }) => {
         if (data) setHistory(data);
       });
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("cashout-status")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "cashout_requests",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => fetchHistory()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const cashValue = settings ? (minutes * settings.rate_per_minute).toFixed(2) : "—";
