@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAACq2hFFseq9xTdN1";
 
