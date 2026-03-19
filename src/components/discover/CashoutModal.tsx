@@ -140,19 +140,31 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
           </div>
           <h2 className="text-white font-bold text-lg">Cash Out Minutes</h2>
           <p className="text-white/50 text-xs mt-0.5">
-            Convert gifted minutes to real money
+            Convert your gifted minutes into real cash via PayPal
           </p>
-          <p className="text-emerald-400/70 text-[11px] mt-1">
-            🎁 Gifted balance: {giftedMinutes} min
-          </p>
+        </div>
+
+        {/* Balance overview */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4 space-y-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-white/50 text-xs">🎁 Your Gifted Balance</span>
+            <span className="text-emerald-400 font-bold text-sm">{giftedMinutes} min</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-white/50 text-xs">💵 Each Minute is Worth</span>
+            <span className="text-white font-bold text-sm">${settings.rate_per_minute}</span>
+          </div>
+          <div className="border-t border-white/10 pt-1.5 flex justify-between items-center">
+            <span className="text-white/50 text-xs">💰 Full Balance Value</span>
+            <span className="text-emerald-400 font-bold text-sm">${(giftedMinutes * settings.rate_per_minute).toFixed(2)}</span>
+          </div>
         </div>
 
         {/* Minutes slider */}
         <div className="mb-4">
-          <div className="flex justify-between text-xs text-white/50 mb-1">
-            <span>{settings.min_cashout_minutes} min</span>
-            <span>{maxAllowed} min</span>
-          </div>
+          <p className="text-white/60 text-[11px] text-center mb-2">
+            Choose how many minutes to cash out (min {settings.min_cashout_minutes} · max {maxAllowed} per request)
+          </p>
           <input
             type="range"
             min={settings.min_cashout_minutes}
@@ -166,11 +178,8 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
             <span className="text-3xl font-black text-white">{minutes}</span>
             <span className="text-white/40 text-sm ml-1">minutes</span>
           </div>
-          <p className="text-emerald-400 text-center text-sm font-bold mt-1">
+          <p className="text-emerald-400 text-center text-lg font-bold mt-1">
             = ${cashValue}
-          </p>
-          <p className="text-white/30 text-[10px] text-center">
-            Rate: ${settings.rate_per_minute}/min
           </p>
         </div>
 
