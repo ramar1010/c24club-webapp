@@ -136,6 +136,36 @@ const AnchorSettingsPage = () => {
     return m?.name || m?.email || id?.slice(0, 8) + "...";
   };
 
+  const clearSlotsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .delete()
+        .eq("status", "active");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("All active slots cleared!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const clearSingleSlotMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from("anchor_sessions")
+        .delete()
+        .eq("id", sessionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Slot cleared!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-active-earners-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const updateCashoutMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
@@ -236,9 +266,20 @@ const AnchorSettingsPage = () => {
 
       {/* Active Earners (from anchor_sessions) */}
       <div className="bg-card rounded-xl border border-border p-6">
-        <h2 className="text-lg font-bold mb-3 text-foreground">
-          Active Earners ({activeEarners?.length ?? 0}/{maxCap})
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-foreground">
+            Active Earners ({activeEarners?.length ?? 0}/{maxCap})
+          </h2>
+          {(activeEarners && activeEarners.length > 0) && (
+            <button
+              onClick={() => clearSlotsMutation.mutate()}
+              disabled={clearSlotsMutation.isPending}
+              className="px-4 py-1.5 text-xs font-bold bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+            >
+              {clearSlotsMutation.isPending ? "Clearing..." : "Clear All Slots"}
+            </button>
+          )}
+        </div>
         {(!activeEarners || activeEarners.length === 0) ? (
           <p className="text-muted-foreground text-sm">No active female earners</p>
         ) : (
@@ -246,9 +287,18 @@ const AnchorSettingsPage = () => {
             {activeEarners.map((s, i) => (
               <div key={s.id} className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-lg px-4 py-2">
                 <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(s.user_id)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {s.elapsed_seconds}s elapsed · ${Number(s.cash_balance).toFixed(2)} earned
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {s.elapsed_seconds}s elapsed · ${Number(s.cash_balance).toFixed(2)} earned
+                  </span>
+                  <button
+                    onClick={() => clearSingleSlotMutation.mutate(s.id)}
+                    disabled={clearSingleSlotMutation.isPending}
+                    className="px-2 py-1 text-xs font-bold bg-destructive/80 text-destructive-foreground rounded hover:opacity-90 disabled:opacity-50"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))}
           </div>
