@@ -648,6 +648,71 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ADMIN: Clear slots and promote queued users
+    if (type === "admin_clear_slots") {
+      const { sessionId } = body; // optional: clear single slot
+
+      if (sessionId) {
+        // Clear a single session
+        await supabase.from("anchor_sessions").delete().eq("id", sessionId);
+      } else {
+        // Clear all active sessions
+        await supabase.from("anchor_sessions").delete().eq("status", "active");
+      }
+
+      // Now promote queued users into freed slots
+      const { count: activeAfter } = await supabase
+        .from("anchor_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active");
+
+      const freeSlots = settings.max_anchor_cap - (activeAfter ?? 0);
+      let promoted = 0;
+
+      if (freeSlots > 0) {
+        const { data: queued } = await supabase
+          .from("anchor_queue")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .limit(freeSlots);
+
+        if (queued) {
+          for (const q of queued) {
+            // Check for paused session to resume
+            const { data: paused } = await supabase
+              .from("anchor_sessions")
+              .select("id")
+              .eq("user_id", q.user_id)
+              .eq("status", "paused")
+              .maybeSingle();
+
+            if (paused) {
+              await supabase.from("anchor_sessions").update({
+                status: "active",
+                current_mode: currentMode,
+                updated_at: new Date().toISOString(),
+              }).eq("id", paused.id);
+            } else {
+              await supabase.from("anchor_sessions").insert({
+                user_id: q.user_id,
+                status: "active",
+                current_mode: currentMode,
+                elapsed_seconds: 0,
+                cash_balance: 0,
+              });
+            }
+            await supabase.from("anchor_queue").delete().eq("user_id", q.user_id);
+            promoted++;
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, cleared: true, promoted, activeAfter: (activeAfter ?? 0) + promoted }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ADMIN: Get all active sessions and queue
     if (type === "admin_get_all") {
       const { data: sessions } = await supabase
