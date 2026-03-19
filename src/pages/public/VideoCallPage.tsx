@@ -82,7 +82,10 @@ const VideoCallPage = () => {
   const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(() => {
+    const gender = localStorage.getItem("user_gender");
+    return gender === "female";
+  });
   const [showQuickStart, setShowQuickStart] = useState(() => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
@@ -384,12 +387,12 @@ const VideoCallPage = () => {
   }, []);
 
 
-  // Force voice mode ON for females
+  // Default voice mode ON for females on first load (they can toggle it off)
   useEffect(() => {
-    if (isFemale && !voiceMode) {
+    if (isFemale && !voiceMode && !sessionStorage.getItem("c24_voice_mode_toggled")) {
       setVoiceMode(true);
     }
-  }, [isFemale, voiceMode]);
+  }, [isFemale]);
 
 
   // Manage female anchor slot via backend queue/session logic
@@ -766,10 +769,20 @@ const VideoCallPage = () => {
               
               {/* Voice Mode indicator - females always in voice mode */}
               {isFemale &&
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-pink-600 text-white shadow-lg shadow-pink-500/30">
+            <button
+              onClick={() => {
+                setVoiceMode(!voiceMode);
+                sessionStorage.setItem("c24_voice_mode_toggled", "true");
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all shadow-lg ${
+                voiceMode
+                  ? "bg-pink-600 text-white shadow-pink-500/30"
+                  : "bg-neutral-700 text-neutral-300 shadow-neutral-800/30"
+              }`}
+            >
               <span>🎙️</span>
-              <span>Voice Mode ON</span>
-            </div>
+              <span>Voice Mode {voiceMode ? "ON" : "OFF"}</span>
+            </button>
             }
 
               {needsSelfie ?
