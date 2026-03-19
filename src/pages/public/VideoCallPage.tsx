@@ -393,13 +393,13 @@ const VideoCallPage = () => {
     }
   }, [isFemale, voiceMode]);
 
-  // Show voice mode explainer once per session when female connects with voice mode
+  // Show voice mode explainer immediately when female lands on page
   useEffect(() => {
-    if (callState === "connected" && isFemale && voiceMode && !voiceModeExplainerShownRef.current) {
+    if (isFemale && !voiceModeExplainerShownRef.current) {
       voiceModeExplainerShownRef.current = true;
       setShowVoiceModeExplainer(true);
     }
-  }, [callState, isFemale, voiceMode]);
+  }, [isFemale]);
 
   // Manage female anchor slot via backend queue/session logic
   useEffect(() => {
