@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
-
+import CashoutModal from "@/components/discover/CashoutModal";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
