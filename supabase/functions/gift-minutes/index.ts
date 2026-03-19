@@ -108,6 +108,7 @@ serve(async (req) => {
           gift_id: gift.id,
           recipient_id,
           minutes_amount: String(giftTier.minutes),
+          cash_value_cents: String(giftTier.cash_value_cents),
           sender_bonus: String(giftTier.sender_bonus),
           is_direct_call: is_direct_call ? "true" : "false",
         },
