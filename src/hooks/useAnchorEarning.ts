@@ -180,11 +180,15 @@ export function useAnchorEarning({
         setVerificationWord(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
         return;
       }
-      setElapsedSeconds(data.elapsed_seconds);
-      localElapsedRef.current = data.elapsed_seconds;
-      setMode(data.currentMode);
-      setCashBalance(Number(data.cash_balance));
-      setThresholdSeconds(data.threshold_seconds);
+      setElapsedSeconds(data.elapsed_seconds ?? 0);
+      localElapsedRef.current = data.elapsed_seconds ?? 0;
+      const newMode = data.currentMode || mode;
+      setMode(newMode);
+      setCashBalance(Number(data.cash_balance) || 0);
+      const fallbackThreshold = newMode === "power"
+        ? (settings?.power_rate_time ?? 30) * 60
+        : (settings?.chill_reward_time ?? 45) * 60;
+      setThresholdSeconds(data.threshold_seconds ?? fallbackThreshold);
 
       if (data.reward_earned) {
         setRewardEarned(data.reward_earned);
