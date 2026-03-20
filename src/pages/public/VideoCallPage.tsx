@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
-import GrowthPanel from "@/components/videocall/GrowthPanel";
+
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
