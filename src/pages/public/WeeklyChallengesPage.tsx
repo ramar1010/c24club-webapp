@@ -26,6 +26,7 @@ interface ChallengeConfig {
   shimmer: string;
   accentText: string;
   badgeColor: string;
+  floatingEmojis: string[];
   progressRenderer?: (submission: any) => React.ReactNode;
 }
 
