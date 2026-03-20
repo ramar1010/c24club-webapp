@@ -20,6 +20,7 @@ interface AnchorEarningPanelProps {
   onCashout: (email: string) => Promise<number>;
   onDismissCash: () => void;
   onSubmitVerification: (input: string) => Promise<boolean>;
+  systemDisabled?: boolean;
 }
 
 const EARNING_TIPS = [
