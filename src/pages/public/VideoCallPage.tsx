@@ -25,6 +25,7 @@ import RewardStorePage from "@/pages/public/RewardStorePage";
 import ProfilePage from "@/pages/public/ProfilePage";
 import MyRewardsPage from "@/pages/public/MyRewardsPage";
 import MessagesPage from "@/pages/public/MessagesPage";
+import WeeklyChallengesPage from "@/pages/public/WeeklyChallengesPage";
 import PinTopicsOverlay from "@/components/videocall/PinTopicsOverlay";
 import PromoPanel from "@/components/videocall/PromoPanel";
 import PromoAdOverlay from "@/components/videocall/PromoAdOverlay";
@@ -103,7 +104,7 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
 
   const [showPromoAd, setShowPromoAd] = useState(false);
-  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | null>(null);
+  const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | "challenges" | null>(null);
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
@@ -1101,7 +1102,7 @@ const VideoCallPage = () => {
       {!isActive && !showRedeem && (
         <GrowthPanel
           onOpenReferral={() => navigate("/referral")}
-          onOpenChallenges={() => setOverlayPage("profile")}
+          onOpenChallenges={() => setOverlayPage("challenges")}
         />
       )}
 
@@ -1196,6 +1197,11 @@ const VideoCallPage = () => {
       {overlayPage === "messages" &&
       <FullScreenOverlay onClose={() => setOverlayPage(null)}>
           <MessagesPage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      }
+      {overlayPage === "challenges" &&
+      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <WeeklyChallengesPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
 
