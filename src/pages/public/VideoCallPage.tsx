@@ -236,7 +236,13 @@ const VideoCallPage = () => {
     banUser();
   }, [nsfwStrikes, currentPartnerId, memberId]);
 
-  const femaleEarning = isFemale && femaleHasSlot && !femaleVerificationPaused;
+  const anchorEarning = useAnchorEarning({
+    userId: memberId,
+    isOnCall: callState === "connected",
+    partnerGender: partnerGender,
+  });
+
+  const femaleEarning = isFemale && femaleHasSlot && !anchorEarning.verificationRequired;
 
   const {
     totalMinutes,
