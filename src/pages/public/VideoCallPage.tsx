@@ -80,7 +80,7 @@ const VideoCallPage = () => {
   const [femaleHasSlot, setFemaleHasSlot] = useState(false);
   const [femaleQueued, setFemaleQueued] = useState(false);
   const [femaleQueuePosition, setFemaleQueuePosition] = useState(0);
-  const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
+  
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(() => {
