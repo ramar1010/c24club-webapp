@@ -359,33 +359,43 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 <BestieProgress />
               )}
 
-              {/* Progress (custom per challenge, non-bestie) */}
-              {config.mechanic !== "bestie" && !submission && config.progressRenderer && (
+              {/* Blue Eyes Hunt: show captured snaps */}
+              {config.slug === "blue-eyes-hunt" && (
+                <BlueEyesProgress
+                  submissions={submissions.filter((s: any) => {
+                    const db = getDbChallenge("blue-eyes-hunt");
+                    return db && s.challenge_id === db.id;
+                  })}
+                />
+              )}
+
+              {/* Progress (custom per challenge, non-bestie, non-blue-eyes) */}
+              {config.mechanic !== "bestie" && config.slug !== "blue-eyes-hunt" && !submission && config.progressRenderer && (
                 <div className="relative">{config.progressRenderer(submission)}</div>
               )}
 
-              {/* Submission Status */}
-              {submission && status && (
+              {/* Submission Status (non-blue-eyes) */}
+              {config.slug !== "blue-eyes-hunt" && submission && status && (
                 <div className={`relative flex items-center gap-2 mt-3 ${status.color}`}>
                   <status.icon className="w-4 h-4" />
                   <span className="text-xs font-black">{status.label}</span>
                 </div>
               )}
 
-              {submission?.status === "approved" && (
+              {config.slug !== "blue-eyes-hunt" && submission?.status === "approved" && (
                 <p className="relative text-green-400 text-xs font-bold mt-2">
                   ✅ Reward earned: {config.reward} {config.rewardSub.toLowerCase()}
                 </p>
               )}
 
-              {submission?.status === "rejected" && (
+              {config.slug !== "blue-eyes-hunt" && submission?.status === "rejected" && (
                 <p className="relative text-red-400/80 text-xs font-bold mt-1">
                   You can try again next week.
                 </p>
               )}
 
-              {/* Action: Submit Proof (manual only) */}
-              {config.mechanic === "manual" && !submission && submittingSlug !== config.slug && (
+              {/* Action: Submit Proof (manual, non-blue-eyes) */}
+              {config.mechanic === "manual" && config.slug !== "blue-eyes-hunt" && !submission && submittingSlug !== config.slug && (
                 <button
                   onClick={() => setSubmittingSlug(config.slug)}
                   className="relative w-full mt-4 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2"
