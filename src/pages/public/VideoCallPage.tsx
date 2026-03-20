@@ -1022,7 +1022,20 @@ const VideoCallPage = () => {
             </div>
           }
 
-          {isActive &&
+          {/* Blue Eyes Hunt snap button - mobile */}
+          {callState === "connected" && currentPartnerId && isMobile && blueEyesChallenge && blueEyesSnaps.length < 2 &&
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+              <BlueEyesSnapButton
+                remoteVideoRef={remoteVideoRef}
+                userId={memberId}
+                challengeId={blueEyesChallenge.id}
+                snapsCount={blueEyesSnaps.length}
+                maxSnaps={2}
+                onSnapTaken={() => refetchBlueEyesSnaps()}
+              />
+            </div>
+          }
+
           <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
               <span className="font-bold text-sm">NEXT</span>
               <img src={nextBtn} alt="Next" className="w-9 h-9" />
