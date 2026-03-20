@@ -397,15 +397,19 @@ const AnchorEarningPanel = ({
           <div className="flex items-center gap-1.5">
             <span className="text-base">{isActive ? "🔥" : "💤"}</span>
             <span className="text-white font-bold text-sm">
-              {isActive ? "On Call" : "Idle"}: ${(currentRatePerMin).toFixed(4)}/min
+              {isActive ? "On Call" : "Idle"}: ${currentRatePerMin.toFixed(4)}/min
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-2 h-2 rounded-full ${isActive ? "bg-green-400" : "bg-yellow-400"} animate-pulse`} />
-            <span className="text-white/80 font-bold text-xs uppercase">
-              {isActive ? "🔥 Active Rate" : "💤 Idle Rate"}
+          {!isActive ? (
+            <span className="text-green-300 font-bold text-xs">
+              🔥 On Call: ${(activeRate / activeTime).toFixed(4)}/min
             </span>
-          </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-green-300 font-bold text-xs uppercase">Active Rate</span>
+            </div>
+          )}
         </div>
 
         {/* ── Row 3: Cash out + status — neon orange/yellow ── */}
