@@ -134,6 +134,7 @@ const VideoCallPage = () => {
 
   const {
     callState,
+    hasStartedMatchmaking,
     error,
     currentPartnerId,
     partnerVoiceMode,
@@ -239,7 +240,7 @@ const VideoCallPage = () => {
   const anchorEarning = useAnchorEarning({
     userId: memberId,
     isOnCall: callState === "connected",
-    isStarted: callState !== "idle",
+    isStarted: hasStartedMatchmaking,
     partnerGender: partnerGender,
   });
 
