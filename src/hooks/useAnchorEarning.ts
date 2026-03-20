@@ -34,8 +34,6 @@ export function useAnchorEarning({
 }) {
   const [status, setStatus] = useState<AnchorStatus>("loading");
   const [earningMode, setEarningMode] = useState<EarningMode>("idle");
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [thresholdSeconds, setThresholdSeconds] = useState(0);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [cashBalance, setCashBalance] = useState(0);
   const [queuePosition, setQueuePosition] = useState(0);
@@ -46,16 +44,9 @@ export function useAnchorEarning({
   const [payouts, setPayouts] = useState<AnchorPayout[]>([]);
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const localElapsedRef = useRef(0);
   const isActiveRef = useRef(false);
 
   const onCallWithMale = isOnCall && partnerGender?.toLowerCase() === "male";
-
-  // Compute threshold from settings and current earning mode
-  const getThreshold = useCallback((s: AnchorSettings | null, mode: EarningMode) => {
-    if (!s) return 30 * 60;
-    return mode === "active" ? s.active_rate_time * 60 : s.idle_rate_time * 60;
-  }, []);
 
   // Check status on mount
   const checkStatus = useCallback(async () => {
@@ -81,21 +72,16 @@ export function useAnchorEarning({
     if (data.status === "active") {
       setStatus("active");
       isActiveRef.current = true;
-      setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
-      localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
       setCashBalance(Number(data.session?.cash_balance ?? 0));
-      const s = data.settings || settings;
-      // Default to idle mode; will switch to active on next tick if on call
       const mode: EarningMode = data.session?.current_mode === "active" ? "active" : "idle";
       setEarningMode(mode);
-      setThresholdSeconds(getThreshold(s, mode));
     } else if (data.status === "queued") {
       setStatus("queued");
       setQueuePosition(data.queuePosition);
     } else {
       setStatus(data.slotsAvailable ? "idle" : "slots_full");
     }
-  }, [userId, getThreshold]);
+  }, [userId]);
 
   // Fetch payout history
   const fetchPayouts = useCallback(async () => {
@@ -123,21 +109,18 @@ export function useAnchorEarning({
       if (data.status === "active") {
         setStatus("active");
         isActiveRef.current = true;
-        setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
-        localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
         setCashBalance(Number(data.session?.cash_balance ?? 0));
         setEarningMode("idle");
         if (data.settings) {
           setSettings(data.settings);
           setSettingsLoaded(true);
         }
-        setThresholdSeconds(getThreshold(data.settings ?? settings, "idle"));
       } else if (data.status === "queued") {
         setStatus("queued");
         setQueuePosition(data.queuePosition);
       }
     }
-  }, [userId, getThreshold]);
+  }, [userId]);
 
   // Leave anchor earning
   const leaveAnchor = useCallback(async () => {
@@ -148,7 +131,7 @@ export function useAnchorEarning({
     setStatus("idle");
   }, [userId]);
 
-  // Tick - report progress to server
+  // Tick — report to server every 60s, server credits per-minute rate
   const tick = useCallback(async () => {
     if (!isActiveRef.current) return;
 
@@ -156,7 +139,6 @@ export function useAnchorEarning({
       body: {
         type: "tick",
         userId,
-        secondsToAdd: 30,
         partnerGender: partnerGender || null,
         isOnCall,
       },
@@ -169,12 +151,9 @@ export function useAnchorEarning({
         setVerificationWord(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
         return;
       }
-      setElapsedSeconds(data.elapsed_seconds ?? 0);
-      localElapsedRef.current = data.elapsed_seconds ?? 0;
       const newMode: EarningMode = data.earningMode || "idle";
       setEarningMode(newMode);
       setCashBalance(Number(data.cash_balance) || 0);
-      setThresholdSeconds(data.threshold_seconds ?? getThreshold(settings, newMode));
 
       if (data.cash_earned > 0) {
         setCashEarned(data.cash_earned);
@@ -183,22 +162,19 @@ export function useAnchorEarning({
       isActiveRef.current = false;
       setStatus("idle");
     }
-  }, [userId, partnerGender, isOnCall, getThreshold, settings]);
+  }, [userId, partnerGender, isOnCall]);
 
-  // Timer: always ticks when status is "active" (both idle and on-call)
+  // Timer: tick every 60s when status is "active"
   useEffect(() => {
     if (status === "active") {
       isActiveRef.current = true;
 
-      tickIntervalRef.current = setInterval(() => {
-        localElapsedRef.current += 1;
-        setElapsedSeconds(localElapsedRef.current);
+      // Immediate first tick
+      tick();
 
-        // Report to server every 30 seconds
-        if (localElapsedRef.current % 30 === 0) {
-          tick();
-        }
-      }, 1000);
+      tickIntervalRef.current = setInterval(() => {
+        tick();
+      }, 60_000); // every 60 seconds = 1 minute
     } else {
       isActiveRef.current = false;
       if (tickIntervalRef.current) {
@@ -220,8 +196,7 @@ export function useAnchorEarning({
     if (status !== "active") return;
     const newMode: EarningMode = onCallWithMale ? "active" : "idle";
     setEarningMode(newMode);
-    setThresholdSeconds(getThreshold(settings, newMode));
-  }, [onCallWithMale, status, settings, getThreshold]);
+  }, [onCallWithMale, status]);
 
   // Poll queue position
   useEffect(() => {
@@ -235,8 +210,6 @@ export function useAnchorEarning({
       if (data?.status === "active") {
         setStatus("active");
         isActiveRef.current = true;
-        setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
-        localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
         setCashBalance(Number(data.session?.cash_balance ?? 0));
       } else if (data?.status === "queued") {
         setQueuePosition(data.queuePosition);
@@ -292,8 +265,6 @@ export function useAnchorEarning({
   return {
     status,
     earningMode,
-    elapsedSeconds,
-    thresholdSeconds,
     cashBalance,
     queuePosition,
     settings,

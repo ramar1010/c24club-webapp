@@ -33,8 +33,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // --- Stale session cleanup: auto-pause sessions not updated in 30+ minutes ---
-    const staleThreshold = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    // --- Stale session cleanup: auto-pause sessions not updated in 5+ minutes ---
+    const staleThreshold = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: staleSessions } = await supabase
       .from("anchor_sessions")
       .select("id, user_id")
@@ -49,42 +49,9 @@ Deno.serve(async (req) => {
           .update({ status: "paused", updated_at: new Date().toISOString() })
           .eq("id", stale.id);
       }
-
-      // Promote queued users for freed slots
-      const { count: activeAfterClean } = await supabase
-        .from("anchor_sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "active");
-
-      const freeSlots = settings.max_anchor_cap - (activeAfterClean ?? 0);
-      if (freeSlots > 0) {
-        const { data: queued } = await supabase
-          .from("anchor_queue")
-          .select("*")
-          .order("created_at", { ascending: true })
-          .limit(freeSlots);
-
-        if (queued) {
-          for (const q of queued) {
-            const { data: paused } = await supabase
-              .from("anchor_sessions")
-              .select("id")
-              .eq("user_id", q.user_id)
-              .eq("status", "paused")
-              .maybeSingle();
-
-            if (paused) {
-              await supabase.from("anchor_sessions").update({ status: "active", updated_at: new Date().toISOString() }).eq("id", paused.id);
-            } else {
-              await supabase.from("anchor_sessions").insert({ user_id: q.user_id, status: "active", current_mode: "active", elapsed_seconds: 0, cash_balance: 0 });
-            }
-            await supabase.from("anchor_queue").delete().eq("user_id", q.user_id);
-          }
-        }
-      }
     }
 
-    // --- Auto-promote queued users into free slots on EVERY request ---
+    // --- Auto-promote queued users into free slots ---
     const { count: currentActiveCount } = await supabase
       .from("anchor_sessions")
       .select("id", { count: "exact", head: true })
@@ -99,7 +66,6 @@ Deno.serve(async (req) => {
         .limit(availableSlots);
 
       if (queuedUsers && queuedUsers.length > 0) {
-        console.log(`[ANCHOR] Auto-promoting ${queuedUsers.length} queued users into ${availableSlots} free slots`);
         for (const q of queuedUsers) {
           const { data: pausedSession } = await supabase
             .from("anchor_sessions")
@@ -127,7 +93,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    // GET_STATUS: Check if user is eligible, active, or queued
+    const json = (data: unknown, status = 200) =>
+      new Response(JSON.stringify(data), {
+        status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+
+    const settingsPayload = {
+      active_rate_cash: Number(settings.active_rate_cash),
+      active_rate_time: settings.active_rate_time,
+      idle_rate_cash: Number(settings.idle_rate_cash),
+      idle_rate_time: settings.idle_rate_time,
+      max_anchor_cap: settings.max_anchor_cap,
+    };
+
+    // ─── GET_STATUS ───
     if (type === "get_status") {
       const { data: member } = await supabase
         .from("members")
@@ -136,10 +116,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!member || member.gender?.toLowerCase() !== "female") {
-        return new Response(
-          JSON.stringify({ success: true, eligible: false, reason: "not_female" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: true, eligible: false, reason: "not_female" });
       }
 
       const { data: session } = await supabase
@@ -150,22 +127,13 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (session) {
-        return new Response(
-          JSON.stringify({
-            success: true,
-            eligible: true,
-            status: "active",
-            session,
-            settings: {
-              active_rate_cash: Number(settings.active_rate_cash),
-              active_rate_time: settings.active_rate_time,
-              idle_rate_cash: Number(settings.idle_rate_cash),
-              idle_rate_time: settings.idle_rate_time,
-              max_anchor_cap: settings.max_anchor_cap,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({
+          success: true,
+          eligible: true,
+          status: "active",
+          session,
+          settings: settingsPayload,
+        });
       }
 
       const { data: queueEntry } = await supabase
@@ -190,28 +158,19 @@ Deno.serve(async (req) => {
         queuePosition = (ahead ?? 0) + 1;
       }
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          eligible: true,
-          status: queueEntry ? "queued" : "idle",
-          slotsAvailable,
-          activeCount: activeCount ?? 0,
-          maxCap: settings.max_anchor_cap,
-          queuePosition,
-          settings: {
-            active_rate_cash: Number(settings.active_rate_cash),
-            active_rate_time: settings.active_rate_time,
-            idle_rate_cash: Number(settings.idle_rate_cash),
-            idle_rate_time: settings.idle_rate_time,
-            max_anchor_cap: settings.max_anchor_cap,
-          },
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({
+        success: true,
+        eligible: true,
+        status: queueEntry ? "queued" : "idle",
+        slotsAvailable,
+        activeCount: activeCount ?? 0,
+        maxCap: settings.max_anchor_cap,
+        queuePosition,
+        settings: settingsPayload,
+      });
     }
 
-    // JOIN: Try to join anchor earning (or enter queue)
+    // ─── JOIN ───
     if (type === "join") {
       const { data: member } = await supabase
         .from("members")
@@ -220,10 +179,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!member || member.gender?.toLowerCase() !== "female") {
-        return new Response(
-          JSON.stringify({ success: false, message: "not_eligible" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: false, message: "not_eligible" }, 403);
       }
 
       const { count: activeCount } = await supabase
@@ -251,21 +207,12 @@ Deno.serve(async (req) => {
             })
             .eq("id", pausedSession.id);
 
-          return new Response(
-            JSON.stringify({
-              success: true,
-              status: "active",
-              session: { ...pausedSession, status: "active" },
-              settings: {
-                active_rate_cash: Number(settings.active_rate_cash),
-                active_rate_time: settings.active_rate_time,
-                idle_rate_cash: Number(settings.idle_rate_cash),
-                idle_rate_time: settings.idle_rate_time,
-                max_anchor_cap: settings.max_anchor_cap,
-              },
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+          return json({
+            success: true,
+            status: "active",
+            session: { ...pausedSession, status: "active" },
+            settings: settingsPayload,
+          });
         }
 
         await supabase.from("anchor_sessions").delete().eq("user_id", userId);
@@ -282,21 +229,12 @@ Deno.serve(async (req) => {
           .select()
           .single();
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            status: "active",
-            session,
-            settings: {
-              active_rate_cash: Number(settings.active_rate_cash),
-              active_rate_time: settings.active_rate_time,
-              idle_rate_cash: Number(settings.idle_rate_cash),
-              idle_rate_time: settings.idle_rate_time,
-              max_anchor_cap: settings.max_anchor_cap,
-            },
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({
+          success: true,
+          status: "active",
+          session,
+          settings: settingsPayload,
+        });
       }
 
       // Slots full — add to queue
@@ -315,18 +253,15 @@ Deno.serve(async (req) => {
         .select("id", { count: "exact", head: true })
         .lte("created_at", new Date().toISOString());
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          status: "queued",
-          queuePosition: ahead ?? 1,
-          maxCap: settings.max_anchor_cap,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({
+        success: true,
+        status: "queued",
+        queuePosition: ahead ?? 1,
+        maxCap: settings.max_anchor_cap,
+      });
     }
 
-    // VERIFY: User completed the typing challenge
+    // ─── VERIFY ───
     if (type === "verify") {
       const { data: session } = await supabase
         .from("anchor_sessions")
@@ -336,10 +271,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!session) {
-        return new Response(
-          JSON.stringify({ success: false, message: "no_active_session" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: false, message: "no_active_session" });
       }
 
       await supabase
@@ -347,25 +279,18 @@ Deno.serve(async (req) => {
         .update({ last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq("id", session.id);
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true });
     }
 
-    // TICK: Report elapsed time progress (called every ~30s from client)
+    // ─── TICK: Per-minute rate crediting (called every ~60s) ───
     if (type === "tick") {
-      const { secondsToAdd, partnerGender, isOnCall } = body;
+      const { partnerGender, isOnCall } = body;
 
-      // Determine if this is an "active" tick (on call with a male) or "idle" tick
       const onCallWithMale = isOnCall === true && partnerGender && partnerGender.toLowerCase() === "male";
 
       // If on call with a female, don't earn at all
       if (isOnCall === true && partnerGender && partnerGender.toLowerCase() !== "male") {
-        return new Response(
-          JSON.stringify({ success: true, message: "partner_not_male", earned: false }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: true, message: "partner_not_male", earned: false, cash_earned: 0 });
       }
 
       const { data: session } = await supabase
@@ -376,49 +301,55 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!session) {
-        return new Response(
-          JSON.stringify({ success: false, message: "no_active_session" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: false, message: "no_active_session" });
       }
 
       // Check if verification is needed (every 15 minutes)
       const VERIFY_INTERVAL_MS = 15 * 60 * 1000;
-      const lastVerified = session.last_verified_at ? new Date(session.last_verified_at).getTime() : new Date(session.created_at).getTime();
+      const lastVerified = session.last_verified_at
+        ? new Date(session.last_verified_at).getTime()
+        : new Date(session.created_at).getTime();
       const now = Date.now();
-      
-      // Pick the right rate based on whether on call with a guy
-      const rateCash = onCallWithMale ? Number(settings.active_rate_cash) : Number(settings.idle_rate_cash);
-      const rateTime = onCallWithMale ? settings.active_rate_time : settings.idle_rate_time;
-      const thresholdSeconds = rateTime * 60;
+
       const earningMode = onCallWithMale ? "active" : "idle";
 
       if (now - lastVerified >= VERIFY_INTERVAL_MS) {
-        return new Response(
-          JSON.stringify({
-            success: true,
-            verification_required: true,
-            elapsed_seconds: session.elapsed_seconds,
-            earningMode,
-            cash_balance: Number(session.cash_balance),
-            threshold_seconds: thresholdSeconds,
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({
+          success: true,
+          verification_required: true,
+          earningMode,
+          cash_balance: Number(session.cash_balance),
+        });
       }
 
-      const newElapsed = session.elapsed_seconds + (secondsToAdd || 30);
-      let cashEarned = 0;
-      let newCashBalance = Number(session.cash_balance);
-      let resetElapsed = newElapsed;
+      // Calculate how many minutes elapsed since last update (server-side)
+      const lastUpdate = new Date(session.updated_at).getTime();
+      const elapsedMs = now - lastUpdate;
+      const elapsedMinutes = Math.floor(elapsedMs / 60_000);
 
-      // Cash earning: check if threshold reached
-      if (newElapsed >= thresholdSeconds) {
-        cashEarned = rateCash;
-        newCashBalance += cashEarned;
-        resetElapsed = newElapsed - thresholdSeconds; // carry over remainder
+      // Cap at 5 minutes to prevent abuse from stale tabs
+      const creditMinutes = Math.min(elapsedMinutes, 5);
 
-        // Log earning
+      // Per-minute rate: rate_cash / rate_time gives cash per minute
+      const rateCash = onCallWithMale ? Number(settings.active_rate_cash) : Number(settings.idle_rate_cash);
+      const rateTime = onCallWithMale ? settings.active_rate_time : settings.idle_rate_time;
+      const cashPerMinute = rateCash / rateTime;
+
+      const cashEarned = creditMinutes > 0 ? Number((cashPerMinute * creditMinutes).toFixed(4)) : 0;
+      const newCashBalance = Number(session.cash_balance) + cashEarned;
+
+      // Update session
+      await supabase
+        .from("anchor_sessions")
+        .update({
+          current_mode: earningMode,
+          cash_balance: newCashBalance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", session.id);
+
+      // Log earning if any
+      if (cashEarned > 0) {
         await supabase.from("anchor_earnings").insert({
           user_id: userId,
           earning_type: earningMode === "active" ? "cash_active" : "cash_idle",
@@ -427,31 +358,17 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update session
-      await supabase
-        .from("anchor_sessions")
-        .update({
-          elapsed_seconds: resetElapsed,
-          current_mode: earningMode,
-          cash_balance: newCashBalance,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", session.id);
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          elapsed_seconds: resetElapsed,
-          earningMode,
-          cash_balance: newCashBalance,
-          cash_earned: cashEarned,
-          threshold_seconds: thresholdSeconds,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({
+        success: true,
+        earningMode,
+        cash_balance: newCashBalance,
+        cash_earned: cashEarned,
+        credited_minutes: creditMinutes,
+        rate_per_minute: cashPerMinute,
+      });
     }
 
-    // LEAVE: Leave anchor earning
+    // ─── LEAVE ───
     if (type === "leave") {
       await supabase
         .from("anchor_sessions")
@@ -495,13 +412,10 @@ Deno.serve(async (req) => {
         await supabase.from("anchor_queue").delete().eq("user_id", nextInQueue.user_id);
       }
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true });
     }
 
-    // RESUME: Resume a paused session
+    // ─── RESUME ───
     if (type === "resume") {
       const { count: activeCount } = await supabase
         .from("anchor_sessions")
@@ -517,10 +431,7 @@ Deno.serve(async (req) => {
         if (!existing) {
           await supabase.from("anchor_queue").insert({ user_id: userId });
         }
-        return new Response(
-          JSON.stringify({ success: true, status: "queued" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: true, status: "queued" });
       }
 
       const { data: session } = await supabase
@@ -536,10 +447,7 @@ Deno.serve(async (req) => {
           .update({ status: "active", updated_at: new Date().toISOString() })
           .eq("id", session.id);
 
-        return new Response(
-          JSON.stringify({ success: true, status: "active", session: { ...session, status: "active" } }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: true, status: "active", session: { ...session, status: "active" } });
       }
 
       const { data: newSession } = await supabase
@@ -554,13 +462,10 @@ Deno.serve(async (req) => {
         .select()
         .single();
 
-      return new Response(
-        JSON.stringify({ success: true, status: "active", session: newSession }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true, status: "active", session: newSession });
     }
 
-    // CASHOUT: Request PayPal cashout
+    // ─── CASHOUT ───
     if (type === "cashout") {
       const { paypalEmail } = body;
 
@@ -573,10 +478,7 @@ Deno.serve(async (req) => {
 
       const balance = Number(session?.cash_balance ?? 0);
       if (balance <= 0) {
-        return new Response(
-          JSON.stringify({ success: false, message: "No balance to cash out" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ success: false, message: "No balance to cash out" }, 400);
       }
 
       await supabase.from("anchor_payouts").insert({
@@ -591,13 +493,10 @@ Deno.serve(async (req) => {
         .update({ cash_balance: 0, updated_at: new Date().toISOString() })
         .eq("user_id", userId);
 
-      return new Response(
-        JSON.stringify({ success: true, amount: balance }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true, amount: balance });
     }
 
-    // GET_EARNINGS: Get earnings history
+    // ─── GET_EARNINGS ───
     if (type === "get_earnings") {
       const { data: earnings } = await supabase
         .from("anchor_earnings")
@@ -613,13 +512,10 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(20);
 
-      return new Response(
-        JSON.stringify({ success: true, earnings: earnings ?? [], payouts: payouts ?? [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true, earnings: earnings ?? [], payouts: payouts ?? [] });
     }
 
-    // ADMIN: Clear slots and promote queued users
+    // ─── ADMIN: Clear slots ───
     if (type === "admin_clear_slots") {
       const { sessionId } = body;
 
@@ -673,13 +569,10 @@ Deno.serve(async (req) => {
         }
       }
 
-      return new Response(
-        JSON.stringify({ success: true, cleared: true, promoted, activeAfter: (activeAfter ?? 0) + promoted }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true, cleared: true, promoted, activeAfter: (activeAfter ?? 0) + promoted });
     }
 
-    // ADMIN: Get all active sessions and queue
+    // ─── ADMIN: Get all ───
     if (type === "admin_get_all") {
       const { data: sessions } = await supabase
         .from("anchor_sessions")
@@ -697,16 +590,10 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      return new Response(
-        JSON.stringify({ success: true, sessions: sessions ?? [], queue: queue ?? [], payouts: payouts ?? [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: true, sessions: sessions ?? [], queue: queue ?? [], payouts: payouts ?? [] });
     }
 
-    return new Response(
-      JSON.stringify({ success: false, message: "Unknown type" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ success: false, message: "Unknown type" }, 400);
   } catch (error) {
     return new Response(
       JSON.stringify({ success: false, message: error.message }),
