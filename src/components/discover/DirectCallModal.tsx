@@ -1,5 +1,5 @@
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Gift } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
