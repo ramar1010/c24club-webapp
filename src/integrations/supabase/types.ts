@@ -44,6 +44,50 @@ export type Database = {
         }
         Relationships: []
       }
+      anchor_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          rewarded: boolean
+          unique_partners: string[]
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          rewarded?: boolean
+          unique_partners?: string[]
+          updated_at?: string
+          user_id: string
+          week_start?: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          rewarded?: boolean
+          unique_partners?: string[]
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anchor_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "anchor_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anchor_challenges: {
         Row: {
           challenge_type: string

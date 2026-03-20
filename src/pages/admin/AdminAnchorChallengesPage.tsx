@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { Trash2, Plus, DollarSign } from "lucide-react";
 
 const CHALLENGE_TYPES = [
-  { value: "videochat", label: "Video Chat" },
-  { value: "private_call", label: "Private Call" },
+  { value: "videochat", label: "Video Chat (auto-tracked via direct calls)" },
+  { value: "private_call", label: "Private Call (auto-tracked via direct calls)" },
   { value: "minutes_earned", label: "Minutes Earned" },
-  { value: "custom", label: "Custom" },
+  { value: "custom", label: "Custom (manual)" },
 ];
 
 const AdminAnchorChallengesPage = () => {

@@ -1,5 +1,5 @@
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Gift } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,6 +35,24 @@ const DirectCallModal = ({
     endCall,
   } = useDirectCall({ myUserId, partnerId, inviteId, isInitiator });
 
+  // Track direct call connection for anchor bonus challenges
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (callState === "connected" && !trackedRef.current) {
+      trackedRef.current = true;
+      supabase.functions.invoke("anchor-earning", {
+        body: { type: "track_direct_call", userId: myUserId, partnerId },
+      }).then(({ data }) => {
+        if (data?.results) {
+          for (const r of data.results) {
+            if (r.status === "completed_and_rewarded") {
+              toast.success(`🏆 Challenge complete: ${r.title}! +$${r.reward} bonus!`, { duration: 6000 });
+            }
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [callState, myUserId, partnerId]);
   const handleEnd = () => {
     if (isInitiator && callState !== "connected") {
       supabase.functions.invoke("missed-call-email", {

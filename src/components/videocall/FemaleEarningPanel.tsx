@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { DollarSign, Trophy } from "lucide-react";
+import { DollarSign, Trophy, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder"];
 const VERIFY_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
@@ -21,6 +22,7 @@ const FemaleEarningPanel = ({
   onPauseEarning,
   onCashoutSuccess,
 }: FemaleEarningPanelProps) => {
+  const { user } = useAuth();
   const [rate, setRate] = useState(0.01);
   const [showCashout, setShowCashout] = useState(false);
   const [verificationRequired, setVerificationRequired] = useState(false);
@@ -44,6 +46,19 @@ const FemaleEarningPanel = ({
     },
   });
 
+  // Fetch user's challenge progress
+  const { data: challengeProgress = [] } = useQuery({
+    queryKey: ["anchor_challenge_progress", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "get_challenge_progress", userId: user.id },
+      });
+      return data?.progress ?? [];
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // refresh every 30s
+  });
   // Fetch cashout rate
   useEffect(() => {
     supabase
@@ -279,26 +294,62 @@ const FemaleEarningPanel = ({
               <span className="text-yellow-300 font-black text-xs uppercase tracking-wider">Bonus Challenges</span>
             </div>
             <div className="space-y-1.5">
-              {bonusChallenges.map((ch: any) => (
-                <div
-                  key={ch.id}
-                  className="flex items-center justify-between rounded-lg px-3 py-2"
-                  style={{ background: 'rgba(255,255,255,0.08)' }}
-                >
-                  <div className="flex-1 min-w-0 mr-2">
-                    <p className="text-white font-bold text-xs truncate">{ch.title}</p>
-                    {ch.description && (
-                      <p className="text-white/50 text-[10px] truncate">{ch.description}</p>
+              {bonusChallenges.map((ch: any) => {
+                const progress = challengeProgress.find((p: any) => p.challenge_id === ch.id);
+                const current = progress?.unique_partners?.length ?? 0;
+                const target = ch.target_count;
+                const isCompleted = progress?.rewarded === true;
+                const pct = Math.min((current / target) * 100, 100);
+
+                return (
+                  <div
+                    key={ch.id}
+                    className="rounded-lg px-3 py-2"
+                    style={{ background: isCompleted ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)' }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <div className="flex items-center gap-1.5">
+                          {isCompleted && <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                          <p className={`font-bold text-xs truncate ${isCompleted ? 'text-emerald-300' : 'text-white'}`}>{ch.title}</p>
+                        </div>
+                        {ch.description && (
+                          <p className="text-white/50 text-[10px] truncate">{ch.description}</p>
+                        )}
+                      </div>
+                      <span
+                        className="shrink-0 text-xs font-black px-2 py-0.5 rounded-full"
+                        style={{
+                          background: isCompleted
+                            ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                            : 'linear-gradient(135deg, #facc15 0%, #fbbf24 100%)',
+                          color: isCompleted ? '#fff' : '#1e1b4b',
+                        }}
+                      >
+                        {isCompleted ? '✅ Done' : `$${Number(ch.reward_amount).toFixed(0)}`}
+                      </span>
+                    </div>
+                    {/* Progress bar */}
+                    {!isCompleted && (
+                      <div className="mt-1">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-white/60 text-[10px] font-bold">{current}/{target} guys</span>
+                          <span className="text-white/40 text-[10px]">{Math.round(pct)}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${pct}%`,
+                              background: 'linear-gradient(90deg, #facc15 0%, #f59e0b 100%)',
+                            }}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <span
-                    className="shrink-0 text-xs font-black px-2 py-0.5 rounded-full"
-                    style={{ background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 100%)', color: '#1e1b4b' }}
-                  >
-                    ${Number(ch.reward_amount).toFixed(0)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

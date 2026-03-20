@@ -1,5 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+function getWeekStart(): string {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun
+  const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1); // Monday
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff));
+  return monday.toISOString().split("T")[0];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -591,6 +599,153 @@ Deno.serve(async (req) => {
         .limit(50);
 
       return json({ success: true, sessions: sessions ?? [], queue: queue ?? [], payouts: payouts ?? [] });
+    }
+
+    // ─── TRACK_DIRECT_CALL: Record a direct call partner for challenge progress ───
+    if (type === "track_direct_call") {
+      const { partnerId } = body;
+      if (!userId || !partnerId) {
+        return json({ success: false, message: "userId and partnerId required" }, 400);
+      }
+
+      // Check the user is female
+      const { data: member } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!member || member.gender?.toLowerCase() !== "female") {
+        return json({ success: true, tracked: false, reason: "not_female" });
+      }
+
+      // Check partner is male
+      const { data: partner } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", partnerId)
+        .maybeSingle();
+
+      if (!partner || partner.gender?.toLowerCase() !== "male") {
+        return json({ success: true, tracked: false, reason: "partner_not_male" });
+      }
+
+      // Get active challenges
+      const { data: activeChallenges } = await supabase
+        .from("anchor_challenges")
+        .select("*")
+        .eq("is_active", true);
+
+      if (!activeChallenges || activeChallenges.length === 0) {
+        return json({ success: true, tracked: false, reason: "no_active_challenges" });
+      }
+
+      const weekStart = getWeekStart();
+      const results: any[] = [];
+
+      for (const challenge of activeChallenges) {
+        // Only process direct-call type challenges (videochat and private_call)
+        if (!["videochat", "private_call"].includes(challenge.challenge_type)) continue;
+
+        // Get or create progress row
+        const { data: existing } = await supabase
+          .from("anchor_challenge_progress")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("challenge_id", challenge.id)
+          .eq("week_start", weekStart)
+          .maybeSingle();
+
+        if (existing?.rewarded) {
+          results.push({ challenge_id: challenge.id, status: "already_rewarded" });
+          continue;
+        }
+
+        const currentPartners: string[] = existing?.unique_partners ?? [];
+        if (currentPartners.includes(partnerId)) {
+          results.push({ challenge_id: challenge.id, status: "partner_already_counted", progress: currentPartners.length, target: challenge.target_count });
+          continue;
+        }
+
+        const updatedPartners = [...currentPartners, partnerId];
+        const completed = updatedPartners.length >= challenge.target_count;
+
+        if (existing) {
+          await supabase
+            .from("anchor_challenge_progress")
+            .update({
+              unique_partners: updatedPartners,
+              completed_at: completed ? new Date().toISOString() : null,
+              rewarded: completed,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+        } else {
+          await supabase
+            .from("anchor_challenge_progress")
+            .insert({
+              user_id: userId,
+              challenge_id: challenge.id,
+              unique_partners: updatedPartners,
+              week_start: weekStart,
+              completed_at: completed ? new Date().toISOString() : null,
+              rewarded: completed,
+            });
+        }
+
+        // Auto-reward if completed
+        if (completed) {
+          // Credit cash balance to anchor session
+          const { data: session } = await supabase
+            .from("anchor_sessions")
+            .select("cash_balance")
+            .eq("user_id", userId)
+            .in("status", ["active", "paused"])
+            .maybeSingle();
+
+          if (session) {
+            const newBalance = Number(session.cash_balance) + Number(challenge.reward_amount);
+            await supabase
+              .from("anchor_sessions")
+              .update({ cash_balance: newBalance, updated_at: new Date().toISOString() })
+              .eq("user_id", userId);
+          }
+
+          // Log earning
+          await supabase.from("anchor_earnings").insert({
+            user_id: userId,
+            earning_type: "challenge_bonus",
+            amount: Number(challenge.reward_amount),
+            reward_title: challenge.title,
+            status: "credited",
+          });
+        }
+
+        results.push({
+          challenge_id: challenge.id,
+          title: challenge.title,
+          status: completed ? "completed_and_rewarded" : "progress_updated",
+          progress: updatedPartners.length,
+          target: challenge.target_count,
+          reward: completed ? Number(challenge.reward_amount) : 0,
+        });
+      }
+
+      return json({ success: true, tracked: true, results });
+    }
+
+    // ─── GET_CHALLENGE_PROGRESS: Fetch user's current challenge progress ───
+    if (type === "get_challenge_progress") {
+      if (!userId) return json({ success: false, message: "userId required" }, 400);
+
+      const weekStart = getWeekStart();
+      const { data: progress } = await supabase
+        .from("anchor_challenge_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("week_start", weekStart);
+
+      return json({ success: true, progress: progress ?? [] });
     }
 
     return json({ success: false, message: "Unknown type" }, 400);
