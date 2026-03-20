@@ -270,6 +270,19 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const [submittingSlug, setSubmittingSlug] = useState<string | null>(null);
   const [proofText, setProofText] = useState("");
 
+  // Get member gender for female-only challenges
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender_challenges", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", user!.id).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+  const isFemale = memberGender?.toLowerCase() === "female";
+
+  const visibleChallenges = CHALLENGE_CONFIGS.filter(c => !c.femaleOnly || isFemale);
+
   // Fetch DB challenges to get IDs for submission tracking
   const { data: dbChallenges = [] } = useQuery({
     queryKey: ["weekly_challenges_slugged"],
