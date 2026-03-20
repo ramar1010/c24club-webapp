@@ -207,8 +207,7 @@ export const adminMenu: MenuItem[] = [
     icon: UserPlus,
     title: "Referrals",
     submenu: [
-      { key: "referral-invitations", label: "Referral Invitations", path: "/admin/referrals/invitations" },
-      { key: "referral-cashouts", label: "Referral Cashouts", path: "/admin/referrals/cashouts" },
+      { key: "referral-management", label: "Referral Management", path: "/admin/referrals" },
     ],
   },
   {

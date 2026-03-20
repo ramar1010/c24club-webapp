@@ -1377,6 +1377,95 @@ export type Database = {
           },
         ]
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_settings: {
+        Row: {
+          engagement_threshold_minutes: number
+          id: string
+          reward_per_referral: number
+          updated_at: string
+        }
+        Insert: {
+          engagement_threshold_minutes?: number
+          id?: string
+          reward_per_referral?: number
+          updated_at?: string
+        }
+        Update: {
+          engagement_threshold_minutes?: number
+          id?: string
+          reward_per_referral?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_tracking: {
+        Row: {
+          created_at: string
+          engaged_at: string | null
+          id: string
+          referral_code_id: string
+          referred_user_id: string
+          referrer_id: string
+          reward_amount: number
+          reward_paid: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          engaged_at?: string | null
+          id?: string
+          referral_code_id: string
+          referred_user_id: string
+          referrer_id: string
+          reward_amount?: number
+          reward_paid?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          engaged_at?: string | null
+          id?: string
+          referral_code_id?: string
+          referred_user_id?: string
+          referrer_id?: string
+          reward_amount?: number
+          reward_paid?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_tracking_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_categories: {
         Row: {
           created_at: string
@@ -1877,26 +1966,38 @@ export type Database = {
       }
       weekly_challenges: {
         Row: {
+          auto_track_action: string | null
+          challenge_type: string
           created_at: string
           description: string | null
           id: string
           is_active: boolean
+          reward_amount: number
+          reward_type: string
           title: string
           updated_at: string
         }
         Insert: {
+          auto_track_action?: string | null
+          challenge_type?: string
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          reward_amount?: number
+          reward_type?: string
           title: string
           updated_at?: string
         }
         Update: {
+          auto_track_action?: string | null
+          challenge_type?: string
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          reward_amount?: number
+          reward_type?: string
           title?: string
           updated_at?: string
         }
