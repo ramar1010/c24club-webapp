@@ -239,6 +239,7 @@ const VideoCallPage = () => {
   const anchorEarning = useAnchorEarning({
     userId: memberId,
     isOnCall: callState === "connected",
+    isStarted: callState !== "idle",
     partnerGender: partnerGender,
   });
 

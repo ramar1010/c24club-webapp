@@ -97,9 +97,10 @@ export function useAnchorEarning({
   }, [userId]);
 
   useEffect(() => {
+    if (!isStarted) return;
     checkStatus();
     fetchPayouts();
-  }, [checkStatus, fetchPayouts]);
+  }, [checkStatus, fetchPayouts, isStarted]);
 
   // Join anchor earning
   const joinAnchor = useCallback(async () => {
