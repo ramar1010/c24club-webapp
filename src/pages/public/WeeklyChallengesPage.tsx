@@ -226,7 +226,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 <img
                   src={bestieCutout}
                   alt="Besties taking a selfie"
-                  className="absolute -right-4 -top-10 w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
+                  className="absolute -right-4 -top-10 w-20 sm:w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
                 />
               )}
               {/* Floating emojis */}
