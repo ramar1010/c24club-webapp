@@ -210,10 +210,17 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
     // }
     setLoading(true);
     if (isSignUp) {
-      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+      const { error, data: signUpData } = await supabase.auth.signUp({ email: email.trim(), password });
       if (error) {
         toast.error("Sign up failed", { description: error.message });
       } else {
+        // Track referral if code exists in URL
+        const refCode = new URLSearchParams(window.location.search).get("ref");
+        if (refCode && signUpData?.user?.id) {
+          supabase.functions.invoke("referral", {
+            body: { action: "track_signup", referral_code: refCode, new_user_id: signUpData.user.id },
+          }).catch(() => {});
+        }
         toast.success("Account created!");
         onClose();
       }
