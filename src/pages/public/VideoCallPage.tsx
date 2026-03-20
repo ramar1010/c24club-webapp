@@ -1304,17 +1304,12 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Growth Panel — Referral + Weekly Challenges */}
+      {/* Challenge Carousel — below video boxes, above nav icons */}
       {!isActive && !showRedeem && (
-        <GrowthPanel
-          onOpenReferral={() => navigate("/referral")}
+        <ChallengeCarousel
           onOpenChallenges={() => setOverlayPage("challenges")}
+          onOpenReferral={() => navigate("/referral")}
         />
-      )}
-
-      {/* Challenge Carousel — above nav icons */}
-      {!isActive && !showRedeem && (
-        <ChallengeCarousel onOpenChallenges={() => setOverlayPage("challenges")} />
       )}
 
       {/* Panels */}
