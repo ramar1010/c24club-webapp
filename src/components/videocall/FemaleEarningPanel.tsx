@@ -47,6 +47,19 @@ const FemaleEarningPanel = ({
     },
   });
 
+  // Fetch user's challenge progress
+  const { data: challengeProgress = [] } = useQuery({
+    queryKey: ["anchor_challenge_progress", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase.functions.invoke("anchor-earning", {
+        body: { type: "get_challenge_progress", userId: user.id },
+      });
+      return data?.progress ?? [];
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // refresh every 30s
+  });
   // Fetch cashout rate
   useEffect(() => {
     supabase
