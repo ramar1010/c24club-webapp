@@ -72,13 +72,13 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     slug: "marathon-talk",
     title: "MARATHON TALK 🏃‍♀️",
     subtitle: "Go the Distance! ⏱️",
-    description: "Talk with someone for a whole hour straight on video chat. You both earn $35! 🔥",
+    description: "Stay on a single video call for 60 minutes straight. First person to complete it wins $35! 🔥",
     reward: "$35",
-    rewardSub: "EACH",
+    rewardSub: "WINNER",
     difficulty: "MEDIUM",
     icon: Clock,
     mechanic: "auto",
-    maxParticipants: 2,
+    maxParticipants: 1,
     gradient: "from-emerald-600/30 via-green-700/25 to-teal-900/40",
     border: "border-emerald-400/50",
     glow: "shadow-[0_0_24px_rgba(52,211,153,0.35)]",
@@ -86,17 +86,6 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-emerald-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
-    progressRenderer: () => (
-      <div className="mt-3">
-        <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
-          <span>0 min</span>
-          <span>60 min</span>
-        </div>
-        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all" style={{ width: "0%" }} />
-        </div>
-      </div>
-    ),
   },
 ];
 
