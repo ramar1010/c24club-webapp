@@ -1,9 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { MessageCircleQuestion, AlertTriangle } from "lucide-react";
+import { MessageCircleQuestion, AlertTriangle, ShieldBan, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Report = {
   id: string;
@@ -16,8 +28,19 @@ type Report = {
   created_at: string;
 };
 
+type DialogAction = {
+  type: "ban" | "delete";
+  userId: string;
+  reportId: string;
+} | null;
+
 const ReportedUsersPage = () => {
   const [tab, setTab] = useState<"help" | "reports">("help");
+  const [dialogAction, setDialogAction] = useState<DialogAction>(null);
+  const [banReason, setBanReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-reports"],
@@ -37,6 +60,66 @@ const ReportedUsersPage = () => {
       .from("report-screenshots")
       .getPublicUrl(screenshotPath);
     return data?.publicUrl || null;
+  };
+
+  const getTargetUserId = (report: Report) => {
+    return tab === "reports" ? report.reported_user_id : report.reporter_id;
+  };
+
+  const handleBanUser = async () => {
+    if (!dialogAction || dialogAction.type !== "ban") return;
+    setLoading(true);
+    try {
+      // Get user's IP for IP ban
+      const { data: memberData } = await supabase
+        .from("members")
+        .select("last_ip, name")
+        .eq("id", dialogAction.userId)
+        .maybeSingle();
+
+      const { error } = await supabase.from("user_bans").insert({
+        user_id: dialogAction.userId,
+        reason: banReason || "Banned from report review",
+        ban_type: "standard",
+        is_active: true,
+        ip_address: memberData?.last_ip || null,
+        banned_by: user?.id || null,
+      });
+      if (error) throw error;
+
+      toast.success(`User ${memberData?.name || dialogAction.userId.slice(0, 8)} banned`);
+      setDialogAction(null);
+      setBanReason("");
+    } catch (e: any) {
+      toast.error("Ban failed", { description: e.message });
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!dialogAction || dialogAction.type !== "delete") return;
+    setLoading(true);
+    try {
+      // Delete member record (cascading cleanup)
+      const { error } = await supabase
+        .from("members")
+        .delete()
+        .eq("id", dialogAction.userId);
+      if (error) throw error;
+
+      // Also remove from member_minutes
+      await supabase
+        .from("member_minutes")
+        .delete()
+        .eq("user_id", dialogAction.userId);
+
+      toast.success("Account deleted");
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      setDialogAction(null);
+    } catch (e: any) {
+      toast.error("Delete failed", { description: e.message });
+    }
+    setLoading(false);
   };
 
   const helpRequests = reports.filter((r) => r.reason.startsWith("[HELP]"));
@@ -97,6 +180,7 @@ const ReportedUsersPage = () => {
         <div className="space-y-3">
           {displayed.map((r) => {
             const screenshotUrl = getScreenshotUrl(r.screenshot_url);
+            const targetId = getTargetUserId(r);
             return (
               <Card key={r.id}>
                 <CardHeader className="pb-2">
@@ -139,12 +223,81 @@ const ReportedUsersPage = () => {
                     )}
                     {r.room_id && <> · Room: {r.room_id.slice(0, 8)}...</>}
                   </p>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => setDialogAction({ type: "ban", userId: targetId, reportId: r.id })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                    >
+                      <ShieldBan className="w-3.5 h-3.5" />
+                      Ban User
+                    </button>
+                    <button
+                      onClick={() => setDialogAction({ type: "delete", userId: targetId, reportId: r.id })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Account
+                    </button>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+
+      {/* Ban Confirmation Dialog */}
+      <AlertDialog open={dialogAction?.type === "ban"} onOpenChange={(open) => !open && setDialogAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              User ID: <span className="font-mono text-foreground">{dialogAction?.userId}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <input
+            type="text"
+            placeholder="Ban reason (optional)"
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUser}
+              disabled={loading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? "Banning..." : "Ban User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={dialogAction?.type === "delete"} onOpenChange={(open) => !open && setDialogAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the member record for user <span className="font-mono text-foreground">{dialogAction?.userId}</span>. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={loading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? "Deleting..." : "Delete Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
