@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, DollarSign, Gift, Clock, Zap, Moon } from "lucide-react";
+import { X, DollarSign, Clock, Zap } from "lucide-react";
 
 const STORAGE_KEY = "anchor_explainer_seen";
 
