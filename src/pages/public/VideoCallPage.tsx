@@ -49,6 +49,7 @@ import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
 import { captureBestieScreenshot } from "@/lib/bestieScreenshot";
 import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
+import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -1309,6 +1310,11 @@ const VideoCallPage = () => {
           onOpenReferral={() => navigate("/referral")}
           onOpenChallenges={() => setOverlayPage("challenges")}
         />
+      )}
+
+      {/* Challenge Carousel — above nav icons */}
+      {!isActive && !showRedeem && (
+        <ChallengeCarousel onOpenChallenges={() => setOverlayPage("challenges")} />
       )}
 
       {/* Panels */}
