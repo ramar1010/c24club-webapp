@@ -10,9 +10,10 @@ import frozenFaceIcon from "@/assets/vip/frozen-face.png";
 interface MinutesFrozenPopupProps {
   onDismiss: () => void;
   onSnooze?: () => void;
-  onGoToChallenges: () => void;
+  onGoToChallenges?: () => void;
   isVip?: boolean;
-  onPurchaseVip?: (priceId: string) => Promise<void>;
+  onPurchaseVip?: () => void;
+  isFemale?: boolean;
 }
 
 const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPurchaseVip }: MinutesFrozenPopupProps) => {
