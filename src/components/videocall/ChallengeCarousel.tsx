@@ -82,9 +82,10 @@ const SLIDES: SlideConfig[] = [
 interface ChallengeCarouselProps {
   onOpenChallenges: () => void;
   onOpenReferral: () => void;
+  isFemale?: boolean;
 }
 
-const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral }: ChallengeCarouselProps) => {
+const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: ChallengeCarouselProps) => {
   const { user } = useAuth();
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "center", loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
