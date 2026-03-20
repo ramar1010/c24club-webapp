@@ -212,7 +212,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-2">
-          {SLIDES.map((slide) => {
+          {SLIDES.filter(s => !s.femaleOnly || isFemale).map((slide) => {
             const status = slide.type === "challenge" ? getStatus(slide.slug) : null;
             const progress = getProgress(slide.slug);
             const isReferral = slide.type === "referral";
