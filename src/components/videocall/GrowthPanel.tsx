@@ -25,18 +25,11 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
     },
   });
 
-  const { data: challenges = [] } = useQuery({
-    queryKey: ["growth_challenges"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("weekly_challenges")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      return data || [];
-    },
-  });
+  const challenges = [
+    { title: "Bestie Challenge", reward: "$25" },
+    { title: "Blue Eyes Hunt", reward: "15 min" },
+    { title: "Marathon Talk", reward: "$35" },
+  ];
 
   const referralLink = referralData?.code
     ? `${window.location.origin}/?ref=${referralData.code}`
