@@ -1,0 +1,1 @@
+ALTER TABLE public.anchor_settings ADD COLUMN IF NOT EXISTS anchor_disabled boolean NOT NULL DEFAULT false;

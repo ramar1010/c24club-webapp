@@ -253,6 +253,7 @@ export type Database = {
         Row: {
           active_rate_cash: number
           active_rate_time: number
+          anchor_disabled: boolean
           chill_disabled: boolean
           chill_hour_start: string
           chill_reward_time: number
@@ -269,6 +270,7 @@ export type Database = {
         Insert: {
           active_rate_cash?: number
           active_rate_time?: number
+          anchor_disabled?: boolean
           chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
@@ -285,6 +287,7 @@ export type Database = {
         Update: {
           active_rate_cash?: number
           active_rate_time?: number
+          anchor_disabled?: boolean
           chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
