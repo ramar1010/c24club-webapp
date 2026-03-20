@@ -1156,8 +1156,6 @@ const VideoCallPage = () => {
           <AnchorEarningPanel
             status={anchorEarning.status}
             earningMode={anchorEarning.earningMode}
-            elapsedSeconds={anchorEarning.elapsedSeconds}
-            thresholdSeconds={anchorEarning.thresholdSeconds}
             cashBalance={anchorEarning.cashBalance}
             queuePosition={anchorEarning.queuePosition}
             cashEarned={anchorEarning.cashEarned}

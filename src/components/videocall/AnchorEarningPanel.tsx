@@ -7,8 +7,6 @@ import AnchorExplainerModal, { STORAGE_KEY } from "./AnchorExplainerModal";
 interface AnchorEarningPanelProps {
   status: AnchorStatus;
   earningMode: EarningMode;
-  elapsedSeconds: number;
-  thresholdSeconds: number;
   cashBalance: number;
   queuePosition: number;
   cashEarned: number;
@@ -48,8 +46,6 @@ const EarningTip = () => {
 const AnchorEarningPanel = ({
   status,
   earningMode,
-  elapsedSeconds,
-  thresholdSeconds,
   cashBalance,
   queuePosition,
   cashEarned,
@@ -102,11 +98,11 @@ const AnchorEarningPanel = ({
   }
 
   const isActive = earningMode === "active";
-  const rateCash = isActive ? (settings?.active_rate_cash ?? 1.5) : (settings?.idle_rate_cash ?? 0.1);
-  const remainingSeconds = Math.max(0, thresholdSeconds - elapsedSeconds);
-  const remainingMin = Math.floor(remainingSeconds / 60);
-  const remainingSec = remainingSeconds % 60;
-  const progress = thresholdSeconds > 0 ? Math.min(1, elapsedSeconds / thresholdSeconds) : 0;
+  const activeRate = settings?.active_rate_cash ?? 1.5;
+  const activeTime = settings?.active_rate_time ?? 30;
+  const idleRate = settings?.idle_rate_cash ?? 0.1;
+  const idleTime = settings?.idle_rate_time ?? 30;
+  const currentRatePerMin = isActive ? (activeRate / activeTime) : (idleRate / idleTime);
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
@@ -393,38 +389,23 @@ const AnchorEarningPanel = ({
           </div>
         </div>
 
-        {/* ── Row 2: Rate & progress — neon purple/magenta ── */}
+        {/* ── Row 2: Rate info — neon purple/magenta ── */}
         <div
-          className="px-4 py-2.5"
+          className="flex items-center justify-between px-4 py-2.5"
           style={{ background: 'linear-gradient(135deg, #a855f7 0%, #c026d3 100%)' }}
         >
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-base">{isActive ? "🔥" : "💤"}</span>
-              <span className="text-white font-bold text-sm">
-                {isActive ? "On Call" : "Idle"}: ${rateCash.toFixed(2)}/
-                {isActive ? settings?.active_rate_time : settings?.idle_rate_time}min
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${isActive ? "bg-green-400" : "bg-yellow-400"} animate-pulse`} />
-              <span className="text-white/80 font-bold text-xs uppercase">
-                {isActive ? "Active" : "Idle"}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{isActive ? "🔥" : "💤"}</span>
+            <span className="text-white font-bold text-sm">
+              {isActive ? "On Call" : "Idle"}: ${(currentRatePerMin).toFixed(4)}/min
+            </span>
           </div>
-          {/* Progress bar */}
-          <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-1000 ${isActive ? "bg-green-400" : "bg-yellow-400"}`}
-              style={{ width: `${progress * 100}%` }}
-            />
+          <div className="flex items-center gap-1.5">
+            <div className={`w-2 h-2 rounded-full ${isActive ? "bg-green-400" : "bg-yellow-400"} animate-pulse`} />
+            <span className="text-white/80 font-bold text-xs uppercase">
+              {isActive ? "🔥 Active Rate" : "💤 Idle Rate"}
+            </span>
           </div>
-          <p className="text-white/70 text-xs text-center mt-1 font-bold">
-            Next <span className="text-yellow-300">${rateCash.toFixed(2)}</span> in{" "}
-            <span className="text-white">{remainingMin}:{String(remainingSec).padStart(2, "0")}</span>
-            {!isActive && <span className="text-white/50 text-[10px] ml-1">(connect to earn more!)</span>}
-          </p>
         </div>
 
         {/* ── Row 3: Cash out + status — neon orange/yellow ── */}
@@ -434,7 +415,7 @@ const AnchorEarningPanel = ({
         >
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-base">🔥</span>
+              <span className="text-base">{isActive ? "🔥" : "⏳"}</span>
               <span className="text-white font-black text-sm uppercase drop-shadow-sm">
                 {isActive ? "Earning Active Rate" : "Earning Idle Rate"}
               </span>
@@ -497,7 +478,7 @@ const AnchorEarningPanel = ({
       <div className="text-center mt-0.5">
         <button
           onClick={() => {
-            if (confirm("⚠️ Stopping will pause your timer. Your cash balance is saved.")) {
+            if (confirm("⚠️ Stopping will pause your earning. Your cash balance is saved.")) {
               onLeave();
             }
           }}
