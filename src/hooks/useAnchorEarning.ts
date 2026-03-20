@@ -52,6 +52,8 @@ export function useAnchorEarning({
 
   // Check status on mount
   const checkStatus = useCallback(async () => {
+    if (!isStarted) return;
+
     if (!userId || userId === "anonymous") {
       setStatus("not_eligible");
       return;
@@ -83,18 +85,20 @@ export function useAnchorEarning({
     } else {
       setStatus(data.slotsAvailable ? "idle" : "slots_full");
     }
-  }, [userId]);
+  }, [isStarted, userId]);
 
   // Fetch payout history
   const fetchPayouts = useCallback(async () => {
-    if (!userId || userId === "anonymous") return;
+    if (!isStarted || !userId || userId === "anonymous") return;
+
     const { data } = await supabase.functions.invoke("anchor-earning", {
       body: { type: "get_earnings", userId },
     });
+
     if (data?.success) {
       setPayouts(data.payouts ?? []);
     }
-  }, [userId]);
+  }, [isStarted, userId]);
 
   useEffect(() => {
     if (!isStarted) return;
@@ -102,8 +106,37 @@ export function useAnchorEarning({
     fetchPayouts();
   }, [checkStatus, fetchPayouts, isStarted]);
 
+  useEffect(() => {
+    if (isStarted) return;
+
+    isActiveRef.current = false;
+    if (tickIntervalRef.current) {
+      clearInterval(tickIntervalRef.current);
+      tickIntervalRef.current = null;
+    }
+
+    if ((status === "active" || status === "queued") && userId && userId !== "anonymous") {
+      supabase.functions.invoke("anchor-earning", {
+        body: { type: "leave", userId },
+      }).catch(() => {});
+    }
+
+    setStatus("loading");
+    setEarningMode("idle");
+    setSettingsLoaded(false);
+    setCashBalance(0);
+    setQueuePosition(0);
+    setSettings(null);
+    setCashEarned(0);
+    setVerificationRequired(false);
+    setVerificationWord("");
+    setPayouts([]);
+  }, [isStarted, status, userId]);
+
   // Join anchor earning
   const joinAnchor = useCallback(async () => {
+    if (!isStarted) return;
+
     const { data } = await supabase.functions.invoke("anchor-earning", {
       body: { type: "join", userId },
     });
@@ -123,10 +156,12 @@ export function useAnchorEarning({
         setQueuePosition(data.queuePosition);
       }
     }
-  }, [userId]);
+  }, [isStarted, userId]);
 
   // Leave anchor earning
   const leaveAnchor = useCallback(async () => {
+    if (!userId || userId === "anonymous") return;
+
     isActiveRef.current = false;
     await supabase.functions.invoke("anchor-earning", {
       body: { type: "leave", userId },
@@ -136,7 +171,7 @@ export function useAnchorEarning({
 
   // Tick — report to server every 60s, server credits per-minute rate
   const tick = useCallback(async () => {
-    if (!isActiveRef.current) return;
+    if (!isStarted || !isActiveRef.current) return;
 
     const { data } = await supabase.functions.invoke("anchor-earning", {
       body: {
@@ -165,19 +200,18 @@ export function useAnchorEarning({
       isActiveRef.current = false;
       setStatus("idle");
     }
-  }, [userId, partnerGender, isOnCall]);
+  }, [isStarted, userId, partnerGender, isOnCall]);
 
   // Timer: tick every 60s when status is "active"
   useEffect(() => {
-    if (status === "active") {
+    if (isStarted && status === "active") {
       isActiveRef.current = true;
 
-      // Immediate first tick
       tick();
 
       tickIntervalRef.current = setInterval(() => {
         tick();
-      }, 60_000); // every 60 seconds = 1 minute
+      }, 60_000);
     } else {
       isActiveRef.current = false;
       if (tickIntervalRef.current) {
@@ -192,7 +226,7 @@ export function useAnchorEarning({
         tickIntervalRef.current = null;
       }
     };
-  }, [status, tick]);
+  }, [isStarted, status, tick]);
 
   // Update earning mode locally when call state changes (for UI responsiveness)
   useEffect(() => {
@@ -203,7 +237,7 @@ export function useAnchorEarning({
 
   // Poll queue position
   useEffect(() => {
-    if (status !== "queued") return;
+    if (!isStarted || status !== "queued") return;
 
     const interval = setInterval(async () => {
       const { data } = await supabase.functions.invoke("anchor-earning", {
@@ -220,7 +254,7 @@ export function useAnchorEarning({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [status, userId]);
+  }, [isStarted, status, userId]);
 
   // Cashout
   const cashout = useCallback(async (paypalEmail: string) => {
