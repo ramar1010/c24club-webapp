@@ -1102,7 +1102,7 @@ const VideoCallPage = () => {
       {!isActive && !showRedeem && (
         <GrowthPanel
           onOpenReferral={() => navigate("/referral")}
-          onOpenChallenges={() => setOverlayPage("profile")}
+          onOpenChallenges={() => setOverlayPage("challenges")}
         />
       )}
 
