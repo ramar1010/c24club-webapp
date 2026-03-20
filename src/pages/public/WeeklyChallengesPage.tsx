@@ -78,6 +78,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(34,211,238,0.1)",
     accentText: "text-cyan-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
+    floatingEmojis: ["👀", "💎", "📸"],
     progressRenderer: () => (
       <div className="flex items-center gap-3 mt-3">
         {[1, 2].map((slot) => (
