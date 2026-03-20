@@ -325,6 +325,7 @@ export function useAnchorEarning({
     verificationRequired,
     verificationWord,
     payouts,
+    systemDisabled,
     joinAnchor,
     leaveAnchor,
     cashout,
