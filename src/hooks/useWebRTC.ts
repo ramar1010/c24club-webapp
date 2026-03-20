@@ -20,6 +20,7 @@ interface UseWebRTCOptions {
 
 export function useWebRTC({ memberId, genderPreference = "Both", memberGender, voiceMode = false }: UseWebRTCOptions) {
   const [callState, setCallState] = useState<CallState>("idle");
+  const [hasStartedMatchmaking, setHasStartedMatchmaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPartnerId, setCurrentPartnerId] = useState<string | null>(null);
   const [partnerVoiceMode, setPartnerVoiceMode] = useState(false);
@@ -55,6 +56,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   useEffect(() => {
     voiceModeRef.current = voiceMode;
   }, [voiceMode]);
+
+  useEffect(() => {
+    if (callState === "idle") {
+      setHasStartedMatchmaking(false);
+    }
+  }, [callState]);
 
   useEffect(() => {
     attachStreamToVideo(localVideoRef.current, localStreamRef.current, { muted: true });
