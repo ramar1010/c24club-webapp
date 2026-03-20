@@ -1,4 +1,5 @@
 import { useState } from "react";
+import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -214,8 +215,16 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           return (
             <div
               key={config.slug}
-              className={`relative overflow-hidden bg-gradient-to-br ${config.gradient} ${config.border} border rounded-2xl p-5 ${config.glow}`}
+              className={`relative overflow-visible bg-gradient-to-br ${config.gradient} ${config.border} border rounded-2xl p-5 ${config.glow}`}
             >
+              {/* Bestie cutout sticker */}
+              {config.slug === "bestie-challenge" && (
+                <img
+                  src={bestieCutout}
+                  alt="Besties taking a selfie"
+                  className="absolute -right-4 -top-10 w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
+                />
+              )}
               {/* Shimmer */}
               <div
                 className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,var(--shimmer)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]"
