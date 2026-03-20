@@ -32,9 +32,9 @@ interface ChallengeConfig {
 const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   {
     slug: "bestie-challenge",
-    title: "BESTIE CHALLENGE",
-    subtitle: "Bring Your Friend!",
-    description: "Bring your bestie to chat with you for 30 mins a day for 3 days. You both earn $25!",
+    title: "BESTIE CHALLENGE 👯‍♀️",
+    subtitle: "Bring Your Friend! 💕",
+    description: "Bring your bestie to chat with you for 30 mins a day for 3 days. You both earn $25! 🎉",
     reward: "$25",
     rewardSub: "EACH",
     difficulty: "EASY",
