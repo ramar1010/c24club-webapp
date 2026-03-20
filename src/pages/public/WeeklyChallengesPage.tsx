@@ -54,13 +54,12 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     slug: "blue-eyes-hunt",
     title: "BLUE EYES HUNT 👀",
     subtitle: "Spot & Snap! 📸",
-    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes! 💎",
-    reward: "15 MIN",
+    description: "Spot a blue-eyed guy on video chat and tap the 👁️ SNAP button to capture proof. Find 2 and earn 100 bonus minutes! 💎",
+    reward: "100 MIN",
     rewardSub: "BONUS",
     difficulty: "MEDIUM",
     icon: Eye,
     mechanic: "manual",
-    maxParticipants: 3,
     gradient: "from-cyan-600/30 via-blue-700/25 to-indigo-900/40",
     border: "border-cyan-400/50",
     glow: "shadow-[0_0_24px_rgba(34,211,238,0.35)]",
@@ -68,17 +67,6 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-cyan-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["👀", "💎", "📸"],
-    progressRenderer: () => (
-      <div className="flex items-center gap-3 mt-3">
-        {[1, 2].map((slot) => (
-          <div key={slot} className="flex items-center gap-1.5 bg-neutral-800/60 rounded-lg px-3 py-1.5 border border-cyan-500/20">
-            <Camera className="w-3.5 h-3.5 text-cyan-400/50" />
-            <span className="text-[11px] text-neutral-500 font-bold">#{slot}</span>
-          </div>
-        ))}
-        <span className="text-[10px] text-cyan-400/60 font-bold ml-auto">0/2 found</span>
-      </div>
-    ),
   },
   {
     slug: "marathon-talk",
@@ -210,6 +198,58 @@ const BestieProgress = () => {
   }
 
   return null;
+};
+
+/* ─── Blue Eyes Progress Component ─── */
+
+const BlueEyesProgress = ({ submissions }: { submissions: any[] }) => {
+  const approved = submissions.filter((s: any) => s.status === "approved");
+  const pending = submissions.filter((s: any) => s.status === "pending");
+  const rejected = submissions.filter((s: any) => s.status === "rejected");
+  const totalApproved = approved.length;
+  const allDone = totalApproved >= 2;
+
+  return (
+    <div className="relative mt-3 space-y-2">
+      {allDone && (
+        <p className="text-green-400 text-xs font-black">🎉 CHALLENGE COMPLETE! 100 bonus minutes earned!</p>
+      )}
+      <div className="flex items-center gap-3">
+        {[1, 2].map((slot) => {
+          const snap = submissions[slot - 1];
+          const isApproved = snap?.status === "approved";
+          const isPending = snap?.status === "pending";
+          const isRejected = snap?.status === "rejected";
+
+          return (
+            <div key={slot} className="flex-1">
+              {snap?.proof_image_url ? (
+                <div className={`relative rounded-lg overflow-hidden border-2 ${isApproved ? "border-green-500" : isPending ? "border-yellow-500" : "border-red-500"}`}>
+                  <img src={snap.proof_image_url} alt={`Snap #${slot}`} className="w-full h-16 object-cover" />
+                  <div className="absolute bottom-0 inset-x-0 bg-black/70 text-center py-0.5">
+                    <span className={`text-[9px] font-black ${isApproved ? "text-green-400" : isPending ? "text-yellow-400" : "text-red-400"}`}>
+                      {isApproved ? "✅ APPROVED" : isPending ? "⏳ PENDING" : "❌ REJECTED"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-1.5 bg-neutral-800/60 rounded-lg px-3 py-3 border border-cyan-500/20">
+                  <Camera className="w-3.5 h-3.5 text-cyan-400/50" />
+                  <span className="text-[11px] text-neutral-500 font-bold">#{slot}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <span className="text-[10px] text-cyan-400/60 font-bold">{totalApproved}/2</span>
+      </div>
+      {submissions.length < 2 && !allDone && (
+        <p className="text-[11px] text-cyan-300/70 font-bold">
+          📸 Use the 👁️ SNAP button during a call to capture blue-eyed guys!
+        </p>
+      )}
+    </div>
+  );
 };
 
 /* ─── Page Component ─── */
@@ -371,33 +411,43 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 <BestieProgress />
               )}
 
-              {/* Progress (custom per challenge, non-bestie) */}
-              {config.mechanic !== "bestie" && !submission && config.progressRenderer && (
+              {/* Blue Eyes Hunt: show captured snaps */}
+              {config.slug === "blue-eyes-hunt" && (
+                <BlueEyesProgress
+                  submissions={submissions.filter((s: any) => {
+                    const db = getDbChallenge("blue-eyes-hunt");
+                    return db && s.challenge_id === db.id;
+                  })}
+                />
+              )}
+
+              {/* Progress (custom per challenge, non-bestie, non-blue-eyes) */}
+              {config.mechanic !== "bestie" && config.slug !== "blue-eyes-hunt" && !submission && config.progressRenderer && (
                 <div className="relative">{config.progressRenderer(submission)}</div>
               )}
 
-              {/* Submission Status */}
-              {submission && status && (
+              {/* Submission Status (non-blue-eyes) */}
+              {config.slug !== "blue-eyes-hunt" && submission && status && (
                 <div className={`relative flex items-center gap-2 mt-3 ${status.color}`}>
                   <status.icon className="w-4 h-4" />
                   <span className="text-xs font-black">{status.label}</span>
                 </div>
               )}
 
-              {submission?.status === "approved" && (
+              {config.slug !== "blue-eyes-hunt" && submission?.status === "approved" && (
                 <p className="relative text-green-400 text-xs font-bold mt-2">
                   ✅ Reward earned: {config.reward} {config.rewardSub.toLowerCase()}
                 </p>
               )}
 
-              {submission?.status === "rejected" && (
+              {config.slug !== "blue-eyes-hunt" && submission?.status === "rejected" && (
                 <p className="relative text-red-400/80 text-xs font-bold mt-1">
                   You can try again next week.
                 </p>
               )}
 
-              {/* Action: Submit Proof (manual only) */}
-              {config.mechanic === "manual" && !submission && submittingSlug !== config.slug && (
+              {/* Action: Submit Proof (manual, non-blue-eyes) */}
+              {config.mechanic === "manual" && config.slug !== "blue-eyes-hunt" && !submission && submittingSlug !== config.slug && (
                 <button
                   onClick={() => setSubmittingSlug(config.slug)}
                   className="relative w-full mt-4 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2"

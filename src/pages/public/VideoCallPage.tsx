@@ -48,6 +48,7 @@ import CameraUnlockButton from "@/components/videocall/CameraUnlockButton";
 import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
 import { captureBestieScreenshot } from "@/lib/bestieScreenshot";
+import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -536,6 +537,34 @@ const VideoCallPage = () => {
     };
   }, [activeBestiePair, callState, memberId]);
 
+  // ─── Blue Eyes Hunt: track challenge + snap count ───
+  const { data: blueEyesChallenge } = useQuery({
+    queryKey: ["blue_eyes_challenge"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("weekly_challenges")
+        .select("*")
+        .eq("slug", "blue-eyes-hunt")
+        .eq("is_active", true)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: blueEyesSnaps = [], refetch: refetchBlueEyesSnaps } = useQuery({
+    queryKey: ["blue_eyes_snaps", memberId, blueEyesChallenge?.id],
+    enabled: !!memberId && !!blueEyesChallenge?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("challenge_submissions")
+        .select("*")
+        .eq("user_id", memberId)
+        .eq("challenge_id", blueEyesChallenge!.id)
+        .order("created_at", { ascending: true });
+      return data || [];
+    },
+  });
+
   const isMobile = useIsMobile();
 
 
@@ -990,6 +1019,20 @@ const VideoCallPage = () => {
           {callState === "connected" && partnerVoiceMode && !isFemale && currentPartnerId && !cameraUnlocked && isMobile &&
           <div className="absolute bottom-14 left-3 z-20">
               <CameraUnlockButton recipientId={currentPartnerId} />
+            </div>
+          }
+
+          {/* Blue Eyes Hunt snap button - mobile */}
+          {callState === "connected" && currentPartnerId && isMobile && blueEyesChallenge && blueEyesSnaps.length < 2 &&
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+              <BlueEyesSnapButton
+                remoteVideoRef={remoteVideoRef}
+                userId={memberId}
+                challengeId={blueEyesChallenge.id}
+                snapsCount={blueEyesSnaps.length}
+                maxSnaps={2}
+                onSnapTaken={() => refetchBlueEyesSnaps()}
+              />
             </div>
           }
 
