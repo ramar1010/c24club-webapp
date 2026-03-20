@@ -1199,6 +1199,11 @@ const VideoCallPage = () => {
           <MessagesPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
+      {overlayPage === "challenges" &&
+      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
+          <WeeklyChallengesPage onClose={() => setOverlayPage(null)} />
+        </FullScreenOverlay>
+      }
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
