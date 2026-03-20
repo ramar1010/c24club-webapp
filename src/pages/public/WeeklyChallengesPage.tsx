@@ -29,6 +29,7 @@ interface ChallengeConfig {
   badgeColor: string;
   floatingEmojis: string[];
   progressRenderer?: (submission: any) => React.ReactNode;
+  femaleOnly?: boolean;
 }
 
 const CHALLENGE_CONFIGS: ChallengeConfig[] = [
