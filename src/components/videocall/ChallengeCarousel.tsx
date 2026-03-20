@@ -17,6 +17,7 @@ interface SlideConfig {
   glow: string;
   emoji: string;
   type: "challenge" | "referral";
+  femaleOnly?: boolean;
 }
 
 const SLIDES: SlideConfig[] = [
