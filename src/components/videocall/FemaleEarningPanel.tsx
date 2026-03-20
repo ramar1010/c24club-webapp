@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 
 const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder"];
 const VERIFY_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
