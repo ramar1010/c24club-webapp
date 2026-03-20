@@ -47,6 +47,7 @@ import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import CameraUnlockButton from "@/components/videocall/CameraUnlockButton";
 import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
+import { captureBestieScreenshot } from "@/lib/bestieScreenshot";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
