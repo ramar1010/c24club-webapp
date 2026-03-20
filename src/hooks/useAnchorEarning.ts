@@ -26,10 +26,12 @@ const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain",
 export function useAnchorEarning({
   userId,
   isOnCall,
+  isStarted = false,
   partnerGender,
 }: {
   userId: string;
   isOnCall: boolean;
+  isStarted?: boolean;
   partnerGender?: string | null;
 }) {
   const [status, setStatus] = useState<AnchorStatus>("loading");
@@ -95,9 +97,10 @@ export function useAnchorEarning({
   }, [userId]);
 
   useEffect(() => {
+    if (!isStarted) return;
     checkStatus();
     fetchPayouts();
-  }, [checkStatus, fetchPayouts]);
+  }, [checkStatus, fetchPayouts, isStarted]);
 
   // Join anchor earning
   const joinAnchor = useCallback(async () => {
