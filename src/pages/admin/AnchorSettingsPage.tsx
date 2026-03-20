@@ -143,6 +143,34 @@ const AnchorSettingsPage = () => {
     refetchInterval: 15000,
   });
 
+  const { data: anchorPayouts } = useQuery({
+    queryKey: ["anchor-payouts-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_payouts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return data ?? [];
+    },
+    refetchInterval: 15000,
+  });
+
+  const updateAnchorPayoutMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("anchor_payouts")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      toast.success(`Payout marked as ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["anchor-payouts-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const { data: members } = useQuery({
     queryKey: ["admin-members-lookup-anchor"],
     queryFn: async () => {
@@ -494,6 +522,55 @@ const AnchorSettingsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Anchor Payouts (from earning panel cashouts) */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-bold mb-3 text-foreground">
+          Anchor Earning Payouts ({anchorPayouts?.filter((p: any) => p.status === "pending").length ?? 0} pending)
+        </h2>
+        {(!anchorPayouts || anchorPayouts.length === 0) ? (
+          <p className="text-muted-foreground text-sm">No anchor payouts yet</p>
+        ) : (
+          <div className="space-y-2">
+            {anchorPayouts.map((p: any) => (
+              <div key={p.id} className={`flex items-center justify-between rounded-lg px-4 py-2 border ${
+                p.status === "pending" ? "border-warning/30 bg-warning/5" : "border-border"
+              }`}>
+                <div>
+                  <span className="font-bold text-sm text-foreground">{memberName(p.user_id)}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{p.paypal_email || "No email"}</span>
+                  <span className="text-xs text-muted-foreground ml-2">${Number(p.amount).toFixed(2)}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{new Date(p.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {p.status === "pending" ? (
+                    <>
+                      <button
+                        onClick={() => updateAnchorPayoutMutation.mutate({ id: p.id, status: "paid" })}
+                        disabled={updateAnchorPayoutMutation.isPending}
+                        className="px-3 py-1 text-xs font-bold bg-success text-success-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+                      >
+                        Mark Paid
+                      </button>
+                      <button
+                        onClick={() => updateAnchorPayoutMutation.mutate({ id: p.id, status: "rejected" })}
+                        disabled={updateAnchorPayoutMutation.isPending}
+                        className="px-3 py-1 text-xs font-bold bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <span className={`text-xs font-bold uppercase ${p.status === "paid" ? "text-success" : "text-destructive"}`}>
+                      {p.status}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
