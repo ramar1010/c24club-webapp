@@ -1152,6 +1152,23 @@ const VideoCallPage = () => {
         </div>
       }
 
+      {/* Female Earning Teaser — before START */}
+      {isFemale && !hasStartedMatchmaking && (
+        <div className="mx-3 md:mx-auto md:w-[420px] mb-2">
+          <div
+            className="w-full rounded-xl px-4 py-3 text-center relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #ff2d95 0%, #ff6ec7 50%, #c026d3 100%)',
+              border: '1.5px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <p className="text-white font-bold text-sm">
+              💰 Click the red <span className="text-yellow-300">START</span> button to start earning!
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Female Earning Panel */}
       {isFemale && femaleHasSlot && (
         <div className="mx-3 md:mx-auto md:w-[420px]">
