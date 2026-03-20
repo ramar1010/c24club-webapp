@@ -8,7 +8,8 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
-import FemaleEarningPanel from "@/components/videocall/FemaleEarningPanel";
+import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
+import { useAnchorEarning } from "@/hooks/useAnchorEarning";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
@@ -79,7 +80,7 @@ const VideoCallPage = () => {
   const [femaleHasSlot, setFemaleHasSlot] = useState(false);
   const [femaleQueued, setFemaleQueued] = useState(false);
   const [femaleQueuePosition, setFemaleQueuePosition] = useState(0);
-  const [femaleVerificationPaused, setFemaleVerificationPaused] = useState(false);
+  
   const [showReportOverlay, setShowReportOverlay] = useState(false);
   const [showUnfreezePartnerPopup, setShowUnfreezePartnerPopup] = useState(false);
   const [voiceMode, setVoiceMode] = useState(() => {
@@ -235,7 +236,13 @@ const VideoCallPage = () => {
     banUser();
   }, [nsfwStrikes, currentPartnerId, memberId]);
 
-  const femaleEarning = isFemale && femaleHasSlot && !femaleVerificationPaused;
+  const anchorEarning = useAnchorEarning({
+    userId: memberId,
+    isOnCall: callState === "connected",
+    partnerGender: partnerGender,
+  });
+
+  const femaleEarning = isFemale && femaleHasSlot && !anchorEarning.verificationRequired;
 
   const {
     totalMinutes,
@@ -1146,11 +1153,24 @@ const VideoCallPage = () => {
       {/* Female Earning Panel */}
       {isFemale && femaleHasSlot && (
         <div className="mx-3 md:mx-auto md:w-[420px]">
-          <FemaleEarningPanel
-            totalMinutes={totalMinutes}
-            giftedMinutes={giftedMinutes}
-            onPauseEarning={setFemaleVerificationPaused}
-            onCashoutSuccess={refreshMinutesBalance}
+          <AnchorEarningPanel
+            status={anchorEarning.status}
+            earningMode={anchorEarning.earningMode}
+            elapsedSeconds={anchorEarning.elapsedSeconds}
+            thresholdSeconds={anchorEarning.thresholdSeconds}
+            cashBalance={anchorEarning.cashBalance}
+            queuePosition={anchorEarning.queuePosition}
+            cashEarned={anchorEarning.cashEarned}
+            settings={anchorEarning.settings}
+            settingsLoaded={anchorEarning.settingsLoaded}
+            verificationRequired={anchorEarning.verificationRequired}
+            verificationWord={anchorEarning.verificationWord}
+            payouts={anchorEarning.payouts}
+            onJoin={anchorEarning.joinAnchor}
+            onLeave={anchorEarning.leaveAnchor}
+            onCashout={anchorEarning.cashout}
+            onDismissCash={anchorEarning.dismissCashEarned}
+            onSubmitVerification={anchorEarning.submitVerification}
           />
         </div>
       )}
