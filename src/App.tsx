@@ -149,6 +149,7 @@ const App = () => (
                 <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
                 <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
                 <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
+                <Route path="anchor-rewards/challenges" element={<AdminAnchorChallengesPage />} />
                 <Route path="emails" element={<AdminEmailTemplatesPage />} />
                 <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
                 <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
