@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Users, Eye, Clock, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
