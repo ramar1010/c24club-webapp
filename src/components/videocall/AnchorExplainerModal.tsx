@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, DollarSign, Gift, Clock, Zap, Moon } from "lucide-react";
+import { X, DollarSign, Clock, Zap } from "lucide-react";
 
 const STORAGE_KEY = "anchor_explainer_seen";
 
@@ -30,32 +30,32 @@ const AnchorExplainerModal = ({ onClose }: AnchorExplainerModalProps) => {
             <p className="text-neutral-400 text-xs mt-1">Earn exclusive rewards just for chatting!</p>
           </div>
 
-          {/* Two modes */}
+          {/* Two earning modes */}
           <div className="space-y-2">
-            <div className="rounded-xl border border-neutral-700 bg-neutral-800/60 p-3">
+            <div className="rounded-xl border border-green-500/30 bg-green-950/40 p-3">
               <div className="flex items-center gap-2 mb-1">
-                <Moon className="h-4 w-4 text-yellow-400" />
-                <span className="font-black text-white text-xs uppercase">Chill Hours</span>
-                <span className="text-neutral-500 text-[10px] ml-auto">12 AM – 7 PM EST</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Gift className="h-3.5 w-3.5 text-yellow-400 mt-0.5 flex-shrink-0" />
-                <p className="text-neutral-300 text-xs">
-                  Chat with guys and earn <span className="text-yellow-400 font-bold">Mystery Rewards</span> — clothing, bags & more!
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="h-4 w-4 text-red-400" />
-                <span className="font-black text-white text-xs uppercase">Power Hours</span>
-                <span className="text-neutral-500 text-[10px] ml-auto">7 PM – 12 AM EST</span>
+                <Zap className="h-4 w-4 text-green-400" />
+                <span className="font-black text-white text-xs uppercase">Active Earning</span>
+                <span className="text-neutral-500 text-[10px] ml-auto">On call with a guy</span>
               </div>
               <div className="flex items-start gap-2">
                 <DollarSign className="h-3.5 w-3.5 text-green-400 mt-0.5 flex-shrink-0" />
                 <p className="text-neutral-300 text-xs">
-                  Earn <span className="text-green-400 font-bold">real cash</span> ($2 per 14 min) to your PayPal!
+                  Earn <span className="text-green-400 font-bold">more cash</span> while chatting with a male user!
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-neutral-700 bg-neutral-800/60 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-yellow-400" />
+                <span className="font-black text-white text-xs uppercase">Idle Earning</span>
+                <span className="text-neutral-500 text-[10px] ml-auto">Waiting for a match</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <DollarSign className="h-3.5 w-3.5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                <p className="text-neutral-300 text-xs">
+                  Still earn <span className="text-yellow-400 font-bold">a smaller amount</span> while waiting — connect to earn more!
                 </p>
               </div>
             </div>
@@ -67,7 +67,7 @@ const AnchorExplainerModal = ({ onClose }: AnchorExplainerModalProps) => {
             <ul className="space-y-1 text-xs text-neutral-400">
               <li className="flex items-start gap-1.5">
                 <Clock className="h-3 w-3 text-neutral-500 mt-0.5 flex-shrink-0" />
-                <span>Timer counts while matched with a male partner or just waiting for partner</span>
+                <span>Earn more while connected to a guy · still earn while waiting</span>
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="text-neutral-500 mt-0.5 flex-shrink-0 text-[10px]">⚠️</span>

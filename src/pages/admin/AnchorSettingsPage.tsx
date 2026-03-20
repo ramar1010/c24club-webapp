@@ -6,7 +6,6 @@ import { toast } from "sonner";
 const AnchorSettingsPage = () => {
   const queryClient = useQueryClient();
 
-  // Anchor settings (slot cap)
   const { data: settings, isLoading } = useQuery({
     queryKey: ["anchor-settings"],
     queryFn: async () => {
@@ -19,7 +18,6 @@ const AnchorSettingsPage = () => {
     },
   });
 
-  // Cashout settings (earning rate)
   const { data: cashoutSettings, isLoading: cashoutLoading } = useQuery({
     queryKey: ["cashout-settings"],
     queryFn: async () => {
@@ -37,8 +35,20 @@ const AnchorSettingsPage = () => {
   const [minCashout, setMinCashout] = useState(100);
   const [maxCashout, setMaxCashout] = useState(5000);
 
+  // New active/idle rates
+  const [activeRateCash, setActiveRateCash] = useState(1.5);
+  const [activeRateTime, setActiveRateTime] = useState(30);
+  const [idleRateCash, setIdleRateCash] = useState(0.1);
+  const [idleRateTime, setIdleRateTime] = useState(30);
+
   useEffect(() => {
-    if (settings) setMaxCap(settings.max_anchor_cap);
+    if (settings) {
+      setMaxCap(settings.max_anchor_cap);
+      setActiveRateCash(Number(settings.active_rate_cash ?? 1.5));
+      setActiveRateTime(settings.active_rate_time ?? 30);
+      setIdleRateCash(Number(settings.idle_rate_cash ?? 0.1));
+      setIdleRateTime(settings.idle_rate_time ?? 30);
+    }
   }, [settings]);
 
   useEffect(() => {
@@ -65,6 +75,28 @@ const AnchorSettingsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const saveEarningRatesMutation = useMutation({
+    mutationFn: async () => {
+      if (!settings?.id) return;
+      const { error } = await supabase
+        .from("anchor_settings")
+        .update({
+          active_rate_cash: activeRateCash,
+          active_rate_time: activeRateTime,
+          idle_rate_cash: idleRateCash,
+          idle_rate_time: idleRateTime,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", settings.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Earning rates saved!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-settings"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const saveRateMutation = useMutation({
     mutationFn: async () => {
       if (!cashoutSettings?.id) return;
@@ -80,13 +112,12 @@ const AnchorSettingsPage = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Earning rate settings saved!");
+      toast.success("Cashout settings saved!");
       queryClient.invalidateQueries({ queryKey: ["cashout-settings"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Queue/session state via backend function so auto-promotion runs before admin data renders
   const { data: anchorAdminState } = useQuery({
     queryKey: ["anchor-admin-state"],
     queryFn: async () => {
@@ -99,7 +130,6 @@ const AnchorSettingsPage = () => {
     refetchInterval: 5000,
   });
 
-  // Cashout requests
   const { data: cashoutRequests } = useQuery({
     queryKey: ["cashout-requests-admin"],
     queryFn: async () => {
@@ -207,26 +237,111 @@ const AnchorSettingsPage = () => {
         </button>
       </div>
 
-      {/* Earning Rate Settings */}
+      {/* Active/Idle Earning Rates */}
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Earning & Cashout Rate</h2>
+        <h2 className="text-lg font-bold text-foreground">Earning Rates</h2>
         <p className="text-sm text-muted-foreground">
-          Controls how much each minute is worth when females cash out, and the limits per cashout request.
+          Females earn at different rates depending on whether they're connected to a guy (active) or waiting (idle).
         </p>
 
-        {/* Live preview */}
+        {/* Active rate */}
+        <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-green-500 font-black text-sm">🔥 ACTIVE RATE</span>
+            <span className="text-xs text-muted-foreground">(on call with a male user)</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-foreground">Cash Amount ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min={0}
+                value={activeRateCash}
+                onChange={(e) => setActiveRateCash(parseFloat(e.target.value) || 0)}
+                className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-foreground">Every X minutes</label>
+              <input
+                type="number"
+                min={1}
+                value={activeRateTime}
+                onChange={(e) => setActiveRateTime(parseInt(e.target.value) || 30)}
+                className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Earns <span className="text-foreground font-bold">${activeRateCash.toFixed(2)}</span> every <span className="text-foreground font-bold">{activeRateTime} min</span> while chatting with a guy
+            = <span className="text-green-500 font-bold">${((activeRateCash / activeRateTime) * 60).toFixed(2)}/hr</span>
+          </p>
+        </div>
+
+        {/* Idle rate */}
+        <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-500 font-black text-sm">💤 IDLE RATE</span>
+            <span className="text-xs text-muted-foreground">(waiting / not connected)</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-foreground">Cash Amount ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min={0}
+                value={idleRateCash}
+                onChange={(e) => setIdleRateCash(parseFloat(e.target.value) || 0)}
+                className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-foreground">Every X minutes</label>
+              <input
+                type="number"
+                min={1}
+                value={idleRateTime}
+                onChange={(e) => setIdleRateTime(parseInt(e.target.value) || 30)}
+                className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Earns <span className="text-foreground font-bold">${idleRateCash.toFixed(2)}</span> every <span className="text-foreground font-bold">{idleRateTime} min</span> while idle
+            = <span className="text-yellow-500 font-bold">${((idleRateCash / idleRateTime) * 60).toFixed(2)}/hr</span>
+          </p>
+        </div>
+
+        <button
+          onClick={() => saveEarningRatesMutation.mutate()}
+          disabled={saveEarningRatesMutation.isPending}
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
+        >
+          {saveEarningRatesMutation.isPending ? "Saving..." : "Save Earning Rates"}
+        </button>
+      </div>
+
+      {/* Cashout Settings */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-lg font-bold text-foreground">Cashout Settings</h2>
+        <p className="text-sm text-muted-foreground">
+          Controls how much each gifted minute is worth when females cash out, and the limits per cashout request.
+        </p>
+
         {ratePerMinute > 0 && (
           <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 text-sm text-foreground">
             <p className="font-bold mb-1">💡 Quick Preview</p>
-            <p className="text-muted-foreground text-xs">100 minutes × ${ratePerMinute} = <span className="text-foreground font-bold">${(100 * ratePerMinute).toFixed(2)}</span></p>
-            <p className="text-muted-foreground text-xs">Users must have at least <span className="text-foreground font-bold">{minCashout} minutes</span> to request a cashout</p>
-            <p className="text-muted-foreground text-xs">Users can cash out up to <span className="text-foreground font-bold">{maxCashout} minutes</span> per request</p>
+            <p className="text-muted-foreground text-xs">100 gifted minutes × ${ratePerMinute} = <span className="text-foreground font-bold">${(100 * ratePerMinute).toFixed(2)}</span></p>
+            <p className="text-muted-foreground text-xs">Users must have at least <span className="text-foreground font-bold">{minCashout} gifted minutes</span> to request a cashout</p>
+            <p className="text-muted-foreground text-xs">Users can cash out up to <span className="text-foreground font-bold">{maxCashout} gifted minutes</span> per request</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-foreground">Rate per Minute ($)</label>
+            <label className="block text-sm font-medium mb-1 text-foreground">Rate per Gifted Minute ($)</label>
             <input
               type="number"
               step="0.001"
@@ -235,7 +350,6 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setRatePerMinute(parseFloat(e.target.value) || 0.01)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
-            <p className="text-xs text-muted-foreground mt-1">Dollar value of each gifted minute (e.g. 0.35 = $0.35/min)</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-foreground">Min Cashout (minutes)</label>
@@ -246,7 +360,6 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setMinCashout(parseInt(e.target.value) || 100)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
-            <p className="text-xs text-muted-foreground mt-1">Minimum gifted minutes needed before a user can request a cashout</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-foreground">Max Cashout (minutes)</label>
@@ -257,7 +370,6 @@ const AnchorSettingsPage = () => {
               onChange={(e) => setMaxCashout(parseInt(e.target.value) || 5000)}
               className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
             />
-            <p className="text-xs text-muted-foreground mt-1">Maximum minutes a user can cash out in a single request</p>
           </div>
         </div>
         <button
@@ -265,11 +377,11 @@ const AnchorSettingsPage = () => {
           disabled={saveRateMutation.isPending}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
         >
-          {saveRateMutation.isPending ? "Saving..." : "Save Rate Settings"}
+          {saveRateMutation.isPending ? "Saving..." : "Save Cashout Settings"}
         </button>
       </div>
 
-      {/* Active Earners (from anchor_sessions) */}
+      {/* Active Earners */}
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-foreground">
@@ -289,12 +401,12 @@ const AnchorSettingsPage = () => {
           <p className="text-muted-foreground text-sm">No active female earners</p>
         ) : (
           <div className="space-y-2">
-            {activeEarners.map((s, i) => (
+            {activeEarners.map((s: any, i: number) => (
               <div key={s.id} className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-lg px-4 py-2">
                 <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(s.user_id)}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
-                    {s.elapsed_seconds}s elapsed · ${Number(s.cash_balance).toFixed(2)} earned
+                    {s.current_mode === "active" ? "🔥" : "💤"} {s.elapsed_seconds}s · ${Number(s.cash_balance).toFixed(2)}
                   </span>
                   <button
                     onClick={() => clearSingleSlotMutation.mutate(s.id)}
@@ -317,7 +429,7 @@ const AnchorSettingsPage = () => {
             Waiting Queue ({queueData.length})
           </h2>
           <div className="space-y-2">
-            {queueData.map((q, i) => (
+            {queueData.map((q: any, i: number) => (
               <div key={q.id} className="flex items-center justify-between bg-muted/30 border border-border rounded-lg px-4 py-2">
                 <span className="font-bold text-sm text-foreground">#{i + 1} — {memberName(q.user_id)}</span>
                 <span className="text-xs text-muted-foreground">
@@ -334,7 +446,7 @@ const AnchorSettingsPage = () => {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="text-lg font-bold mb-3 text-foreground">Pending Cashout Requests ({pendingRequests.length})</h2>
           <div className="space-y-2">
-            {pendingRequests.map((r) => (
+            {pendingRequests.map((r: any) => (
               <div key={r.id} className="flex items-center justify-between border border-warning/30 bg-warning/5 rounded-lg px-4 py-2">
                 <div>
                   <span className="font-bold text-sm text-foreground">{memberName(r.user_id)}</span>
@@ -368,7 +480,7 @@ const AnchorSettingsPage = () => {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="text-lg font-bold mb-3 text-foreground">Recent Cashout History</h2>
           <div className="space-y-2">
-            {recentRequests.map((r) => (
+            {recentRequests.map((r: any) => (
               <div key={r.id} className="flex items-center justify-between border border-border rounded-lg px-4 py-2">
                 <div>
                   <span className="font-bold text-sm text-foreground">{memberName(r.user_id)}</span>

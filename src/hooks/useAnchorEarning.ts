@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface AnchorSettings {
-  power_rate_cash: number;
-  power_rate_time: number;
-  chill_reward_time: number;
+export interface AnchorSettings {
+  active_rate_cash: number;
+  active_rate_time: number;
+  idle_rate_cash: number;
+  idle_rate_time: number;
   max_anchor_cap: number;
-}
-
-interface AnchorReward {
-  id: string;
-  title: string;
-  image_url: string | null;
-  rarity: string;
 }
 
 export interface AnchorPayout {
@@ -25,7 +19,7 @@ export interface AnchorPayout {
 }
 
 export type AnchorStatus = "loading" | "not_eligible" | "idle" | "active" | "queued" | "slots_full";
-export type AnchorMode = "chill" | "power";
+export type EarningMode = "active" | "idle";
 
 const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder", "blossom", "cascade", "eclipse", "harbor", "lantern", "orchid", "phoenix", "radiance", "sapphire", "velvet"];
 
@@ -39,14 +33,13 @@ export function useAnchorEarning({
   partnerGender?: string | null;
 }) {
   const [status, setStatus] = useState<AnchorStatus>("loading");
-  const [mode, setMode] = useState<AnchorMode>("chill");
+  const [earningMode, setEarningMode] = useState<EarningMode>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [thresholdSeconds, setThresholdSeconds] = useState(0);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [cashBalance, setCashBalance] = useState(0);
   const [queuePosition, setQueuePosition] = useState(0);
   const [settings, setSettings] = useState<AnchorSettings | null>(null);
-  const [rewardEarned, setRewardEarned] = useState<AnchorReward | null>(null);
   const [cashEarned, setCashEarned] = useState<number>(0);
   const [verificationRequired, setVerificationRequired] = useState(false);
   const [verificationWord, setVerificationWord] = useState("");
@@ -55,6 +48,14 @@ export function useAnchorEarning({
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const localElapsedRef = useRef(0);
   const isActiveRef = useRef(false);
+
+  const onCallWithMale = isOnCall && partnerGender?.toLowerCase() === "male";
+
+  // Compute threshold from settings and current earning mode
+  const getThreshold = useCallback((s: AnchorSettings | null, mode: EarningMode) => {
+    if (!s) return 30 * 60;
+    return mode === "active" ? s.active_rate_time * 60 : s.idle_rate_time * 60;
+  }, []);
 
   // Check status on mount
   const checkStatus = useCallback(async () => {
@@ -67,12 +68,7 @@ export function useAnchorEarning({
       body: { type: "get_status", userId },
     });
 
-    if (!data?.success) {
-      setStatus("not_eligible");
-      return;
-    }
-
-    if (!data.eligible) {
+    if (!data?.success || !data.eligible) {
       setStatus("not_eligible");
       return;
     }
@@ -81,7 +77,6 @@ export function useAnchorEarning({
       setSettings(data.settings);
       setSettingsLoaded(true);
     }
-    setMode(data.currentMode);
 
     if (data.status === "active") {
       setStatus("active");
@@ -90,18 +85,17 @@ export function useAnchorEarning({
       localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
       setCashBalance(Number(data.session?.cash_balance ?? 0));
       const s = data.settings || settings;
-      setThresholdSeconds(
-        data.currentMode === "power"
-          ? (s?.power_rate_time ?? 30) * 60
-          : (s?.chill_reward_time ?? 45) * 60
-      );
+      // Default to idle mode; will switch to active on next tick if on call
+      const mode: EarningMode = data.session?.current_mode === "active" ? "active" : "idle";
+      setEarningMode(mode);
+      setThresholdSeconds(getThreshold(s, mode));
     } else if (data.status === "queued") {
       setStatus("queued");
       setQueuePosition(data.queuePosition);
     } else {
       setStatus(data.slotsAvailable ? "idle" : "slots_full");
     }
-  }, [userId]);
+  }, [userId, getThreshold]);
 
   // Fetch payout history
   const fetchPayouts = useCallback(async () => {
@@ -132,23 +126,18 @@ export function useAnchorEarning({
         setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
         localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
         setCashBalance(Number(data.session?.cash_balance ?? 0));
-        setMode(data.currentMode);
-        const currentMode = data.currentMode || "chill";
-        setThresholdSeconds(
-          currentMode === "power"
-            ? ((data.settings ?? settings)?.power_rate_time ?? 30) * 60
-            : ((data.settings ?? settings)?.chill_reward_time ?? 45) * 60
-        );
+        setEarningMode("idle");
         if (data.settings) {
           setSettings(data.settings);
           setSettingsLoaded(true);
         }
+        setThresholdSeconds(getThreshold(data.settings ?? settings, "idle"));
       } else if (data.status === "queued") {
         setStatus("queued");
         setQueuePosition(data.queuePosition);
       }
     }
-  }, [userId]);
+  }, [userId, getThreshold]);
 
   // Leave anchor earning
   const leaveAnchor = useCallback(async () => {
@@ -169,12 +158,12 @@ export function useAnchorEarning({
         userId,
         secondsToAdd: 30,
         partnerGender: partnerGender || null,
+        isOnCall,
       },
     });
 
     if (data?.success) {
       if (data.verification_required) {
-        // Pause timer and show challenge
         isActiveRef.current = false;
         setVerificationRequired(true);
         setVerificationWord(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
@@ -182,17 +171,11 @@ export function useAnchorEarning({
       }
       setElapsedSeconds(data.elapsed_seconds ?? 0);
       localElapsedRef.current = data.elapsed_seconds ?? 0;
-      const newMode = data.currentMode || mode;
-      setMode(newMode);
+      const newMode: EarningMode = data.earningMode || "idle";
+      setEarningMode(newMode);
       setCashBalance(Number(data.cash_balance) || 0);
-      const fallbackThreshold = newMode === "power"
-        ? (settings?.power_rate_time ?? 30) * 60
-        : (settings?.chill_reward_time ?? 45) * 60;
-      setThresholdSeconds(data.threshold_seconds ?? fallbackThreshold);
+      setThresholdSeconds(data.threshold_seconds ?? getThreshold(settings, newMode));
 
-      if (data.reward_earned) {
-        setRewardEarned(data.reward_earned);
-      }
       if (data.cash_earned > 0) {
         setCashEarned(data.cash_earned);
       }
@@ -200,11 +183,11 @@ export function useAnchorEarning({
       isActiveRef.current = false;
       setStatus("idle");
     }
-  }, [userId, partnerGender]);
+  }, [userId, partnerGender, isOnCall, getThreshold, settings]);
 
-  // Local timer that increments every second for smooth UI, reports to server every 30s
+  // Timer: always ticks when status is "active" (both idle and on-call)
   useEffect(() => {
-    if (status === "active" && isOnCall) {
+    if (status === "active") {
       isActiveRef.current = true;
 
       tickIntervalRef.current = setInterval(() => {
@@ -230,7 +213,15 @@ export function useAnchorEarning({
         tickIntervalRef.current = null;
       }
     };
-  }, [status, isOnCall, tick]);
+  }, [status, tick]);
+
+  // Update earning mode locally when call state changes (for UI responsiveness)
+  useEffect(() => {
+    if (status !== "active") return;
+    const newMode: EarningMode = onCallWithMale ? "active" : "idle";
+    setEarningMode(newMode);
+    setThresholdSeconds(getThreshold(settings, newMode));
+  }, [onCallWithMale, status, settings, getThreshold]);
 
   // Poll queue position
   useEffect(() => {
@@ -247,7 +238,6 @@ export function useAnchorEarning({
         setElapsedSeconds(data.session?.elapsed_seconds ?? 0);
         localElapsedRef.current = data.session?.elapsed_seconds ?? 0;
         setCashBalance(Number(data.session?.cash_balance ?? 0));
-        setMode(data.currentMode);
       } else if (data?.status === "queued") {
         setQueuePosition(data.queuePosition);
       }
@@ -264,13 +254,12 @@ export function useAnchorEarning({
 
     if (data?.success) {
       setCashBalance(0);
-      fetchPayouts(); // refresh payout list
+      fetchPayouts();
       return data.amount;
     }
     throw new Error(data?.message || "Cashout failed");
   }, [userId, fetchPayouts]);
 
-  const dismissReward = useCallback(() => setRewardEarned(null), []);
   const dismissCashEarned = useCallback(() => setCashEarned(0), []);
 
   // Submit verification
@@ -302,14 +291,13 @@ export function useAnchorEarning({
 
   return {
     status,
-    mode,
+    earningMode,
     elapsedSeconds,
     thresholdSeconds,
     cashBalance,
     queuePosition,
     settings,
     settingsLoaded,
-    rewardEarned,
     cashEarned,
     verificationRequired,
     verificationWord,
@@ -317,7 +305,6 @@ export function useAnchorEarning({
     joinAnchor,
     leaveAnchor,
     cashout,
-    dismissReward,
     dismissCashEarned,
     submitVerification,
     checkStatus,
