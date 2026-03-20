@@ -465,8 +465,77 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 </button>
               )}
 
-              {/* Auto-tracked label */}
-              {config.mechanic === "auto" && !submission && (
+              {/* Marathon Talk: start button + progress */}
+              {config.slug === "marathon-talk" && (() => {
+                const marathonStarted = localStorage.getItem("marathon_talk_started") === "true";
+                const marathonSubmission = submissions.find((s: any) => {
+                  const db = getDbChallenge("marathon-talk");
+                  return db && s.challenge_id === db.id;
+                });
+                
+                if (marathonSubmission) {
+                  const mStatus = statusConfig[marathonSubmission.status];
+                  return (
+                    <div className="relative mt-3">
+                      <div className="mt-1">
+                        <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                          <span>0 min</span>
+                          <span>60 min</span>
+                        </div>
+                        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full" style={{ width: "100%" }} />
+                        </div>
+                      </div>
+                      {mStatus && (
+                        <div className={`flex items-center gap-2 mt-3 ${mStatus.color}`}>
+                          <mStatus.icon className="w-4 h-4" />
+                          <span className="text-xs font-black">{mStatus.label}</span>
+                        </div>
+                      )}
+                      {marathonSubmission.status === "approved" && (
+                        <p className="text-green-400 text-xs font-bold mt-2">✅ Reward earned: $35</p>
+                      )}
+                    </div>
+                  );
+                }
+                
+                if (!marathonStarted) {
+                  return (
+                    <button
+                      onClick={() => {
+                        localStorage.setItem("marathon_talk_started", "true");
+                        toast.success("🏃‍♀️ Marathon Talk activated!", { description: "Your call timer will track automatically." });
+                        setSubmittingSlug((prev) => prev === "__force2" ? "" : "__force2");
+                        setTimeout(() => setSubmittingSlug(""), 50);
+                      }}
+                      className="relative w-full mt-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(52,211,153,0.2)]"
+                    >
+                      🏃‍♀️ START MARATHON
+                    </button>
+                  );
+                }
+                
+                // Started but not yet completed
+                const savedMins = parseInt(localStorage.getItem("marathon_talk_minutes") || "0", 10);
+                const pct = Math.min(100, (savedMins / 60) * 100);
+                return (
+                  <div className="relative mt-3">
+                    <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                      <span>{savedMins} min</span>
+                      <span>60 min</span>
+                    </div>
+                    <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-emerald-400/70">
+                      <span className="text-base">⚡</span> Auto-tracking — stay on a call for 60 min!
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Auto-tracked label (non-marathon) */}
+              {config.mechanic === "auto" && config.slug !== "marathon-talk" && !submission && (
                 <div className="relative mt-3 flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
                   <span className="text-base">⚡</span> Auto-tracked — just start a call!
                 </div>
