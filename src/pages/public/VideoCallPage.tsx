@@ -976,14 +976,8 @@ const VideoCallPage = () => {
               {/* Local video (me) - small box on mobile */}
               {isFemale && voiceMode && isActive ?
             <div className="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
-                  {mySelfieUrl ? (
-                    <img src={mySelfieUrl} alt="You" className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <span className="text-2xl">🎙️</span>
-                      <span className="text-pink-400 text-[7px] font-bold">Voice Mode</span>
-                    </>
-                  )}
+                  <span className="text-2xl">🎙️</span>
+                  <span className="text-pink-400 text-[7px] font-bold">Voice Mode</span>
                 </div> :
 
             <video ref={localVideoRef} autoPlay muted playsInline
