@@ -565,8 +565,93 @@ const VideoCallPage = () => {
     },
   });
 
-  const isMobile = useIsMobile();
+  // ─── Marathon Talk: auto-track 60-min continuous call ───
+  const { data: marathonChallenge } = useQuery({
+    queryKey: ["marathon_challenge"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("weekly_challenges")
+        .select("*")
+        .eq("slug", "marathon-talk")
+        .eq("is_active", true)
+        .maybeSingle();
+      return data;
+    },
+  });
 
+  const { data: marathonSubmission } = useQuery({
+    queryKey: ["marathon_submission", memberId, marathonChallenge?.id],
+    enabled: !!memberId && !!marathonChallenge?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("challenge_submissions")
+        .select("*")
+        .eq("user_id", memberId)
+        .eq("challenge_id", marathonChallenge!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const marathonStartTimeRef = useRef<number | null>(null);
+  const marathonPartnerRef = useRef<string | null>(null);
+  const marathonSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    const marathonStarted = localStorage.getItem("marathon_talk_started") === "true";
+    if (!marathonStarted || !marathonChallenge || marathonSubmission || marathonSubmittedRef.current) {
+      return;
+    }
+
+    if (callState === "connected" && currentPartnerId) {
+      // If partner changed, reset timer
+      if (marathonPartnerRef.current !== currentPartnerId) {
+        marathonStartTimeRef.current = Date.now();
+        marathonPartnerRef.current = currentPartnerId;
+        localStorage.setItem("marathon_talk_minutes", "0");
+      }
+      if (!marathonStartTimeRef.current) {
+        marathonStartTimeRef.current = Date.now();
+      }
+
+      const interval = setInterval(async () => {
+        if (!marathonStartTimeRef.current || marathonSubmittedRef.current) return;
+        const elapsedMin = Math.floor((Date.now() - marathonStartTimeRef.current) / 60000);
+        localStorage.setItem("marathon_talk_minutes", String(elapsedMin));
+
+        if (elapsedMin >= 60 && !marathonSubmittedRef.current) {
+          marathonSubmittedRef.current = true;
+          clearInterval(interval);
+
+          const { error } = await supabase.from("challenge_submissions").insert({
+            user_id: memberId,
+            challenge_id: marathonChallenge.id,
+            proof_text: `Marathon Talk completed: 60+ minutes continuous call`,
+            status: "pending",
+          });
+
+          if (!error) {
+            toast.success("🏃‍♀️ MARATHON COMPLETE!", {
+              description: "60-minute call achieved! Submitted for review.",
+              duration: 8000,
+            });
+            localStorage.removeItem("marathon_talk_minutes");
+          }
+        }
+      }, 15000); // Check every 15s
+
+      return () => clearInterval(interval);
+    } else {
+      // Call disconnected — reset
+      if (marathonStartTimeRef.current) {
+        marathonStartTimeRef.current = null;
+        marathonPartnerRef.current = null;
+        localStorage.setItem("marathon_talk_minutes", "0");
+      }
+    }
+  }, [callState, currentPartnerId, marathonChallenge, marathonSubmission, memberId]);
+
+  const isMobile = useIsMobile();
 
   // Default to fullscreen video on mobile for females
   useEffect(() => {

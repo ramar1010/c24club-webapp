@@ -72,13 +72,13 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     slug: "marathon-talk",
     title: "MARATHON TALK 🏃‍♀️",
     subtitle: "Go the Distance! ⏱️",
-    description: "Talk with someone for a whole hour straight on video chat. You both earn $35! 🔥",
+    description: "Stay on a single video call for 60 minutes straight. First person to complete it wins $35! 🔥",
     reward: "$35",
-    rewardSub: "EACH",
+    rewardSub: "WINNER",
     difficulty: "MEDIUM",
     icon: Clock,
     mechanic: "auto",
-    maxParticipants: 2,
+    maxParticipants: 1,
     gradient: "from-emerald-600/30 via-green-700/25 to-teal-900/40",
     border: "border-emerald-400/50",
     glow: "shadow-[0_0_24px_rgba(52,211,153,0.35)]",
@@ -86,17 +86,6 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-emerald-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
-    progressRenderer: () => (
-      <div className="mt-3">
-        <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
-          <span>0 min</span>
-          <span>60 min</span>
-        </div>
-        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all" style={{ width: "0%" }} />
-        </div>
-      </div>
-    ),
   },
 ];
 
@@ -447,20 +436,20 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
               )}
 
               {/* Submission Status (non-blue-eyes) */}
-              {config.slug !== "blue-eyes-hunt" && submission && status && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission && status && (
                 <div className={`relative flex items-center gap-2 mt-3 ${status.color}`}>
                   <status.icon className="w-4 h-4" />
                   <span className="text-xs font-black">{status.label}</span>
                 </div>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && submission?.status === "approved" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "approved" && (
                 <p className="relative text-green-400 text-xs font-bold mt-2">
                   ✅ Reward earned: {config.reward} {config.rewardSub.toLowerCase()}
                 </p>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && submission?.status === "rejected" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "rejected" && (
                 <p className="relative text-red-400/80 text-xs font-bold mt-1">
                   You can try again next week.
                 </p>
@@ -476,8 +465,77 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 </button>
               )}
 
-              {/* Auto-tracked label */}
-              {config.mechanic === "auto" && !submission && (
+              {/* Marathon Talk: start button + progress */}
+              {config.slug === "marathon-talk" && (() => {
+                const marathonStarted = localStorage.getItem("marathon_talk_started") === "true";
+                const marathonSubmission = submissions.find((s: any) => {
+                  const db = getDbChallenge("marathon-talk");
+                  return db && s.challenge_id === db.id;
+                });
+                
+                if (marathonSubmission) {
+                  const mStatus = statusConfig[marathonSubmission.status];
+                  return (
+                    <div className="relative mt-3">
+                      <div className="mt-1">
+                        <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                          <span>0 min</span>
+                          <span>60 min</span>
+                        </div>
+                        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full" style={{ width: "100%" }} />
+                        </div>
+                      </div>
+                      {mStatus && (
+                        <div className={`flex items-center gap-2 mt-3 ${mStatus.color}`}>
+                          <mStatus.icon className="w-4 h-4" />
+                          <span className="text-xs font-black">{mStatus.label}</span>
+                        </div>
+                      )}
+                      {marathonSubmission.status === "approved" && (
+                        <p className="text-green-400 text-xs font-bold mt-2">✅ Reward earned: $35</p>
+                      )}
+                    </div>
+                  );
+                }
+                
+                if (!marathonStarted) {
+                  return (
+                    <button
+                      onClick={() => {
+                        localStorage.setItem("marathon_talk_started", "true");
+                        toast.success("🏃‍♀️ Marathon Talk activated!", { description: "Your call timer will track automatically." });
+                        setSubmittingSlug((prev) => prev === "__force2" ? "" : "__force2");
+                        setTimeout(() => setSubmittingSlug(""), 50);
+                      }}
+                      className="relative w-full mt-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(52,211,153,0.2)]"
+                    >
+                      🏃‍♀️ START MARATHON
+                    </button>
+                  );
+                }
+                
+                // Started but not yet completed
+                const savedMins = parseInt(localStorage.getItem("marathon_talk_minutes") || "0", 10);
+                const pct = Math.min(100, (savedMins / 60) * 100);
+                return (
+                  <div className="relative mt-3">
+                    <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                      <span>{savedMins} min</span>
+                      <span>60 min</span>
+                    </div>
+                    <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-emerald-400/70">
+                      <span className="text-base">⚡</span> Auto-tracking — stay on a call for 60 min!
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Auto-tracked label (non-marathon) */}
+              {config.mechanic === "auto" && config.slug !== "marathon-talk" && !submission && (
                 <div className="relative mt-3 flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
                   <span className="text-base">⚡</span> Auto-tracked — just start a call!
                 </div>
