@@ -651,7 +651,7 @@ const VideoCallPage = () => {
     }
   }, [callState, currentPartnerId, marathonChallenge, marathonSubmission, memberId]);
 
-
+  const isMobile = useIsMobile();
 
   // Default to fullscreen video on mobile for females
   useEffect(() => {
