@@ -303,6 +303,92 @@ export type Database = {
         }
         Relationships: []
       }
+      bestie_daily_logs: {
+        Row: {
+          call_date: string
+          created_at: string
+          day_number: number
+          id: string
+          invitee_screenshot_url: string | null
+          inviter_screenshot_url: string | null
+          pair_id: string
+          total_seconds: number
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          call_date?: string
+          created_at?: string
+          day_number: number
+          id?: string
+          invitee_screenshot_url?: string | null
+          inviter_screenshot_url?: string | null
+          pair_id: string
+          total_seconds?: number
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          call_date?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          invitee_screenshot_url?: string | null
+          inviter_screenshot_url?: string | null
+          pair_id?: string
+          total_seconds?: number
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bestie_daily_logs_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "bestie_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bestie_pairs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          days_completed: number
+          id: string
+          invite_code: string
+          invitee_id: string | null
+          inviter_id: string
+          reward_paid: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          days_completed?: number
+          id?: string
+          invite_code: string
+          invitee_id?: string | null
+          inviter_id: string
+          reward_paid?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          days_completed?: number
+          id?: string
+          invite_code?: string
+          invitee_id?: string | null
+          inviter_id?: string
+          reward_paid?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_minutes_log: {
         Row: {
           created_at: string
