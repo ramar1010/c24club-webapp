@@ -1312,6 +1312,11 @@ const VideoCallPage = () => {
         />
       )}
 
+      {/* Challenge Carousel — above nav icons */}
+      {!isActive && !showRedeem && (
+        <ChallengeCarousel onOpenChallenges={() => setOverlayPage("challenges")} />
+      )}
+
       {/* Panels */}
       {showRedeem ?
       <div className="px-3 pb-4">
