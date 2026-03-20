@@ -1,5 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+function getWeekStart(): string {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun
+  const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1); // Monday
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff));
+  return monday.toISOString().split("T")[0];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
