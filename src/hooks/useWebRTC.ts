@@ -345,6 +345,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   async function startCall() {
     try {
       setError(null);
+      setHasStartedMatchmaking(true);
       setCallState("waiting");
 
       await getLocalStream();
