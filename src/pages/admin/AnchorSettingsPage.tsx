@@ -34,6 +34,7 @@ const AnchorSettingsPage = () => {
   const [ratePerMinute, setRatePerMinute] = useState(0.01);
   const [minCashout, setMinCashout] = useState(100);
   const [maxCashout, setMaxCashout] = useState(5000);
+  const [anchorDisabled, setAnchorDisabled] = useState(false);
 
   // New active/idle rates
   const [activeRateCash, setActiveRateCash] = useState(1.5);
@@ -48,6 +49,7 @@ const AnchorSettingsPage = () => {
       setActiveRateTime(settings.active_rate_time ?? 30);
       setIdleRateCash(Number(settings.idle_rate_cash ?? 0.1));
       setIdleRateTime(settings.idle_rate_time ?? 30);
+      setAnchorDisabled((settings as any).anchor_disabled ?? false);
     }
   }, [settings]);
 
@@ -236,9 +238,57 @@ const AnchorSettingsPage = () => {
   const pendingRequests = cashoutRequests?.filter((r) => r.status === "pending") ?? [];
   const recentRequests = cashoutRequests?.filter((r) => r.status !== "pending") ?? [];
 
+  const toggleDisabledMutation = useMutation({
+    mutationFn: async (disabled: boolean) => {
+      if (!settings?.id) return;
+      const { error } = await supabase
+        .from("anchor_settings")
+        .update({ anchor_disabled: disabled, updated_at: new Date().toISOString() } as any)
+        .eq("id", settings.id);
+      if (error) throw error;
+    },
+    onSuccess: (_, disabled) => {
+      setAnchorDisabled(disabled);
+      toast.success(disabled ? "Anchor system disabled — maintenance mode ON" : "Anchor system re-enabled!");
+      queryClient.invalidateQueries({ queryKey: ["anchor-settings"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <div className="p-6 space-y-8 max-w-4xl">
       <h1 className="text-2xl font-bold text-foreground">Female Earning System</h1>
+
+      {/* System Kill Switch */}
+      <div className={`rounded-xl border p-6 space-y-3 ${anchorDisabled ? "bg-destructive/10 border-destructive/30" : "bg-emerald-500/10 border-emerald-500/30"}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              {anchorDisabled ? "🔴 System Disabled" : "🟢 System Active"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {anchorDisabled
+                ? "Female earning is offline. Users see a 'Down for Maintenance' notice."
+                : "Female earning system is live and operational."}
+            </p>
+          </div>
+          <button
+            onClick={() => toggleDisabledMutation.mutate(!anchorDisabled)}
+            disabled={toggleDisabledMutation.isPending}
+            className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 ${
+              anchorDisabled
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : "bg-destructive hover:opacity-90 text-destructive-foreground"
+            }`}
+          >
+            {toggleDisabledMutation.isPending
+              ? "..."
+              : anchorDisabled
+              ? "✅ Re-Enable System"
+              : "⛔ Disable System"}
+          </button>
+        </div>
+      </div>
 
       {/* Slot Cap */}
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">

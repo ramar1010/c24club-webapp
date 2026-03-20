@@ -1182,6 +1182,7 @@ const VideoCallPage = () => {
             onCashout={anchorEarning.cashout}
             onDismissCash={anchorEarning.dismissCashEarned}
             onSubmitVerification={anchorEarning.submitVerification}
+            systemDisabled={anchorEarning.systemDisabled}
           />
         </div>
       )}

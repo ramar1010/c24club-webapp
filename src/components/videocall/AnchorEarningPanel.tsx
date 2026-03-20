@@ -20,6 +20,7 @@ interface AnchorEarningPanelProps {
   onCashout: (email: string) => Promise<number>;
   onDismissCash: () => void;
   onSubmitVerification: (input: string) => Promise<boolean>;
+  systemDisabled?: boolean;
 }
 
 const EARNING_TIPS = [
@@ -59,6 +60,7 @@ const AnchorEarningPanel = ({
   onCashout,
   onDismissCash,
   onSubmitVerification,
+  systemDisabled,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
@@ -90,6 +92,28 @@ const AnchorEarningPanel = ({
       onDismissCash();
     }
   }, [cashEarned, onDismissCash, earningMode]);
+
+  if (systemDisabled) {
+    return (
+      <div
+        className="w-full mb-2 rounded-xl p-5 text-center relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #4b5563 0%, #374151 50%, #1f2937 100%)',
+          border: '2px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 0 20px rgba(75, 85, 99, 0.4)',
+        }}
+      >
+        <div className="text-3xl mb-2">🔧</div>
+        <h3 className="text-white font-black text-base uppercase tracking-wide mb-1">
+          Down for Maintenance
+        </h3>
+        <p className="text-white/60 text-xs leading-relaxed">
+          The earning system is temporarily offline for updates.
+          <br />We'll be back shortly — your balance is safe! 💰
+        </p>
+      </div>
+    );
+  }
 
   if (status === "not_eligible" || status === "loading" || !settingsLoaded) return null;
 

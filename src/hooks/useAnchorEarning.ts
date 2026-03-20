@@ -44,6 +44,7 @@ export function useAnchorEarning({
   const [verificationRequired, setVerificationRequired] = useState(false);
   const [verificationWord, setVerificationWord] = useState("");
   const [payouts, setPayouts] = useState<AnchorPayout[]>([]);
+  const [systemDisabled, setSystemDisabled] = useState(false);
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isActiveRef = useRef(false);
@@ -67,6 +68,17 @@ export function useAnchorEarning({
       setStatus("not_eligible");
       return;
     }
+
+    if (data.disabled) {
+      setSystemDisabled(true);
+      setStatus("not_eligible");
+      if (data.settings) {
+        setSettings(data.settings);
+        setSettingsLoaded(true);
+      }
+      return;
+    }
+    setSystemDisabled(false);
 
     if (data.settings) {
       setSettings(data.settings);
@@ -313,6 +325,7 @@ export function useAnchorEarning({
     verificationRequired,
     verificationWord,
     payouts,
+    systemDisabled,
     joinAnchor,
     leaveAnchor,
     cashout,
