@@ -69,6 +69,17 @@ export function useAnchorEarning({
       return;
     }
 
+    if (data.disabled) {
+      setSystemDisabled(true);
+      setStatus("not_eligible");
+      if (data.settings) {
+        setSettings(data.settings);
+        setSettingsLoaded(true);
+      }
+      return;
+    }
+    setSystemDisabled(false);
+
     if (data.settings) {
       setSettings(data.settings);
       setSettingsLoaded(true);
