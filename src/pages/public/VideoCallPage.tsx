@@ -116,14 +116,16 @@ const VideoCallPage = () => {
   });
 
   // Check if user has taken a selfie (image_url exists = selfie submitted, regardless of approval status)
-  const { data: hasSelfie, refetch: refetchDiscoverable } = useQuery({
+  const { data: selfieData, refetch: refetchDiscoverable } = useQuery({
     queryKey: ["member_discoverable", memberId],
     enabled: memberId !== "anonymous",
     queryFn: async () => {
-      const { data } = await supabase.from("members").select("image_url").eq("id", memberId).maybeSingle();
-      return !!data?.image_url;
+      const { data } = await supabase.from("members").select("image_url, image_thumb_url").eq("id", memberId).maybeSingle();
+      return { hasImage: !!data?.image_url, imageUrl: data?.image_thumb_url || data?.image_url || null };
     }
   });
+  const hasSelfie = selfieData?.hasImage ?? false;
+  const mySelfieUrl = selfieData?.imageUrl ?? null;
 
   const needsSelfie = hasSelfie === false;
 
@@ -816,8 +818,12 @@ const VideoCallPage = () => {
           {/* Voice mode: show avatar + earning tip instead of local video (desktop only) */}
           {!isMobile && isFemale && voiceMode && isActive &&
           <div className="absolute inset-0 z-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center px-4">
-              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3">
-                <span className="text-4xl md:text-5xl">🎙️</span>
+              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 border-2 border-pink-500/40 flex items-center justify-center mb-3 overflow-hidden">
+                {mySelfieUrl ? (
+                  <img src={mySelfieUrl} alt="You" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl md:text-5xl">🎙️</span>
+                )}
               </div>
               <span className="text-pink-400 text-xs font-bold mb-2">Voice Mode Active</span>
               <div className="bg-green-900/40 border border-green-500/30 rounded-lg px-3 py-2 max-w-[280px] text-center">
@@ -960,9 +966,15 @@ const VideoCallPage = () => {
           <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
               {/* Local video (me) - small box on mobile */}
               {isFemale && voiceMode && isActive ?
-            <div className="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center">
-                  <span className="text-2xl">🎙️</span>
-                  <span className="text-pink-400 text-[7px] font-bold">Voice Mode</span>
+            <div className="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
+                  {mySelfieUrl ? (
+                    <img src={mySelfieUrl} alt="You" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <span className="text-2xl">🎙️</span>
+                      <span className="text-pink-400 text-[7px] font-bold">Voice Mode</span>
+                    </>
+                  )}
                 </div> :
 
             <video ref={localVideoRef} autoPlay muted playsInline
