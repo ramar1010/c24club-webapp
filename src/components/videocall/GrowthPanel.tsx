@@ -25,18 +25,11 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
     },
   });
 
-  const { data: challenges = [] } = useQuery({
-    queryKey: ["growth_challenges"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("weekly_challenges")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      return data || [];
-    },
-  });
+  const challenges = [
+    { title: "Bestie Challenge", reward: "$25" },
+    { title: "Blue Eyes Hunt", reward: "15 min" },
+    { title: "Marathon Talk", reward: "$35" },
+  ];
 
   const referralLink = referralData?.code
     ? `${window.location.origin}/?ref=${referralData.code}`
@@ -61,14 +54,6 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
 
   const totalEarned = referralData?.totalEarned ?? 0;
   const successCount = referralData?.referrals?.filter((r: any) => r.status === "engaged")?.length ?? 0;
-
-  const formatReward = (c: any) => {
-    const rt = c.reward_type || "freeze_free";
-    const amt = c.reward_amount || 0;
-    if (rt === "cash") return `$${amt}`;
-    if (rt === "minutes") return `${amt} min`;
-    return `${amt || 7}d unfreeze`;
-  };
 
   return (
     <div className="mx-3 mb-2">
@@ -115,10 +100,10 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
 
           {challenges.length > 0 ? (
             <div className="relative flex flex-col gap-1">
-              {challenges.slice(0, 2).map((c: any) => (
-                <div key={c.id} className="flex items-center justify-between">
+              {challenges.slice(0, 2).map((c: any, i: number) => (
+                <div key={i} className="flex items-center justify-between">
                   <span className="text-white/70 text-[10px] font-medium truncate max-w-[70%]">{c.title}</span>
-                  <span className="text-orange-200 text-[10px] font-black drop-shadow-[0_0_4px_rgba(251,146,60,0.4)]">{formatReward(c)}</span>
+                  <span className="text-orange-200 text-[10px] font-black drop-shadow-[0_0_4px_rgba(251,146,60,0.4)]">{c.reward}</span>
                 </div>
               ))}
               {challenges.length > 2 && (

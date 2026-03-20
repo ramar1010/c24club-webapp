@@ -1,0 +1,1 @@
+ALTER TABLE public.weekly_challenges ADD COLUMN slug TEXT UNIQUE;
