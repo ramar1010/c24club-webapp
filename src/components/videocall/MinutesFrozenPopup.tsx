@@ -37,7 +37,7 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
     if (onPurchaseVip) {
       setLoading(true);
       try {
-        await onPurchaseVip("price_1T9ygOA5n8uAZoY1tzoTfeMH");
+        await onPurchaseVip();
       } catch (e: any) {
         toast.error("Failed", { description: e.message });
       }
