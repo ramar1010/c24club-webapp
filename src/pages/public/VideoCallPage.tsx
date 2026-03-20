@@ -1153,11 +1153,24 @@ const VideoCallPage = () => {
       {/* Female Earning Panel */}
       {isFemale && femaleHasSlot && (
         <div className="mx-3 md:mx-auto md:w-[420px]">
-          <FemaleEarningPanel
-            totalMinutes={totalMinutes}
-            giftedMinutes={giftedMinutes}
-            onPauseEarning={setFemaleVerificationPaused}
-            onCashoutSuccess={refreshMinutesBalance}
+          <AnchorEarningPanel
+            status={anchorEarning.status}
+            earningMode={anchorEarning.earningMode}
+            elapsedSeconds={anchorEarning.elapsedSeconds}
+            thresholdSeconds={anchorEarning.thresholdSeconds}
+            cashBalance={anchorEarning.cashBalance}
+            queuePosition={anchorEarning.queuePosition}
+            cashEarned={anchorEarning.cashEarned}
+            settings={anchorEarning.settings}
+            settingsLoaded={anchorEarning.settingsLoaded}
+            verificationRequired={anchorEarning.verificationRequired}
+            verificationWord={anchorEarning.verificationWord}
+            payouts={anchorEarning.payouts}
+            onJoin={anchorEarning.joinAnchor}
+            onLeave={anchorEarning.leaveAnchor}
+            onCashout={anchorEarning.cashout}
+            onDismissCash={anchorEarning.dismissCashEarned}
+            onSubmitVerification={anchorEarning.submitVerification}
           />
         </div>
       )}
