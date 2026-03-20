@@ -100,10 +100,10 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
 
           {challenges.length > 0 ? (
             <div className="relative flex flex-col gap-1">
-              {challenges.slice(0, 2).map((c: any) => (
-                <div key={c.id} className="flex items-center justify-between">
+              {challenges.slice(0, 2).map((c: any, i: number) => (
+                <div key={i} className="flex items-center justify-between">
                   <span className="text-white/70 text-[10px] font-medium truncate max-w-[70%]">{c.title}</span>
-                  <span className="text-orange-200 text-[10px] font-black drop-shadow-[0_0_4px_rgba(251,146,60,0.4)]">{formatReward(c)}</span>
+                  <span className="text-orange-200 text-[10px] font-black drop-shadow-[0_0_4px_rgba(251,146,60,0.4)]">{c.reward}</span>
                 </div>
               ))}
               {challenges.length > 2 && (
