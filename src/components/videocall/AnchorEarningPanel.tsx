@@ -1,31 +1,16 @@
 import { useState, useEffect } from "react";
-import { AnchorMode, AnchorStatus, AnchorPayout } from "@/hooks/useAnchorEarning";
+import { AnchorSettings, AnchorPayout, AnchorStatus, EarningMode } from "@/hooks/useAnchorEarning";
 import { toast } from "sonner";
 import { Info } from "lucide-react";
 import AnchorExplainerModal, { STORAGE_KEY } from "./AnchorExplainerModal";
 
-interface AnchorSettings {
-  power_rate_cash: number;
-  power_rate_time: number;
-  chill_reward_time: number;
-  max_anchor_cap: number;
-}
-
-interface AnchorReward {
-  id: string;
-  title: string;
-  image_url: string | null;
-  rarity: string;
-}
-
 interface AnchorEarningPanelProps {
   status: AnchorStatus;
-  mode: AnchorMode;
+  earningMode: EarningMode;
   elapsedSeconds: number;
   thresholdSeconds: number;
   cashBalance: number;
   queuePosition: number;
-  rewardEarned: AnchorReward | null;
   cashEarned: number;
   settings: AnchorSettings | null;
   settingsLoaded: boolean;
@@ -35,19 +20,17 @@ interface AnchorEarningPanelProps {
   onJoin: () => void;
   onLeave: () => void;
   onCashout: (email: string) => Promise<number>;
-  onDismissReward: () => void;
   onDismissCash: () => void;
   onSubmitVerification: (input: string) => Promise<boolean>;
 }
 
 const AnchorEarningPanel = ({
   status,
-  mode,
+  earningMode,
   elapsedSeconds,
   thresholdSeconds,
   cashBalance,
   queuePosition,
-  rewardEarned,
   cashEarned,
   settings,
   settingsLoaded,
@@ -57,7 +40,6 @@ const AnchorEarningPanel = ({
   onJoin,
   onLeave,
   onCashout,
-  onDismissReward,
   onDismissCash,
   onSubmitVerification,
 }: AnchorEarningPanelProps) => {
@@ -82,20 +64,21 @@ const AnchorEarningPanel = ({
     }
   }, [status]);
 
-  // Cash earned — auto-dismiss with toast instead of blocking overlay
+  // Cash earned — auto-dismiss with toast
   useEffect(() => {
     if (cashEarned > 0) {
       toast.success(`💰 You earned $${cashEarned.toFixed(2)}!`, {
-        description: "Added to your pending balance. Keep earning! 💪",
+        description: earningMode === "active"
+          ? "Earned while chatting! Keep going! 💪"
+          : "Earned while waiting. Connect with a guy to earn more! 🚀",
         duration: 4000,
       });
       onDismissCash();
     }
-  }, [cashEarned, onDismissCash]);
+  }, [cashEarned, onDismissCash, earningMode]);
 
   if (status === "not_eligible" || status === "loading" || !settingsLoaded) return null;
 
-  {/* One-time explainer modal for new female users */}
   if (showExplainer) {
     return <AnchorExplainerModal onClose={() => setShowExplainer(false)} />;
   }
@@ -111,7 +94,6 @@ const AnchorEarningPanel = ({
     );
   }
 
-  // Show loading skeleton while settings are being fetched to avoid flashing fallback numbers
   if (status === "active" && !settingsLoaded) {
     return (
       <div className="w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 p-3 backdrop-blur">
@@ -135,11 +117,12 @@ const AnchorEarningPanel = ({
   const remainingSec = remainingSeconds % 60;
   const progress = thresholdSeconds > 0 ? Math.min(1, elapsedSeconds / thresholdSeconds) : 0;
 
-  const isPower = mode === "power";
-  const borderColor = isPower ? "border-red-500/50" : "border-neutral-600";
-  const bgColor = isPower ? "bg-red-950/80" : "bg-neutral-900/90";
-  const accentColor = isPower ? "text-red-400" : "text-neutral-400";
-  const progressBarColor = isPower ? "bg-red-500" : "bg-yellow-500";
+  const isActive = earningMode === "active";
+  const borderColor = isActive ? "border-green-500/50" : "border-neutral-600";
+  const bgColor = isActive ? "bg-green-950/80" : "bg-neutral-900/90";
+  const accentColor = isActive ? "text-green-400" : "text-neutral-400";
+  const progressBarColor = isActive ? "bg-green-500" : "bg-yellow-500";
+  const rateCash = isActive ? (settings?.active_rate_cash ?? 1.5) : (settings?.idle_rate_cash ?? 0.1);
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
@@ -158,40 +141,6 @@ const AnchorEarningPanel = ({
       setCashingOut(false);
     }
   };
-
-  // Mystery reward popup
-  if (rewardEarned) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-        <div className="bg-neutral-900 border-2 border-yellow-500 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95">
-          <div className="text-5xl mb-3">🎁</div>
-          <h3 className="text-xl font-black text-white mb-2 uppercase">Mystery Reward!</h3>
-          {rewardEarned.image_url && (
-            <img
-              src={rewardEarned.image_url}
-              alt={rewardEarned.title}
-              className="w-32 h-32 object-cover rounded-xl mx-auto mb-3 border-2 border-yellow-500/50"
-            />
-          )}
-          <p className="text-yellow-400 font-black text-lg">{rewardEarned.title}</p>
-          <p className="text-neutral-400 text-sm mt-1 capitalize">
-            {rewardEarned.rarity} item
-          </p>
-          <p className="text-neutral-500 text-xs mt-2">
-            Added to your My Rewards — add shipping details to claim!
-          </p>
-          <button
-            onClick={onDismissReward}
-            className="mt-4 w-full py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-neutral-900 font-black text-lg uppercase transition-colors"
-          >
-            Awesome! 🎉
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-
 
   // Verification challenge popup
   if (verificationRequired) {
@@ -309,7 +258,6 @@ const AnchorEarningPanel = ({
   if (status === "idle" || status === "slots_full") {
     return (
       <div className={`w-full mb-2 rounded-xl border border-neutral-600 bg-neutral-900/90 backdrop-blur-sm px-4 py-3`}>
-        {/* Hide button */}
         <div className="flex justify-end gap-2 mb-1">
           <button
             onClick={() => setShowExplainer(true)}
@@ -364,15 +312,16 @@ const AnchorEarningPanel = ({
           👁‍🗨 Hide
         </button>
       </div>
+
       {/* Mode indicator */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className={`text-xs font-black uppercase tracking-wider ${isPower ? "text-red-400" : "text-neutral-400"}`}>
-            {isPower ? "🔥 POWER HOURS" : "🌙 CHILL HOURS"}
+          <span className={`text-xs font-black uppercase tracking-wider ${isActive ? "text-green-400" : "text-neutral-400"}`}>
+            {isActive ? "🔥 ON CALL — EARNING MORE" : "💤 IDLE — EARNING"}
           </span>
-          <div className={`w-2 h-2 rounded-full ${isPower ? "bg-red-500" : "bg-yellow-500"} animate-pulse`} />
+          <div className={`w-2 h-2 rounded-full ${isActive ? "bg-green-500" : "bg-yellow-500"} animate-pulse`} />
         </div>
-        {isPower && cashBalance > 0 && (
+        {cashBalance > 0 && (
           <button
             onClick={() => setShowCashoutModal(true)}
             className="text-xs font-bold text-green-400 hover:text-green-300 bg-green-500/10 px-2 py-1 rounded-lg border border-green-500/30"
@@ -392,11 +341,9 @@ const AnchorEarningPanel = ({
 
       {/* Timer text */}
       <p className={`text-center text-sm font-bold ${accentColor}`}>
-        {isPower ? (
-          <>Next <span className="text-green-400">${(settings?.power_rate_cash ?? 1.5).toFixed(2)}</span> is <span className="text-white">{remainingMin}:{String(remainingSec).padStart(2, "0")}</span> away!</>
-        ) : (
-          <>Next reward is <span className="text-yellow-400">{remainingMin}</span> minutes away! 🎁</>
-        )}
+        Next <span className="text-green-400">${rateCash.toFixed(2)}</span> in{" "}
+        <span className="text-white">{remainingMin}:{String(remainingSec).padStart(2, "0")}</span>
+        {!isActive && <span className="text-neutral-500 text-xs ml-1">(connect to earn more!)</span>}
       </p>
 
       {/* Payout history toggle */}
@@ -442,12 +389,6 @@ const AnchorEarningPanel = ({
         </button>
         <p className="text-neutral-600 text-[9px] mt-0.5">⏸ Timer pauses if you stop · Cash is saved</p>
       </div>
-
-      {settings && (
-        <div className="hidden">
-          {/* Hidden settings for reference */}
-        </div>
-      )}
     </div>
   );
 };
