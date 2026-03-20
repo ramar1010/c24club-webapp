@@ -1147,7 +1147,13 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Female Earning UI — hidden (system paused, kept for future use) */}
+      {/* Growth Panel — Referral + Weekly Challenges */}
+      {!isActive && !showRedeem && (
+        <GrowthPanel
+          onOpenReferral={() => navigate("/referral")}
+          onOpenChallenges={() => setOverlayPage("profile")}
+        />
+      )}
 
       {/* Panels */}
       {showRedeem ?
