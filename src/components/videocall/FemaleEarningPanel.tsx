@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
 
@@ -29,6 +30,19 @@ const FemaleEarningPanel = ({
   const [lastRequest, setLastRequest] = useState<{ status: string; cash_amount: number } | null>(null);
   const lastVerifiedRef = useRef(Date.now());
   const verifyTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Fetch active bonus challenges
+  const { data: bonusChallenges = [] } = useQuery({
+    queryKey: ["anchor_bonus_challenges"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_challenges")
+        .select("*")
+        .eq("is_active", true)
+        .order("reward_amount", { ascending: false });
+      return data || [];
+    },
+  });
 
   // Fetch cashout rate
   useEffect(() => {
@@ -224,7 +238,7 @@ const FemaleEarningPanel = ({
 
         {/* ── Row 3: Cash out + status — neon orange/yellow */}
         <div
-          className="flex items-center justify-between px-4 py-3 rounded-b-xl"
+          className={`flex items-center justify-between px-4 py-3 ${bonusChallenges.length === 0 ? 'rounded-b-xl' : ''}`}
           style={{ background: 'linear-gradient(135deg, #ff6b00 0%, #ffab00 100%)' }}
         >
           <div className="flex flex-col gap-0.5">
@@ -253,6 +267,41 @@ const FemaleEarningPanel = ({
             </span>
           )}
         </div>
+
+        {/* ── Row 4: Bonus Challenges */}
+        {bonusChallenges.length > 0 && (
+          <div
+            className="px-4 py-3 rounded-b-xl"
+            style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', borderTop: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <div className="flex items-center gap-1.5 mb-2">
+              <Trophy className="w-4 h-4 text-yellow-300" />
+              <span className="text-yellow-300 font-black text-xs uppercase tracking-wider">Bonus Challenges</span>
+            </div>
+            <div className="space-y-1.5">
+              {bonusChallenges.map((ch: any) => (
+                <div
+                  key={ch.id}
+                  className="flex items-center justify-between rounded-lg px-3 py-2"
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
+                >
+                  <div className="flex-1 min-w-0 mr-2">
+                    <p className="text-white font-bold text-xs truncate">{ch.title}</p>
+                    {ch.description && (
+                      <p className="text-white/50 text-[10px] truncate">{ch.description}</p>
+                    )}
+                  </div>
+                  <span
+                    className="shrink-0 text-xs font-black px-2 py-0.5 rounded-full"
+                    style={{ background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 100%)', color: '#1e1b4b' }}
+                  >
+                    ${Number(ch.reward_amount).toFixed(0)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Rotating earning tips */}
