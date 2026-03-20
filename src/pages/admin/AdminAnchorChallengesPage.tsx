@@ -45,7 +45,7 @@ const AdminAnchorChallengesPage = () => {
   });
 
   // Fetch member names for progress display
-  const userIds = [...new Set(allProgress.map((p: any) => p.user_id))];
+  const userIds = [...new Set(allProgress.map((p: any) => p.user_id as string))];
   const { data: members = [] } = useQuery({
     queryKey: ["admin_progress_members", userIds.join(",")],
     queryFn: async () => {
