@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
-import GrowthPanel from "@/components/videocall/GrowthPanel";
+
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
@@ -1304,17 +1304,12 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Growth Panel — Referral + Weekly Challenges */}
+      {/* Challenge Carousel — below video boxes, above nav icons */}
       {!isActive && !showRedeem && (
-        <GrowthPanel
-          onOpenReferral={() => navigate("/referral")}
+        <ChallengeCarousel
           onOpenChallenges={() => setOverlayPage("challenges")}
+          onOpenReferral={() => navigate("/referral")}
         />
-      )}
-
-      {/* Challenge Carousel — above nav icons */}
-      {!isActive && !showRedeem && (
-        <ChallengeCarousel onOpenChallenges={() => setOverlayPage("challenges")} />
       )}
 
       {/* Panels */}
