@@ -72,12 +72,12 @@ const ChallengeCarousel = ({ onOpenChallenges }: ChallengeCarouselProps) => {
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
 
-  // Listen for select events
-  useState(() => {
+  useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
+    onSelect();
     return () => { emblaApi.off("select", onSelect); };
-  });
+  }, [emblaApi, onSelect]);
 
   // Fetch challenge DB records for submission status
   const { data: dbChallenges = [] } = useQuery({
