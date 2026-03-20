@@ -567,8 +567,51 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 );
               })()}
 
-              {/* Auto-tracked label (non-marathon) */}
-              {config.mechanic === "auto" && config.slug !== "marathon-talk" && !submission && (
+              {/* Girl Power: auto-tracked progress */}
+              {config.slug === "girl-power-10" && (() => {
+                const gpSubmission = submissions.find((s: any) => {
+                  const db = getDbChallenge("girl-power-10");
+                  return db && s.challenge_id === db.id;
+                });
+                if (gpSubmission) {
+                  const gpStatus = statusConfig[gpSubmission.status];
+                  return (
+                    <div className="relative mt-3">
+                      <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full" style={{ width: "100%" }} />
+                      </div>
+                      {gpStatus && (
+                        <div className={`flex items-center gap-2 mt-3 ${gpStatus.color}`}>
+                          <gpStatus.icon className="w-4 h-4" />
+                          <span className="text-xs font-black">{gpStatus.label}</span>
+                        </div>
+                      )}
+                      {gpSubmission.status === "approved" && (
+                        <p className="text-green-400 text-xs font-bold mt-2">✅ Reward earned: $10</p>
+                      )}
+                    </div>
+                  );
+                }
+                const savedMins = parseInt(localStorage.getItem("girl_power_minutes") || "0", 10);
+                const pct = Math.min(100, (savedMins / 10) * 100);
+                return (
+                  <div className="relative mt-3">
+                    <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                      <span>{savedMins} min</span>
+                      <span>10 min</span>
+                    </div>
+                    <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-rose-400/70">
+                      <span className="text-base">⚡</span> Auto-tracking — chat with a guy for 10 min!
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Auto-tracked label (non-marathon, non-girl-power) */}
+              {config.mechanic === "auto" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && !submission && (
                 <div className="relative mt-3 flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
                   <span className="text-base">⚡</span> Auto-tracked — just start a call!
                 </div>
