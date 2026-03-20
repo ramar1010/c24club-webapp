@@ -55,14 +55,6 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
   const totalEarned = referralData?.totalEarned ?? 0;
   const successCount = referralData?.referrals?.filter((r: any) => r.status === "engaged")?.length ?? 0;
 
-  const formatReward = (c: any) => {
-    const rt = c.reward_type || "freeze_free";
-    const amt = c.reward_amount || 0;
-    if (rt === "cash") return `$${amt}`;
-    if (rt === "minutes") return `${amt} min`;
-    return `${amt || 7}d unfreeze`;
-  };
-
   return (
     <div className="mx-3 mb-2">
       <div className="grid grid-cols-2 gap-2">
