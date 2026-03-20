@@ -354,7 +354,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Challenge Cards */}
       <div className="w-full max-w-md space-y-5">
-        {CHALLENGE_CONFIGS.map((config) => {
+        {visibleChallenges.map((config) => {
           const submission = getSubmission(config.slug);
           const status = submission ? statusConfig[submission.status] : null;
           const Icon = config.icon;
