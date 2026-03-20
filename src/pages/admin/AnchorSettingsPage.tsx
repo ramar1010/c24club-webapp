@@ -231,13 +231,6 @@ const AnchorSettingsPage = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  if (isLoading || cashoutLoading) return <div className="p-6 text-center text-muted-foreground">Loading...</div>;
-
-  const activeEarners = anchorAdminState?.sessions?.filter((session: any) => session.status === "active") ?? [];
-  const queueData = anchorAdminState?.queue ?? [];
-  const pendingRequests = cashoutRequests?.filter((r) => r.status === "pending") ?? [];
-  const recentRequests = cashoutRequests?.filter((r) => r.status !== "pending") ?? [];
-
   const toggleDisabledMutation = useMutation({
     mutationFn: async (disabled: boolean) => {
       if (!settings?.id) return;
@@ -254,6 +247,13 @@ const AnchorSettingsPage = () => {
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  if (isLoading || cashoutLoading) return <div className="p-6 text-center text-muted-foreground">Loading...</div>;
+
+  const activeEarners = anchorAdminState?.sessions?.filter((session: any) => session.status === "active") ?? [];
+  const queueData = anchorAdminState?.queue ?? [];
+  const pendingRequests = cashoutRequests?.filter((r) => r.status === "pending") ?? [];
+  const recentRequests = cashoutRequests?.filter((r) => r.status !== "pending") ?? [];
 
   return (
     <div className="p-6 space-y-8 max-w-4xl">
