@@ -16,7 +16,7 @@ interface MinutesFrozenPopupProps {
   isFemale?: boolean;
 }
 
-const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPurchaseVip }: MinutesFrozenPopupProps) => {
+const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPurchaseVip, isFemale }: MinutesFrozenPopupProps) => {
   const [loading, setLoading] = useState(false);
 
   const handlePurchaseUnfreeze = async () => {
