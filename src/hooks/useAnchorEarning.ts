@@ -84,6 +84,10 @@ export function useAnchorEarning({
       setQueuePosition(data.queuePosition);
     } else {
       setStatus(data.slotsAvailable ? "idle" : "slots_full");
+      // Restore balance from a paused session if available
+      if (data.pausedBalance && data.pausedBalance > 0) {
+        setCashBalance(Number(data.pausedBalance));
+      }
     }
   }, [isStarted, userId]);
 
@@ -124,7 +128,6 @@ export function useAnchorEarning({
     setStatus("loading");
     setEarningMode("idle");
     setSettingsLoaded(false);
-    setCashBalance(0);
     setQueuePosition(0);
     setSettings(null);
     setCashEarned(0);

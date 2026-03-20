@@ -144,6 +144,16 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Check for paused session with preserved balance
+      const { data: pausedSession } = await supabase
+        .from("anchor_sessions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "paused")
+        .maybeSingle();
+
+      const pausedBalance = pausedSession ? Number(pausedSession.cash_balance ?? 0) : 0;
+
       const { data: queueEntry } = await supabase
         .from("anchor_queue")
         .select("*")
@@ -175,6 +185,7 @@ Deno.serve(async (req) => {
         maxCap: settings.max_anchor_cap,
         queuePosition,
         settings: settingsPayload,
+        pausedBalance,
       });
     }
 
