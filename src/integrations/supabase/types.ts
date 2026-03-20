@@ -171,10 +171,14 @@ export type Database = {
       }
       anchor_settings: {
         Row: {
+          active_rate_cash: number
+          active_rate_time: number
           chill_disabled: boolean
           chill_hour_start: string
           chill_reward_time: number
           id: string
+          idle_rate_cash: number
+          idle_rate_time: number
           max_anchor_cap: number
           power_hour_end: string
           power_hour_start: string
@@ -183,10 +187,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_rate_cash?: number
+          active_rate_time?: number
           chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
           id?: string
+          idle_rate_cash?: number
+          idle_rate_time?: number
           max_anchor_cap?: number
           power_hour_end?: string
           power_hour_start?: string
@@ -195,10 +203,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_rate_cash?: number
+          active_rate_time?: number
           chill_disabled?: boolean
           chill_hour_start?: string
           chill_reward_time?: number
           id?: string
+          idle_rate_cash?: number
+          idle_rate_time?: number
           max_anchor_cap?: number
           power_hour_end?: string
           power_hour_start?: string
