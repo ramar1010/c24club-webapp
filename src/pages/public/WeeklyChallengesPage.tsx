@@ -1,6 +1,6 @@
 import { useState } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
-import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2 } from "lucide-react";
+import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,7 @@ interface ChallengeConfig {
   badgeColor: string;
   floatingEmojis: string[];
   progressRenderer?: (submission: any) => React.ReactNode;
+  femaleOnly?: boolean;
 }
 
 const CHALLENGE_CONFIGS: ChallengeConfig[] = [
@@ -86,6 +87,25 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-emerald-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
+  },
+  {
+    slug: "girl-power-10",
+    title: "GIRL POWER 👩‍💻",
+    subtitle: "Chat with a Guy! 💪",
+    description: "Stay connected to a guy on video chat for 10 minutes straight and earn $10 cash! Limited challenge — females only. 🔥",
+    reward: "$10",
+    rewardSub: "CASH",
+    difficulty: "EASY",
+    icon: Heart,
+    mechanic: "auto",
+    gradient: "from-rose-600/30 via-pink-700/25 to-red-900/40",
+    border: "border-rose-400/50",
+    glow: "shadow-[0_0_24px_rgba(251,113,133,0.35)]",
+    shimmer: "rgba(251,113,133,0.1)",
+    accentText: "text-rose-300",
+    badgeColor: "bg-green-500/20 text-green-400",
+    floatingEmojis: ["💪", "👩‍💻", "💰"],
+    femaleOnly: true,
   },
 ];
 
@@ -250,6 +270,19 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const [submittingSlug, setSubmittingSlug] = useState<string | null>(null);
   const [proofText, setProofText] = useState("");
 
+  // Get member gender for female-only challenges
+  const { data: memberGender } = useQuery({
+    queryKey: ["member_gender_challenges", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("gender").eq("id", user!.id).maybeSingle();
+      return data?.gender ?? null;
+    },
+  });
+  const isFemale = memberGender?.toLowerCase() === "female";
+
+  const visibleChallenges = CHALLENGE_CONFIGS.filter(c => !c.femaleOnly || isFemale);
+
   // Fetch DB challenges to get IDs for submission tracking
   const { data: dbChallenges = [] } = useQuery({
     queryKey: ["weekly_challenges_slugged"],
@@ -321,7 +354,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Challenge Cards */}
       <div className="w-full max-w-md space-y-5">
-        {CHALLENGE_CONFIGS.map((config) => {
+        {visibleChallenges.map((config) => {
           const submission = getSubmission(config.slug);
           const status = submission ? statusConfig[submission.status] : null;
           const Icon = config.icon;
@@ -436,20 +469,20 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
               )}
 
               {/* Submission Status (non-blue-eyes) */}
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission && status && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission && status && (
                 <div className={`relative flex items-center gap-2 mt-3 ${status.color}`}>
                   <status.icon className="w-4 h-4" />
                   <span className="text-xs font-black">{status.label}</span>
                 </div>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "approved" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission?.status === "approved" && (
                 <p className="relative text-green-400 text-xs font-bold mt-2">
                   ✅ Reward earned: {config.reward} {config.rewardSub.toLowerCase()}
                 </p>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "rejected" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission?.status === "rejected" && (
                 <p className="relative text-red-400/80 text-xs font-bold mt-1">
                   You can try again next week.
                 </p>
@@ -534,8 +567,51 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 );
               })()}
 
-              {/* Auto-tracked label (non-marathon) */}
-              {config.mechanic === "auto" && config.slug !== "marathon-talk" && !submission && (
+              {/* Girl Power: auto-tracked progress */}
+              {config.slug === "girl-power-10" && (() => {
+                const gpSubmission = submissions.find((s: any) => {
+                  const db = getDbChallenge("girl-power-10");
+                  return db && s.challenge_id === db.id;
+                });
+                if (gpSubmission) {
+                  const gpStatus = statusConfig[gpSubmission.status];
+                  return (
+                    <div className="relative mt-3">
+                      <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full" style={{ width: "100%" }} />
+                      </div>
+                      {gpStatus && (
+                        <div className={`flex items-center gap-2 mt-3 ${gpStatus.color}`}>
+                          <gpStatus.icon className="w-4 h-4" />
+                          <span className="text-xs font-black">{gpStatus.label}</span>
+                        </div>
+                      )}
+                      {gpSubmission.status === "approved" && (
+                        <p className="text-green-400 text-xs font-bold mt-2">✅ Reward earned: $10</p>
+                      )}
+                    </div>
+                  );
+                }
+                const savedMins = parseInt(localStorage.getItem("girl_power_minutes") || "0", 10);
+                const pct = Math.min(100, (savedMins / 10) * 100);
+                return (
+                  <div className="relative mt-3">
+                    <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+                      <span>{savedMins} min</span>
+                      <span>10 min</span>
+                    </div>
+                    <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-rose-400/70">
+                      <span className="text-base">⚡</span> Auto-tracking — chat with a guy for 10 min!
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Auto-tracked label (non-marathon, non-girl-power) */}
+              {config.mechanic === "auto" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && !submission && (
                 <div className="relative mt-3 flex items-center gap-1.5 text-[11px] font-bold text-neutral-500">
                   <span className="text-base">⚡</span> Auto-tracked — just start a call!
                 </div>
