@@ -183,10 +183,10 @@ const TermsPage = () => {
         <section>
           <h3 className="text-lg font-bold text-orange-400 mb-2">15. Female Earning Bonus (Anchor Program)</h3>
           <ul className="list-disc list-inside space-y-1">
-            <li>Female users may be eligible for the Anchor Earning program, which provides additional earning opportunities during designated time windows (Chill Hours and Power Hours).</li>
-            <li>During Chill Hours, eligible users earn reward items (clothing, accessories). During Power Hours, eligible users earn cash payable via PayPal.</li>
-            <li>Anchor earnings are subject to rules including: always showing face on camera, connecting with male users, greeting and chatting actively, and never disclosing that you are paid or rewarded to chat. Violation of these rules may result in a ban.</li>
-            <li>Normal minute earning is paused while the Anchor bonus is active. Timers reset if the call is stopped.</li>
+            <li>Female users may be eligible for the Anchor Earning program, which provides additional earning opportunities.</li>
+            <li>Females earn cash at a higher rate while actively connected to a male user (active rate) and at a reduced rate while waiting/idle (idle rate). Both rates are configurable by administrators.</li>
+            <li>Anchor earnings are subject to rules including: connecting with male users, greeting and chatting actively, and never disclosing that you are paid or rewarded to chat. Violation of these rules may result in a ban.</li>
+            <li>No earning occurs during female-to-female calls. Normal minute earning is paused while the Anchor bonus is active.</li>
           </ul>
         </section>
 
