@@ -23,6 +23,7 @@ const FemaleEarningPanel = ({
   onPauseEarning,
   onCashoutSuccess,
 }: FemaleEarningPanelProps) => {
+  const { user } = useAuth();
   const [rate, setRate] = useState(0.01);
   const [showCashout, setShowCashout] = useState(false);
   const [verificationRequired, setVerificationRequired] = useState(false);
