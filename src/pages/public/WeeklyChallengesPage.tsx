@@ -47,6 +47,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(217,70,239,0.1)",
     accentText: "text-fuchsia-300",
     badgeColor: "bg-green-500/20 text-green-400",
+    floatingEmojis: ["💕", "👯‍♀️", "✨"],
     progressRenderer: () => (
       <div className="flex gap-2 mt-3">
         {[1, 2, 3].map((day) => (
