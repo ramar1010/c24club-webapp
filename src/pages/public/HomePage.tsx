@@ -221,6 +221,16 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             body: { action: "track_signup", referral_code: refCode, new_user_id: signUpData.user.id },
           }).catch(() => {});
         }
+        // Track bestie invite if code exists in URL
+        const bestieCode = new URLSearchParams(window.location.search).get("bestie");
+        if (bestieCode && signUpData?.user?.id) {
+          supabase
+            .from("bestie_pairs")
+            .update({ invitee_id: signUpData.user.id, status: "active" })
+            .eq("invite_code", bestieCode)
+            .is("invitee_id", null)
+            .then(() => {});
+        }
         toast.success("Account created!");
         onClose();
       }

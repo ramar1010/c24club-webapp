@@ -47,6 +47,7 @@ import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import CameraUnlockButton from "@/components/videocall/CameraUnlockButton";
 import CameraConsentModal from "@/components/videocall/CameraConsentModal";
 import { useUnreadCount } from "@/hooks/useMessages";
+import { captureBestieScreenshot } from "@/lib/bestieScreenshot";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -460,7 +461,83 @@ const VideoCallPage = () => {
     }
   }, [callState, overlayPage]);
 
+  // ─── Bestie Challenge: auto-track call time & screenshot ───
+  const { data: activeBestiePair } = useQuery({
+    queryKey: ["bestie_active_pair", memberId, currentPartnerId],
+    enabled: !!memberId && !!currentPartnerId && callState === "connected",
+    queryFn: async () => {
+      // Check if current partner is our bestie pair
+      const { data } = await supabase
+        .from("bestie_pairs")
+        .select("*")
+        .eq("status", "active")
+        .or(`and(inviter_id.eq.${memberId},invitee_id.eq.${currentPartnerId}),and(inviter_id.eq.${currentPartnerId},invitee_id.eq.${memberId})`)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const bestieLoggedRef = useRef(false);
+  const bestieScreenshotTakenRef = useRef(false);
+
+  useEffect(() => {
+    if (!activeBestiePair || callState !== "connected") {
+      bestieLoggedRef.current = false;
+      bestieScreenshotTakenRef.current = false;
+      return;
+    }
+
+    // Log time every 30 seconds
+    const logInterval = setInterval(() => {
+      supabase.functions.invoke("bestie-call", {
+        body: { action: "log_time", pair_id: activeBestiePair.id, seconds_to_add: 30 },
+      }).catch(() => {});
+    }, 30000);
+
+    // Take screenshot at a random time between 5-20 mins into the call
+    const screenshotDelay = (5 + Math.random() * 15) * 60 * 1000;
+    const screenshotTimer = setTimeout(async () => {
+      if (bestieScreenshotTakenRef.current) return;
+      bestieScreenshotTakenRef.current = true;
+
+      const role = activeBestiePair.inviter_id === memberId ? "inviter" : "invitee";
+      const dayNumber = (activeBestiePair.days_completed || 0) + 1;
+
+      // Capture local video
+      if (localVideoRef.current) {
+        const path = await captureBestieScreenshot(
+          localVideoRef.current, memberId, activeBestiePair.id, dayNumber, role
+        );
+        if (path) {
+          supabase.functions.invoke("bestie-call", {
+            body: { action: "save_screenshot", pair_id: activeBestiePair.id, day_number: dayNumber, screenshot_path: path, role },
+          }).catch(() => {});
+        }
+      }
+
+      // Capture remote video too
+      if (remoteVideoRef.current) {
+        const partnerRole = role === "inviter" ? "invitee" : "inviter";
+        const remotePath = await captureBestieScreenshot(
+          remoteVideoRef.current, memberId, activeBestiePair.id, dayNumber, `${partnerRole}_from_${role}` as any
+        );
+        // Save remote screenshot as additional proof
+        if (remotePath) {
+          supabase.functions.invoke("bestie-call", {
+            body: { action: "save_screenshot", pair_id: activeBestiePair.id, day_number: dayNumber, screenshot_path: remotePath, role: partnerRole },
+          }).catch(() => {});
+        }
+      }
+    }, screenshotDelay);
+
+    return () => {
+      clearInterval(logInterval);
+      clearTimeout(screenshotTimer);
+    };
+  }, [activeBestiePair, callState, memberId]);
+
   const isMobile = useIsMobile();
+
 
   // Default to fullscreen video on mobile for females
   useEffect(() => {

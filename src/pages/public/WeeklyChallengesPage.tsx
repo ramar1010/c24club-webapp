@@ -1,11 +1,12 @@
 import { useState } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
-import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign } from "lucide-react";
+import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useBestieChallenge } from "@/hooks/useBestieChallenge";
 
 /* ─── Challenge Registry ─── */
 
@@ -18,7 +19,7 @@ interface ChallengeConfig {
   rewardSub: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   icon: React.ElementType;
-  mechanic: "manual" | "auto";
+  mechanic: "manual" | "auto" | "bestie";
   maxParticipants?: number;
   gradient: string;
   border: string;
@@ -35,12 +36,12 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     slug: "bestie-challenge",
     title: "BESTIE CHALLENGE 👯‍♀️",
     subtitle: "Bring Your Friend! 💕",
-    description: "Bring your bestie to chat with you for 30 mins a day for 3 days. You both earn $25! 🎉",
+    description: "Share your invite link → your bestie signs up → call each other 30 mins/day for 3 days. Auto-screenshots verify you're both there. You both earn $25! 🎉",
     reward: "$25",
     rewardSub: "EACH",
     difficulty: "EASY",
     icon: Users,
-    mechanic: "manual",
+    mechanic: "bestie",
     gradient: "from-fuchsia-600/30 via-purple-700/25 to-pink-900/40",
     border: "border-fuchsia-400/50",
     glow: "shadow-[0_0_24px_rgba(217,70,239,0.35)]",
@@ -48,18 +49,6 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-fuchsia-300",
     badgeColor: "bg-green-500/20 text-green-400",
     floatingEmojis: ["💕", "👯‍♀️", "✨"],
-    progressRenderer: () => (
-      <div className="flex gap-2 mt-3">
-        {[1, 2, 3].map((day) => (
-          <div key={day} className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden">
-              <div className="h-full bg-fuchsia-500 rounded-full" style={{ width: "0%" }} />
-            </div>
-            <span className="text-[10px] text-neutral-500 font-bold">DAY {day}</span>
-          </div>
-        ))}
-      </div>
-    ),
   },
   {
     slug: "blue-eyes-hunt",
@@ -129,6 +118,98 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; lab
   pending: { icon: ClockStatus, color: "text-yellow-400", label: "PENDING REVIEW" },
   approved: { icon: CheckCircle, color: "text-green-400", label: "APPROVED" },
   rejected: { icon: XCircle, color: "text-red-400", label: "NOT APPROVED" },
+};
+
+/* ─── Bestie Progress Component ─── */
+
+const BestieProgress = () => {
+  const {
+    bestiePair, dailyLogs, generating, copied, bestieLink,
+    hasPair, pairActive, pairCompleted, waitingForBestie,
+    generateInviteCode, copyLink,
+  } = useBestieChallenge();
+
+  // No pair yet — show generate button
+  if (!hasPair) {
+    return (
+      <div className="relative mt-3 space-y-2">
+        <button
+          onClick={generateInviteCode}
+          disabled={generating}
+          className="w-full bg-fuchsia-500/20 hover:bg-fuchsia-500/30 border border-fuchsia-400/40 text-fuchsia-200 font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2"
+        >
+          {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+          {generating ? "CREATING..." : "CREATE BESTIE INVITE LINK"}
+        </button>
+      </div>
+    );
+  }
+
+  // Pair exists but waiting for bestie to sign up
+  if (waitingForBestie) {
+    return (
+      <div className="relative mt-3 space-y-3">
+        <div className="bg-black/30 border border-fuchsia-500/30 rounded-xl p-3">
+          <p className="text-[11px] text-fuchsia-300 font-bold mb-2">📩 SHARE THIS LINK WITH YOUR BESTIE:</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-black/40 rounded-lg px-3 py-2 text-xs text-neutral-300 truncate font-mono border border-white/10">
+              {bestieLink}
+            </div>
+            <button
+              onClick={copyLink}
+              className="shrink-0 bg-fuchsia-500/25 hover:bg-fuchsia-500/35 border border-fuchsia-400/40 p-2 rounded-lg transition-colors active:scale-[0.95]"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-fuchsia-300" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-2">
+            ⏳ Waiting for your bestie to sign up with this link...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Pair is active — show daily progress
+  if (pairActive || pairCompleted) {
+    return (
+      <div className="relative mt-3 space-y-2">
+        <p className="text-[11px] text-fuchsia-300 font-bold">
+          {pairCompleted ? "🎉 CHALLENGE COMPLETE!" : "🔥 CHALLENGE ACTIVE — Call your bestie daily!"}
+        </p>
+        <div className="flex gap-2">
+          {[1, 2, 3].map((day) => {
+            const log = dailyLogs.find((l: any) => l.day_number === day);
+            const completed = log?.verified;
+            const inProgress = log && !log.verified;
+            const mins = log ? Math.floor((log.total_seconds || 0) / 60) : 0;
+
+            return (
+              <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                <div className={`w-full h-2.5 rounded-full overflow-hidden ${completed ? "bg-fuchsia-500" : "bg-neutral-800"}`}>
+                  {inProgress && (
+                    <div
+                      className="h-full bg-fuchsia-500/60 rounded-full transition-all"
+                      style={{ width: `${Math.min(100, (mins / 30) * 100)}%` }}
+                    />
+                  )}
+                  {completed && <div className="h-full bg-fuchsia-500 rounded-full w-full" />}
+                </div>
+                <span className="text-[10px] text-neutral-500 font-bold">
+                  {completed ? "✅" : inProgress ? `${mins}m` : ""} DAY {day}
+                </span>
+                {log?.inviter_screenshot_url && (
+                  <span className="text-[8px] text-fuchsia-400/60">📸 verified</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 /* ─── Page Component ─── */
@@ -285,8 +366,13 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 )}
               </div>
 
-              {/* Progress (custom per challenge) */}
-              {!submission && config.progressRenderer && (
+              {/* Bestie-specific: invite link + daily progress */}
+              {config.mechanic === "bestie" && (
+                <BestieProgress />
+              )}
+
+              {/* Progress (custom per challenge, non-bestie) */}
+              {config.mechanic !== "bestie" && !submission && config.progressRenderer && (
                 <div className="relative">{config.progressRenderer(submission)}</div>
               )}
 
@@ -310,7 +396,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 </p>
               )}
 
-              {/* Action: Submit Proof (manual) */}
+              {/* Action: Submit Proof (manual only) */}
               {config.mechanic === "manual" && !submission && submittingSlug !== config.slug && (
                 <button
                   onClick={() => setSubmittingSlug(config.slug)}
