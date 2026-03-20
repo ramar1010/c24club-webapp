@@ -32,9 +32,9 @@ interface ChallengeConfig {
 const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   {
     slug: "bestie-challenge",
-    title: "BESTIE CHALLENGE",
-    subtitle: "Bring Your Friend!",
-    description: "Bring your bestie to chat with you for 30 mins a day for 3 days. You both earn $25!",
+    title: "BESTIE CHALLENGE 👯‍♀️",
+    subtitle: "Bring Your Friend! 💕",
+    description: "Bring your bestie to chat with you for 30 mins a day for 3 days. You both earn $25! 🎉",
     reward: "$25",
     rewardSub: "EACH",
     difficulty: "EASY",
@@ -61,9 +61,9 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   },
   {
     slug: "blue-eyes-hunt",
-    title: "BLUE EYES HUNT",
-    subtitle: "Spot & Snap!",
-    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes!",
+    title: "BLUE EYES HUNT 👀",
+    subtitle: "Spot & Snap! 📸",
+    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes! 💎",
     reward: "15 MIN",
     rewardSub: "BONUS",
     difficulty: "MEDIUM",
@@ -90,9 +90,9 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   },
   {
     slug: "marathon-talk",
-    title: "MARATHON TALK",
-    subtitle: "Go the Distance!",
-    description: "Talk with someone for a whole hour straight on video chat. You both earn $35!",
+    title: "MARATHON TALK 🏃‍♀️",
+    subtitle: "Go the Distance! ⏱️",
+    description: "Talk with someone for a whole hour straight on video chat. You both earn $35! 🔥",
     reward: "$35",
     rewardSub: "EACH",
     difficulty: "MEDIUM",
