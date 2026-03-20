@@ -537,6 +537,34 @@ const VideoCallPage = () => {
     };
   }, [activeBestiePair, callState, memberId]);
 
+  // ─── Blue Eyes Hunt: track challenge + snap count ───
+  const { data: blueEyesChallenge } = useQuery({
+    queryKey: ["blue_eyes_challenge"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("weekly_challenges")
+        .select("*")
+        .eq("slug", "blue-eyes-hunt")
+        .eq("is_active", true)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: blueEyesSnaps = [], refetch: refetchBlueEyesSnaps } = useQuery({
+    queryKey: ["blue_eyes_snaps", memberId, blueEyesChallenge?.id],
+    enabled: !!memberId && !!blueEyesChallenge?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("challenge_submissions")
+        .select("*")
+        .eq("user_id", memberId)
+        .eq("challenge_id", blueEyesChallenge!.id)
+        .order("created_at", { ascending: true });
+      return data || [];
+    },
+  });
+
   const isMobile = useIsMobile();
 
 
