@@ -218,6 +218,7 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "anchor-settings", label: "Anchor Settings", path: "/admin/anchor-rewards/cashouts" },
       { key: "anchor-user-queue", label: "Anchor Users Queue", path: "/admin/anchor-rewards/queue" },
+      { key: "anchor-challenges", label: "Bonus Challenges", path: "/admin/anchor-rewards/challenges" },
     ],
   },
   {
