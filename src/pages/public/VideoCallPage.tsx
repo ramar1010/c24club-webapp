@@ -1164,7 +1164,7 @@ const VideoCallPage = () => {
       )}
 
       {/* Female Earning Panel */}
-      {isFemale && femaleHasSlot && (
+      {isFemale && (femaleHasSlot || anchorEarning.systemDisabled) && (
         <div className="mx-3 md:mx-auto md:w-[420px]">
           <AnchorEarningPanel
             status={anchorEarning.status}
