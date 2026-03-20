@@ -34,6 +34,7 @@ const AnchorSettingsPage = () => {
   const [ratePerMinute, setRatePerMinute] = useState(0.01);
   const [minCashout, setMinCashout] = useState(100);
   const [maxCashout, setMaxCashout] = useState(5000);
+  const [anchorDisabled, setAnchorDisabled] = useState(false);
 
   // New active/idle rates
   const [activeRateCash, setActiveRateCash] = useState(1.5);
