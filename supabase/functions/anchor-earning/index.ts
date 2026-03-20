@@ -185,6 +185,7 @@ Deno.serve(async (req) => {
         maxCap: settings.max_anchor_cap,
         queuePosition,
         settings: settingsPayload,
+        pausedBalance,
       });
     }
 
