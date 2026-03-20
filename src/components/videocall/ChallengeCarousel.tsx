@@ -201,6 +201,10 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
       const mins = parseInt(localStorage.getItem("marathon_talk_minutes") || "0", 10);
       return `${mins}/60 min`;
     }
+    if (slug === "girl-power-10") {
+      const mins = parseInt(localStorage.getItem("girl_power_minutes") || "0", 10);
+      return mins > 0 ? `${mins}/10 min` : "Chat with a guy for 10 min!";
+    }
     return null;
   };
 
