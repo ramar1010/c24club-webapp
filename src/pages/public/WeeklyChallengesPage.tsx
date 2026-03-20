@@ -61,9 +61,9 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   },
   {
     slug: "blue-eyes-hunt",
-    title: "BLUE EYES HUNT",
-    subtitle: "Spot & Snap!",
-    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes!",
+    title: "BLUE EYES HUNT 👀",
+    subtitle: "Spot & Snap! 📸",
+    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes! 💎",
     reward: "15 MIN",
     rewardSub: "BONUS",
     difficulty: "MEDIUM",
