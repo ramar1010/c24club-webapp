@@ -40,6 +40,7 @@ const AdminEmailDashboardPage = lazy(() => import("@/pages/admin/AdminEmailDashb
 const AdminGiftCardsPage = lazy(() => import("@/pages/admin/AdminGiftCardsPage"));
 const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
 const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
+const AdminAnchorChallengesPage = lazy(() => import("@/pages/admin/AdminAnchorChallengesPage"));
 const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
 const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
 const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPage"));
@@ -148,6 +149,7 @@ const App = () => (
                 <Route path="referrals/cashouts" element={<PlaceholderPage title="Referral Cashouts" />} />
                 <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
                 <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
+                <Route path="anchor-rewards/challenges" element={<AdminAnchorChallengesPage />} />
                 <Route path="emails" element={<AdminEmailTemplatesPage />} />
                 <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
                 <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />

@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      anchor_challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          reward_amount: number
+          target_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_amount?: number
+          target_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          reward_amount?: number
+          target_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       anchor_earnings: {
         Row: {
           amount: number
