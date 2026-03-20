@@ -1,4 +1,5 @@
 import { useState } from "react";
+import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
