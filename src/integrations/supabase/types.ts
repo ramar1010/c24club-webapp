@@ -1974,6 +1974,7 @@ export type Database = {
           is_active: boolean
           reward_amount: number
           reward_type: string
+          slug: string | null
           title: string
           updated_at: string
         }
@@ -1986,6 +1987,7 @@ export type Database = {
           is_active?: boolean
           reward_amount?: number
           reward_type?: string
+          slug?: string | null
           title: string
           updated_at?: string
         }
@@ -1998,6 +2000,7 @@ export type Database = {
           is_active?: boolean
           reward_amount?: number
           reward_type?: string
+          slug?: string | null
           title?: string
           updated_at?: string
         }
