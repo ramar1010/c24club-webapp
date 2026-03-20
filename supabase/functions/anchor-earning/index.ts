@@ -196,6 +196,9 @@ Deno.serve(async (req) => {
 
     // ─── JOIN ───
     if (type === "join") {
+      if (settings.anchor_disabled) {
+        return json({ success: false, message: "System is under maintenance" }, 503);
+      }
       const { data: member } = await supabase
         .from("members")
         .select("gender")
