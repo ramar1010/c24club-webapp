@@ -54,13 +54,12 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     slug: "blue-eyes-hunt",
     title: "BLUE EYES HUNT 👀",
     subtitle: "Spot & Snap! 📸",
-    description: "Find 2 blue-eyed guys on video chat and snap a screenshot as proof. Earn 15 bonus minutes! 💎",
-    reward: "15 MIN",
+    description: "Spot a blue-eyed guy on video chat and tap the 👁️ SNAP button to capture proof. Find 2 and earn 100 bonus minutes! 💎",
+    reward: "100 MIN",
     rewardSub: "BONUS",
     difficulty: "MEDIUM",
     icon: Eye,
     mechanic: "manual",
-    maxParticipants: 3,
     gradient: "from-cyan-600/30 via-blue-700/25 to-indigo-900/40",
     border: "border-cyan-400/50",
     glow: "shadow-[0_0_24px_rgba(34,211,238,0.35)]",
@@ -68,17 +67,6 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     accentText: "text-cyan-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["👀", "💎", "📸"],
-    progressRenderer: () => (
-      <div className="flex items-center gap-3 mt-3">
-        {[1, 2].map((slot) => (
-          <div key={slot} className="flex items-center gap-1.5 bg-neutral-800/60 rounded-lg px-3 py-1.5 border border-cyan-500/20">
-            <Camera className="w-3.5 h-3.5 text-cyan-400/50" />
-            <span className="text-[11px] text-neutral-500 font-bold">#{slot}</span>
-          </div>
-        ))}
-        <span className="text-[10px] text-cyan-400/60 font-bold ml-auto">0/2 found</span>
-      </div>
-    ),
   },
   {
     slug: "marathon-talk",
