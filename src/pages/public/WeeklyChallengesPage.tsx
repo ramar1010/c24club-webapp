@@ -90,9 +90,9 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   },
   {
     slug: "marathon-talk",
-    title: "MARATHON TALK",
-    subtitle: "Go the Distance!",
-    description: "Talk with someone for a whole hour straight on video chat. You both earn $35!",
+    title: "MARATHON TALK 🏃‍♀️",
+    subtitle: "Go the Distance! ⏱️",
+    description: "Talk with someone for a whole hour straight on video chat. You both earn $35! 🔥",
     reward: "$35",
     rewardSub: "EACH",
     difficulty: "MEDIUM",
