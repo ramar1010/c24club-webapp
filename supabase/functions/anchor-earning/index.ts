@@ -748,6 +748,90 @@ Deno.serve(async (req) => {
       return json({ success: true, progress: progress ?? [] });
     }
 
+    // ─── ADMIN: Get all challenge progress ───
+    if (type === "admin_get_challenge_progress") {
+      const weekStart = getWeekStart();
+      const { data: progress } = await supabase
+        .from("anchor_challenge_progress")
+        .select("*")
+        .eq("week_start", weekStart)
+        .order("updated_at", { ascending: false });
+
+      return json({ success: true, progress: progress ?? [] });
+    }
+
+    // ─── ADMIN: Reset challenge progress for a user ───
+    if (type === "admin_reset_challenge_progress") {
+      const { progressId } = body;
+      if (!progressId) return json({ success: false, message: "progressId required" }, 400);
+
+      await supabase
+        .from("anchor_challenge_progress")
+        .update({ unique_partners: [], completed_at: null, rewarded: false, updated_at: new Date().toISOString() })
+        .eq("id", progressId);
+
+      return json({ success: true });
+    }
+
+    // ─── ADMIN: Mark challenge as completed and reward ───
+    if (type === "admin_complete_challenge") {
+      const { progressId, challengeId, targetUserId } = body;
+      if (!challengeId || !targetUserId) return json({ success: false, message: "challengeId and targetUserId required" }, 400);
+
+      // Get the challenge
+      const { data: challenge } = await supabase
+        .from("anchor_challenges")
+        .select("*")
+        .eq("id", challengeId)
+        .maybeSingle();
+
+      if (!challenge) return json({ success: false, message: "Challenge not found" }, 404);
+
+      const weekStart = getWeekStart();
+
+      if (progressId) {
+        await supabase
+          .from("anchor_challenge_progress")
+          .update({ completed_at: new Date().toISOString(), rewarded: true, updated_at: new Date().toISOString() })
+          .eq("id", progressId);
+      } else {
+        await supabase.from("anchor_challenge_progress").upsert({
+          user_id: targetUserId,
+          challenge_id: challengeId,
+          week_start: weekStart,
+          unique_partners: [],
+          completed_at: new Date().toISOString(),
+          rewarded: true,
+        }, { onConflict: "user_id,challenge_id,week_start" });
+      }
+
+      // Credit cash
+      const { data: session } = await supabase
+        .from("anchor_sessions")
+        .select("cash_balance")
+        .eq("user_id", targetUserId)
+        .in("status", ["active", "paused"])
+        .maybeSingle();
+
+      if (session) {
+        const newBalance = Number(session.cash_balance) + Number(challenge.reward_amount);
+        await supabase
+          .from("anchor_sessions")
+          .update({ cash_balance: newBalance, updated_at: new Date().toISOString() })
+          .eq("user_id", targetUserId);
+      }
+
+      await supabase.from("anchor_earnings").insert({
+        user_id: targetUserId,
+        earning_type: "challenge_bonus",
+        amount: Number(challenge.reward_amount),
+        reward_title: challenge.title,
+        status: "credited",
+      });
+
+      return json({ success: true, rewarded: Number(challenge.reward_amount) });
+    }
+
     return json({ success: false, message: "Unknown type" }, 400);
   } catch (error) {
     return new Response(
