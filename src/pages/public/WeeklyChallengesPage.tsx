@@ -411,15 +411,35 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 <BestieProgress />
               )}
 
-              {/* Blue Eyes Hunt: show captured snaps */}
-              {config.slug === "blue-eyes-hunt" && (
-                <BlueEyesProgress
-                  submissions={submissions.filter((s: any) => {
-                    const db = getDbChallenge("blue-eyes-hunt");
-                    return db && s.challenge_id === db.id;
-                  })}
-                />
-              )}
+              {/* Blue Eyes Hunt: start button + captured snaps */}
+              {config.slug === "blue-eyes-hunt" && (() => {
+                const huntStarted = localStorage.getItem("blue_eyes_hunt_started") === "true";
+                const blueSubmissions = submissions.filter((s: any) => {
+                  const db = getDbChallenge("blue-eyes-hunt");
+                  return db && s.challenge_id === db.id;
+                });
+                return huntStarted || blueSubmissions.length > 0 ? (
+                  <>
+                    <BlueEyesProgress submissions={blueSubmissions} />
+                    <div className="relative mt-2 flex items-center gap-1.5 text-[11px] font-bold text-cyan-400/70">
+                      <span className="text-base">📸</span> Snap button is active during calls!
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("blue_eyes_hunt_started", "true");
+                      toast.success("👁️ Blue Eyes Hunt activated!", { description: "The snap button will appear during your next call." });
+                      // Force re-render
+                      setSubmittingSlug((prev) => prev === "__force" ? "" : "__force");
+                      setTimeout(() => setSubmittingSlug(""), 50);
+                    }}
+                    className="relative w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                  >
+                    👁️ START HUNT
+                  </button>
+                );
+              })()}
 
               {/* Progress (custom per challenge, non-bestie, non-blue-eyes) */}
               {config.mechanic !== "bestie" && config.slug !== "blue-eyes-hunt" && !submission && config.progressRenderer && (
