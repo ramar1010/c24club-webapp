@@ -408,61 +408,11 @@ const VideoCallPage = () => {
 
 
   // Manage female anchor slot via backend queue/session logic
+  // DISABLED: Anchor earning system is hidden/deactivated — no polling needed
   useEffect(() => {
-    if (!isFemale || memberId === "anonymous") {
-      setFemaleHasSlot(false);
-      setFemaleQueued(false);
-      setFemaleQueuePosition(0);
-      return;
-    }
-
-    let isMounted = true;
-    let pollInterval: ReturnType<typeof setInterval> | null = null;
-
-    const applyAnchorState = (status: string, queuePosition = 0) => {
-      if (!isMounted) return;
-      setFemaleHasSlot(status === "active");
-      setFemaleQueued(status === "queued");
-      setFemaleQueuePosition(status === "queued" ? Math.max(1, queuePosition) : 0);
-    };
-
-    const syncAnchorState = async () => {
-      const { data: statusData, error: statusError } = await supabase.functions.invoke("anchor-earning", {
-        body: { type: "get_status", userId: memberId },
-      });
-
-      if (statusError || !statusData?.success || !statusData?.eligible) {
-        applyAnchorState("idle", 0);
-        return;
-      }
-
-      if (statusData.status === "active" || statusData.status === "queued") {
-        applyAnchorState(statusData.status, statusData.queuePosition ?? 0);
-        return;
-      }
-
-      const { data: joinData, error: joinError } = await supabase.functions.invoke("anchor-earning", {
-        body: { type: "join", userId: memberId },
-      });
-
-      if (joinError || !joinData?.success) {
-        applyAnchorState("idle", 0);
-        return;
-      }
-
-      applyAnchorState(joinData.status ?? "idle", joinData.queuePosition ?? 0);
-    };
-
-    syncAnchorState();
-    pollInterval = setInterval(syncAnchorState, 5000);
-
-    return () => {
-      isMounted = false;
-      if (pollInterval) clearInterval(pollInterval);
-      supabase.functions.invoke("anchor-earning", {
-        body: { type: "leave", userId: memberId },
-      }).catch(() => {});
-    };
+    setFemaleHasSlot(false);
+    setFemaleQueued(false);
+    setFemaleQueuePosition(0);
   }, [isFemale, memberId]);
 
   // Listen for DM toast clicks to open messages overlay instead of navigating away
