@@ -143,6 +143,34 @@ const AnchorSettingsPage = () => {
     refetchInterval: 15000,
   });
 
+  const { data: anchorPayouts } = useQuery({
+    queryKey: ["anchor-payouts-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_payouts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return data ?? [];
+    },
+    refetchInterval: 15000,
+  });
+
+  const updateAnchorPayoutMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("anchor_payouts")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      toast.success(`Payout marked as ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["anchor-payouts-admin"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const { data: members } = useQuery({
     queryKey: ["admin-members-lookup-anchor"],
     queryFn: async () => {

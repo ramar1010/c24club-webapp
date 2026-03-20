@@ -402,7 +402,7 @@ const AnchorEarningPanel = ({
           </div>
           {!isActive ? (
             <span className="text-green-300 font-bold text-xs">
-              🔥 On Call: ${(activeRate / activeTime).toFixed(4)}/min
+              🔥 On Call with Guy: ${(activeRate / activeTime).toFixed(4)}/min
             </span>
           ) : (
             <div className="flex items-center gap-1.5">
