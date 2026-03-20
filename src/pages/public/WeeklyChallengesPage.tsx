@@ -108,6 +108,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(52,211,153,0.1)",
     accentText: "text-emerald-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
+    floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
     progressRenderer: () => (
       <div className="mt-3">
         <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
