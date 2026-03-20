@@ -200,6 +200,58 @@ const BestieProgress = () => {
   return null;
 };
 
+/* ─── Blue Eyes Progress Component ─── */
+
+const BlueEyesProgress = ({ submissions }: { submissions: any[] }) => {
+  const approved = submissions.filter((s: any) => s.status === "approved");
+  const pending = submissions.filter((s: any) => s.status === "pending");
+  const rejected = submissions.filter((s: any) => s.status === "rejected");
+  const totalApproved = approved.length;
+  const allDone = totalApproved >= 2;
+
+  return (
+    <div className="relative mt-3 space-y-2">
+      {allDone && (
+        <p className="text-green-400 text-xs font-black">🎉 CHALLENGE COMPLETE! 100 bonus minutes earned!</p>
+      )}
+      <div className="flex items-center gap-3">
+        {[1, 2].map((slot) => {
+          const snap = submissions[slot - 1];
+          const isApproved = snap?.status === "approved";
+          const isPending = snap?.status === "pending";
+          const isRejected = snap?.status === "rejected";
+
+          return (
+            <div key={slot} className="flex-1">
+              {snap?.proof_image_url ? (
+                <div className={`relative rounded-lg overflow-hidden border-2 ${isApproved ? "border-green-500" : isPending ? "border-yellow-500" : "border-red-500"}`}>
+                  <img src={snap.proof_image_url} alt={`Snap #${slot}`} className="w-full h-16 object-cover" />
+                  <div className="absolute bottom-0 inset-x-0 bg-black/70 text-center py-0.5">
+                    <span className={`text-[9px] font-black ${isApproved ? "text-green-400" : isPending ? "text-yellow-400" : "text-red-400"}`}>
+                      {isApproved ? "✅ APPROVED" : isPending ? "⏳ PENDING" : "❌ REJECTED"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-1.5 bg-neutral-800/60 rounded-lg px-3 py-3 border border-cyan-500/20">
+                  <Camera className="w-3.5 h-3.5 text-cyan-400/50" />
+                  <span className="text-[11px] text-neutral-500 font-bold">#{slot}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <span className="text-[10px] text-cyan-400/60 font-bold">{totalApproved}/2</span>
+      </div>
+      {submissions.length < 2 && !allDone && (
+        <p className="text-[11px] text-cyan-300/70 font-bold">
+          📸 Use the 👁️ SNAP button during a call to capture blue-eyed guys!
+        </p>
+      )}
+    </div>
+  );
+};
+
 /* ─── Page Component ─── */
 
 const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
