@@ -31,6 +31,19 @@ const FemaleEarningPanel = ({
   const lastVerifiedRef = useRef(Date.now());
   const verifyTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Fetch active bonus challenges
+  const { data: bonusChallenges = [] } = useQuery({
+    queryKey: ["anchor_bonus_challenges"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("anchor_challenges")
+        .select("*")
+        .eq("is_active", true)
+        .order("reward_amount", { ascending: false });
+      return data || [];
+    },
+  });
+
   // Fetch cashout rate
   useEffect(() => {
     supabase
