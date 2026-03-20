@@ -49,6 +49,7 @@ const AnchorSettingsPage = () => {
       setActiveRateTime(settings.active_rate_time ?? 30);
       setIdleRateCash(Number(settings.idle_rate_cash ?? 0.1));
       setIdleRateTime(settings.idle_rate_time ?? 30);
+      setAnchorDisabled((settings as any).anchor_disabled ?? false);
     }
   }, [settings]);
 
