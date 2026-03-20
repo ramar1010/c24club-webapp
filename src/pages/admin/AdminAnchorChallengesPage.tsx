@@ -53,7 +53,7 @@ const AdminAnchorChallengesPage = () => {
       const { data } = await supabase
         .from("members")
         .select("id, name, email")
-        .in("id", userIds);
+        .in("id", userIds as string[]);
       return data || [];
     },
     enabled: userIds.length > 0 && tab === "progress",
