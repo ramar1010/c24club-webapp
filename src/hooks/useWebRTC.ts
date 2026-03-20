@@ -511,6 +511,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
   return {
     callState,
+    hasStartedMatchmaking,
     error,
     currentPartnerId,
     partnerVoiceMode,
