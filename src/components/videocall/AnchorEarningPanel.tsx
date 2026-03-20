@@ -60,6 +60,7 @@ const AnchorEarningPanel = ({
   onCashout,
   onDismissCash,
   onSubmitVerification,
+  systemDisabled,
 }: AnchorEarningPanelProps) => {
   const [showCashoutModal, setShowCashoutModal] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
