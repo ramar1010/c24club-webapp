@@ -469,20 +469,20 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
               )}
 
               {/* Submission Status (non-blue-eyes) */}
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission && status && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission && status && (
                 <div className={`relative flex items-center gap-2 mt-3 ${status.color}`}>
                   <status.icon className="w-4 h-4" />
                   <span className="text-xs font-black">{status.label}</span>
                 </div>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "approved" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission?.status === "approved" && (
                 <p className="relative text-green-400 text-xs font-bold mt-2">
                   ✅ Reward earned: {config.reward} {config.rewardSub.toLowerCase()}
                 </p>
               )}
 
-              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && submission?.status === "rejected" && (
+              {config.slug !== "blue-eyes-hunt" && config.slug !== "marathon-talk" && config.slug !== "girl-power-10" && submission?.status === "rejected" && (
                 <p className="relative text-red-400/80 text-xs font-bold mt-1">
                   You can try again next week.
                 </p>
