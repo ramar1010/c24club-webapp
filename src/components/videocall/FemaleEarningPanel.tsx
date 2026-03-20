@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { DollarSign, Trophy } from "lucide-react";
+import { DollarSign, Trophy, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import CashoutModal from "@/components/discover/CashoutModal";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder"];
