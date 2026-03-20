@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { toast } from "sonner";
 
