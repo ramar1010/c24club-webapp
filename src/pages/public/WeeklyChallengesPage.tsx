@@ -229,6 +229,21 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   className="absolute -right-4 -top-10 w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
                 />
               )}
+              {/* Floating emojis */}
+              {config.floatingEmojis.map((emoji, i) => (
+                <span
+                  key={i}
+                  className="absolute text-xl pointer-events-none select-none z-10 animate-[emoji-float_3s_ease-in-out_infinite]"
+                  style={{
+                    right: `${12 + i * 28}px`,
+                    bottom: `${10 + i * 14}px`,
+                    animationDelay: `${i * 0.7}s`,
+                  }}
+                >
+                  {emoji}
+                </span>
+              ))}
+
               {/* Shimmer */}
               <div
                 className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,var(--shimmer)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]"
