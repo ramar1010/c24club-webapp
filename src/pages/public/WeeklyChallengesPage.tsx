@@ -88,6 +88,25 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     badgeColor: "bg-amber-500/20 text-amber-400",
     floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
   },
+  {
+    slug: "girl-power-10",
+    title: "GIRL POWER 👩‍💻",
+    subtitle: "Chat with a Guy! 💪",
+    description: "Stay connected to a guy on video chat for 10 minutes straight and earn $10 cash! Limited challenge — females only. 🔥",
+    reward: "$10",
+    rewardSub: "CASH",
+    difficulty: "EASY",
+    icon: Heart,
+    mechanic: "auto",
+    gradient: "from-rose-600/30 via-pink-700/25 to-red-900/40",
+    border: "border-rose-400/50",
+    glow: "shadow-[0_0_24px_rgba(251,113,133,0.35)]",
+    shimmer: "rgba(251,113,133,0.1)",
+    accentText: "text-rose-300",
+    badgeColor: "bg-green-500/20 text-green-400",
+    floatingEmojis: ["💪", "👩‍💻", "💰"],
+    femaleOnly: true,
+  },
 ];
 
 /* ─── Status Helpers ─── */
