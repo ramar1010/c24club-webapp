@@ -26,6 +26,7 @@ interface ChallengeConfig {
   shimmer: string;
   accentText: string;
   badgeColor: string;
+  floatingEmojis: string[];
   progressRenderer?: (submission: any) => React.ReactNode;
 }
 
@@ -46,6 +47,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(217,70,239,0.1)",
     accentText: "text-fuchsia-300",
     badgeColor: "bg-green-500/20 text-green-400",
+    floatingEmojis: ["💕", "👯‍♀️", "✨"],
     progressRenderer: () => (
       <div className="flex gap-2 mt-3">
         {[1, 2, 3].map((day) => (
@@ -76,6 +78,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(34,211,238,0.1)",
     accentText: "text-cyan-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
+    floatingEmojis: ["👀", "💎", "📸"],
     progressRenderer: () => (
       <div className="flex items-center gap-3 mt-3">
         {[1, 2].map((slot) => (
@@ -105,6 +108,7 @@ const CHALLENGE_CONFIGS: ChallengeConfig[] = [
     shimmer: "rgba(52,211,153,0.1)",
     accentText: "text-emerald-300",
     badgeColor: "bg-amber-500/20 text-amber-400",
+    floatingEmojis: ["🔥", "⏱️", "🏃‍♀️"],
     progressRenderer: () => (
       <div className="mt-3">
         <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
@@ -225,6 +229,21 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   className="absolute -right-4 -top-10 w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
                 />
               )}
+              {/* Floating emojis */}
+              {config.floatingEmojis.map((emoji, i) => (
+                <span
+                  key={i}
+                  className="absolute text-xl pointer-events-none select-none z-10 animate-[emoji-float_3s_ease-in-out_infinite]"
+                  style={{
+                    right: `${12 + i * 28}px`,
+                    bottom: `${10 + i * 14}px`,
+                    animationDelay: `${i * 0.7}s`,
+                  }}
+                >
+                  {emoji}
+                </span>
+              ))}
+
               {/* Shimmer */}
               <div
                 className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,var(--shimmer)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]"
