@@ -2056,11 +2056,14 @@ export type Database = {
           challenge_type: string
           created_at: string
           description: string | null
+          female_only: boolean
           id: string
           is_active: boolean
           reward_amount: number
           reward_type: string
           slug: string | null
+          target_minutes: number | null
+          theme: string
           title: string
           updated_at: string
         }
@@ -2069,11 +2072,14 @@ export type Database = {
           challenge_type?: string
           created_at?: string
           description?: string | null
+          female_only?: boolean
           id?: string
           is_active?: boolean
           reward_amount?: number
           reward_type?: string
           slug?: string | null
+          target_minutes?: number | null
+          theme?: string
           title: string
           updated_at?: string
         }
@@ -2082,11 +2088,14 @@ export type Database = {
           challenge_type?: string
           created_at?: string
           description?: string | null
+          female_only?: boolean
           id?: string
           is_active?: boolean
           reward_amount?: number
           reward_type?: string
           slug?: string | null
+          target_minutes?: number | null
+          theme?: string
           title?: string
           updated_at?: string
         }
