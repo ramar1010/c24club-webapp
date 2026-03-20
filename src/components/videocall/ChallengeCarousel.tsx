@@ -32,6 +32,18 @@ const SLIDES: SlideConfig[] = [
     type: "referral",
   },
   {
+    slug: "girl-power-10",
+    title: "GIRL POWER",
+    reward: "$10",
+    rewardSub: "CASH",
+    gradient: "from-rose-600/40 via-pink-700/30 to-red-900/50",
+    border: "border-rose-400/50",
+    glow: "shadow-[0_0_18px_rgba(251,113,133,0.3)]",
+    emoji: "👩‍💻",
+    type: "challenge",
+    femaleOnly: true,
+  },
+  {
     slug: "bestie-challenge",
     title: "BESTIE",
     reward: "$25",

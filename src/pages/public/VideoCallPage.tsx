@@ -1309,6 +1309,7 @@ const VideoCallPage = () => {
         <ChallengeCarousel
           onOpenChallenges={() => setOverlayPage("challenges")}
           onOpenReferral={() => navigate("/referral")}
+          isFemale={isFemale}
         />
       )}
 
