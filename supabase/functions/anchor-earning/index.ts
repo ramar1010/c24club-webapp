@@ -117,6 +117,11 @@ Deno.serve(async (req) => {
 
     // ─── GET_STATUS ───
     if (type === "get_status") {
+      // Check if system is disabled
+      if (settings.anchor_disabled) {
+        return json({ success: true, eligible: true, disabled: true, settings: settingsPayload });
+      }
+
       const { data: member } = await supabase
         .from("members")
         .select("gender")
