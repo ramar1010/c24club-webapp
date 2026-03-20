@@ -17,6 +17,7 @@ interface SlideConfig {
   glow: string;
   emoji: string;
   type: "challenge" | "referral";
+  femaleOnly?: boolean;
 }
 
 const SLIDES: SlideConfig[] = [
@@ -30,6 +31,18 @@ const SLIDES: SlideConfig[] = [
     glow: "shadow-[0_0_18px_rgba(236,72,153,0.3)]",
     emoji: "💸",
     type: "referral",
+  },
+  {
+    slug: "girl-power-10",
+    title: "GIRL POWER",
+    reward: "$10",
+    rewardSub: "CASH",
+    gradient: "from-rose-600/40 via-pink-700/30 to-red-900/50",
+    border: "border-rose-400/50",
+    glow: "shadow-[0_0_18px_rgba(251,113,133,0.3)]",
+    emoji: "👩‍💻",
+    type: "challenge",
+    femaleOnly: true,
   },
   {
     slug: "bestie-challenge",
@@ -69,9 +82,10 @@ const SLIDES: SlideConfig[] = [
 interface ChallengeCarouselProps {
   onOpenChallenges: () => void;
   onOpenReferral: () => void;
+  isFemale?: boolean;
 }
 
-const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral }: ChallengeCarouselProps) => {
+const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: ChallengeCarouselProps) => {
   const { user } = useAuth();
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "center", loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -187,6 +201,10 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral }: ChallengeCarous
       const mins = parseInt(localStorage.getItem("marathon_talk_minutes") || "0", 10);
       return `${mins}/60 min`;
     }
+    if (slug === "girl-power-10") {
+      const mins = parseInt(localStorage.getItem("girl_power_minutes") || "0", 10);
+      return mins > 0 ? `${mins}/10 min` : "Chat with a guy for 10 min!";
+    }
     return null;
   };
 
@@ -194,7 +212,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral }: ChallengeCarous
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-2">
-          {SLIDES.map((slide) => {
+          {SLIDES.filter(s => !s.femaleOnly || isFemale).map((slide) => {
             const status = slide.type === "challenge" ? getStatus(slide.slug) : null;
             const progress = getProgress(slide.slug);
             const isReferral = slide.type === "referral";
@@ -248,7 +266,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral }: ChallengeCarous
 
       {/* Dots */}
       <div className="flex justify-center gap-1.5 pt-1.5">
-        {SLIDES.map((_, i) => (
+        {SLIDES.filter(s => !s.femaleOnly || isFemale).map((_, i) => (
           <div
             key={i}
             className={`w-1.5 h-1.5 rounded-full transition-all ${
