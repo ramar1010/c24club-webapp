@@ -274,6 +274,59 @@ const ManageMinutesPage = () => {
               </Button>
               <Button variant="outline" onClick={handleSetCashBalance} disabled={loading || !cashBalanceToAdd}>Set To</Button>
             </div>
+
+            {/* Wager Earnings controls */}
+            <div className="border-t border-border pt-4 mt-4">
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Dices className="w-4 h-4" /> Add Wager Earning Record
+              </h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Creates a payout record in the wager earnings modal (for marketing/demo purposes).
+              </p>
+              <div className="flex gap-2 items-end flex-wrap">
+                <div className="flex-1 min-w-[120px]">
+                  <Label className="text-sm">Amount ($)</Label>
+                  <Input type="number" step="0.01" placeholder="e.g. 200.00" value={wagerAmount} onChange={(e) => setWagerAmount(e.target.value)} />
+                </div>
+                <div className="w-[140px]">
+                  <Label className="text-sm">Status</Label>
+                  <Select value={wagerStatus} onValueChange={setWagerStatus}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={async () => {
+                    if (!selectedUser || !wagerAmount) return;
+                    setLoading(true);
+                    try {
+                      const amount = parseFloat(wagerAmount);
+                      const { error } = await supabase.from("jackpot_payouts").insert({
+                        user_id: selectedUser.id,
+                        jackpot_amount: amount,
+                        minutes_credited: 0,
+                        status: wagerStatus,
+                        paypal_email: wagerStatus === "paid" ? "marketing@demo.com" : null,
+                      });
+                      if (error) throw error;
+                      toast.success(`Added $${amount.toFixed(2)} wager earning (${wagerStatus})`);
+                      setWagerAmount("");
+                    } catch (e: any) {
+                      toast.error(e.message || "Failed to add wager earning");
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading || !wagerAmount}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Dices className="w-4 h-4 mr-2" /> Add Earning
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
