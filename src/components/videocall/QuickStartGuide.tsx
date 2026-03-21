@@ -160,10 +160,10 @@ const Slide3Visual = () => (
 
 const Slide4Visual = () => {
   const challengeItems = [
-    { label: "Bestie Challenge", reward: "$50" },
-    { label: "Boyfriend Challenge", reward: "$35" },
-    { label: "Marathon Talk", reward: "$20" },
-    { label: "Blue Eyes Hunt", reward: "$10" },
+    { label: "Bestie Challenge", reward: "$50", cutout: null },
+    { label: "Boyfriend Challenge", reward: "$35", cutout: boyfriendCutout },
+    { label: "Marathon Talk", reward: "$20", cutout: null },
+    { label: "Blue Eyes Hunt", reward: "$10", cutout: null },
   ];
 
   return (
