@@ -262,7 +262,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         }).eq("user_id", userId);
       } else if (outcome === "cash_win") {
-        // Deduct wager from total, convert to gifted_minutes at $0.35/min
+        // Deduct wager from total, convert to gifted_minutes at DB rate
         const cashMinutes = amount; // same amount but now cashable
         await supabase.from("member_minutes").update({
           total_minutes: totalMinutes, // net zero on total (deduct wager, add back as gifted)
