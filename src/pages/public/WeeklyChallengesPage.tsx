@@ -400,19 +400,6 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
-  // Fetch user minutes for cashout modal
-  const { data: userMinutesData, refetch: refetchMinutes } = useQuery({
-    queryKey: ["challenge_user_minutes", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data || { total_minutes: 0, gifted_minutes: 0 };
-    },
-  });
 
   const getSubmission = (challengeId: string) => {
     return submissions.find((s: any) => s.challenge_id === challengeId);
