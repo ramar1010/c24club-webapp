@@ -641,6 +641,9 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
               {/* Bestie-specific */}
               {isBestie && <BestieProgress />}
 
+              {/* Boyfriend-specific */}
+              {challenge.slug === "boyfriend-challenge" && <BoyfriendProgress />}
+
               {/* Blue Eyes Hunt */}
               {isBlueEyes && (() => {
                 const huntStarted = localStorage.getItem("blue_eyes_hunt_started") === "true";
