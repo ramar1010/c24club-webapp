@@ -165,7 +165,11 @@ serve(async (req) => {
     if (action === "my_referrals") {
       const anonClient = createClient(supabaseUrl, anonKey);
       const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Not authenticated" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       const adminClient = createClient(supabaseUrl, serviceKey);
 
