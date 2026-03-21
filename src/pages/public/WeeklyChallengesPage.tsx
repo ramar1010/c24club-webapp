@@ -455,7 +455,13 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           const Icon = theme.icon;
           const isBestie = challenge.slug === "bestie-challenge";
           const isBlueEyes = challenge.slug === "blue-eyes-hunt";
-          const isAutoTracked = challenge.challenge_type === "auto" && challenge.target_minutes;
+          const isSpeedConnect = (() => {
+            try {
+              const action = JSON.parse(challenge.auto_track_action || "null");
+              return action?.type === "auto_speed_connect";
+            } catch { return false; }
+          })();
+          const isAutoTracked = challenge.challenge_type === "auto" && challenge.target_minutes && !isSpeedConnect;
           const isManual = challenge.challenge_type === "manual" && !isBlueEyes;
 
           return (
