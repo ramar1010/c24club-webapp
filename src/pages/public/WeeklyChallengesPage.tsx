@@ -653,19 +653,38 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         })}
       </div>
 
-      {/* Cashout CTA */}
-      <button
-        onClick={() => setShowCashout(true)}
-        className="w-full max-w-md mt-8 relative overflow-hidden bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-orange-500/25 border border-amber-400/40 rounded-2xl py-4 px-6 shadow-[0_0_20px_rgba(245,158,11,0.25)] active:scale-[0.97] transition-transform"
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(245,158,11,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
-        <div className="relative flex items-center justify-center gap-2">
-          <DollarSign className="w-5 h-5 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-          <span className="font-black text-amber-200 tracking-wider text-sm drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
-            CASH OUT MINUTES FOR CASH / REWARDS!
-          </span>
+      {/* Redeem Actions */}
+      <div className="w-full max-w-md mt-8 space-y-3">
+        <p className="text-center text-neutral-500 text-[10px] font-bold uppercase tracking-widest">Redeem Your Earnings</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowCashout(true)}
+            className="flex-1 relative overflow-hidden bg-gradient-to-br from-emerald-500/25 via-green-600/20 to-teal-500/25 border border-emerald-400/40 rounded-2xl py-4 px-4 shadow-[0_0_20px_rgba(52,211,153,0.2)] active:scale-[0.97] transition-transform"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(52,211,153,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
+            <div className="relative flex flex-col items-center gap-1.5">
+              <DollarSign className="w-6 h-6 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+              <span className="font-black text-emerald-200 tracking-wider text-xs drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">
+                CASH OUT
+              </span>
+              <span className="text-[10px] text-emerald-400/60 font-bold">via PayPal</span>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/rewards")}
+            className="flex-1 relative overflow-hidden bg-gradient-to-br from-amber-500/25 via-yellow-600/20 to-orange-500/25 border border-amber-400/40 rounded-2xl py-4 px-4 shadow-[0_0_20px_rgba(245,158,11,0.2)] active:scale-[0.97] transition-transform"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(245,158,11,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
+            <div className="relative flex flex-col items-center gap-1.5">
+              <Trophy className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+              <span className="font-black text-amber-200 tracking-wider text-xs drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+                REWARDS
+              </span>
+              <span className="text-[10px] text-amber-400/60 font-bold">Browse Store</span>
+            </div>
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Cashout Modal */}
       {showCashout && (
