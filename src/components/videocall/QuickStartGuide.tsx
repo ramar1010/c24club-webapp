@@ -158,6 +158,66 @@ const Slide3Visual = () => (
 );
 
 const Slide4Visual = () => {
+  const challengeItems = [
+    { label: "Bestie Challenge", reward: "$50" },
+    { label: "Boyfriend Challenge", reward: "$35" },
+    { label: "Marathon Talk", reward: "$20" },
+    { label: "Blue Eyes Hunt", reward: "$10" },
+  ];
+
+  return (
+    <div className="relative w-56 h-56 flex items-center justify-center">
+      {/* Trophy center */}
+      <img
+        src={trophyIcon}
+        alt="Trophy"
+        className="w-20 h-20 z-20 drop-shadow-lg animate-[bounce_3s_ease-in-out_infinite]"
+      />
+      {/* Challenge cards orbiting */}
+      {challengeItems.map((c, i) => {
+        const angle = (360 / challengeItems.length) * i - 90;
+        const radius = 85;
+        const x = Math.cos((angle * Math.PI) / 180) * radius;
+        const y = Math.sin((angle * Math.PI) / 180) * radius;
+        return (
+          <div
+            key={i}
+            className="absolute flex flex-col items-center gap-0.5 z-10"
+            style={{
+              left: `calc(50% + ${x}px - 32px)`,
+              top: `calc(50% + ${y}px - 18px)`,
+              animation: `pulse 3s ease-in-out ${i * 0.4}s infinite`,
+            }}
+          >
+            <span className="bg-neutral-800 border border-neutral-600 text-white text-[8px] font-bold px-2 py-1 rounded-md whitespace-nowrap shadow-md">
+              {c.label}
+            </span>
+            <span className="text-emerald-400 text-[10px] font-black">{c.reward}</span>
+          </div>
+        );
+      })}
+      {/* Cash icon */}
+      <img
+        src={cashIcon}
+        alt="Cash"
+        className="absolute -bottom-1 -left-1 w-10 h-10 z-20"
+        style={{ animation: "sparkle 2s ease-in-out 0.5s infinite" }}
+      />
+      {/* Sparkles */}
+      {["top-0 left-6", "bottom-2 right-2", "top-4 right-0"].map((pos, i) => (
+        <span
+          key={i}
+          className={`absolute ${pos} text-yellow-400 text-sm z-30`}
+          style={{ animation: `sparkle 1.5s ease-in-out ${i * 0.3}s infinite` }}
+        >
+          ✦
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const Slide5Visual = () => {
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
