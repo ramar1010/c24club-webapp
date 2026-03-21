@@ -27,6 +27,7 @@ import {
   BarChart3,
   Camera,
   MousePointerClick,
+  Dices,
   type LucideIcon,
 } from "lucide-react";
 
