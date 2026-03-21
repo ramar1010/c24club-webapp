@@ -208,6 +208,13 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
+      {totalCashValue > 0 && (
+        <p className="text-center mb-0.5">
+          <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
+            💰 ${totalCashValue} in challenges available! 💰
+          </span>
+        </p>
+      )}
       <p className="text-xs text-neutral-400 text-center mb-1 tracking-wide flex items-center justify-center gap-1">
         <span className="inline-block text-base animate-[float_2s_ease-in-out_infinite]">💵</span>
         <span className="inline-block text-base animate-[float_2.4s_ease-in-out_0.4s_infinite]">💰</span>
