@@ -187,7 +187,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
                 <div key="refer-earn" className="flex-[0_0_85%] min-w-0 min-h-[68px]">
                   <button
                     onClick={onOpenReferral}
-                    className="w-full bg-gradient-to-r from-pink-600/40 via-fuchsia-700/30 to-purple-900/50 border-pink-400/50 border rounded-xl shadow-[0_0_18px_rgba(236,72,153,0.3)] p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden"
+                    className="w-full h-full bg-gradient-to-r from-pink-600/40 via-fuchsia-700/30 to-purple-900/50 border-pink-400/50 border rounded-xl shadow-[0_0_18px_rgba(236,72,153,0.3)] p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse pointer-events-none" />
                     <div className="text-3xl shrink-0">💸</div>
