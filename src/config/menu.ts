@@ -206,8 +206,9 @@ export const adminMenu: MenuItem[] = [
   {
     key: "jackpot-payouts",
     icon: Dices,
-    title: "Jackpot Payouts",
+    title: "Jackpot / Wager",
     submenu: [
+      { key: "wager-settings", label: "Wager Settings", path: "/admin/wager-settings" },
       { key: "jackpot-payouts", label: "Jackpot Payouts", path: "/admin/jackpot-payouts" },
     ],
   },
