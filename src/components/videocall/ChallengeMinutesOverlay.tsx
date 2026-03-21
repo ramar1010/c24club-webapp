@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { X, DollarSign, Clock, Trophy, AlertTriangle, Loader2, History } from "lucide-react";
+import { X, DollarSign, Clock, Trophy, AlertTriangle, Loader2, History, ArrowLeft, Send, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import CashoutModal from "@/components/discover/CashoutModal";
 
 const WAGER_TIERS = [10, 25, 50, 100];
 
