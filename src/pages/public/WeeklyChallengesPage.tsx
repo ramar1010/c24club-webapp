@@ -678,7 +678,6 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         <ChallengeEarningsModal
           onClose={() => setShowCashout(false)}
           onSuccess={() => {
-            refetchMinutes();
             queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
           }}
         />
