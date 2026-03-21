@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
+import { useBoyfriendChallenge } from "@/hooks/useBoyfriendChallenge";
 import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 import ChallengeSuggestionForm from "@/components/videocall/ChallengeSuggestionForm";
 
