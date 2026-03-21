@@ -138,6 +138,15 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
         )}
       </div>
 
+      {/* Cashout Button */}
+      <button
+        onClick={() => setShowCashout(true)}
+        className="w-full max-w-sm mt-6 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+      >
+        <DollarSign className="w-5 h-5" />
+        CASH OUT
+      </button>
+
       {/* Recent Referrals */}
       {data?.referrals?.length > 0 && (
         <div className="w-full max-w-sm mt-6">
@@ -168,6 +177,9 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         </div>
       )}
+
+      {/* Cashout Modal */}
+      {showCashout && <ChallengeEarningsModal onClose={() => setShowCashout(false)} />}
     </div>
   );
 };
