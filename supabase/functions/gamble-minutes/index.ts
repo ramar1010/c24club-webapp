@@ -249,7 +249,7 @@ Deno.serve(async (req) => {
       // Apply the outcome atomically
       if (outcome === "jackpot") {
         // Deduct wager from total, add jackpot cash value to gifted_minutes
-        const jackpotMinutes = Math.floor(Number(settings.jackpot_amount) / 0.35);
+        const jackpotMinutes = Math.floor(Number(settings.jackpot_amount) / ratePerMinute);
         await supabase.from("member_minutes").update({
           total_minutes: totalMinutes - amount + jackpotMinutes,
           gifted_minutes: giftedMinutes + jackpotMinutes,
