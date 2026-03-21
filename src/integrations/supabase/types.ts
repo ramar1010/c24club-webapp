@@ -1019,6 +1019,56 @@ export type Database = {
         }
         Relationships: []
       }
+      jackpot_payouts: {
+        Row: {
+          created_at: string
+          id: string
+          jackpot_amount: number
+          minutes_credited: number
+          paypal_email: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wager_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jackpot_amount?: number
+          minutes_credited?: number
+          paypal_email?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wager_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jackpot_amount?: number
+          minutes_credited?: number
+          paypal_email?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wager_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jackpot_payouts_wager_id_fkey"
+            columns: ["wager_id"]
+            isOneToOne: false
+            referencedRelation: "minute_wagers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_interests: {
         Row: {
           created_at: string
