@@ -24,7 +24,11 @@ import rewardHeartbag from "@/assets/quickstart/reward-heartbag.jpg";
 import rewardShorts from "@/assets/quickstart/reward-shorts.jpg";
 import paypalLogo from "@/assets/quickstart/paypal-logo.png";
 
-// Slide 4 - Beware
+// Slide 4 - Challenges
+import trophyIcon from "@/assets/quickstart/trophy-icon.png";
+import cashIcon from "@/assets/quickstart/cash-icon.png";
+
+// Slide 5 - Beware
 import noFrame1 from "@/assets/quickstart/no-frame1.jpg";
 import noFrame2 from "@/assets/quickstart/no-frame2.png";
 import fastForward from "@/assets/quickstart/fast-forward.png";
