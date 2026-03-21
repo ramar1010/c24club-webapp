@@ -188,14 +188,33 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
     return null;
   };
 
-  // Build slides: referral first, then challenges
+  // Build slides: bestie first, then other challenges, then referral last
+  const sortedChallenges = [...visibleChallenges].sort((a: any, b: any) => {
+    if (a.slug === "bestie-challenge") return -1;
+    if (b.slug === "bestie-challenge") return 1;
+    return 0;
+  });
+
   const allSlides = [
+    ...sortedChallenges.map((c: any) => ({ type: "challenge" as const, id: c.id, challenge: c })),
     { type: "referral" as const, id: "refer-earn" },
-    ...visibleChallenges.map((c: any) => ({ type: "challenge" as const, id: c.id, challenge: c })),
   ];
+
+  // Calculate total cash value of all visible challenges
+  const totalCashValue = visibleChallenges.reduce((sum: number, c: any) => {
+    if (c.reward_type === "cash") return sum + (c.reward_amount || 0);
+    return sum;
+  }, 0);
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
+      {totalCashValue > 0 && (
+        <p className="text-center mb-0.5">
+          <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
+            💰 ${totalCashValue} in challenges available! 💰
+          </span>
+        </p>
+      )}
       <p className="text-xs text-neutral-400 text-center mb-1 tracking-wide flex items-center justify-center gap-1">
         <span className="inline-block text-base animate-[float_2s_ease-in-out_infinite]">💵</span>
         <span className="inline-block text-base animate-[float_2.4s_ease-in-out_0.4s_infinite]">💰</span>
