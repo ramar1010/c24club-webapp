@@ -1164,7 +1164,7 @@ const VideoCallPage = () => {
           }
             <video ref={remoteVideoRef} autoPlay playsInline
           className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
-            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode &&
+            {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
