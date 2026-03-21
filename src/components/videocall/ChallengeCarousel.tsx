@@ -196,10 +196,12 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
-      <p className="text-[10px] text-neutral-400 text-center mb-1 tracking-wide">
-        <span className="inline-block animate-bounce" style={{ animationDuration: '1.5s' }}>💰</span>
-        {' '}Swipe left and right to earn doing challenges!{' '}
-        <span className="inline-block animate-bounce" style={{ animationDuration: '1.5s', animationDelay: '0.3s' }}>💰</span>
+      <p className="text-[10px] text-neutral-400 text-center mb-1 tracking-wide flex items-center justify-center gap-1">
+        <span className="inline-block animate-[float_2s_ease-in-out_infinite]">💵</span>
+        <span className="inline-block animate-[float_2.4s_ease-in-out_0.4s_infinite]">💰</span>
+        <span>Swipe left and right to earn doing challenges!</span>
+        <span className="inline-block animate-[float_2.2s_ease-in-out_0.2s_infinite]">🤑</span>
+        <span className="inline-block animate-[float_2.6s_ease-in-out_0.6s_infinite]">💸</span>
       </p>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-2">
