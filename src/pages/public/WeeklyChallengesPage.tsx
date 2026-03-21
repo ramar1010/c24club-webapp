@@ -321,6 +321,18 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
   const storageKey = `${challenge.slug}_minutes`;
   const startedKey = `${challenge.slug}_started`;
 
+  // Poll localStorage every 3s so the timer updates live
+  const [savedMins, setSavedMins] = useState(() => parseInt(localStorage.getItem(storageKey) || "0", 10));
+  const [started, setStarted] = useState(() => localStorage.getItem(startedKey) === "true");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSavedMins(parseInt(localStorage.getItem(storageKey) || "0", 10));
+      setStarted(localStorage.getItem(startedKey) === "true");
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [storageKey, startedKey]);
+
   if (submission) {
     const mStatus = statusConfig[submission.status];
     return (
@@ -343,12 +355,12 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
     );
   }
 
-  const started = localStorage.getItem(startedKey) === "true";
   if (!started) {
     return (
       <button
         onClick={() => {
           localStorage.setItem(startedKey, "true");
+          setStarted(true);
           toast.success(`${challenge.title} activated!`, { description: "Your call timer will track automatically." });
         }}
         className={`relative w-full mt-4 bg-white/10 hover:bg-white/15 border border-white/20 ${theme.accentText} font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2`}
@@ -358,7 +370,6 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
     );
   }
 
-  const savedMins = parseInt(localStorage.getItem(storageKey) || "0", 10);
   const pct = Math.min(100, (savedMins / targetMins) * 100);
   return (
     <div className="relative mt-3">
