@@ -62,7 +62,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
       <div className="w-full flex items-center pt-3 pb-2">
-        <button onClick={onClose} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+        <button onClick={handleBack} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
           <ChevronLeft className="w-7 h-7" />
           <span className="font-black text-sm tracking-wider">BACK</span>
         </button>
