@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { usePublicRewards, usePublicCategories } from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
-import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, RotateCw, CreditCard, Copy, Check } from "lucide-react";
+import { X, ArrowLeft, ChevronLeft, ChevronRight, Crown, Star, RotateCw, CreditCard, Copy, Check, DollarSign } from "lucide-react";
+import CashoutModal from "@/components/discover/CashoutModal";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -116,6 +117,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [showPaypalPrompt, setShowPaypalPrompt] = useState<any | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
+  const [showCashoutModal, setShowCashoutModal] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
