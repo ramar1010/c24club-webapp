@@ -5,12 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
   const handleBack = () => {
     if (onClose) {
@@ -136,6 +138,15 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
         )}
       </div>
 
+      {/* Cashout Button */}
+      <button
+        onClick={() => setShowCashout(true)}
+        className="w-full max-w-sm mt-6 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+      >
+        <DollarSign className="w-5 h-5" />
+        CASH OUT
+      </button>
+
       {/* Recent Referrals */}
       {data?.referrals?.length > 0 && (
         <div className="w-full max-w-sm mt-6">
@@ -166,6 +177,9 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
           </div>
         </div>
       )}
+
+      {/* Cashout Modal */}
+      {showCashout && <ChallengeEarningsModal onClose={() => setShowCashout(false)} onSuccess={() => setShowCashout(false)} />}
     </div>
   );
 };
