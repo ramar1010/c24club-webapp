@@ -222,7 +222,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
               <div key={challenge.id} className="flex-[0_0_85%] min-w-0 min-h-[68px]">
                 <button
                   onClick={onOpenChallenges}
-                  className={`w-full bg-gradient-to-r ${themeStyle.gradient} ${themeStyle.border} border rounded-xl ${themeStyle.glow} p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden`}
+                  className={`w-full h-full bg-gradient-to-r ${themeStyle.gradient} ${themeStyle.border} border rounded-xl ${themeStyle.glow} p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse pointer-events-none" />
                   <div className="text-3xl shrink-0">{emoji}</div>
