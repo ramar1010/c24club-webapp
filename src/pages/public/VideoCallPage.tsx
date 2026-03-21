@@ -14,7 +14,7 @@ import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
-import { useNsfwDetection } from "@/hooks/useNsfwDetection";
+import { usePreBlur } from "@/hooks/usePreBlur";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
