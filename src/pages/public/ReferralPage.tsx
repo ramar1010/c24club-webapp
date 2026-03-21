@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Copy, Check, UserPlus, DollarSign, Clock, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -6,9 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+
+  const handleBack = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
+  };
 
   const { data, refetch } = useQuery({
     queryKey: ["my_referrals", user?.id],
@@ -52,7 +62,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-8">
       <div className="w-full flex items-center pt-3 pb-2">
-        <button onClick={onClose} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+        <button onClick={handleBack} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
           <ChevronLeft className="w-7 h-7" />
           <span className="font-black text-sm tracking-wider">BACK</span>
         </button>
