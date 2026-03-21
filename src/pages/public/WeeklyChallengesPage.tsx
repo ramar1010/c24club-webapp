@@ -575,7 +575,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
             } catch { return false; }
           })();
           const isAutoTracked = challenge.challenge_type === "auto" && challenge.target_minutes && !isSpeedConnect;
-          const isManual = challenge.challenge_type === "manual" && !isBlueEyes && !isBoyfriend;
+          const isManual = challenge.challenge_type === "manual" && !isBlueEyes && !isBoyfriend && !isBestie;
 
           return (
             <div
