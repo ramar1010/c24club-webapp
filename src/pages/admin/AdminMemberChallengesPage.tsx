@@ -116,6 +116,17 @@ const AdminMemberChallengesPage = () => {
       })
       .eq("id", submission.id);
 
+    // Send approval email
+    if (status === "approved") {
+      supabase.functions.invoke("challenge-approved-email", {
+        body: {
+          submissionId: submission.id,
+          challengeTitle: submission.weekly_challenges?.title,
+          rewardText: formatReward(submission.weekly_challenges),
+        },
+      }).catch((err: any) => console.error("Failed to send approval email:", err));
+    }
+
     toast.success(
       status === "approved"
         ? `Approved! Reward credited to ${getMemberName(submission.user_id)}`
