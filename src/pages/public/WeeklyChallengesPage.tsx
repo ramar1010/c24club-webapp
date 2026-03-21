@@ -566,6 +566,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           const isBestie = challenge.slug === "bestie-challenge";
           const isBoyfriend = challenge.slug === "boyfriend-challenge";
           const isBlueEyes = challenge.slug === "blue-eyes-hunt";
+          const isMarathon = challenge.slug === "marathon-talk";
           const isSpeedConnect = (() => {
             try {
               const action = JSON.parse(challenge.auto_track_action || "null");
@@ -605,6 +606,34 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   alt="Blue eye close-up"
                   className="absolute -right-3 -top-8 w-16 sm:w-24 h-auto z-10 rounded-xl border-2 border-cyan-400/50 drop-shadow-[0_4px_16px_rgba(34,211,238,0.5)] rotate-[5deg] pointer-events-none select-none animate-[scale-pulse_3s_ease-in-out_infinite] object-cover"
                 />
+              )}
+
+              {/* Marathon Talk "yap" fountain */}
+              {isMarathon && (
+                <div className="absolute -top-4 right-4 sm:right-8 pointer-events-none select-none z-10 w-20 h-16 overflow-visible">
+                  {[
+                    { x: 0, delay: 0, size: "text-[10px]" },
+                    { x: 14, delay: 0.5, size: "text-xs" },
+                    { x: -8, delay: 1.1, size: "text-[9px]" },
+                    { x: 22, delay: 1.7, size: "text-[11px]" },
+                    { x: 6, delay: 0.3, size: "text-[10px]" },
+                    { x: -4, delay: 2.0, size: "text-xs" },
+                    { x: 18, delay: 0.8, size: "text-[9px]" },
+                    { x: 10, delay: 1.4, size: "text-[10px]" },
+                  ].map((yap, i) => (
+                    <span
+                      key={i}
+                      className={`absolute font-black ${yap.size} text-emerald-400/80 italic tracking-tight animate-[yap-rise_2.5s_ease-out_infinite]`}
+                      style={{
+                        left: `${yap.x + 10}px`,
+                        bottom: 0,
+                        animationDelay: `${yap.delay}s`,
+                      }}
+                    >
+                      yap
+                    </span>
+                  ))}
+                </div>
               )}
               {emojis.map((emoji: string, i: number) => (
                 <span
