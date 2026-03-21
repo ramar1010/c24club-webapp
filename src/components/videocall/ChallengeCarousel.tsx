@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronRight, Copy, Check } from "lucide-react";
+import { ChevronRight, Copy, Check, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import ChallengeMinutesOverlay from "@/components/videocall/ChallengeMinutesOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
