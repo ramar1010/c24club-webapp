@@ -27,6 +27,7 @@ import {
   BarChart3,
   Camera,
   MousePointerClick,
+  Dices,
   type LucideIcon,
 } from "lucide-react";
 
@@ -200,6 +201,14 @@ export const adminMenu: MenuItem[] = [
     title: "Legendary Items CashOut",
     submenu: [
       { key: "legendary-cashout", label: "Legendary Items Cashout", path: "/admin/legendary-cashout" },
+    ],
+  },
+  {
+    key: "jackpot-payouts",
+    icon: Dices,
+    title: "Jackpot Payouts",
+    submenu: [
+      { key: "jackpot-payouts", label: "Jackpot Payouts", path: "/admin/jackpot-payouts" },
     ],
   },
   {

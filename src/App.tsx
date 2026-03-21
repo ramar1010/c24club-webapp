@@ -54,6 +54,7 @@ const AdminGiftHistoryPage = lazy(() => import("@/pages/admin/AdminGiftHistoryPa
 const CameraUnlockSettingsPage = lazy(() => import("@/pages/admin/CameraUnlockSettingsPage"));
 const CameraUnlockSuccessPage = lazy(() => import("@/pages/public/CameraUnlockSuccessPage"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
+const AdminJackpotPayoutsPage = lazy(() => import("@/pages/admin/AdminJackpotPayoutsPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -147,6 +148,7 @@ const App = () => (
                 <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
                 <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
                 <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
+                <Route path="jackpot-payouts" element={<AdminJackpotPayoutsPage />} />
                 <Route path="gift-cards" element={<AdminGiftCardsPage />} />
                 <Route path="referrals" element={<AdminReferralsPage />} />
                 <Route path="referrals/invitations" element={<AdminReferralsPage />} />

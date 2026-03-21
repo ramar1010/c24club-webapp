@@ -278,13 +278,24 @@ Deno.serve(async (req) => {
       }
 
       // Record the wager
-      await supabase.from("minute_wagers").insert({
+      const { data: wagerRow } = await supabase.from("minute_wagers").insert({
         user_id: userId,
         wager_amount: amount,
         outcome,
         prize_type: prizeType,
         prize_amount: prizeAmount,
-      });
+      }).select("id").single();
+
+      // Auto-create pending payout for jackpot wins
+      if (outcome === "jackpot" && wagerRow) {
+        await supabase.from("jackpot_payouts").insert({
+          user_id: userId,
+          wager_id: wagerRow.id,
+          jackpot_amount: Number(settings.jackpot_amount),
+          minutes_credited: Math.floor(Number(settings.jackpot_amount) / ratePerMinute),
+          status: "pending",
+        });
+      }
 
       return new Response(
         JSON.stringify({
