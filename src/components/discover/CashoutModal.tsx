@@ -147,7 +147,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
         {/* Balance overview */}
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4 space-y-1.5">
           <div className="flex justify-between items-center">
-            <span className="text-white/50 text-xs">🎁 Your Gifted Balance</span>
+            <span className="text-white/50 text-xs">🎁 Your Gifted Minutes</span>
             <span className="text-emerald-400 font-bold text-sm">{giftedMinutes} min</span>
           </div>
           <div className="flex justify-between items-center">
