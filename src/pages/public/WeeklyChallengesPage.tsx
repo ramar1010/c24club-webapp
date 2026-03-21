@@ -588,6 +588,15 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 />
               )}
 
+              {/* Boyfriend cutout sticker */}
+              {isBoyfriend && (
+                <img
+                  src={boyfriendCutout}
+                  alt="Couple together"
+                  className="absolute -right-4 -top-10 w-20 sm:w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(251,113,133,0.5)] -rotate-[4deg] pointer-events-none select-none"
+                />
+              )}
+
               {/* Floating emojis */}
               {emojis.map((emoji: string, i: number) => (
                 <span

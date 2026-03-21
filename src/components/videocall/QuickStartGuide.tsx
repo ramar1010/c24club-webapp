@@ -193,14 +193,6 @@ const Slide4Visual = () => {
               {c.label}
             </span>
             <span className="text-emerald-400 text-[10px] font-black">{c.reward}</span>
-            {c.cutout && (
-              <img
-                src={c.cutout}
-                alt=""
-                className="absolute -top-10 -right-6 w-12 h-14 object-contain drop-shadow-lg rotate-6 z-30"
-                style={{ animation: `float 3s ease-in-out ${i * 0.3}s infinite` }}
-              />
-            )}
           </div>
         );
       })}
