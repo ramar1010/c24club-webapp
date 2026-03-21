@@ -54,12 +54,21 @@ serve(async (req) => {
       return null;
     }
 
-    const { data, error } = await anonClient.auth.getClaims(token);
-    if (error || !data?.claims?.sub) {
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (!claimsError && claimsData?.claims?.sub) {
+      return claimsData.claims.sub;
+    }
+
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
+    if (userError || !userData?.user?.id) {
+      console.error("[referral] auth failed", {
+        claimsError: claimsError?.message,
+        userError: userError?.message,
+      });
       return null;
     }
 
-    return data.claims.sub;
+    return userData.user.id;
   };
 
   try {
