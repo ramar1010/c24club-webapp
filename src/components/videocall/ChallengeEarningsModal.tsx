@@ -215,12 +215,11 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
               />
             </div>
 
-            {!canCashout && giftedMinutes < minCashout && (
+            {!canCashout && availableCash <= 0 && !hasPending && (
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
-                <p className="text-amber-400 text-sm font-bold">⚠️ Minimum not reached</p>
+                <p className="text-amber-400 text-sm font-bold">⚠️ No cash available</p>
                 <p className="text-white/50 text-sm mt-1">
-                  You need at least <span className="text-white font-bold">{minCashout} gifted minutes</span> to cash out.
-                  You currently have <span className="text-white font-bold">{giftedMinutes}</span>.
+                  Complete challenges with cash rewards to earn money you can cash out.
                 </p>
               </div>
             )}
