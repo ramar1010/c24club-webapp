@@ -224,12 +224,9 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
         // Track bestie invite if code exists in URL
         const bestieCode = new URLSearchParams(window.location.search).get("bestie");
         if (bestieCode && signUpData?.user?.id) {
-          supabase
-            .from("bestie_pairs")
-            .update({ invitee_id: signUpData.user.id, status: "active" })
-            .eq("invite_code", bestieCode)
-            .is("invitee_id", null)
-            .then(() => {});
+          supabase.functions.invoke("bestie-call", {
+            body: { action: "accept_invite", invite_code: bestieCode, user_id: signUpData.user.id },
+          }).catch((err) => console.error("Bestie accept failed:", err));
         }
         toast.success("Account created!");
         onClose();
