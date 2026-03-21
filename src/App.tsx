@@ -104,6 +104,7 @@ const App = () => (
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/earn-history" element={<EarnHistoryPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/referral" element={<ReferralPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/gift-success" element={<GiftSuccessPage />} />
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
