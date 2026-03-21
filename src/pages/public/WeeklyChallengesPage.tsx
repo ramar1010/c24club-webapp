@@ -655,7 +655,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Cashout CTA */}
       <button
-        onClick={() => navigate("/rewards")}
+        onClick={() => setShowCashout(true)}
         className="w-full max-w-md mt-8 relative overflow-hidden bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-orange-500/25 border border-amber-400/40 rounded-2xl py-4 px-6 shadow-[0_0_20px_rgba(245,158,11,0.25)] active:scale-[0.97] transition-transform"
       >
         <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(245,158,11,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
@@ -666,6 +666,19 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           </span>
         </div>
       </button>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={userMinutesData?.total_minutes ?? 0}
+          giftedMinutes={userMinutesData?.gifted_minutes ?? 0}
+          onSuccess={() => {
+            refetchMinutes();
+            queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
+          }}
+        />
+      )}
     </div>
   );
 };
