@@ -797,6 +797,34 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         })}
       </div>
 
+      {/* Challenge Minutes Card */}
+      <div className="w-full max-w-md mt-5">
+        <button
+          onClick={() => setShowGamble(true)}
+          className="w-full relative overflow-hidden bg-gradient-to-br from-yellow-600/25 via-amber-700/20 to-orange-900/30 border border-yellow-500/40 rounded-2xl p-5 shadow-[0_0_24px_rgba(234,179,8,0.25)] active:scale-[0.97] transition-transform text-left"
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(234,179,8,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite] pointer-events-none" />
+          <div className="relative flex items-center gap-4">
+            <div className="text-4xl">🎰</div>
+            <div className="flex-1">
+              <h3 className="font-black text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
+                CHALLENGE MINUTES
+              </h3>
+              <p className="text-xs text-neutral-400 mt-0.5">Wager earned minutes for a chance to win up to $200 cash!</p>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-[10px] font-bold bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">🔥 2x MINUTES</span>
+                <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">💵 CASH</span>
+                <span className="text-[10px] font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">💀 RISK</span>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-2xl font-black text-yellow-300 drop-shadow-[0_0_12px_rgba(234,179,8,0.5)]">$200</span>
+              <span className="block text-[9px] font-bold text-yellow-500/60 tracking-widest">JACKPOT</span>
+            </div>
+          </div>
+        </button>
+      </div>
+
       {/* Redeem Actions */}
       <div className="w-full max-w-md mt-8 space-y-3">
         <p className="text-center text-neutral-500 text-[10px] font-bold uppercase tracking-widest">Redeem Your Earnings</p>
