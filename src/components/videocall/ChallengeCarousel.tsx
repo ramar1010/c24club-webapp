@@ -155,6 +155,12 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
       if (hasPair) return "pending";
       return null;
     }
+    if (challenge.slug === "boyfriend-challenge") {
+      if (bfCompleted) return "approved";
+      if (bfActive) return "active";
+      if (hasBfPair) return "pending";
+      return null;
+    }
     const sub = submissions.find((s: any) => s.challenge_id === challenge.id);
     return sub?.status || null;
   };
