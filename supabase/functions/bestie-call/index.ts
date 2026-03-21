@@ -17,7 +17,59 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Authenticate user
+    const { action, ...body } = await req.json();
+
+    // --- ACCEPT INVITE (no auth required — called right after signup) ---
+    if (action === "accept_invite") {
+      const { invite_code, user_id } = body;
+      if (!invite_code || !user_id) {
+        return new Response(JSON.stringify({ error: "Missing invite_code or user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: pair, error: findErr } = await supabase
+        .from("bestie_pairs")
+        .select("id, inviter_id, invitee_id")
+        .eq("invite_code", invite_code)
+        .is("invitee_id", null)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (findErr || !pair) {
+        return new Response(JSON.stringify({ error: "Invalid or already used invite" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Prevent self-pairing
+      if (pair.inviter_id === user_id) {
+        return new Response(JSON.stringify({ error: "Cannot accept your own invite" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: updateErr } = await supabase
+        .from("bestie_pairs")
+        .update({ invitee_id: user_id, status: "active" })
+        .eq("id", pair.id);
+
+      if (updateErr) {
+        return new Response(JSON.stringify({ error: updateErr.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ ok: true, pair_id: pair.id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- All other actions require authentication ---
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -36,14 +88,10 @@ serve(async (req) => {
       });
     }
 
-    const { action, ...body } = await req.json();
-
     // --- LOG CALL TIME ---
-    // Called periodically during a bestie call to track duration
     if (action === "log_time") {
       const { pair_id, seconds_to_add } = body;
 
-      // Verify user is part of this pair
       const { data: pair } = await supabase
         .from("bestie_pairs")
         .select("*")
@@ -66,7 +114,6 @@ serve(async (req) => {
         });
       }
 
-      // Upsert daily log
       const today = new Date().toISOString().split("T")[0];
       const { data: existing } = await supabase
         .from("bestie_daily_logs")
@@ -115,7 +162,6 @@ serve(async (req) => {
     }
 
     // --- COMPLETE DAY ---
-    // Admin or auto: mark a day as verified & bump days_completed
     if (action === "verify_day") {
       const { pair_id, day_number } = body;
 
@@ -125,7 +171,6 @@ serve(async (req) => {
         .eq("pair_id", pair_id)
         .eq("day_number", day_number);
 
-      // Check if all 3 days are done
       const newDaysCompleted = day_number;
       const updateData: any = { days_completed: newDaysCompleted };
       if (newDaysCompleted >= 3) {
