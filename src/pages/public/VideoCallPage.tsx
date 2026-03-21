@@ -980,14 +980,7 @@ const VideoCallPage = () => {
             <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20 absolute inset-0" />
             }
               <video ref={remoteVideoRef} autoPlay playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
-              {isNsfwBlurred && callState === "connected" &&
-            <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-4xl">🚫</span>
-                  <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
-                  <p className="text-red-400 text-xs font-bold mt-1">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
-                </div>
-            }
+            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
               {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode &&
             <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-4xl">📵</span>
