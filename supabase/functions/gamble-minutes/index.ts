@@ -187,6 +187,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Fetch cashout rate from settings
+      const { data: cashoutSettings } = await supabase
+        .from("cashout_settings")
+        .select("rate_per_minute")
+        .limit(1)
+        .maybeSingle();
+      const ratePerMinute = Number(cashoutSettings?.rate_per_minute ?? 0.12);
+
       // Check user has enough minutes (must be from earned minutes, not gifted)
       const { data: mm } = await supabase
         .from("member_minutes")
@@ -227,10 +235,10 @@ Deno.serve(async (req) => {
         prizeType = "minutes";
         prizeAmount = amount * 2;
       } else if (roll < jackpotChance + doubleChance + cashChance) {
-        // CASH WIN — wager value converted to cash at $0.35/min, added to gifted_minutes
+        // CASH WIN — wager value converted to cash at DB rate, added to gifted_minutes
         outcome = "cash_win";
         prizeType = "cash";
-        prizeAmount = parseFloat((amount * 0.35).toFixed(2));
+        prizeAmount = parseFloat((amount * ratePerMinute).toFixed(2));
       } else {
         // LOSE — lose the wagered minutes
         outcome = "lose";
@@ -241,7 +249,7 @@ Deno.serve(async (req) => {
       // Apply the outcome atomically
       if (outcome === "jackpot") {
         // Deduct wager from total, add jackpot cash value to gifted_minutes
-        const jackpotMinutes = Math.floor(Number(settings.jackpot_amount) / 0.35);
+        const jackpotMinutes = Math.floor(Number(settings.jackpot_amount) / ratePerMinute);
         await supabase.from("member_minutes").update({
           total_minutes: totalMinutes - amount + jackpotMinutes,
           gifted_minutes: giftedMinutes + jackpotMinutes,
@@ -254,7 +262,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         }).eq("user_id", userId);
       } else if (outcome === "cash_win") {
-        // Deduct wager from total, convert to gifted_minutes at $0.35/min
+        // Deduct wager from total, convert to gifted_minutes at DB rate
         const cashMinutes = amount; // same amount but now cashable
         await supabase.from("member_minutes").update({
           total_minutes: totalMinutes, // net zero on total (deduct wager, add back as gifted)
