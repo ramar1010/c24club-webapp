@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
+import { useBoyfriendChallenge } from "@/hooks/useBoyfriendChallenge";
 import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 import ChallengeSuggestionForm from "@/components/videocall/ChallengeSuggestionForm";
 
@@ -153,6 +154,109 @@ const BestieProgress = () => {
                     <div className="h-full bg-fuchsia-500/60 rounded-full transition-all" style={{ width: `${Math.min(100, (mins / 30) * 100)}%` }} />
                   )}
                   {completed && <div className="h-full bg-fuchsia-500 rounded-full w-full" />}
+                </div>
+                <span className="text-[10px] text-neutral-500 font-bold">
+                  {completed ? "✅" : inProgress ? `${mins}m` : ""} DAY {day}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+/* ─── Boyfriend Challenge Progress Component ─── */
+const BoyfriendProgress = () => {
+  const {
+    boyfriendPair, dailyLogs, generating, copied, boyfriendLink,
+    hasPair, pairActive, pairCompleted, waitingForBoyfriend, hasProofSelfie,
+    generateInviteCode, copyLink, uploadProofSelfie,
+  } = useBoyfriendChallenge();
+
+  const handleSelfieUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadProofSelfie(file);
+  };
+
+  if (!hasPair) {
+    return (
+      <div className="relative mt-3 space-y-2">
+        <button
+          onClick={generateInviteCode}
+          disabled={generating}
+          className="w-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 font-black text-sm py-2.5 rounded-full transition-colors active:scale-[0.97] flex items-center justify-center gap-2"
+        >
+          {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+          {generating ? "CREATING..." : "CREATE BOYFRIEND INVITE LINK"}
+        </button>
+      </div>
+    );
+  }
+
+  if (waitingForBoyfriend) {
+    return (
+      <div className="relative mt-3 space-y-3">
+        <div className="bg-black/30 border border-rose-500/30 rounded-xl p-3">
+          <p className="text-[11px] text-rose-300 font-bold mb-2">💕 SHARE THIS LINK WITH YOUR BOYFRIEND:</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-black/40 rounded-lg px-3 py-2 text-xs text-neutral-300 truncate font-mono border border-white/10">
+              {boyfriendLink}
+            </div>
+            <button
+              onClick={copyLink}
+              className="shrink-0 bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 p-2 rounded-lg transition-colors active:scale-[0.95]"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-rose-300" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-neutral-500 mt-2">
+            ⏳ Waiting for your boyfriend to sign up with this link...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (pairActive || pairCompleted) {
+    return (
+      <div className="relative mt-3 space-y-3">
+        {/* Proof selfie upload */}
+        {!hasProofSelfie && !pairCompleted && (
+          <div className="bg-black/30 border border-rose-500/30 rounded-xl p-3">
+            <p className="text-[11px] text-rose-300 font-bold mb-2">📸 UPLOAD DATING PROOF SELFIE:</p>
+            <label className="w-full flex items-center justify-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 font-bold text-xs py-2 rounded-lg cursor-pointer transition-colors">
+              <Camera className="w-3.5 h-3.5" />
+              UPLOAD SELFIE
+              <input type="file" accept="image/*" className="hidden" onChange={handleSelfieUpload} />
+            </label>
+            <p className="text-[10px] text-neutral-500 mt-1.5">Upload a photo of you and your boyfriend together</p>
+          </div>
+        )}
+        {hasProofSelfie && (
+          <div className="flex items-center gap-2 text-[11px] text-green-400 font-bold">
+            <CheckCircle className="w-3.5 h-3.5" /> Dating selfie uploaded!
+          </div>
+        )}
+
+        <p className="text-[11px] text-rose-300 font-bold">
+          {pairCompleted ? "🎉 CHALLENGE COMPLETE! $35 dinner date gift card earned!" : "💕 CHALLENGE ACTIVE — Video chat with your boyfriend daily!"}
+        </p>
+        <div className="flex gap-2">
+          {[1, 2].map((day) => {
+            const log = dailyLogs.find((l: any) => l.day_number === day);
+            const completed = log?.verified;
+            const inProgress = log && !log.verified;
+            const mins = log ? Math.floor((log.total_seconds || 0) / 60) : 0;
+            return (
+              <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                <div className={`w-full h-2.5 rounded-full overflow-hidden ${completed ? "bg-rose-500" : "bg-neutral-800"}`}>
+                  {inProgress && (
+                    <div className="h-full bg-rose-500/60 rounded-full transition-all" style={{ width: `${Math.min(100, (mins / 30) * 100)}%` }} />
+                  )}
+                  {completed && <div className="h-full bg-rose-500 rounded-full w-full" />}
                 </div>
                 <span className="text-[10px] text-neutral-500 font-bold">
                   {completed ? "✅" : inProgress ? `${mins}m` : ""} DAY {day}
@@ -458,6 +562,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           const emojis = EMOJI_MAP[themeKey] || ["🎯", "⭐", "🔥"];
           const Icon = theme.icon;
           const isBestie = challenge.slug === "bestie-challenge";
+          const isBoyfriend = challenge.slug === "boyfriend-challenge";
           const isBlueEyes = challenge.slug === "blue-eyes-hunt";
           const isSpeedConnect = (() => {
             try {
@@ -466,7 +571,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
             } catch { return false; }
           })();
           const isAutoTracked = challenge.challenge_type === "auto" && challenge.target_minutes && !isSpeedConnect;
-          const isManual = challenge.challenge_type === "manual" && !isBlueEyes;
+          const isManual = challenge.challenge_type === "manual" && !isBlueEyes && !isBoyfriend;
 
           return (
             <div
@@ -536,6 +641,9 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
               {/* Bestie-specific */}
               {isBestie && <BestieProgress />}
+
+              {/* Boyfriend-specific */}
+              {challenge.slug === "boyfriend-challenge" && <BoyfriendProgress />}
 
               {/* Blue Eyes Hunt */}
               {isBlueEyes && (() => {
