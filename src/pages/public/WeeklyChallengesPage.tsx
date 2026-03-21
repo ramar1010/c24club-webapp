@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
-import CashoutModal from "@/components/discover/CashoutModal";
+import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 
 /* ─── Theme Presets ─── */
 const THEME_MAP: Record<string, {
@@ -400,19 +400,6 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
-  // Fetch user minutes for cashout modal
-  const { data: userMinutesData, refetch: refetchMinutes } = useQuery({
-    queryKey: ["challenge_user_minutes", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data || { total_minutes: 0, gifted_minutes: 0 };
-    },
-  });
 
   const getSubmission = (challengeId: string) => {
     return submissions.find((s: any) => s.challenge_id === challengeId);
@@ -686,14 +673,11 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       </div>
 
-      {/* Cashout Modal */}
+      {/* Challenge Earnings Modal */}
       {showCashout && (
-        <CashoutModal
+        <ChallengeEarningsModal
           onClose={() => setShowCashout(false)}
-          currentMinutes={userMinutesData?.total_minutes ?? 0}
-          giftedMinutes={userMinutesData?.gifted_minutes ?? 0}
           onSuccess={() => {
-            refetchMinutes();
             queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
           }}
         />
