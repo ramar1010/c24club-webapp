@@ -150,6 +150,7 @@ const App = () => (
                 <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
                 <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
                 <Route path="jackpot-payouts" element={<AdminJackpotPayoutsPage />} />
+                <Route path="wager-settings" element={<AdminWagerSettingsPage />} />
                 <Route path="gift-cards" element={<AdminGiftCardsPage />} />
                 <Route path="referrals" element={<AdminReferralsPage />} />
                 <Route path="referrals/invitations" element={<AdminReferralsPage />} />
