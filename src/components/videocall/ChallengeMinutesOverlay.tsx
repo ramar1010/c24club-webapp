@@ -26,6 +26,7 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
   const { data: status, refetch: refetchStatus } = useQuery({
     queryKey: ["wager_status", user?.id],
