@@ -1171,7 +1171,7 @@ const VideoCallPage = () => {
                 <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
               </div>
           }
-            {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred &&
+            {localBlackScreen && callState === "connected" && !partnerBlackScreen &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">🙈</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER HIDDEN</p>
