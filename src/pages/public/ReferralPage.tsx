@@ -29,7 +29,16 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
       const { data, error } = await supabase.functions.invoke("referral", {
         body: { action: "my_referrals" },
       });
-      if (error) throw error;
+      if (error) {
+        return {
+          code: null,
+          referrals: [],
+          totalEarned: 0,
+          pendingEarnings: 0,
+          totalReferrals: 0,
+          engagedCount: 0,
+        };
+      }
       return data;
     },
   });

@@ -18,9 +18,12 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
     queryKey: ["growth_referral", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.functions.invoke("referral", {
+      const { data, error } = await supabase.functions.invoke("referral", {
         body: { action: "my_referrals" },
       });
+      if (error) {
+        return { code: null, referrals: [], totalEarned: 0 };
+      }
       return data;
     },
   });
