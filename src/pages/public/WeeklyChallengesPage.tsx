@@ -674,6 +674,8 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       </div>
 
+      <ChallengeSuggestionForm />
+
       {/* Challenge Earnings Modal */}
       {showCashout && (
         <ChallengeEarningsModal
