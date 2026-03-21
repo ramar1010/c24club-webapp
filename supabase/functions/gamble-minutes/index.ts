@@ -286,13 +286,20 @@ Deno.serve(async (req) => {
         prize_amount: prizeAmount,
       }).select("id").single();
 
-      // Auto-create pending payout for jackpot wins
-      if (outcome === "jackpot" && wagerRow) {
+      // Auto-create pending payout for jackpot and cash wins
+      if ((outcome === "jackpot" || outcome === "cash_win") && wagerRow) {
+        const payoutAmount = outcome === "jackpot"
+          ? Number(settings.jackpot_amount)
+          : prizeAmount; // cash value of the cash_win
+        const minutesCredited = outcome === "jackpot"
+          ? Math.floor(Number(settings.jackpot_amount) / ratePerMinute)
+          : amount; // the wager amount converted to cashable
+
         await supabase.from("jackpot_payouts").insert({
           user_id: userId,
           wager_id: wagerRow.id,
-          jackpot_amount: Number(settings.jackpot_amount),
-          minutes_credited: Math.floor(Number(settings.jackpot_amount) / ratePerMinute),
+          jackpot_amount: payoutAmount,
+          minutes_credited: minutesCredited,
           status: "pending",
         });
       }
