@@ -189,59 +189,7 @@ const VideoCallPage = () => {
     isActive: callState !== "idle" && !(isFemale && voiceMode)
   });
 
-  const NSFW_BAN_THRESHOLD = 5;
-  const nsfwTargetUserId =
-  callState === "connected" && currentPartnerId && currentPartnerId !== memberId ?
-  currentPartnerId :
-  "anonymous";
-
-  const { isNsfwBlurred, nsfwStrikes } = useNsfwDetection({
-    remoteVideoRef,
-    isConnected: callState === "connected",
-    userId: nsfwTargetUserId,
-    viewerUserId: memberId
-  });
-
-  const banAttemptPartnerRef = useRef<string | null>(null);
-
-  // Auto-ban the offending remote user exactly when strike threshold is reached.
-  useEffect(() => {
-    if (!currentPartnerId || currentPartnerId === memberId) {
-      banAttemptPartnerRef.current = null;
-      return;
-    }
-
-    const targetUserId = currentPartnerId;
-
-    if (nsfwStrikes < NSFW_BAN_THRESHOLD) {
-      if (banAttemptPartnerRef.current === targetUserId) {
-        banAttemptPartnerRef.current = null;
-      }
-      return;
-    }
-
-    if (banAttemptPartnerRef.current === targetUserId) return;
-    banAttemptPartnerRef.current = targetUserId;
-
-    const banUser = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId }
-        });
-
-        if (error) {
-          banAttemptPartnerRef.current = null;
-          throw error;
-        }
-
-        console.log("[NSFW] Ban result:", data);
-      } catch (err) {
-        console.error("[NSFW] Failed to ban offending user:", err);
-      }
-    };
-
-    banUser();
-  }, [nsfwStrikes, currentPartnerId, memberId]);
+  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId);
 
   const anchorEarning = useAnchorEarning({
     userId: memberId,
