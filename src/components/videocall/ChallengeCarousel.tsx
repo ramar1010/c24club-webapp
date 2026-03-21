@@ -213,6 +213,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
 
   const allSlides = [
     ...sortedChallenges.map((c: any) => ({ type: "challenge" as const, id: c.id, challenge: c })),
+    { type: "gamble" as const, id: "challenge-minutes" },
     { type: "referral" as const, id: "refer-earn" },
   ];
 
