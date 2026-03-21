@@ -94,13 +94,10 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
     .filter((h: any) => h.status === "approved" || h.status === "paid")
     .reduce((sum: number, h: any) => sum + Number(h.cash_amount), 0);
 
-  const giftedMinutes = minutesData?.gifted_minutes ?? 0;
-  const ratePerMinute = settings?.rate_per_minute ?? 0.35;
-  const availableCash = Number((giftedMinutes * ratePerMinute).toFixed(2));
+  const availableCash = Number((totalEarned - totalCashedOut).toFixed(2));
 
   const hasPending = cashoutHistory.some((h: any) => h.status === "pending");
-  const minCashout = settings?.min_cashout_minutes ?? 100;
-  const canCashout = giftedMinutes >= minCashout && !hasPending && availableCash > 0;
+  const canCashout = !hasPending && availableCash > 0;
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
