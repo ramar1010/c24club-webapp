@@ -235,10 +235,10 @@ Deno.serve(async (req) => {
         prizeType = "minutes";
         prizeAmount = amount * 2;
       } else if (roll < jackpotChance + doubleChance + cashChance) {
-        // CASH WIN — wager value converted to cash at $0.35/min, added to gifted_minutes
+        // CASH WIN — wager value converted to cash at DB rate, added to gifted_minutes
         outcome = "cash_win";
         prizeType = "cash";
-        prizeAmount = parseFloat((amount * 0.35).toFixed(2));
+        prizeAmount = parseFloat((amount * ratePerMinute).toFixed(2));
       } else {
         // LOSE — lose the wagered minutes
         outcome = "lose";
