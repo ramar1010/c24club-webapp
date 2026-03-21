@@ -19,7 +19,7 @@ export function useNsfwDetection({
   viewerUserId,
   checkIntervalMs = 5000,
   nudityThreshold = 0.85,
-  maxStrikes = 5,
+  maxStrikes = 3,
   strikeCooldownMs = 30000,
 }: UseNsfwDetectionOptions) {
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
