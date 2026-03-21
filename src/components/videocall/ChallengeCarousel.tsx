@@ -170,6 +170,10 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
       if (!hasPair) return null;
       return `${dailyLogs.length}/3 days`;
     }
+    if (challenge.slug === "boyfriend-challenge") {
+      if (!hasBfPair) return null;
+      return `${bfLogs.length}/2 days`;
+    }
     // Speed connect progress from localStorage
     try {
       const action = JSON.parse(challenge.auto_track_action || "null");
