@@ -10,6 +10,7 @@ const challengeTypes = [
   { value: "auto_chat_users", label: "Auto: Chat with N Users" },
   { value: "auto_minutes", label: "Auto: Earn N Minutes" },
   { value: "auto_referral", label: "Auto: Refer N Users" },
+  { value: "auto_speed_connect", label: "Auto: Speed Connect (N people in X min)" },
 ];
 
 const rewardTypes = [
