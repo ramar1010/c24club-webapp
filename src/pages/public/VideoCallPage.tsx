@@ -189,7 +189,7 @@ const VideoCallPage = () => {
     isActive: callState !== "idle" && !(isFemale && voiceMode)
   });
 
-  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId);
+  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId, 4000);
 
   const anchorEarning = useAnchorEarning({
     userId: memberId,
