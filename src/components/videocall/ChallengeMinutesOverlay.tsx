@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 const WAGER_TIERS = [10, 25, 50, 100];
 
@@ -319,8 +319,10 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
 
       {/* Cashout Modal */}
       {showCashout && (
-        <ChallengeEarningsModal
+        <CashoutModal
           onClose={() => setShowCashout(false)}
+          currentMinutes={status?.total_minutes ?? 0}
+          giftedMinutes={status?.gifted_minutes ?? 0}
           onSuccess={() => {
             setShowCashout(false);
             refetchStatus();
