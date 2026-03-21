@@ -562,6 +562,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           const emojis = EMOJI_MAP[themeKey] || ["🎯", "⭐", "🔥"];
           const Icon = theme.icon;
           const isBestie = challenge.slug === "bestie-challenge";
+          const isBoyfriend = challenge.slug === "boyfriend-challenge";
           const isBlueEyes = challenge.slug === "blue-eyes-hunt";
           const isSpeedConnect = (() => {
             try {
@@ -570,7 +571,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
             } catch { return false; }
           })();
           const isAutoTracked = challenge.challenge_type === "auto" && challenge.target_minutes && !isSpeedConnect;
-          const isManual = challenge.challenge_type === "manual" && !isBlueEyes;
+          const isManual = challenge.challenge_type === "manual" && !isBlueEyes && !isBoyfriend;
 
           return (
             <div
