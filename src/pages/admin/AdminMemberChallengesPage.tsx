@@ -99,12 +99,36 @@ const AdminMemberChallengesPage = () => {
   };
 
   const updateStatus = async (submission: any, status: string) => {
-    // If approving, credit the reward first
+    // If approving, check if this is a multi-snap challenge (e.g. Blue Eyes Hunt)
+    // Only credit reward when all required snaps are approved
     if (status === "approved") {
-      const credited = await creditReward(submission);
-      if (!credited) {
-        toast.error("Failed to credit reward — submission not updated");
-        return;
+      const challenge = submission.weekly_challenges;
+      const isBlueEyes = challenge?.slug === "blue-eyes-hunt";
+
+      if (isBlueEyes) {
+        // Count how many OTHER snaps for this challenge+user are already approved
+        const otherApproved = submissions.filter(
+          (s: any) =>
+            s.id !== submission.id &&
+            s.challenge_id === submission.challenge_id &&
+            s.user_id === submission.user_id &&
+            s.status === "approved"
+        );
+        // Only credit reward when this is the 2nd approved snap (both done)
+        if (otherApproved.length >= 1) {
+          const credited = await creditReward(submission);
+          if (!credited) {
+            toast.error("Failed to credit reward — submission not updated");
+            return;
+          }
+        }
+        // If this is the 1st snap, approve without crediting reward yet
+      } else {
+        const credited = await creditReward(submission);
+        if (!credited) {
+          toast.error("Failed to credit reward — submission not updated");
+          return;
+        }
       }
     }
 
@@ -118,18 +142,47 @@ const AdminMemberChallengesPage = () => {
 
     // Send approval email
     if (status === "approved") {
-      supabase.functions.invoke("challenge-approved-email", {
-        body: {
-          submissionId: submission.id,
-          challengeTitle: submission.weekly_challenges?.title,
-          rewardText: formatReward(submission.weekly_challenges),
-        },
-      }).catch((err: any) => console.error("Failed to send approval email:", err));
+      const challenge = submission.weekly_challenges;
+      const isBlueEyes = challenge?.slug === "blue-eyes-hunt";
+      const otherApproved = submissions.filter(
+        (s: any) =>
+          s.id !== submission.id &&
+          s.challenge_id === submission.challenge_id &&
+          s.user_id === submission.user_id &&
+          s.status === "approved"
+      );
+      const allSnapsDone = !isBlueEyes || otherApproved.length >= 1;
+
+      if (allSnapsDone) {
+        supabase.functions.invoke("challenge-approved-email", {
+          body: {
+            submissionId: submission.id,
+            challengeTitle: submission.weekly_challenges?.title,
+            rewardText: formatReward(submission.weekly_challenges),
+          },
+        }).catch((err: any) => console.error("Failed to send approval email:", err));
+      }
     }
 
     toast.success(
       status === "approved"
-        ? `Approved! Reward credited to ${getMemberName(submission.user_id)}`
+        ? `Approved! ${(() => {
+            const challenge = submission.weekly_challenges;
+            const isBlueEyes = challenge?.slug === "blue-eyes-hunt";
+            if (isBlueEyes) {
+              const otherApproved = submissions.filter(
+                (s: any) =>
+                  s.id !== submission.id &&
+                  s.challenge_id === submission.challenge_id &&
+                  s.user_id === submission.user_id &&
+                  s.status === "approved"
+              );
+              return otherApproved.length >= 1
+                ? `Reward credited to ${getMemberName(submission.user_id)}`
+                : `Snap approved (waiting for 2nd snap before crediting reward)`;
+            }
+            return `Reward credited to ${getMemberName(submission.user_id)}`;
+          })()}`
         : "Submission rejected"
     );
     queryClient.invalidateQueries({ queryKey: ["admin_challenge_submissions"] });
