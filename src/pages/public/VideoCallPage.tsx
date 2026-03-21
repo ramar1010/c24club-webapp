@@ -288,6 +288,44 @@ const VideoCallPage = () => {
     elapsedSeconds
   });
 
+  // Speed Connect challenge: find active speed_connect challenge from DB
+  const { data: speedConnectChallenge } = useQuery({
+    queryKey: ["speed_connect_challenge"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("weekly_challenges")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+      const all = data || [];
+      return all.find((c: any) => {
+        try {
+          const action = JSON.parse(c.auto_track_action || "null");
+          return action?.type === "auto_speed_connect";
+        } catch { return false; }
+      }) || null;
+    },
+  });
+
+  const speedConnectConfig = speedConnectChallenge ? (() => {
+    try {
+      const action = JSON.parse(speedConnectChallenge.auto_track_action || "null");
+      return {
+        challengeId: speedConnectChallenge.id,
+        slug: speedConnectChallenge.slug || "speed-connect",
+        targetPeople: action?.target || 20,
+        timeLimitMinutes: speedConnectChallenge.target_minutes || 30,
+      };
+    } catch { return null; }
+  })() : null;
+
+  const speedConnect = useSpeedConnectChallenge({
+    userId: user?.id,
+    currentPartnerId,
+    isConnected: callState === "connected",
+    challengeConfig: speedConnectConfig,
+  });
+
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
   // Real-time listener for incoming gift notifications
