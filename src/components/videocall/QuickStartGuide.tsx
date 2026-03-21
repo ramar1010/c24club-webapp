@@ -27,6 +27,7 @@ import paypalLogo from "@/assets/quickstart/paypal-logo.png";
 // Slide 4 - Challenges
 import trophyIcon from "@/assets/quickstart/trophy-icon.png";
 import cashIcon from "@/assets/quickstart/cash-icon.png";
+import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 
 // Slide 5 - Beware
 import noFrame1 from "@/assets/quickstart/no-frame1.jpg";
@@ -159,10 +160,10 @@ const Slide3Visual = () => (
 
 const Slide4Visual = () => {
   const challengeItems = [
-    { label: "Bestie Challenge", reward: "$50" },
-    { label: "Boyfriend Challenge", reward: "$35" },
-    { label: "Marathon Talk", reward: "$20" },
-    { label: "Blue Eyes Hunt", reward: "$10" },
+    { label: "Bestie Challenge", reward: "$50", cutout: null },
+    { label: "Boyfriend Challenge", reward: "$35", cutout: boyfriendCutout },
+    { label: "Marathon Talk", reward: "$20", cutout: null },
+    { label: "Blue Eyes Hunt", reward: "$10", cutout: null },
   ];
 
   return (
@@ -193,6 +194,14 @@ const Slide4Visual = () => {
               {c.label}
             </span>
             <span className="text-emerald-400 text-[10px] font-black">{c.reward}</span>
+            {c.cutout && (
+              <img
+                src={c.cutout}
+                alt=""
+                className="absolute -top-10 -right-6 w-12 h-14 object-contain drop-shadow-lg rotate-6 z-30"
+                style={{ animation: `float 3s ease-in-out ${i * 0.3}s infinite` }}
+              />
+            )}
           </div>
         );
       })}
