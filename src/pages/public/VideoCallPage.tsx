@@ -1147,9 +1147,9 @@ const VideoCallPage = () => {
             </div>
           }
 
-          {/* Blue Eyes Hunt snap button - mobile (only if hunt started) */}
-          {callState === "connected" && currentPartnerId && isMobile && blueEyesChallenge && blueEyesSnaps.length < 2 && localStorage.getItem("blue_eyes_hunt_started") === "true" &&
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+          {/* Blue Eyes Hunt snap button (only if hunt started) */}
+          {callState === "connected" && currentPartnerId && blueEyesChallenge && blueEyesSnaps.length < 2 && localStorage.getItem("blue_eyes_hunt_started") === "true" &&
+          <div className={`absolute z-20 ${isMobile ? "bottom-3 left-1/2 -translate-x-1/2" : "bottom-3 left-1/2 -translate-x-1/2"}`}>
               <BlueEyesSnapButton
                 remoteVideoRef={remoteVideoRef}
                 userId={memberId}
