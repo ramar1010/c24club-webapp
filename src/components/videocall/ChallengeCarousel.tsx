@@ -204,6 +204,8 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   const sortedChallenges = [...visibleChallenges].sort((a: any, b: any) => {
     if (a.slug === "bestie-challenge") return -1;
     if (b.slug === "bestie-challenge") return 1;
+    if (a.slug === "boyfriend-challenge") return -1;
+    if (b.slug === "boyfriend-challenge") return 1;
     return 0;
   });
 
