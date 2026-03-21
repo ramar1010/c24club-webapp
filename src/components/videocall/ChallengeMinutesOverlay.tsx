@@ -64,7 +64,7 @@ const JackpotCashoutModal = ({ userId, onClose, onSuccess }: { userId?: string; 
         <div className="p-5 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-yellow-400" />
-            <h2 className="text-lg font-black text-yellow-300">JACKPOT EARNINGS</h2>
+            <h2 className="text-lg font-black text-yellow-300">WAGER EARNINGS</h2>
           </div>
           <button onClick={onClose} className="p-1.5 bg-neutral-800 rounded-lg hover:bg-neutral-700">
             <X className="w-5 h-5 text-neutral-400" />
