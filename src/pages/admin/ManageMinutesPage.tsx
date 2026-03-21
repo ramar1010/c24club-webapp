@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, DollarSign, Search, Star, Dices } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Coins, DollarSign, Search, Star, Trophy } from "lucide-react";
 
 const ManageMinutesPage = () => {
   const [searchEmail, setSearchEmail] = useState("");
@@ -14,8 +13,8 @@ const ManageMinutesPage = () => {
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [adPointsToAdd, setAdPointsToAdd] = useState("");
   const [cashBalanceToAdd, setCashBalanceToAdd] = useState("");
-  const [wagerAmount, setWagerAmount] = useState("");
-  const [wagerStatus, setWagerStatus] = useState("pending");
+  const [challengeAmount, setChallengeAmount] = useState("");
+  const [challengeTitle, setChallengeTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
 
@@ -28,6 +27,19 @@ const ManageMinutesPage = () => {
         .order("total_minutes", { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Fetch cash-type weekly challenges for the dropdown
+  const { data: cashChallenges = [] } = useQuery({
+    queryKey: ["admin-cash-challenges"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("weekly_challenges")
+        .select("id, title, reward_amount, reward_type")
+        .eq("reward_type", "cash")
+        .order("created_at", { ascending: false });
+      return data || [];
     },
   });
 
@@ -194,11 +206,70 @@ const ManageMinutesPage = () => {
     setLoading(false);
   };
 
+  const handleAddChallengeEarning = async () => {
+    if (!selectedUser) return;
+    setLoading(true);
+    try {
+      let challengeId: string;
+      const customAmount = parseFloat(challengeAmount);
+
+      if (challengeTitle && cashChallenges.length > 0) {
+        // Use selected existing challenge
+        challengeId = challengeTitle;
+      } else {
+        // Create a temporary challenge for this earning
+        const title = `Marketing Demo ($${customAmount || 10})`;
+        const { data: newChallenge, error: cErr } = await supabase
+          .from("weekly_challenges")
+          .insert({
+            title,
+            reward_type: "cash",
+            reward_amount: customAmount || 10,
+            is_active: false,
+            theme: "emerald",
+            challenge_type: "manual",
+          })
+          .select("id")
+          .single();
+        if (cErr) throw cErr;
+        challengeId = newChallenge.id;
+      }
+
+      // If a custom amount was entered, update the challenge's reward_amount
+      if (customAmount && challengeTitle) {
+        await supabase
+          .from("weekly_challenges")
+          .update({ reward_amount: customAmount })
+          .eq("id", challengeId);
+      }
+
+      // Create an approved submission for this user
+      const { error: sErr } = await supabase
+        .from("challenge_submissions")
+        .insert({
+          user_id: selectedUser.id,
+          challenge_id: challengeId,
+          status: "approved",
+          proof_text: "Admin-added for marketing",
+        });
+      if (sErr) throw sErr;
+
+      const selectedChallenge = cashChallenges.find((c: any) => c.id === challengeId);
+      const displayAmount = customAmount || selectedChallenge?.reward_amount || 10;
+      toast.success(`Added $${displayAmount} challenge earning to user's Challenge Earnings modal`);
+      setChallengeAmount("");
+      setChallengeTitle("");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to add challenge earning");
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-foreground">Manage Minutes, Ad Points & Cash</h2>
-        <p className="text-muted-foreground mt-1">Add or set minutes, ad points, and anchor cash balance for any user.</p>
+        <p className="text-muted-foreground mt-1">Add or set minutes, ad points, anchor cash balance, and challenge earnings for any user.</p>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-6 space-y-4">
@@ -275,55 +346,48 @@ const ManageMinutesPage = () => {
               <Button variant="outline" onClick={handleSetCashBalance} disabled={loading || !cashBalanceToAdd}>Set To</Button>
             </div>
 
-            {/* Wager Earnings controls */}
+            {/* Challenge Earnings controls */}
             <div className="border-t border-border pt-4 mt-4">
-              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Dices className="w-4 h-4" /> Add Wager Earning Record
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-emerald-500" /> Add Challenge Cash Earning
               </h4>
               <p className="text-xs text-muted-foreground mb-3">
-                Creates a payout record in the wager earnings modal (for marketing/demo purposes).
+                Creates an approved challenge submission so it appears in the user's "Challenge Earnings" cashout modal. For TikTok marketing.
               </p>
               <div className="flex gap-2 items-end flex-wrap">
-                <div className="flex-1 min-w-[120px]">
+                {cashChallenges.length > 0 && (
+                  <div className="flex-1 min-w-[160px]">
+                    <Label className="text-sm">Challenge (optional)</Label>
+                    <select
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={challengeTitle}
+                      onChange={(e) => setChallengeTitle(e.target.value)}
+                    >
+                      <option value="">Auto-create demo challenge</option>
+                      {cashChallenges.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.title} (${c.reward_amount})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="w-[130px]">
                   <Label className="text-sm">Amount ($)</Label>
-                  <Input type="number" step="0.01" placeholder="e.g. 200.00" value={wagerAmount} onChange={(e) => setWagerAmount(e.target.value)} />
-                </div>
-                <div className="w-[140px]">
-                  <Label className="text-sm">Status</Label>
-                  <Select value={wagerStatus} onValueChange={setWagerStatus}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g. 35"
+                    value={challengeAmount}
+                    onChange={(e) => setChallengeAmount(e.target.value)}
+                  />
                 </div>
                 <Button
-                  onClick={async () => {
-                    if (!selectedUser || !wagerAmount) return;
-                    setLoading(true);
-                    try {
-                      const amount = parseFloat(wagerAmount);
-                      const { error } = await supabase.from("jackpot_payouts").insert({
-                        user_id: selectedUser.id,
-                        jackpot_amount: amount,
-                        minutes_credited: 0,
-                        status: wagerStatus,
-                        paypal_email: wagerStatus === "paid" ? "marketing@demo.com" : null,
-                      });
-                      if (error) throw error;
-                      toast.success(`Added $${amount.toFixed(2)} wager earning (${wagerStatus})`);
-                      setWagerAmount("");
-                    } catch (e: any) {
-                      toast.error(e.message || "Failed to add wager earning");
-                    }
-                    setLoading(false);
-                  }}
-                  disabled={loading || !wagerAmount}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={handleAddChallengeEarning}
+                  disabled={loading || (!challengeAmount && !challengeTitle)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  <Dices className="w-4 h-4 mr-2" /> Add Earning
+                  <Trophy className="w-4 h-4 mr-2" /> Add Earning
                 </Button>
               </div>
             </div>
