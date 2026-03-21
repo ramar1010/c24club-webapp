@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
 import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
+import ChallengeSuggestionForm from "@/components/videocall/ChallengeSuggestionForm";
 
 /* ─── Theme Presets ─── */
 const THEME_MAP: Record<string, {
@@ -672,6 +673,8 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           </button>
         </div>
       </div>
+
+      <ChallengeSuggestionForm />
 
       {/* Challenge Earnings Modal */}
       {showCashout && (
