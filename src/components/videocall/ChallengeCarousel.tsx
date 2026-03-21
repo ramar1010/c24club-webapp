@@ -196,7 +196,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
-      <p className="text-[10px] text-neutral-400 text-center mb-1 tracking-wide">Swipe left and right to earn doing challenges!</p>
+      <p className="text-[10px] text-neutral-400 text-center mb-1 tracking-wide">💰 Swipe left and right to earn doing challenges! 💰</p>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-2">
           {allSlides.map((slide) => {
