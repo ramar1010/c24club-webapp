@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 import blueEyeImg from "@/assets/challenges/blue-eye.jpg";
