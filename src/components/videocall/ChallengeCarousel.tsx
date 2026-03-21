@@ -220,7 +220,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   // Calculate total value of all visible challenges
   const totalValue = visibleChallenges.reduce((sum: number, c: any) => {
     return sum + (c.reward_amount || 0);
-  }, 0);
+  }, 0) + 200; // Include $200 Challenge Minutes jackpot
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
