@@ -461,12 +461,11 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
         )}
       </div>
 
-      {/* Cashout Modal */}
+      {/* Jackpot Cashout Modal */}
       {showCashout && (
-        <CashoutModal
+        <JackpotCashoutModal
+          userId={user?.id}
           onClose={() => setShowCashout(false)}
-          currentMinutes={status?.total_minutes ?? 0}
-          giftedMinutes={status?.gifted_minutes ?? 0}
           onSuccess={() => {
             setShowCashout(false);
             refetchStatus();
