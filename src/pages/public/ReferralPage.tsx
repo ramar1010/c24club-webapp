@@ -7,8 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const handleBack = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
+  };
   const [generating, setGenerating] = useState(false);
 
   const { data, refetch } = useQuery({
