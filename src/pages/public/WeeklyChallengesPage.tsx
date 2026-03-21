@@ -869,6 +869,9 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           }}
         />
       )}
+
+      {/* Challenge Minutes Overlay */}
+      {showGamble && <ChallengeMinutesOverlay onClose={() => setShowGamble(false)} />}
     </div>
   );
 };
