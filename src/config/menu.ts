@@ -204,6 +204,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "jackpot-payouts",
+    icon: Dices,
+    title: "Jackpot Payouts",
+    submenu: [
+      { key: "jackpot-payouts", label: "Jackpot Payouts", path: "/admin/jackpot-payouts" },
+    ],
+  },
+  {
     key: "referrals",
     icon: UserPlus,
     title: "Referrals",
