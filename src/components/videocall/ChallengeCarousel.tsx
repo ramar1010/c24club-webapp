@@ -146,6 +146,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   });
 
   const { hasPair, pairActive, pairCompleted, dailyLogs } = useBestieChallenge();
+  const { hasPair: hasBfPair, pairActive: bfActive, pairCompleted: bfCompleted, dailyLogs: bfLogs } = useBoyfriendChallenge();
 
   const getStatus = (challenge: any) => {
     if (challenge.slug === "bestie-challenge") {
