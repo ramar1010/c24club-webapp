@@ -346,6 +346,9 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
           />
         ))}
       </div>
+
+      {/* Challenge Minutes Overlay */}
+      {showGamble && <ChallengeMinutesOverlay onClose={() => setShowGamble(false)} />}
     </div>
   );
 };
