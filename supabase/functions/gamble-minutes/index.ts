@@ -187,6 +187,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Fetch cashout rate from settings
+      const { data: cashoutSettings } = await supabase
+        .from("cashout_settings")
+        .select("rate_per_minute")
+        .limit(1)
+        .maybeSingle();
+      const ratePerMinute = Number(cashoutSettings?.rate_per_minute ?? 0.12);
+
       // Check user has enough minutes (must be from earned minutes, not gifted)
       const { data: mm } = await supabase
         .from("member_minutes")
