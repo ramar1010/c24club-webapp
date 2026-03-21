@@ -1535,6 +1535,13 @@ const VideoCallPage = () => {
           setShowSelfieCapture(false);
           refetchDiscoverable();
         }} />
+      {/* NSFW Confirm Overlay */}
+      {showConfirmPrompt && (
+        <NsfwConfirmOverlay
+          onConfirmBan={confirmBan}
+          onDismiss={dismissStrikes}
+        />
+      )}
       
     </div>);
 
