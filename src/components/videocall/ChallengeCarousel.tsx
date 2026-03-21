@@ -241,6 +241,29 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-2">
           {allSlides.map((slide) => {
+            if (slide.type === "gamble") {
+              return (
+                <div key="challenge-minutes" className="flex-[0_0_85%] min-w-0 min-h-[68px]">
+                  <button
+                    onClick={() => setShowGamble(true)}
+                    className="w-full h-full bg-gradient-to-r from-yellow-600/40 via-amber-700/30 to-orange-900/50 border-yellow-400/50 border rounded-xl shadow-[0_0_18px_rgba(234,179,8,0.3)] p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse pointer-events-none" />
+                    <div className="text-3xl shrink-0">🎰</div>
+                    <div className="flex-1 text-left min-w-0">
+                      <span className="font-black text-xs tracking-wider text-white">CHALLENGE MINUTES</span>
+                      <p className="text-[10px] text-neutral-300 font-medium mt-0.5">Wager minutes to win $200!</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-lg font-black text-yellow-300 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">$200</span>
+                      <span className="block text-[8px] font-bold text-neutral-400 tracking-widest">JACKPOT</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-neutral-500 shrink-0" />
+                  </button>
+                </div>
+              );
+            }
+
             if (slide.type === "referral") {
               const referralCount = referralData?.referrals?.filter((r: any) => r.status === "engaged")?.length ?? 0;
               return (
