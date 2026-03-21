@@ -1,0 +1,312 @@
+import { useState } from "react";
+import { X, DollarSign, Clock, Trophy, AlertTriangle, Loader2, History } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+const WAGER_TIERS = [10, 25, 50, 100];
+
+const OUTCOME_CONFIG: Record<string, { emoji: string; label: string; color: string; description: string }> = {
+  jackpot: { emoji: "🎰", label: "JACKPOT!", color: "text-yellow-300", description: "You won the $200 JACKPOT!" },
+  double: { emoji: "🔥", label: "DOUBLED!", color: "text-green-400", description: "Your minutes were doubled!" },
+  cash_win: { emoji: "💵", label: "CASH WIN!", color: "text-emerald-400", description: "Your wager converted to cashable earnings!" },
+  lose: { emoji: "💀", label: "BUSTED", color: "text-red-400", description: "You lost your wagered minutes." },
+};
+
+interface Props {
+  onClose: () => void;
+}
+
+const ChallengeMinutesOverlay = ({ onClose }: Props) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [selectedTier, setSelectedTier] = useState<number>(25);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const { data: status, refetch: refetchStatus } = useQuery({
+    queryKey: ["wager_status", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("gamble-minutes", {
+        body: { type: "get_status", userId: user!.id },
+      });
+      return data;
+    },
+  });
+
+  const { data: historyData } = useQuery({
+    queryKey: ["wager_history", user?.id],
+    enabled: !!user && showHistory,
+    queryFn: async () => {
+      const { data } = await supabase.functions.invoke("gamble-minutes", {
+        body: { type: "get_history", userId: user!.id },
+      });
+      return data?.history || [];
+    },
+  });
+
+  const earnedMinutes = (status?.total_minutes ?? 0) - (status?.gifted_minutes ?? 0);
+  const dailyLeft = (status?.max_daily ?? 3) - (status?.daily_count ?? 0);
+  const weeklyLeft = (status?.max_weekly ?? 10) - (status?.weekly_count ?? 0);
+
+  const handleWager = async () => {
+    if (!user || spinning) return;
+
+    if (earnedMinutes < selectedTier) {
+      toast.error("Not enough earned minutes", { description: `You have ${earnedMinutes} earned minutes available.` });
+      return;
+    }
+
+    setSpinning(true);
+    setResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("gamble-minutes", {
+        body: { type: "wager", userId: user.id, wagerAmount: selectedTier },
+      });
+
+      if (error || !data?.success) {
+        const msg = data?.message || error?.message || "Wager failed";
+        if (msg === "daily_cap") toast.error("Daily limit reached!", { description: "Come back tomorrow." });
+        else if (msg === "weekly_cap") toast.error("Weekly limit reached!", { description: "Come back next week." });
+        else if (msg === "insufficient_minutes") toast.error("Not enough earned minutes", { description: `You have ${data?.available ?? 0} earned minutes.` });
+        else toast.error(msg);
+        setSpinning(false);
+        return;
+      }
+
+      // Dramatic delay
+      await new Promise((r) => setTimeout(r, 2000));
+      setResult(data);
+      refetchStatus();
+      queryClient.invalidateQueries({ queryKey: ["wager_history"] });
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setSpinning(false);
+    }
+  };
+
+  const outcomeInfo = result ? OUTCOME_CONFIG[result.outcome] : null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+      <div className="relative w-full max-w-md bg-gradient-to-b from-neutral-900 via-black to-neutral-900 border border-yellow-500/30 rounded-2xl shadow-[0_0_40px_rgba(234,179,8,0.2)] overflow-hidden">
+        {/* Shimmer */}
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(234,179,8,0.05)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite] pointer-events-none" />
+
+        {/* Header */}
+        <div className="relative p-5 pb-3 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
+              CHALLENGE MINUTES
+            </h2>
+            <p className="text-xs text-neutral-400 mt-1">Wager your earned minutes for a chance to win big!</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
+            <X className="w-5 h-5 text-neutral-400" />
+          </button>
+        </div>
+
+        {/* Jackpot Banner */}
+        <div className="relative mx-5 mb-4 bg-gradient-to-r from-yellow-600/20 via-amber-500/15 to-yellow-600/20 border border-yellow-500/40 rounded-xl p-4 text-center">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1),transparent_70%)] pointer-events-none" />
+          <p className="text-[10px] font-bold text-yellow-500/80 tracking-widest mb-1">🎰 GRAND PRIZE 🎰</p>
+          <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]">
+            $200
+          </p>
+          <p className="text-[10px] text-yellow-500/60 font-bold mt-1">Cash added to your earnings</p>
+        </div>
+
+        {!showHistory ? (
+          <div className="relative px-5 pb-5 space-y-4">
+            {/* Balance Info */}
+            <div className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-neutral-500" />
+                <div>
+                  <p className="text-xs text-neutral-500 font-bold">EARNED MINUTES</p>
+                  <p className="text-lg font-black text-white">{earnedMinutes}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-neutral-600 font-bold">TODAY: {dailyLeft} left</p>
+                <p className="text-[10px] text-neutral-600 font-bold">WEEK: {weeklyLeft} left</p>
+              </div>
+            </div>
+
+            {/* Result Display */}
+            {result && outcomeInfo && (
+              <div className={`text-center py-4 rounded-xl border ${
+                result.outcome === "lose" ? "bg-red-900/20 border-red-500/30" : "bg-green-900/20 border-green-500/30"
+              }`}>
+                <p className="text-4xl mb-2">{outcomeInfo.emoji}</p>
+                <p className={`text-2xl font-black ${outcomeInfo.color}`}>{outcomeInfo.label}</p>
+                <p className="text-sm text-neutral-300 mt-1">{outcomeInfo.description}</p>
+                {result.outcome === "double" && (
+                  <p className="text-lg font-black text-green-400 mt-1">+{result.wager_amount} minutes</p>
+                )}
+                {result.outcome === "cash_win" && (
+                  <p className="text-lg font-black text-emerald-400 mt-1">${result.prize_amount} added to cashable balance</p>
+                )}
+                {result.outcome === "jackpot" && (
+                  <p className="text-lg font-black text-yellow-300 mt-1">$200 CASH! 🎉</p>
+                )}
+                {result.outcome === "lose" && (
+                  <p className="text-lg font-black text-red-400 mt-1">-{result.wager_amount} minutes</p>
+                )}
+              </div>
+            )}
+
+            {/* Wager Tiers */}
+            {!spinning && (
+              <>
+                <div>
+                  <p className="text-xs text-neutral-500 font-bold mb-2 tracking-wider">SELECT WAGER</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {WAGER_TIERS.map((tier) => {
+                      const disabled = earnedMinutes < tier;
+                      return (
+                        <button
+                          key={tier}
+                          onClick={() => !disabled && setSelectedTier(tier)}
+                          disabled={disabled}
+                          className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${
+                            selectedTier === tier
+                              ? "bg-yellow-500/20 border-yellow-400/60 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.2)]"
+                              : disabled
+                              ? "bg-neutral-900/50 border-neutral-800 text-neutral-700 cursor-not-allowed"
+                              : "bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:border-neutral-500"
+                          }`}
+                        >
+                          {tier}m
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Odds Info */}
+                <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3 space-y-1.5">
+                  <p className="text-[10px] text-neutral-500 font-bold tracking-wider mb-1">POSSIBLE OUTCOMES</p>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-yellow-400 font-bold">🎰 $200 Jackpot</span>
+                    <span className="text-neutral-600">Rare</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-green-400 font-bold">🔥 2x Minutes Back</span>
+                    <span className="text-neutral-600">30%</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-emerald-400 font-bold">💵 Cash Win</span>
+                    <span className="text-neutral-600">~20%</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-red-400 font-bold">💀 Lose Wager</span>
+                    <span className="text-neutral-600">~50%</span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Wager Button */}
+            <button
+              onClick={result ? () => setResult(null) : handleWager}
+              disabled={spinning || dailyLeft <= 0 || weeklyLeft <= 0 || earnedMinutes < selectedTier}
+              className={`w-full py-4 rounded-xl font-black text-lg tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-3 ${
+                spinning
+                  ? "bg-neutral-800 text-neutral-500 cursor-wait"
+                  : result
+                  ? "bg-gradient-to-r from-yellow-500 to-amber-600 text-black hover:opacity-90"
+                  : dailyLeft <= 0 || weeklyLeft <= 0
+                  ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+                  : "bg-gradient-to-r from-yellow-500 to-amber-600 text-black hover:opacity-90 shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+              }`}
+            >
+              {spinning ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  CHALLENGING...
+                </>
+              ) : result ? (
+                <>
+                  <Trophy className="w-5 h-5" />
+                  PLAY AGAIN
+                </>
+              ) : dailyLeft <= 0 ? (
+                "DAILY LIMIT REACHED"
+              ) : weeklyLeft <= 0 ? (
+                "WEEKLY LIMIT REACHED"
+              ) : (
+                <>
+                  <DollarSign className="w-5 h-5" />
+                  WAGER {selectedTier} MINUTES
+                </>
+              )}
+            </button>
+
+            {/* Warning */}
+            <div className="flex items-start gap-2 text-[10px] text-neutral-600">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>Only earned minutes can be wagered. Gifted/cashable minutes are protected. Limits: {status?.max_daily ?? 3}/day, {status?.max_weekly ?? 10}/week.</span>
+            </div>
+
+            {/* History Toggle */}
+            <button
+              onClick={() => setShowHistory(true)}
+              className="w-full flex items-center justify-center gap-2 text-xs text-neutral-500 hover:text-neutral-300 font-bold transition-colors py-2"
+            >
+              <History className="w-3.5 h-3.5" />
+              VIEW HISTORY
+            </button>
+          </div>
+        ) : (
+          <div className="relative px-5 pb-5 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-neutral-500 font-bold tracking-wider">WAGER HISTORY</p>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="text-xs text-yellow-500 font-bold hover:opacity-80"
+              >
+                ← BACK
+              </button>
+            </div>
+            {(!historyData || historyData.length === 0) ? (
+              <p className="text-center text-neutral-600 text-sm py-6">No wagers yet</p>
+            ) : (
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {historyData.map((w: any) => {
+                  const info = OUTCOME_CONFIG[w.outcome];
+                  return (
+                    <div key={w.id} className="flex items-center justify-between bg-neutral-900/60 border border-neutral-800 rounded-lg px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{info?.emoji || "❓"}</span>
+                        <div>
+                          <p className={`text-xs font-black ${info?.color || "text-neutral-400"}`}>{info?.label || w.outcome}</p>
+                          <p className="text-[10px] text-neutral-600">{new Date(w.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-neutral-400">Wagered: {w.wager_amount}m</p>
+                        {w.outcome !== "lose" && (
+                          <p className="text-[10px] font-bold text-green-400">
+                            {w.prize_type === "cash" ? `$${w.prize_amount}` : `+${w.prize_amount}m`}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ChallengeMinutesOverlay;
