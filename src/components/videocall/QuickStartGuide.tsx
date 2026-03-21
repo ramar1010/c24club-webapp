@@ -27,6 +27,7 @@ import paypalLogo from "@/assets/quickstart/paypal-logo.png";
 // Slide 4 - Challenges
 import trophyIcon from "@/assets/quickstart/trophy-icon.png";
 import cashIcon from "@/assets/quickstart/cash-icon.png";
+import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 
 // Slide 5 - Beware
 import noFrame1 from "@/assets/quickstart/no-frame1.jpg";
