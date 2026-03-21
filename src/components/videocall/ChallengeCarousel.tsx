@@ -188,11 +188,23 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
     return null;
   };
 
-  // Build slides: referral first, then challenges
+  // Build slides: bestie first, then other challenges, then referral last
+  const sortedChallenges = [...visibleChallenges].sort((a: any, b: any) => {
+    if (a.slug === "bestie-challenge") return -1;
+    if (b.slug === "bestie-challenge") return 1;
+    return 0;
+  });
+
   const allSlides = [
+    ...sortedChallenges.map((c: any) => ({ type: "challenge" as const, id: c.id, challenge: c })),
     { type: "referral" as const, id: "refer-earn" },
-    ...visibleChallenges.map((c: any) => ({ type: "challenge" as const, id: c.id, challenge: c })),
   ];
+
+  // Calculate total cash value of all visible challenges
+  const totalCashValue = visibleChallenges.reduce((sum: number, c: any) => {
+    if (c.reward_type === "cash") return sum + (c.reward_amount || 0);
+    return sum;
+  }, 0);
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
