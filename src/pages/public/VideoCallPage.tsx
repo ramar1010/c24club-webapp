@@ -14,7 +14,7 @@ import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
 import { useBlackScreenDetection } from "@/hooks/useBlackScreenDetection";
 import { useLocalBlackScreenDetection } from "@/hooks/useLocalBlackScreenDetection";
-import { useNsfwDetection } from "@/hooks/useNsfwDetection";
+import { usePreBlur } from "@/hooks/usePreBlur";
 import { useAdPoints } from "@/hooks/useAdPoints";
 import CapReachedPopup from "@/components/videocall/CapReachedPopup";
 import SkipPenaltyPopup from "@/components/videocall/SkipPenaltyPopup";
@@ -189,59 +189,7 @@ const VideoCallPage = () => {
     isActive: callState !== "idle" && !(isFemale && voiceMode)
   });
 
-  const NSFW_BAN_THRESHOLD = 5;
-  const nsfwTargetUserId =
-  callState === "connected" && currentPartnerId && currentPartnerId !== memberId ?
-  currentPartnerId :
-  "anonymous";
-
-  const { isNsfwBlurred, nsfwStrikes } = useNsfwDetection({
-    remoteVideoRef,
-    isConnected: callState === "connected",
-    userId: nsfwTargetUserId,
-    viewerUserId: memberId
-  });
-
-  const banAttemptPartnerRef = useRef<string | null>(null);
-
-  // Auto-ban the offending remote user exactly when strike threshold is reached.
-  useEffect(() => {
-    if (!currentPartnerId || currentPartnerId === memberId) {
-      banAttemptPartnerRef.current = null;
-      return;
-    }
-
-    const targetUserId = currentPartnerId;
-
-    if (nsfwStrikes < NSFW_BAN_THRESHOLD) {
-      if (banAttemptPartnerRef.current === targetUserId) {
-        banAttemptPartnerRef.current = null;
-      }
-      return;
-    }
-
-    if (banAttemptPartnerRef.current === targetUserId) return;
-    banAttemptPartnerRef.current = targetUserId;
-
-    const banUser = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId }
-        });
-
-        if (error) {
-          banAttemptPartnerRef.current = null;
-          throw error;
-        }
-
-        console.log("[NSFW] Ban result:", data);
-      } catch (err) {
-        console.error("[NSFW] Failed to ban offending user:", err);
-      }
-    };
-
-    banUser();
-  }, [nsfwStrikes, currentPartnerId, memberId]);
+  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId);
 
   const anchorEarning = useAnchorEarning({
     userId: memberId,
@@ -1032,15 +980,8 @@ const VideoCallPage = () => {
             <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20 absolute inset-0" />
             }
               <video ref={remoteVideoRef} autoPlay playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
-              {isNsfwBlurred && callState === "connected" &&
-            <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-4xl">🚫</span>
-                  <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
-                  <p className="text-red-400 text-xs font-bold mt-1">Partner strike {Math.min(nsfwStrikes, 5)}/5</p>
-                </div>
-            }
-              {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode &&
+            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
+              {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
             <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-4xl">📵</span>
                   <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
@@ -1222,25 +1163,15 @@ const VideoCallPage = () => {
           <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20" />
           }
             <video ref={remoteVideoRef} autoPlay playsInline
-          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isNsfwBlurred ? "blur-[30px]" : ""}`} />
-            {isNsfwBlurred && callState === "connected" &&
-          <div className="absolute inset-0 z-30 bg-black/60 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-4xl">🚫</span>
-                <p className="text-white font-black text-sm mt-2">CONTENT BLURRED</p>
-                <p className="text-red-400 text-xs font-bold mt-1">Partner strike {Math.min(nsfwStrikes, 5)}/5 — nudity detected</p>
-                {nsfwStrikes >= 3 &&
-            <p className="text-yellow-400 text-xs font-bold mt-1 animate-pulse">⚠️ Warning: Ban at 5 strikes</p>
-            }
-              </div>
-          }
-            {partnerBlackScreen && callState === "connected" && !isNsfwBlurred && !partnerVoiceMode &&
+          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
+            {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER IS FACELESS</p>
                 <p className="text-neutral-400 text-xs text-center px-6 mt-1">Their camera is off or covered. Press Next to skip.</p>
               </div>
           }
-            {localBlackScreen && callState === "connected" && !partnerBlackScreen && !isNsfwBlurred &&
+            {localBlackScreen && callState === "connected" && !partnerBlackScreen &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">🙈</span>
                 <p className="text-white font-black text-sm mt-2">PARTNER HIDDEN</p>
