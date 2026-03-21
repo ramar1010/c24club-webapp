@@ -51,6 +51,8 @@ import { useUnreadCount } from "@/hooks/useMessages";
 import { captureBestieScreenshot } from "@/lib/bestieScreenshot";
 import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
 import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
+import { useNsfwDetection } from "@/hooks/useNsfwDetection";
+import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -190,6 +192,13 @@ const VideoCallPage = () => {
   });
 
   const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId, 4000);
+
+  const { isNsfwBlurred, showConfirmPrompt, confirmBan, dismissStrikes } = useNsfwDetection({
+    remoteVideoRef,
+    isConnected: callState === "connected",
+    userId: currentPartnerId || "",
+    viewerUserId: memberId,
+  });
 
   const anchorEarning = useAnchorEarning({
     userId: memberId,
@@ -998,7 +1007,7 @@ const VideoCallPage = () => {
             <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20 absolute inset-0" />
             }
               <video ref={remoteVideoRef} autoPlay playsInline
-            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
+            className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPreBlurred || isNsfwBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
               {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
             <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-4xl">📵</span>
@@ -1181,7 +1190,7 @@ const VideoCallPage = () => {
           <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20" />
           }
             <video ref={remoteVideoRef} autoPlay playsInline
-          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
+          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred || isNsfwBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
             {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
@@ -1526,6 +1535,13 @@ const VideoCallPage = () => {
           setShowSelfieCapture(false);
           refetchDiscoverable();
         }} />
+      {/* NSFW Confirm Overlay */}
+      {showConfirmPrompt && (
+        <NsfwConfirmOverlay
+          onConfirmBan={confirmBan}
+          onDismiss={dismissStrikes}
+        />
+      )}
       
     </div>);
 
