@@ -71,12 +71,6 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   const [copied, setCopied] = useState(false);
   const [showGamble, setShowGamble] = useState(false);
 
-const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: ChallengeCarouselProps) => {
-  const { user } = useAuth();
-  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "center", loop: true });
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
-
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
