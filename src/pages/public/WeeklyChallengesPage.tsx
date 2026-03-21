@@ -686,12 +686,10 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       </div>
 
-      {/* Cashout Modal */}
+      {/* Challenge Earnings Modal */}
       {showCashout && (
-        <CashoutModal
+        <ChallengeEarningsModal
           onClose={() => setShowCashout(false)}
-          currentMinutes={userMinutesData?.total_minutes ?? 0}
-          giftedMinutes={userMinutesData?.gifted_minutes ?? 0}
           onSuccess={() => {
             refetchMinutes();
             queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
