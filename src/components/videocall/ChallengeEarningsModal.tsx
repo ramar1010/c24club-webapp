@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, DollarSign, CheckCircle, Clock, XCircle, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -64,43 +64,18 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
     },
   });
 
-  // Fetch user's gifted minutes balance (challenge cash is stored here)
-  const { data: minutesData } = useQuery({
-    queryKey: ["challenge_gifted_balance", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data || { total_minutes: 0, gifted_minutes: 0 };
-    },
-  });
 
-  // Fetch cashout settings
-  const { data: settings } = useQuery({
-    queryKey: ["cashout_settings_modal"],
-    queryFn: async () => {
-      const { data } = await supabase.functions.invoke("cashout-minutes", {
-        body: { action: "get-settings" },
-      });
-      return data?.settings || null;
-    },
-  });
+
 
   const totalEarned = cashEarnings.reduce((sum: number, e: CashEarning) => sum + e.cash_amount, 0);
   const totalCashedOut = cashoutHistory
     .filter((h: any) => h.status === "approved" || h.status === "paid")
     .reduce((sum: number, h: any) => sum + Number(h.cash_amount), 0);
 
-  const giftedMinutes = minutesData?.gifted_minutes ?? 0;
-  const ratePerMinute = settings?.rate_per_minute ?? 0.35;
-  const availableCash = Number((giftedMinutes * ratePerMinute).toFixed(2));
+  const availableCash = Number((totalEarned - totalCashedOut).toFixed(2));
 
   const hasPending = cashoutHistory.some((h: any) => h.status === "pending");
-  const minCashout = settings?.min_cashout_minutes ?? 100;
-  const canCashout = giftedMinutes >= minCashout && !hasPending && availableCash > 0;
+  const canCashout = !hasPending && availableCash > 0;
 
   const handleCashout = async () => {
     if (!paypalEmail.includes("@")) {
@@ -112,7 +87,7 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
       const { data, error } = await supabase.functions.invoke("cashout-minutes", {
         body: {
           action: "request-cashout",
-          minutes_amount: giftedMinutes,
+          cash_amount: availableCash,
           paypal_email: paypalEmail,
         },
       });
@@ -218,12 +193,11 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
               />
             </div>
 
-            {!canCashout && giftedMinutes < minCashout && (
+            {!canCashout && availableCash <= 0 && !hasPending && (
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
-                <p className="text-amber-400 text-sm font-bold">⚠️ Minimum not reached</p>
+                <p className="text-amber-400 text-sm font-bold">⚠️ No cash available</p>
                 <p className="text-white/50 text-sm mt-1">
-                  You need at least <span className="text-white font-bold">{minCashout} gifted minutes</span> to cash out.
-                  You currently have <span className="text-white font-bold">{giftedMinutes}</span>.
+                  Complete challenges with cash rewards to earn money you can cash out.
                 </p>
               </div>
             )}
