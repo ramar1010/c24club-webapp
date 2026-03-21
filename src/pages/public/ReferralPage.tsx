@@ -9,7 +9,6 @@ import { toast } from "sonner";
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   const handleBack = () => {
