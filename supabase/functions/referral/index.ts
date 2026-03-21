@@ -7,6 +7,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const emptyReferralState = {
+  code: null,
+  referrals: [],
+  totalEarned: 0,
+  pendingEarnings: 0,
+  totalReferrals: 0,
+  engagedCount: 0,
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -19,46 +34,63 @@ serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.replace("Bearer ", "");
 
+  const adminClient = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+
+  const anonClient = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false },
+    global: authHeader
+      ? {
+          headers: {
+            Authorization: authHeader,
+          },
+        }
+      : undefined,
+  });
+
+  const getAuthenticatedUserId = async () => {
+    if (!authHeader.startsWith("Bearer ") || !token) {
+      return null;
+    }
+
+    const { data, error } = await anonClient.auth.getClaims(token);
+    if (error || !data?.claims?.sub) {
+      return null;
+    }
+
+    return data.claims.sub;
+  };
+
   try {
     const { action, ...body } = await req.json();
 
     // === generate_code: create a unique referral code for the user ===
     if (action === "generate_code") {
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Not authenticated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
       }
 
-      const adminClient = createClient(supabaseUrl, serviceKey);
-
-      // Check if user already has a code
       const { data: existing } = await adminClient
         .from("referral_codes")
         .select("code")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (existing) {
-        return new Response(JSON.stringify({ code: existing.code }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ code: existing.code });
       }
 
-      // Generate unique 8-char code
-      const code = user.id.slice(0, 4).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+      const code = userId.slice(0, 4).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
 
       const { error } = await adminClient.from("referral_codes").insert({
-        user_id: user.id,
+        user_id: userId,
         code,
       });
       if (error) throw error;
 
-      return new Response(JSON.stringify({ code }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ code });
     }
 
     // === track_signup: called when a new user signs up with a referral code ===
@@ -66,9 +98,6 @@ serve(async (req) => {
       const { referral_code, new_user_id } = body;
       if (!referral_code || !new_user_id) throw new Error("Missing fields");
 
-      const adminClient = createClient(supabaseUrl, serviceKey);
-
-      // Find the referral code
       const { data: codeData } = await adminClient
         .from("referral_codes")
         .select("id, user_id")
@@ -76,21 +105,13 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!codeData) {
-        return new Response(JSON.stringify({ error: "Invalid referral code" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
+        return json({ error: "Invalid referral code" }, 400);
       }
 
-      // Don't allow self-referral
       if (codeData.user_id === new_user_id) {
-        return new Response(JSON.stringify({ error: "Cannot refer yourself" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
+        return json({ error: "Cannot refer yourself" }, 400);
       }
 
-      // Get settings for reward amount
       const { data: settings } = await adminClient
         .from("referral_settings")
         .select("reward_per_referral")
@@ -105,18 +126,13 @@ serve(async (req) => {
         reward_amount: settings?.reward_per_referral ?? 5,
       });
 
-      if (error && error.code !== "23505") throw error; // ignore duplicate
+      if (error && error.code !== "23505") throw error;
 
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ ok: true });
     }
 
     // === check_engagement: called periodically to check if referred users have engaged ===
     if (action === "check_engagement") {
-      const adminClient = createClient(supabaseUrl, serviceKey);
-
-      // Get engagement threshold
       const { data: settings } = await adminClient
         .from("referral_settings")
         .select("engagement_threshold_minutes")
@@ -124,16 +140,13 @@ serve(async (req) => {
         .maybeSingle();
       const threshold = settings?.engagement_threshold_minutes ?? 10;
 
-      // Get all signed_up referrals
       const { data: pending } = await adminClient
         .from("referral_tracking")
         .select("id, referred_user_id")
         .eq("status", "signed_up");
 
       if (!pending?.length) {
-        return new Response(JSON.stringify({ updated: 0 }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ updated: 0 });
       }
 
       let updated = 0;
@@ -156,33 +169,26 @@ serve(async (req) => {
         }
       }
 
-      return new Response(JSON.stringify({ updated }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ updated });
     }
 
     // === my_referrals: get user's referral stats ===
     if (action === "my_referrals") {
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Not authenticated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json(emptyReferralState);
       }
-
-      const adminClient = createClient(supabaseUrl, serviceKey);
 
       const { data: code } = await adminClient
         .from("referral_codes")
         .select("code")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .maybeSingle();
 
       const { data: referrals } = await adminClient
         .from("referral_tracking")
         .select("status, reward_amount, reward_paid, created_at")
-        .eq("referrer_id", user.id)
+        .eq("referrer_id", userId)
         .order("created_at", { ascending: false });
 
       const totalEarned = (referrals || [])
@@ -193,34 +199,25 @@ serve(async (req) => {
         .filter((r: any) => r.status === "engaged" && !r.reward_paid)
         .reduce((sum: number, r: any) => sum + Number(r.reward_amount), 0);
 
-      return new Response(
-        JSON.stringify({
-          code: code?.code ?? null,
-          referrals: referrals || [],
-          totalEarned,
-          pendingEarnings,
-          totalReferrals: referrals?.length ?? 0,
-          engagedCount: referrals?.filter((r: any) => r.status === "engaged").length ?? 0,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({
+        code: code?.code ?? null,
+        referrals: referrals || [],
+        totalEarned,
+        pendingEarnings,
+        totalReferrals: referrals?.length ?? 0,
+        engagedCount: referrals?.filter((r: any) => r.status === "engaged").length ?? 0,
+      });
     }
 
     // === admin_get_all: admin view ===
     if (action === "admin_get_all") {
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Not authenticated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
       }
 
-      const adminClient = createClient(supabaseUrl, serviceKey);
-
-      // Verify admin
       const { data: isAdmin } = await adminClient.rpc("has_role", {
-        _user_id: user.id,
+        _user_id: userId,
         _role: "admin",
       });
       if (!isAdmin) throw new Error("Not authorized");
@@ -236,32 +233,24 @@ serve(async (req) => {
         .limit(1)
         .maybeSingle();
 
-      return new Response(
-        JSON.stringify({ tracking: tracking || [], settings }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ tracking: tracking || [], settings });
     }
 
     // === admin_update_settings ===
     if (action === "admin_update_settings") {
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Not authenticated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
       }
 
-      const adminClient = createClient(supabaseUrl, serviceKey);
       const { data: isAdmin } = await adminClient.rpc("has_role", {
-        _user_id: user.id,
+        _user_id: userId,
         _role: "admin",
       });
       if (!isAdmin) throw new Error("Not authorized");
 
       const { reward_per_referral, engagement_threshold_minutes } = body;
 
-      // Update first row
       const { data: existing } = await adminClient
         .from("referral_settings")
         .select("id")
@@ -269,30 +258,27 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        await adminClient.from("referral_settings").update({
-          reward_per_referral,
-          engagement_threshold_minutes,
-        }).eq("id", existing.id);
+        await adminClient
+          .from("referral_settings")
+          .update({
+            reward_per_referral,
+            engagement_threshold_minutes,
+          })
+          .eq("id", existing.id);
       }
 
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ ok: true });
     }
 
     // === admin_pay_referral ===
     if (action === "admin_pay_referral") {
-      const anonClient = createClient(supabaseUrl, anonKey);
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Not authenticated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
       }
 
-      const adminClient = createClient(supabaseUrl, serviceKey);
       const { data: isAdmin } = await adminClient.rpc("has_role", {
-        _user_id: user.id,
+        _user_id: userId,
         _role: "admin",
       });
       if (!isAdmin) throw new Error("Not authorized");
@@ -303,16 +289,11 @@ serve(async (req) => {
         .update({ reward_paid: true })
         .eq("id", tracking_id);
 
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ ok: true });
     }
 
     throw new Error(`Unknown action: ${action}`);
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return json({ error: err.message }, 400);
   }
 });
