@@ -12,6 +12,7 @@ import { useBestieChallenge } from "@/hooks/useBestieChallenge";
 import { useBoyfriendChallenge } from "@/hooks/useBoyfriendChallenge";
 import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 import ChallengeSuggestionForm from "@/components/videocall/ChallengeSuggestionForm";
+import ChallengeMinutesOverlay from "@/components/videocall/ChallengeMinutesOverlay";
 
 /* ─── Theme Presets ─── */
 const THEME_MAP: Record<string, {
