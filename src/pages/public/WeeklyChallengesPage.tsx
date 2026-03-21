@@ -1,5 +1,6 @@
 import { useState } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
+import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -584,6 +585,15 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   src={bestieCutout}
                   alt="Besties taking a selfie"
                   className="absolute -right-4 -top-10 w-20 sm:w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(217,70,239,0.5)] rotate-[4deg] pointer-events-none select-none"
+                />
+              )}
+
+              {/* Boyfriend cutout sticker */}
+              {isBoyfriend && (
+                <img
+                  src={boyfriendCutout}
+                  alt="Couple together"
+                  className="absolute -right-4 -top-10 w-20 sm:w-32 h-auto z-10 drop-shadow-[0_4px_12px_rgba(251,113,133,0.5)] -rotate-[4deg] pointer-events-none select-none"
                 />
               )}
 
