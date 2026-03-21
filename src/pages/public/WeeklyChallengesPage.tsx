@@ -267,6 +267,91 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
   );
 };
 
+/* ─── Speed Connect Progress ─── */
+const SpeedConnectProgress = ({ challenge, submission }: { challenge: any; submission: any }) => {
+  const themeKey = challenge.theme || "amber";
+  const theme = THEME_MAP[themeKey] || THEME_MAP.amber;
+  
+  let targetPeople = 20;
+  try {
+    const action = JSON.parse(challenge.auto_track_action || "null");
+    targetPeople = action?.target || 20;
+  } catch { /* */ }
+  const timeLimitMins = challenge.target_minutes || 30;
+
+  if (submission) {
+    const mStatus = statusConfig[submission.status];
+    return (
+      <div className="relative mt-3">
+        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+          <div className={`h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full`} style={{ width: "100%" }} />
+        </div>
+        {mStatus && (
+          <div className={`flex items-center gap-2 mt-3 ${mStatus.color}`}>
+            <mStatus.icon className="w-4 h-4" />
+            <span className="text-xs font-black">{mStatus.label}</span>
+          </div>
+        )}
+        {submission.status === "approved" && (
+          <p className="text-green-400 text-xs font-bold mt-2">
+            ✅ Reward earned: {challenge.reward_type === "cash" ? `$${challenge.reward_amount}` : `${challenge.reward_amount} min`}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Check localStorage for active session
+  const key = `speed_connect_${challenge.slug}`;
+  const saved = localStorage.getItem(key);
+  let isActive = false;
+  let uniqueCount = 0;
+  let timeLeftStr = "";
+
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      const elapsed = (Date.now() - parsed.startTime) / 1000 / 60;
+      if (elapsed < timeLimitMins) {
+        isActive = true;
+        uniqueCount = parsed.partners?.length || 0;
+        const remaining = Math.ceil((timeLimitMins * 60) - (elapsed * 60));
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        timeLeftStr = `${mins}:${String(secs).padStart(2, "0")}`;
+      }
+    } catch { /* */ }
+  }
+
+  const pct = Math.min(100, (uniqueCount / targetPeople) * 100);
+
+  return (
+    <div className="relative mt-3">
+      {isActive ? (
+        <>
+          <div className="flex justify-between text-[10px] text-neutral-500 font-bold mb-1">
+            <span>{uniqueCount}/{targetPeople} people</span>
+            <span>⏱️ {timeLeftStr}</span>
+          </div>
+          <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+          </div>
+          <div className={`mt-2 flex items-center gap-1.5 text-[11px] font-bold ${theme.accentText} opacity-70`}>
+            <span className="text-base">⚡</span> Auto-tracking — keep connecting!
+          </div>
+        </>
+      ) : (
+        <div className={`mt-2 flex items-center gap-1.5 text-[11px] font-bold ${theme.accentText} opacity-70`}>
+          <span className="text-base">⚡</span> Go to video call and tap START to begin!
+        </div>
+      )}
+      <p className="text-[10px] text-neutral-600 mt-1">
+        Connect to {targetPeople} unique people within {timeLimitMins} min
+      </p>
+    </div>
+  );
+};
+
 /* ─── Page Component ─── */
 const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const { user } = useAuth();
