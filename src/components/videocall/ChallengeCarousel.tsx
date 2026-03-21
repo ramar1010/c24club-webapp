@@ -162,6 +162,24 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
       if (!hasPair) return null;
       return `${dailyLogs.length}/3 days`;
     }
+    // Speed connect progress from localStorage
+    try {
+      const action = JSON.parse(challenge.auto_track_action || "null");
+      if (action?.type === "auto_speed_connect") {
+        const key = `speed_connect_${challenge.slug}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const elapsed = (Date.now() - parsed.startTime) / 1000 / 60;
+          const timeLimitMins = challenge.target_minutes || 30;
+          if (elapsed < timeLimitMins) {
+            const count = parsed.partners?.length || 0;
+            return `${count}/${action.target} people`;
+          }
+        }
+        return `Connect ${action.target} in ${challenge.target_minutes || 30}m`;
+      }
+    } catch { /* */ }
     if (challenge.target_minutes) {
       const key = `${challenge.slug}_minutes`;
       const mins = parseInt(localStorage.getItem(key) || "0", 10);
