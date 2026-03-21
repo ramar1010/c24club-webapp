@@ -316,6 +316,17 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <ChallengeEarningsModal
+          onClose={() => setShowCashout(false)}
+          onSuccess={() => {
+            setShowCashout(false);
+            refetchStatus();
+          }}
+        />
+      )}
     </div>
   );
 };
