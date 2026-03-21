@@ -1,6 +1,7 @@
 import { useState } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
+import blueEyeImg from "@/assets/challenges/blue-eye.jpg";
 import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -597,7 +598,14 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 />
               )}
 
-              {/* Floating emojis */}
+              {/* Blue Eyes Hunt cutout */}
+              {isBlueEyes && (
+                <img
+                  src={blueEyeImg}
+                  alt="Blue eye close-up"
+                  className="absolute -right-3 -top-8 w-16 sm:w-24 h-auto z-10 rounded-xl border-2 border-cyan-400/50 drop-shadow-[0_4px_16px_rgba(34,211,238,0.5)] rotate-[5deg] pointer-events-none select-none animate-[scale-pulse_3s_ease-in-out_infinite] object-cover"
+                />
+              )}
               {emojis.map((emoji: string, i: number) => (
                 <span
                   key={i}
