@@ -553,91 +553,109 @@ const VideoCallPage = () => {
     },
   });
 
-  // ─── Marathon Talk: auto-track 60-min continuous call ───
-  const { data: marathonChallenge } = useQuery({
-    queryKey: ["marathon_challenge"],
+  // ─── Generic Auto-Track: all auto challenges (marathon, girl power, etc.) ───
+  const { data: autoChallenges = [] } = useQuery({
+    queryKey: ["auto_challenges"],
     queryFn: async () => {
       const { data } = await supabase
         .from("weekly_challenges")
         .select("*")
-        .eq("slug", "marathon-talk")
         .eq("is_active", true)
-        .maybeSingle();
-      return data;
+        .eq("challenge_type", "auto")
+        .not("target_minutes", "is", null);
+      // Filter out speed-connect type challenges
+      return (data || []).filter((c: any) => {
+        try {
+          const action = JSON.parse(c.auto_track_action || "null");
+          return !action || action.type !== "auto_speed_connect";
+        } catch { return true; }
+      });
     },
   });
 
-  const { data: marathonSubmission } = useQuery({
-    queryKey: ["marathon_submission", memberId, marathonChallenge?.id],
-    enabled: !!memberId && !!marathonChallenge?.id,
+  const { data: autoSubmissions = [] } = useQuery({
+    queryKey: ["auto_submissions", memberId, autoChallenges.map((c: any) => c.id).join(",")],
+    enabled: !!memberId && autoChallenges.length > 0,
     queryFn: async () => {
       const { data } = await supabase
         .from("challenge_submissions")
         .select("*")
         .eq("user_id", memberId)
-        .eq("challenge_id", marathonChallenge!.id)
-        .maybeSingle();
-      return data;
+        .in("challenge_id", autoChallenges.map((c: any) => c.id));
+      return data || [];
     },
   });
 
-  const marathonStartTimeRef = useRef<number | null>(null);
-  const marathonPartnerRef = useRef<string | null>(null);
-  const marathonSubmittedRef = useRef(false);
+  const autoStartTimesRef = useRef<Record<string, number>>({});
+  const autoPartnersRef = useRef<Record<string, string>>({});
+  const autoSubmittedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const marathonStarted = localStorage.getItem("marathon_talk_started") === "true";
-    if (!marathonStarted || !marathonChallenge || marathonSubmission || marathonSubmittedRef.current) {
-      return;
-    }
+    if (autoChallenges.length === 0 || !memberId) return;
+
+    // Filter to challenges that are started, not yet submitted
+    const activeChallenges = autoChallenges.filter((c: any) => {
+      const startedKey = `${c.slug}_started`;
+      const isStarted = localStorage.getItem(startedKey) === "true";
+      const hasSubmission = autoSubmissions.some((s: any) => s.challenge_id === c.id);
+      return isStarted && !hasSubmission && !autoSubmittedRef.current.has(c.id);
+    });
+
+    if (activeChallenges.length === 0) return;
 
     if (callState === "connected" && currentPartnerId) {
-      // If partner changed, reset timer
-      if (marathonPartnerRef.current !== currentPartnerId) {
-        marathonStartTimeRef.current = Date.now();
-        marathonPartnerRef.current = currentPartnerId;
-        localStorage.setItem("marathon_talk_minutes", "0");
-      }
-      if (!marathonStartTimeRef.current) {
-        marathonStartTimeRef.current = Date.now();
+      // Initialize or reset timers per challenge
+      for (const c of activeChallenges) {
+        if (autoPartnersRef.current[c.id] !== currentPartnerId) {
+          autoStartTimesRef.current[c.id] = Date.now();
+          autoPartnersRef.current[c.id] = currentPartnerId;
+          localStorage.setItem(`${c.slug}_minutes`, "0");
+        }
+        if (!autoStartTimesRef.current[c.id]) {
+          autoStartTimesRef.current[c.id] = Date.now();
+        }
       }
 
       const interval = setInterval(async () => {
-        if (!marathonStartTimeRef.current || marathonSubmittedRef.current) return;
-        const elapsedMin = Math.floor((Date.now() - marathonStartTimeRef.current) / 60000);
-        localStorage.setItem("marathon_talk_minutes", String(elapsedMin));
+        for (const c of activeChallenges) {
+          if (!autoStartTimesRef.current[c.id] || autoSubmittedRef.current.has(c.id)) continue;
+          const elapsedMin = Math.floor((Date.now() - autoStartTimesRef.current[c.id]) / 60000);
+          localStorage.setItem(`${c.slug}_minutes`, String(elapsedMin));
 
-        if (elapsedMin >= 60 && !marathonSubmittedRef.current) {
-          marathonSubmittedRef.current = true;
-          clearInterval(interval);
+          const target = c.target_minutes || 60;
+          if (elapsedMin >= target && !autoSubmittedRef.current.has(c.id)) {
+            autoSubmittedRef.current.add(c.id);
 
-          const { error } = await supabase.from("challenge_submissions").insert({
-            user_id: memberId,
-            challenge_id: marathonChallenge.id,
-            proof_text: `Marathon Talk completed: 60+ minutes continuous call`,
-            status: "pending",
-          });
-
-          if (!error) {
-            toast.success("🏃‍♀️ MARATHON COMPLETE!", {
-              description: "60-minute call achieved! Submitted for review.",
-              duration: 8000,
+            const { error } = await supabase.from("challenge_submissions").insert({
+              user_id: memberId,
+              challenge_id: c.id,
+              proof_text: `${c.title} completed: ${target}+ minutes continuous call`,
+              status: "pending",
             });
-            localStorage.removeItem("marathon_talk_minutes");
+
+            if (!error) {
+              toast.success(`🎉 ${c.title} COMPLETE!`, {
+                description: `${target}-minute call achieved! Submitted for review.`,
+                duration: 8000,
+              });
+              localStorage.removeItem(`${c.slug}_minutes`);
+            }
           }
         }
-      }, 15000); // Check every 15s
+      }, 15000);
 
       return () => clearInterval(interval);
     } else {
-      // Call disconnected — reset
-      if (marathonStartTimeRef.current) {
-        marathonStartTimeRef.current = null;
-        marathonPartnerRef.current = null;
-        localStorage.setItem("marathon_talk_minutes", "0");
+      // Call disconnected — reset all timers
+      for (const c of activeChallenges) {
+        if (autoStartTimesRef.current[c.id]) {
+          delete autoStartTimesRef.current[c.id];
+          delete autoPartnersRef.current[c.id];
+          localStorage.setItem(`${c.slug}_minutes`, "0");
+        }
       }
     }
-  }, [callState, currentPartnerId, marathonChallenge, marathonSubmission, memberId]);
+  }, [callState, currentPartnerId, autoChallenges, autoSubmissions, memberId]);
 
   const isMobile = useIsMobile();
 
