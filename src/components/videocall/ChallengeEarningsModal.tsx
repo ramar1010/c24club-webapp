@@ -109,7 +109,7 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
       const { data, error } = await supabase.functions.invoke("cashout-minutes", {
         body: {
           action: "request-cashout",
-          minutes_amount: giftedMinutes,
+          cash_amount: availableCash,
           paypal_email: paypalEmail,
         },
       });
