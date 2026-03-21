@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 /* ─── Theme Presets ─── */
 const THEME_MAP: Record<string, {
