@@ -5,12 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
   const handleBack = () => {
     if (onClose) {
