@@ -658,7 +658,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
             </div>
           </button>
           <button
-            onClick={() => navigate("/rewards")}
+            onClick={() => navigate("/store")}
             className="flex-1 relative overflow-hidden bg-gradient-to-br from-amber-500/25 via-yellow-600/20 to-orange-500/25 border border-amber-400/40 rounded-2xl py-4 px-4 shadow-[0_0_20px_rgba(245,158,11,0.2)] active:scale-[0.97] transition-transform"
           >
             <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(245,158,11,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
