@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 
 const WAGER_TIERS = [10, 25, 50, 100];
 
@@ -25,6 +26,7 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
   const { data: status, refetch: refetchStatus } = useQuery({
     queryKey: ["wager_status", user?.id],
@@ -254,6 +256,15 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
               <span>Only earned minutes can be wagered. Gifted/cashable minutes are protected. Limits: {status?.max_daily ?? 3}/day, {status?.max_weekly ?? 10}/week.</span>
             </div>
 
+            {/* Cash Out Button */}
+            <button
+              onClick={() => setShowCashout(true)}
+              className="w-full bg-gradient-to-r from-emerald-500/20 to-green-600/20 border border-emerald-400/40 text-emerald-300 font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.97] shadow-[0_0_12px_rgba(52,211,153,0.15)]"
+            >
+              <DollarSign className="w-4 h-4" />
+              CASH OUT EARNINGS
+            </button>
+
             {/* History Toggle */}
             <button
               onClick={() => setShowHistory(true)}
@@ -305,6 +316,17 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <ChallengeEarningsModal
+          onClose={() => setShowCashout(false)}
+          onSuccess={() => {
+            setShowCashout(false);
+            refetchStatus();
+          }}
+        />
+      )}
     </div>
   );
 };
