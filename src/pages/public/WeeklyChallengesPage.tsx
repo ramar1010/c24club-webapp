@@ -566,6 +566,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           const isBestie = challenge.slug === "bestie-challenge";
           const isBoyfriend = challenge.slug === "boyfriend-challenge";
           const isBlueEyes = challenge.slug === "blue-eyes-hunt";
+          const isMarathon = challenge.slug === "marathon-talk";
           const isSpeedConnect = (() => {
             try {
               const action = JSON.parse(challenge.auto_track_action || "null");
