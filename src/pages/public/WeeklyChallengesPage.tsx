@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 /* ─── Theme Presets ─── */
 const THEME_MAP: Record<string, {
@@ -359,6 +360,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const queryClient = useQueryClient();
   const [submittingSlug, setSubmittingSlug] = useState<string | null>(null);
   const [proofText, setProofText] = useState("");
+  const [showCashout, setShowCashout] = useState(false);
 
   const { data: memberGender } = useQuery({
     queryKey: ["member_gender_challenges", user?.id],
@@ -395,6 +397,20 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data || [];
+    },
+  });
+
+  // Fetch user minutes for cashout modal
+  const { data: userMinutesData, refetch: refetchMinutes } = useQuery({
+    queryKey: ["challenge_user_minutes", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data || { total_minutes: 0, gifted_minutes: 0 };
     },
   });
 
@@ -639,7 +655,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Cashout CTA */}
       <button
-        onClick={() => navigate("/rewards")}
+        onClick={() => setShowCashout(true)}
         className="w-full max-w-md mt-8 relative overflow-hidden bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-orange-500/25 border border-amber-400/40 rounded-2xl py-4 px-6 shadow-[0_0_20px_rgba(245,158,11,0.25)] active:scale-[0.97] transition-transform"
       >
         <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(245,158,11,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
@@ -650,6 +666,19 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
           </span>
         </div>
       </button>
+
+      {/* Cashout Modal */}
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={userMinutesData?.total_minutes ?? 0}
+          giftedMinutes={userMinutesData?.gifted_minutes ?? 0}
+          onSuccess={() => {
+            refetchMinutes();
+            queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
+          }}
+        />
+      )}
     </div>
   );
 };
