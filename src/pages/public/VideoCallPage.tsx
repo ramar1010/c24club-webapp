@@ -193,6 +193,13 @@ const VideoCallPage = () => {
 
   const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId, 4000);
 
+  const { isNsfwBlurred, showConfirmPrompt, confirmBan, dismissStrikes } = useNsfwDetection({
+    remoteVideoRef,
+    isConnected: callState === "connected",
+    userId: currentPartnerId || "",
+    viewerUserId: memberId,
+  });
+
   const anchorEarning = useAnchorEarning({
     userId: memberId,
     isOnCall: callState === "connected",
