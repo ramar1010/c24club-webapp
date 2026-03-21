@@ -360,6 +360,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const queryClient = useQueryClient();
   const [submittingSlug, setSubmittingSlug] = useState<string | null>(null);
   const [proofText, setProofText] = useState("");
+  const [showCashout, setShowCashout] = useState(false);
 
   const { data: memberGender } = useQuery({
     queryKey: ["member_gender_challenges", user?.id],
