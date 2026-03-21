@@ -1372,6 +1372,36 @@ export type Database = {
         }
         Relationships: []
       }
+      minute_wagers: {
+        Row: {
+          created_at: string
+          id: string
+          outcome: string
+          prize_amount: number | null
+          prize_type: string | null
+          user_id: string
+          wager_amount: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          outcome?: string
+          prize_amount?: number | null
+          prize_type?: string | null
+          user_id: string
+          wager_amount: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          outcome?: string
+          prize_amount?: number | null
+          prize_type?: string | null
+          user_id?: string
+          wager_amount?: number
+        }
+        Relationships: []
+      }
       notification_cooldowns: {
         Row: {
           email_notify_counter: number
@@ -2130,6 +2160,48 @@ export type Database = {
           show_promo_ads?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      wager_settings: {
+        Row: {
+          cash_win_chance_percent: number
+          double_chance_percent: number
+          id: string
+          jackpot_amount: number
+          jackpot_chance_percent: number
+          lose_chance_percent: number
+          max_daily_wagers: number
+          max_wager_minutes: number
+          max_weekly_wagers: number
+          min_wager_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          cash_win_chance_percent?: number
+          double_chance_percent?: number
+          id?: string
+          jackpot_amount?: number
+          jackpot_chance_percent?: number
+          lose_chance_percent?: number
+          max_daily_wagers?: number
+          max_wager_minutes?: number
+          max_weekly_wagers?: number
+          min_wager_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          cash_win_chance_percent?: number
+          double_chance_percent?: number
+          id?: string
+          jackpot_amount?: number
+          jackpot_chance_percent?: number
+          lose_chance_percent?: number
+          max_daily_wagers?: number
+          max_wager_minutes?: number
+          max_weekly_wagers?: number
+          min_wager_minutes?: number
+          updated_at?: string
         }
         Relationships: []
       }
