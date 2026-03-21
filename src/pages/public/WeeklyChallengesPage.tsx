@@ -559,6 +559,11 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                 );
               })()}
 
+              {/* Speed Connect challenges */}
+              {isSpeedConnect && (
+                <SpeedConnectProgress challenge={challenge} submission={submission} />
+              )}
+
               {/* Auto-tracked challenges (marathon, girl power, etc.) */}
               {isAutoTracked && !isBestie && !isBlueEyes && (
                 <AutoTrackProgress challenge={challenge} submission={submission} />
