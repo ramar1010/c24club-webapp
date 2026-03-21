@@ -184,7 +184,7 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
             if (slide.type === "referral") {
               const referralCount = referralData?.referrals?.filter((r: any) => r.status === "engaged")?.length ?? 0;
               return (
-                <div key="refer-earn" className="flex-[0_0_85%] min-w-0">
+                <div key="refer-earn" className="flex-[0_0_85%] min-w-0 min-h-[68px]">
                   <button
                     onClick={onOpenReferral}
                     className="w-full bg-gradient-to-r from-pink-600/40 via-fuchsia-700/30 to-purple-900/50 border-pink-400/50 border rounded-xl shadow-[0_0_18px_rgba(236,72,153,0.3)] p-3 flex items-center gap-3 transition-all active:scale-[0.97] relative overflow-hidden"
