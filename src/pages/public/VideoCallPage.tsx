@@ -8,6 +8,7 @@ import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
+import { useSpeedConnectChallenge } from "@/hooks/useSpeedConnectChallenge";
 import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
