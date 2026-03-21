@@ -200,18 +200,17 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
     { type: "referral" as const, id: "refer-earn" },
   ];
 
-  // Calculate total cash value of all visible challenges
-  const totalCashValue = visibleChallenges.reduce((sum: number, c: any) => {
-    if (c.reward_type === "cash") return sum + (c.reward_amount || 0);
-    return sum;
+  // Calculate total value of all visible challenges
+  const totalValue = visibleChallenges.reduce((sum: number, c: any) => {
+    return sum + (c.reward_amount || 0);
   }, 0);
 
   return (
     <div className="w-full max-w-[420px] mx-auto px-2 pb-1">
-      {totalCashValue > 0 && (
+      {totalValue > 0 && (
         <p className="text-center mb-0.5">
           <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]">
-            💰 ${totalCashValue} in challenges available! 💰
+            💰 ${totalValue} in challenges available! 💰
           </span>
         </p>
       )}
