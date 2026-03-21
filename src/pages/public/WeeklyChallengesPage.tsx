@@ -281,7 +281,7 @@ const BlueEyesProgress = ({ submissions }: { submissions: any[] }) => {
   const allDone = totalApproved >= 2;
   return (
     <div className="relative mt-3 space-y-2">
-      {allDone && <p className="text-green-400 text-xs font-black">🎉 CHALLENGE COMPLETE! 100 bonus minutes earned!</p>}
+      {allDone && <p className="text-green-400 text-xs font-black">🎉 CHALLENGE COMPLETE! $25 earned!</p>}
       <div className="flex items-center gap-3">
         {[1, 2].map((slot) => {
           const snap = submissions[slot - 1];
