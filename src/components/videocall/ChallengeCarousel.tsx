@@ -46,7 +46,7 @@ const EMOJI_MAP: Record<string, string> = {
   fuchsia: "👯‍♀️",
   cyan: "👀",
   emerald: "🏃‍♀️",
-  rose: "👩‍💻",
+  rose: "💕",
   amber: "🏆",
   violet: "✨",
 };
