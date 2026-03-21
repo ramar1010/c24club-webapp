@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, DollarSign, Search, Star } from "lucide-react";
+import { Coins, DollarSign, Search, Star, Dices } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ManageMinutesPage = () => {
   const [searchEmail, setSearchEmail] = useState("");
@@ -13,6 +14,8 @@ const ManageMinutesPage = () => {
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [adPointsToAdd, setAdPointsToAdd] = useState("");
   const [cashBalanceToAdd, setCashBalanceToAdd] = useState("");
+  const [wagerAmount, setWagerAmount] = useState("");
+  const [wagerStatus, setWagerStatus] = useState("pending");
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
 
