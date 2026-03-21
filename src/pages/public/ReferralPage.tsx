@@ -179,7 +179,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
       )}
 
       {/* Cashout Modal */}
-      {showCashout && <ChallengeEarningsModal onClose={() => setShowCashout(false)} />}
+      {showCashout && <ChallengeEarningsModal onClose={() => setShowCashout(false)} onSuccess={() => setShowCashout(false)} />}
     </div>
   );
 };
