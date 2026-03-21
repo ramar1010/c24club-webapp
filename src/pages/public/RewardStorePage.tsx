@@ -117,6 +117,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [showPaypalPrompt, setShowPaypalPrompt] = useState<any | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [cashingOut, setCashingOut] = useState(false);
+  const [showCashoutModal, setShowCashoutModal] = useState(false);
   const reelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
