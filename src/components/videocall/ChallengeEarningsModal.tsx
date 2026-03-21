@@ -64,30 +64,8 @@ const ChallengeEarningsModal = ({ onClose, onSuccess }: ChallengeEarningsModalPr
     },
   });
 
-  // Fetch user's gifted minutes balance (challenge cash is stored here)
-  const { data: minutesData } = useQuery({
-    queryKey: ["challenge_gifted_balance", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data || { total_minutes: 0, gifted_minutes: 0 };
-    },
-  });
 
-  // Fetch cashout settings
-  const { data: settings } = useQuery({
-    queryKey: ["cashout_settings_modal"],
-    queryFn: async () => {
-      const { data } = await supabase.functions.invoke("cashout-minutes", {
-        body: { action: "get-settings" },
-      });
-      return data?.settings || null;
-    },
-  });
+
 
   const totalEarned = cashEarnings.reduce((sum: number, e: CashEarning) => sum + e.cash_amount, 0);
   const totalCashedOut = cashoutHistory
