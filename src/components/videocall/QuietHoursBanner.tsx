@@ -293,10 +293,11 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
             </div>
           </div>
 
-          {/* Social proof + urgency */}
+          {/* Explanation */}
           <p className="text-white/60 text-xs leading-relaxed">
-            Pick the slots that work for you — we'll only remind you about those. During scheduled sessions, 
-            users connect <span className="text-green-400 font-bold">5x faster</span>.
+            🎯 <span className="text-white/90 font-semibold">Why pick slots?</span> Everyone logs on at the same time = 
+            <span className="text-green-400 font-bold"> instant matches</span>. Pick the sessions you can actually make it to 
+            and we'll text you 5 min before so you don't miss out.
           </p>
 
           {/* Slot picker */}
