@@ -195,6 +195,7 @@ const DiscoverPage = () => {
                   myGender={myGender}
                   isOwner={adminUserIds.has(member.id)}
                   isVip={vipUserIds.has(member.id)}
+                  isSelf={member.id === user?.id}
                 />
               ))}
             </div>

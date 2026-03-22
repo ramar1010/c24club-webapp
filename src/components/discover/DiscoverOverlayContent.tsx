@@ -152,6 +152,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
                 mutualSocials={mutualSocials.get(member.id)}
                 onInterest={handleInterest}
                 myGender={myGender}
+                isSelf={member.id === user?.id}
               />
             ))}
           </div>
