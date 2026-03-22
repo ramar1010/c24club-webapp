@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ interface BlueEyesSnapButtonProps {
   snapsCount: number;
   maxSnaps: number;
   onSnapTaken: () => void;
+  onDisable?: () => void;
 }
 
 export default function BlueEyesSnapButton({
@@ -19,6 +20,7 @@ export default function BlueEyesSnapButton({
   snapsCount,
   maxSnaps,
   onSnapTaken,
+  onDisable,
 }: BlueEyesSnapButtonProps) {
   const [snapping, setSnapping] = useState(false);
 
