@@ -62,7 +62,7 @@ const memberColumns: DataTableColumn<Member>[] = [
     key: "minutes",
     header: "Minutes",
     render: (row) => (
-      <span className="font-mono text-sm">{row.minutes ?? 0}</span>
+      <span className="font-mono text-sm text-foreground">{row.minutes ?? 0}</span>
     ),
   },
   {
