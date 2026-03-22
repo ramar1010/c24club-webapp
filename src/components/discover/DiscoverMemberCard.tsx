@@ -82,7 +82,7 @@ const DiscoverMemberCard = ({
   return (
     <>
       <div
-        className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors ${member.image_url ? "cursor-pointer" : ""}`}
+        className={`relative group rounded-xl overflow-hidden bg-white/5 border ${isSelf ? "border-cyan-500/50 ring-1 ring-cyan-500/30" : isOwner ? "border-amber-500/50 ring-1 ring-amber-500/30" : "border-white/10"} hover:border-white/20 transition-colors ${member.image_url ? "cursor-pointer" : ""}`}
         onClick={openFullImage}
       >
         {/* Badges */}
