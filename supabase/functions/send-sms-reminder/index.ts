@@ -166,14 +166,36 @@ serve(async (req) => {
         });
       }
 
+      const cleanNumber = phone_number.replace(/\D/g, "");
+
       const { error: upsertErr } = await supabase
         .from("sms_reminder_optins")
         .upsert(
-          { user_id: user.id, phone_number: phone_number.replace(/\D/g, ""), is_active: true },
+          { user_id: user.id, phone_number: cleanNumber, is_active: true },
           { onConflict: "user_id" }
         );
 
       if (upsertErr) throw upsertErr;
+
+      // Send confirmation SMS immediately
+      try {
+        const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before each live video chat window. Reply STOP to unsubscribe.`;
+        const smsRes = await fetch("https://rest.nexmo.com/sms/json", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: VONAGE_API_KEY,
+            api_secret: VONAGE_API_SECRET,
+            from: VONAGE_FROM_NUMBER,
+            to: cleanNumber,
+            text: confirmMsg,
+          }),
+        });
+        const smsData = await smsRes.json();
+        console.log("Confirmation SMS result:", JSON.stringify(smsData));
+      } catch (smsErr) {
+        console.error("Failed to send confirmation SMS:", smsErr);
+      }
 
       return new Response(
         JSON.stringify({ success: true }),
