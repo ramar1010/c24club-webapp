@@ -28,6 +28,7 @@ import {
   Camera,
   MousePointerClick,
   Dices,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 
