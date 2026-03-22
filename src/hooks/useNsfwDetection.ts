@@ -62,6 +62,7 @@ export function useNsfwDetection({
       setIsNsfwBlurred(false);
     }
     loadedUserIdRef.current = targetUserId;
+    let isMounted = true;
 
     supabase
       .from("member_minutes")
@@ -73,12 +74,13 @@ export function useNsfwDetection({
         if (error) return;
         const raw = Number((data as any)?.nsfw_strikes ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
+        strikesRef.current = strikes;
         setNsfwStrikes(strikes);
         if (strikes >= maxStrikes) setShowConfirmPrompt(true);
       });
 
     return () => { isMounted = false; };
-  }, [getValidatedTargetUserId, maxStrikes]);
+  }, [getValidatedTargetUserId, maxStrikes, persistAcrossPartners]);
 
   // Load nsfwjs model
   useEffect(() => {
