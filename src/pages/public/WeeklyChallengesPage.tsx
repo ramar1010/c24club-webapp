@@ -741,6 +741,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
               {/* Blue Eyes Hunt */}
               {isBlueEyes && (() => {
+                resetIfStaleWeek("blue_eyes_hunt_started");
                 const huntStarted = localStorage.getItem("blue_eyes_hunt_started") === "true";
                 const blueSubmissions = submissions.filter((s: any) => s.challenge_id === challenge.id);
                 return huntStarted || blueSubmissions.length > 0 ? (
