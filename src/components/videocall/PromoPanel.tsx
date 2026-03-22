@@ -51,6 +51,7 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [totalLinkClicks, setTotalLinkClicks] = useState(0);
   const [linkClicksClaimed, setLinkClicksClaimed] = useState(0);
   const [claimingReward, setClaimingReward] = useState(false);
+  const [totalMembers, setTotalMembers] = useState(0);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -71,6 +72,9 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
         setIsVip(data?.is_vip ?? false);
         setIsPremiumVip(data?.is_vip === true && data?.vip_tier === "premium");
       });
+    // Fetch total member count for reach estimate
+    supabase.from("members").select("id", { count: "exact", head: true })
+      .then(({ count }) => setTotalMembers(count ?? 0));
   }, [userId]);
 
   // Fetch link clicks on mount for Premium VIP banner
