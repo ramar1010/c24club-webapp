@@ -755,6 +755,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   <button
                     onClick={() => {
                       localStorage.setItem("blue_eyes_hunt_started", "true");
+                      stampWeek("blue_eyes_hunt_started");
                       toast.success("👁️ Blue Eyes Hunt activated!", { description: "The snap button will appear during your next call." });
                       setSubmittingSlug((prev) => prev === "__force" ? "" : "__force");
                       setTimeout(() => setSubmittingSlug(""), 50);
