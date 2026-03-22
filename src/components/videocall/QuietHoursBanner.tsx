@@ -297,8 +297,9 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
                   Remind Me
                 </Button>
               </div>
-              <p className="text-white/30 text-[10px] text-center">
-                One text before the session. No spam, unsubscribe anytime.
+              <p className="text-white/30 text-[10px] text-center leading-relaxed">
+                By clicking "Remind Me," you consent to receive automated SMS reminders about upcoming sessions. 
+                Message & data rates may apply. Reply STOP to unsubscribe at any time. No spam — max 1 text per session.
               </p>
             </div>
           )}
