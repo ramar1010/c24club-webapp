@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
-import { toast } from "sonner";
 
 interface SpeedConnectConfig {
   challengeId: string;
