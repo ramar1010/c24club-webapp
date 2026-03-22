@@ -34,6 +34,7 @@ export function useNsfwDetection({
   const lastStrikeAtRef = useRef(0);
   const strikesRef = useRef(0);
   const lastValidTargetRef = useRef<string | null>(null);
+  const pendingBanUserIdRef = useRef<string | null>(null);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
@@ -41,6 +42,10 @@ export function useNsfwDetection({
     lastValidTargetRef.current = userId;
     return userId;
   }, [userId, viewerUserId]);
+
+  const getActionTargetUserId = useCallback(() => {
+    return pendingBanUserIdRef.current || getValidatedTargetUserId() || lastValidTargetRef.current;
+  }, [getValidatedTargetUserId]);
 
   // Load persisted strikes when monitored user changes
   useEffect(() => {
@@ -50,19 +55,23 @@ export function useNsfwDetection({
       if (!persistAcrossPartners) {
         lastStrikeAtRef.current = 0;
         strikesRef.current = 0;
+        pendingBanUserIdRef.current = null;
         setNsfwStrikes(0);
         setShowConfirmPrompt(false);
       }
       setIsNsfwBlurred(false);
       return;
     }
+
     if (loadedUserIdRef.current !== targetUserId && !persistAcrossPartners) {
       lastStrikeAtRef.current = 0;
       strikesRef.current = 0;
+      pendingBanUserIdRef.current = null;
       setNsfwStrikes(0);
       setShowConfirmPrompt(false);
       setIsNsfwBlurred(false);
     }
+
     loadedUserIdRef.current = targetUserId;
     let isMounted = true;
 
@@ -74,20 +83,30 @@ export function useNsfwDetection({
       .then(({ data, error }) => {
         if (!isMounted || loadedUserIdRef.current !== targetUserId) return;
         if (error) return;
+
         const raw = Number((data as any)?.nsfw_strikes ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
-        if (strikes >= maxStrikes) setShowConfirmPrompt(true);
+
+        if (strikes >= maxStrikes) {
+          pendingBanUserIdRef.current = targetUserId;
+          setShowConfirmPrompt(true);
+        } else if (pendingBanUserIdRef.current === targetUserId) {
+          pendingBanUserIdRef.current = null;
+        }
       });
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [getValidatedTargetUserId, maxStrikes, persistAcrossPartners]);
 
   // Load nsfwjs model
   useEffect(() => {
     if (loadingRef.current || modelRef.current) return;
     loadingRef.current = true;
+
     (async () => {
       try {
         const tf = await import("@tensorflow/tfjs");
@@ -113,27 +132,40 @@ export function useNsfwDetection({
   }, [isConnected]);
 
   // Persist strikes to DB
-  const persistStrike = useCallback(async (newCount: number) => {
-    const targetUserId = getValidatedTargetUserId();
-    if (!targetUserId) return;
-    const safeCount = Math.min(maxStrikes, Math.max(0, Math.floor(newCount)));
-    await supabase
-      .from("member_minutes")
-      .update({ nsfw_strikes: safeCount } as any)
-      .eq("user_id", targetUserId);
-  }, [getValidatedTargetUserId, maxStrikes]);
+  const persistStrike = useCallback(
+    async (newCount: number, targetUserIdOverride?: string | null) => {
+      const targetUserId =
+        targetUserIdOverride ||
+        pendingBanUserIdRef.current ||
+        getValidatedTargetUserId() ||
+        lastValidTargetRef.current;
+
+      if (!targetUserId) return;
+
+      const safeCount = Math.min(maxStrikes, Math.max(0, Math.floor(newCount)));
+      await supabase
+        .from("member_minutes")
+        .update({ nsfw_strikes: safeCount } as any)
+        .eq("user_id", targetUserId);
+    },
+    [getValidatedTargetUserId, maxStrikes]
+  );
 
   // Periodic detection
   useEffect(() => {
     if (!isConnected) return;
     const targetUserId = getValidatedTargetUserId();
-    if (!targetUserId) { setIsNsfwBlurred(false); return; }
+    if (!targetUserId) {
+      setIsNsfwBlurred(false);
+      return;
+    }
 
     if (!canvasRef.current) {
       canvasRef.current = document.createElement("canvas");
       canvasRef.current.width = 224;
       canvasRef.current.height = 224;
     }
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
@@ -153,6 +185,8 @@ export function useNsfwDetection({
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
+          lastValidTargetRef.current = targetUserId;
+
           const now = Date.now();
           if (strikesRef.current < maxStrikes && now - lastStrikeAtRef.current >= strikeCooldownMs) {
             lastStrikeAtRef.current = now;
@@ -160,8 +194,13 @@ export function useNsfwDetection({
             strikesRef.current = next;
             setNsfwStrikes(next);
             console.log(`[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
-            persistStrike(next);
-            if (next >= maxStrikes) setShowConfirmPrompt(true);
+            void persistStrike(next, targetUserId);
+
+            if (next >= maxStrikes) {
+              pendingBanUserIdRef.current = targetUserId;
+              console.log("[NSFW] Showing confirm prompt for:", targetUserId);
+              setShowConfirmPrompt(true);
+            }
           }
         } else {
           setIsNsfwBlurred(false);
@@ -172,38 +211,54 @@ export function useNsfwDetection({
     }, checkIntervalMs);
 
     return () => clearInterval(interval);
-  }, [isConnected, checkIntervalMs, nudityThreshold, maxStrikes, strikeCooldownMs, remoteVideoRef, persistStrike, getValidatedTargetUserId]);
+  }, [
+    isConnected,
+    checkIntervalMs,
+    nudityThreshold,
+    maxStrikes,
+    strikeCooldownMs,
+    remoteVideoRef,
+    persistStrike,
+    getValidatedTargetUserId,
+  ]);
 
   // Called when user clicks "Yes" — ban the target
   const confirmBan = useCallback(async () => {
-    const targetUserId = getValidatedTargetUserId() || lastValidTargetRef.current;
+    const targetUserId = getActionTargetUserId();
     if (!targetUserId) {
       console.error("[NSFW] No valid target user ID for ban");
       return;
     }
+
     console.log("[NSFW] Banning user:", targetUserId);
+
     try {
-      await supabase.functions.invoke("nsfw-ban", { body: { targetUserId } });
-      console.log("[NSFW] Ban request sent successfully");
+      const { data, error } = await supabase.functions.invoke("nsfw-ban", { body: { targetUserId } });
+      if (error) throw error;
+
+      console.log("[NSFW] Ban request sent successfully", data);
+      setShowConfirmPrompt(false);
+      strikesRef.current = 0;
+      setNsfwStrikes(0);
+      setIsNsfwBlurred(false);
+      pendingBanUserIdRef.current = null;
+      lastValidTargetRef.current = null;
     } catch (err) {
       console.error("[NSFW] Ban failed:", err);
     }
-    setShowConfirmPrompt(false);
-    strikesRef.current = 0;
-    setNsfwStrikes(0);
-    setIsNsfwBlurred(false);
-    lastValidTargetRef.current = null;
-  }, [getValidatedTargetUserId]);
+  }, [getActionTargetUserId]);
 
   // Called when user clicks "No" — reset all strikes
   const dismissStrikes = useCallback(async () => {
+    const targetUserId = getActionTargetUserId();
     lastStrikeAtRef.current = 0;
     strikesRef.current = 0;
     setNsfwStrikes(0);
     setShowConfirmPrompt(false);
     setIsNsfwBlurred(false);
-    await persistStrike(0);
-  }, [persistStrike]);
+    pendingBanUserIdRef.current = null;
+    await persistStrike(0, targetUserId);
+  }, [getActionTargetUserId, persistStrike]);
 
   return { isNsfwBlurred, nsfwStrikes, showConfirmPrompt, confirmBan, dismissStrikes };
 }
