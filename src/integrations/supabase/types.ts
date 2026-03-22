@@ -1983,6 +1983,35 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_signups: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          window_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          window_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          window_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_signups_window_id_fkey"
+            columns: ["window_id"]
+            isOneToOne: false
+            referencedRelation: "call_windows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sms_campaign_sends: {
         Row: {
           campaign_id: string
