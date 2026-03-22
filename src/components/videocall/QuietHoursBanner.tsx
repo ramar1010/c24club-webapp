@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Bell, BellOff, X, Users, Zap, TrendingUp } from "lucide-react";
+import { Clock, Bell, BellOff, X, Users, Zap, TrendingUp, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface CallWindow {
@@ -16,10 +16,18 @@ interface CallWindow {
 }
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const FULL_DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function timeToMinutes(t: string) {
   const [h, m] = t.split(":").map(Number);
   return h * 60 + m;
+}
+
+function formatTime12(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${ampm}`;
 }
 
 function getNextWindow(windows: CallWindow[]): { window: CallWindow; startsIn: number } | null {
@@ -60,7 +68,7 @@ function isInsideAnyWindow(windows: CallWindow[]): boolean {
 
 /** Generate a believable fake waiting count that drifts slowly */
 function useFakeWaitingCount() {
-  const baseRef = useRef(Math.floor(Math.random() * 30) + 18); // 18–47
+  const baseRef = useRef(Math.floor(Math.random() * 30) + 18);
   const [count, setCount] = useState(baseRef.current);
 
   useEffect(() => {
@@ -80,6 +88,7 @@ interface Props {
 }
 
 const QuietHoursBanner = ({ userId, isSearching }: Props) => {
+  const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState("");
@@ -111,6 +120,57 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
         .maybeSingle();
       return data;
     },
+  });
+
+  // Fetch user's slot signups
+  const { data: mySignups = [] } = useQuery({
+    queryKey: ["slot_signups_mine", userId],
+    enabled: userId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("slot_signups")
+        .select("window_id")
+        .eq("user_id", userId);
+      return (data || []).map((s: any) => s.window_id as string);
+    },
+  });
+
+  // Fetch signup counts per window
+  const { data: signupCounts = {} } = useQuery({
+    queryKey: ["slot_signup_counts"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("slot_signups")
+        .select("window_id");
+      const counts: Record<string, number> = {};
+      for (const row of data || []) {
+        counts[row.window_id] = (counts[row.window_id] || 0) + 1;
+      }
+      return counts;
+    },
+  });
+
+  const toggleSlotMutation = useMutation({
+    mutationFn: async ({ windowId, isSignedUp }: { windowId: string; isSignedUp: boolean }) => {
+      if (isSignedUp) {
+        const { error } = await supabase
+          .from("slot_signups")
+          .delete()
+          .eq("user_id", userId)
+          .eq("window_id", windowId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("slot_signups")
+          .insert({ user_id: userId, window_id: windowId });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slot_signups_mine", userId] });
+      queryClient.invalidateQueries({ queryKey: ["slot_signup_counts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const isOptedIn = optin?.is_active ?? false;
@@ -171,13 +231,17 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
       toast.error("Please enter a valid phone number");
       return;
     }
+    if (mySignups.length === 0) {
+      toast.error("Pick at least one slot you'll attend first!");
+      return;
+    }
     setSubmitting(true);
     try {
       const { error } = await supabase.functions.invoke("send-sms-reminder", {
         body: { action: "optin", phone_number: phone },
       });
       if (error) throw error;
-      toast.success("You'll get a text before the next session starts!");
+      toast.success("You'll get a text before your selected sessions!");
       refetchOptin();
     } catch {
       toast.error("Failed to opt in. Try again.");
@@ -203,11 +267,11 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-amber-600/40 relative">
+      <div className="mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-amber-600/40 relative max-h-[90vh] overflow-y-auto">
         {/* Gradient header */}
-        <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 px-5 py-3 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 px-5 py-3 flex items-center gap-2 sticky top-0 z-10">
           <Clock className="w-5 h-5 text-amber-200" />
-          <span className="text-white font-bold text-sm">Quiet Hours — Low Activity</span>
+          <span className="text-white font-bold text-sm">Quiet Hours — Pick Your Slots</span>
           <button
             onClick={() => { setVisible(false); setDismissed(true); }}
             className="ml-auto text-white/60 hover:text-white transition-colors"
@@ -231,41 +295,76 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
 
           {/* Social proof + urgency */}
           <p className="text-white/60 text-xs leading-relaxed">
-            It's taking longer to find matches right now. During scheduled sessions, 
-            users connect <span className="text-green-400 font-bold">5x faster</span> with 
-            way more people online.
+            Pick the slots that work for you — we'll only remind you about those. During scheduled sessions, 
+            users connect <span className="text-green-400 font-bold">5x faster</span>.
           </p>
 
-          {/* Next session info */}
-          {nextWin && (
-            <div className="bg-neutral-800/80 rounded-xl px-4 py-3 space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-yellow-400" />
-                <span className="text-white text-xs font-bold">Next Session</span>
+          {/* Slot picker */}
+          {windows.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-white/80 text-xs font-semibold">📅 Choose your sessions:</p>
+              <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                {windows.map((w) => {
+                  const isSignedUp = mySignups.includes(w.id);
+                  const count = signupCounts[w.id] || 0;
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => toggleSlotMutation.mutate({ windowId: w.id, isSignedUp })}
+                      disabled={toggleSlotMutation.isPending}
+                      className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all ${
+                        isSignedUp
+                          ? "bg-green-900/40 border border-green-600/50"
+                          : "bg-neutral-800/60 border border-neutral-700/40 hover:border-amber-600/40"
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                        isSignedUp ? "bg-green-500" : "bg-neutral-700"
+                      }`}>
+                        {isSignedUp && <Check className="w-3.5 h-3.5 text-white" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs font-medium truncate">
+                          {FULL_DAY_NAMES[w.day_of_week]} · {formatTime12(w.start_time)} – {formatTime12(w.end_time)}
+                        </p>
+                        {w.label && (
+                          <p className="text-amber-400/70 text-[10px] truncate">{w.label}</p>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-white/40 shrink-0 flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {count}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-white text-sm font-bold">
-                {DAY_NAMES[nextWin.window.day_of_week]}{" "}
-                {nextWin.window.start_time.slice(0, 5)}
-                {nextWin.window.label ? ` — ${nextWin.window.label}` : ""}
-              </p>
-              {countdown && (
-                <p className="text-amber-400 font-mono text-lg font-bold tracking-wide">
-                  {countdown}
+            </div>
+          )}
+
+          {/* Next session countdown */}
+          {nextWin && countdown && (
+            <div className="bg-neutral-800/80 rounded-xl px-4 py-2.5 flex items-center gap-3">
+              <Zap className="w-4 h-4 text-yellow-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-[11px]">
+                  Next: <span className="font-bold">{DAY_NAMES[nextWin.window.day_of_week]} {formatTime12(nextWin.window.start_time)}</span>
                 </p>
-              )}
+              </div>
+              <p className="text-amber-400 font-mono text-sm font-bold">{countdown}</p>
             </div>
           )}
 
           {/* Benefit callout */}
           <div className="flex items-start gap-2 text-[11px] text-white/50">
             <TrendingUp className="w-3.5 h-3.5 text-green-400 mt-0.5 shrink-0" />
-            <span>Get a text <span className="text-white/80 font-semibold">5 min before</span> so you're first in line when everyone logs on.</span>
+            <span>Get a text <span className="text-white/80 font-semibold">5 min before</span> your selected slots so you're first in line.</span>
           </div>
 
           {/* CTA */}
           {isOptedIn ? (
             <div className="text-center space-y-1.5 pt-1">
-              <p className="text-green-400 text-xs font-bold">✅ You'll be notified!</p>
+              <p className="text-green-400 text-xs font-bold">✅ You'll be notified for your selected slots!</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -290,16 +389,21 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
                 <Button
                   size="sm"
                   onClick={handleOptin}
-                  disabled={submitting}
+                  disabled={submitting || mySignups.length === 0}
                   className="h-9 text-sm bg-amber-600 hover:bg-amber-500 gap-1 px-4 font-bold"
                 >
                   <Bell className="w-3.5 h-3.5" />
                   Remind Me
                 </Button>
               </div>
+              {mySignups.length === 0 && (
+                <p className="text-amber-400/80 text-[10px] text-center font-medium">
+                  ☝️ Pick at least one slot above to get reminded
+                </p>
+              )}
               <p className="text-white/30 text-[10px] text-center leading-relaxed">
-                By clicking "Remind Me," you consent to receive automated SMS reminders about upcoming sessions. 
-                Message & data rates may apply. Reply STOP to unsubscribe at any time. No spam — max 1 text per session.
+                By clicking "Remind Me," you consent to receive automated SMS reminders about your selected sessions. 
+                Message & data rates may apply. Reply STOP to unsubscribe at any time. No spam — only your chosen slots.
               </p>
             </div>
           )}
