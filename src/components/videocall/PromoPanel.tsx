@@ -51,6 +51,7 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
   const [totalLinkClicks, setTotalLinkClicks] = useState(0);
   const [linkClicksClaimed, setLinkClicksClaimed] = useState(0);
   const [claimingReward, setClaimingReward] = useState(false);
+  const [totalMembers, setTotalMembers] = useState(0);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -71,6 +72,9 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
         setIsVip(data?.is_vip ?? false);
         setIsPremiumVip(data?.is_vip === true && data?.vip_tier === "premium");
       });
+    // Fetch total member count for reach estimate
+    supabase.from("members").select("id", { count: "exact", head: true })
+      .then(({ count }) => setTotalMembers(count ?? 0));
   }, [userId]);
 
   // Fetch link clicks on mount for Premium VIP banner
@@ -259,7 +263,9 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     fetchMyPromos();
   };
 
-  const reachEstimate = Math.max(0, pointsToUse * 5);
+  const reachEstimate = totalMembers > 0
+    ? Math.min(totalMembers, Math.max(0, Math.round(totalMembers * (pointsToUse / Math.max(pointsToUse + 100, 200)))))
+    : 0;
 
   // Shared header
   const Header = ({ title: headerTitle, backTo }: { title: string; backTo?: PromoView }) => (
