@@ -481,6 +481,9 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const [proofText, setProofText] = useState("");
   const [showCashout, setShowCashout] = useState(false);
   const [showGamble, setShowGamble] = useState(false);
+  const [reportingChallengeId, setReportingChallengeId] = useState<string | null>(null);
+  const [issueText, setIssueText] = useState("");
+  const [submittingIssue, setSubmittingIssue] = useState(false);
   const { data: memberGender } = useQuery({
     queryKey: ["member_gender_challenges", user?.id],
     enabled: !!user,
