@@ -54,6 +54,7 @@ import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
 import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
+import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
