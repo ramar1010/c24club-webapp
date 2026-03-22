@@ -367,6 +367,8 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
       <button
         onClick={() => {
           localStorage.setItem(startedKey, "true");
+          stampWeek(startedKey);
+          stampWeek(storageKey);
           setStarted(true);
           toast.success(`${challenge.title} activated!`, { description: "Your call timer will track automatically." });
         }}
