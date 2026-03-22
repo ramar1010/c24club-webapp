@@ -510,14 +510,17 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
   const visibleChallenges = dbChallenges.filter((c: any) => !c.female_only || isFemale);
 
+  const weekStart = getCurrentWeekStart();
+
   const { data: submissions = [] } = useQuery({
-    queryKey: ["my_challenge_submissions", user?.id],
+    queryKey: ["my_challenge_submissions", user?.id, weekStart],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("challenge_submissions")
         .select("*")
         .eq("user_id", user!.id)
+        .gte("created_at", `${weekStart}T00:00:00Z`)
         .order("created_at", { ascending: false });
       return data || [];
     },
