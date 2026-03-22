@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Navigate, useLocation } from "react-router-dom";
