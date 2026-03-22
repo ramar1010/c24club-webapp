@@ -10,6 +10,7 @@ interface UseNsfwDetectionOptions {
   nudityThreshold?: number;
   maxStrikes?: number;
   strikeCooldownMs?: number;
+  persistAcrossPartners?: boolean;
 }
 
 export function useNsfwDetection({
@@ -17,10 +18,11 @@ export function useNsfwDetection({
   isConnected,
   userId,
   viewerUserId,
-  checkIntervalMs = 5000,
-  nudityThreshold = 0.85,
+  checkIntervalMs = 3000,
+  nudityThreshold = 0.60,
   maxStrikes = 3,
-  strikeCooldownMs = 30000,
+  strikeCooldownMs = 10000,
+  persistAcrossPartners = true,
 }: UseNsfwDetectionOptions) {
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
@@ -30,6 +32,7 @@ export function useNsfwDetection({
   const loadingRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
   const lastStrikeAtRef = useRef(0);
+  const strikesRef = useRef(0);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
@@ -42,20 +45,24 @@ export function useNsfwDetection({
     const targetUserId = getValidatedTargetUserId();
     if (!targetUserId) {
       loadedUserIdRef.current = null;
-      lastStrikeAtRef.current = 0;
-      setNsfwStrikes(0);
-      setShowConfirmPrompt(false);
+      if (!persistAcrossPartners) {
+        lastStrikeAtRef.current = 0;
+        strikesRef.current = 0;
+        setNsfwStrikes(0);
+        setShowConfirmPrompt(false);
+      }
       setIsNsfwBlurred(false);
       return;
     }
-    if (loadedUserIdRef.current !== targetUserId) {
+    if (loadedUserIdRef.current !== targetUserId && !persistAcrossPartners) {
       lastStrikeAtRef.current = 0;
+      strikesRef.current = 0;
       setNsfwStrikes(0);
       setShowConfirmPrompt(false);
       setIsNsfwBlurred(false);
     }
-    let isMounted = true;
     loadedUserIdRef.current = targetUserId;
+    let isMounted = true;
 
     supabase
       .from("member_minutes")
@@ -67,12 +74,13 @@ export function useNsfwDetection({
         if (error) return;
         const raw = Number((data as any)?.nsfw_strikes ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
+        strikesRef.current = strikes;
         setNsfwStrikes(strikes);
         if (strikes >= maxStrikes) setShowConfirmPrompt(true);
       });
 
     return () => { isMounted = false; };
-  }, [getValidatedTargetUserId, maxStrikes]);
+  }, [getValidatedTargetUserId, maxStrikes, persistAcrossPartners]);
 
   // Load nsfwjs model
   useEffect(() => {
@@ -138,21 +146,21 @@ export function useNsfwDetection({
         const predictions = await model.classify(canvas);
         const pornScore = predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
         const hentaiScore = predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
-        const nudityScore = Math.max(pornScore, hentaiScore);
+        const sexyScore = predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
+        const nudityScore = Math.max(pornScore, hentaiScore, sexyScore * 0.7);
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
-          setNsfwStrikes((prev) => {
-            if (prev >= maxStrikes) return maxStrikes;
-            const now = Date.now();
-            if (now - lastStrikeAtRef.current < strikeCooldownMs) return prev;
+          const now = Date.now();
+          if (strikesRef.current < maxStrikes && now - lastStrikeAtRef.current >= strikeCooldownMs) {
             lastStrikeAtRef.current = now;
-            const next = Math.min(maxStrikes, prev + 1);
+            const next = Math.min(maxStrikes, strikesRef.current + 1);
+            strikesRef.current = next;
+            setNsfwStrikes(next);
             console.log(`[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
             persistStrike(next);
             if (next >= maxStrikes) setShowConfirmPrompt(true);
-            return next;
-          });
+          }
         } else {
           setIsNsfwBlurred(false);
         }
@@ -174,6 +182,7 @@ export function useNsfwDetection({
       console.error("[NSFW] Ban failed:", err);
     }
     setShowConfirmPrompt(false);
+    strikesRef.current = 0;
     setNsfwStrikes(0);
     setIsNsfwBlurred(false);
   }, [getValidatedTargetUserId]);
@@ -181,6 +190,7 @@ export function useNsfwDetection({
   // Called when user clicks "No" — reset all strikes
   const dismissStrikes = useCallback(async () => {
     lastStrikeAtRef.current = 0;
+    strikesRef.current = 0;
     setNsfwStrikes(0);
     setShowConfirmPrompt(false);
     setIsNsfwBlurred(false);
