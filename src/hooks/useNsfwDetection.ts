@@ -18,10 +18,11 @@ export function useNsfwDetection({
   isConnected,
   userId,
   viewerUserId,
-  checkIntervalMs = 5000,
-  nudityThreshold = 0.85,
+  checkIntervalMs = 3000,
+  nudityThreshold = 0.60,
   maxStrikes = 3,
-  strikeCooldownMs = 30000,
+  strikeCooldownMs = 10000,
+  persistAcrossPartners = true,
 }: UseNsfwDetectionOptions) {
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
@@ -31,6 +32,7 @@ export function useNsfwDetection({
   const loadingRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
   const lastStrikeAtRef = useRef(0);
+  const strikesRef = useRef(0);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
@@ -43,19 +45,22 @@ export function useNsfwDetection({
     const targetUserId = getValidatedTargetUserId();
     if (!targetUserId) {
       loadedUserIdRef.current = null;
-      lastStrikeAtRef.current = 0;
-      setNsfwStrikes(0);
-      setShowConfirmPrompt(false);
+      if (!persistAcrossPartners) {
+        lastStrikeAtRef.current = 0;
+        strikesRef.current = 0;
+        setNsfwStrikes(0);
+        setShowConfirmPrompt(false);
+      }
       setIsNsfwBlurred(false);
       return;
     }
-    if (loadedUserIdRef.current !== targetUserId) {
+    if (loadedUserIdRef.current !== targetUserId && !persistAcrossPartners) {
       lastStrikeAtRef.current = 0;
+      strikesRef.current = 0;
       setNsfwStrikes(0);
       setShowConfirmPrompt(false);
       setIsNsfwBlurred(false);
     }
-    let isMounted = true;
     loadedUserIdRef.current = targetUserId;
 
     supabase
