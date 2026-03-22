@@ -296,10 +296,12 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
 
           {/* Explanation */}
           <p className="text-white/60 text-xs leading-relaxed">
-            🎯 <span className="text-white/90 font-semibold">Why pick slots?</span> Everyone logs on at the same time = 
-            <span className="text-green-400 font-bold"> instant matches</span>. Pick the sessions you can actually make it to 
-            and we'll text you 5 min before so you don't miss out.
-          </p>
+            🎯 <span className="text-white/90 font-semibold">Why pick slots?</span> Everyone logs on at the same time ={" "}
+            <span className="text-green-400 font-bold">
+              {isFemale
+                ? "instant matches with guys and more money & rewards"
+                : "instant matches with girls"}
+            </span>. Pick the sessions you can make it to and we'll text you 5 min before.</p>
 
           {/* Slot picker */}
           {windows.length > 0 && (
