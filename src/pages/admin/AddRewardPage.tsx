@@ -28,6 +28,7 @@ const rewardSchema = z.object({
   brief: z.string().optional(),
   info: z.string().optional(),
   image_url: z.string().optional(),
+  target_gender: z.string().optional(),
   
   minutes_cost: z.coerce.number().min(0).default(0),
   shipping_fee: z.coerce.number().min(0).default(0),
