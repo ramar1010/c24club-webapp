@@ -934,8 +934,8 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Quiet Hours Banner */}
-      {!isActive && <QuietHoursBanner userId={memberId} />}
+      {/* Quiet Hours Popup - shows after 10s of searching */}
+      <QuietHoursBanner userId={memberId} isSearching={callState === "searching"} />
 
       {/* Video Area */}
       <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0 md:justify-center md:items-center md:max-w-4xl md:mx-auto md:w-full md:flex-none">

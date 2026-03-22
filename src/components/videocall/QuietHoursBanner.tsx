@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Bell, BellOff } from "lucide-react";
+import { Clock, Bell, BellOff, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface CallWindow {
@@ -43,7 +43,6 @@ function getNextWindow(windows: CallWindow[]): { window: CallWindow; startsIn: n
       if (currentMinutes < startMin) {
         minutesUntil = startMin - currentMinutes;
       } else if (currentMinutes < endMin) {
-        // Currently inside this window — not quiet hours for this window
         continue;
       } else {
         minutesUntil = (7 * 24 * 60) - currentMinutes + startMin;
@@ -75,12 +74,16 @@ function isInsideAnyWindow(windows: CallWindow[]): boolean {
 
 interface Props {
   userId: string;
+  isSearching: boolean;
 }
 
-const QuietHoursBanner = ({ userId }: Props) => {
+const QuietHoursBanner = ({ userId, isSearching }: Props) => {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const searchStartRef = useState<number | null>(null);
 
   const { data: windows = [] } = useQuery({
     queryKey: ["call_windows"],
@@ -111,10 +114,28 @@ const QuietHoursBanner = ({ userId }: Props) => {
   const isOptedIn = optin?.is_active ?? false;
   const insideWindow = useMemo(() => isInsideAnyWindow(windows), [windows]);
   const nextWin = useMemo(() => getNextWindow(windows), [windows]);
+  const isQuietHours = windows.length > 0 && !insideWindow;
+
+  // Show popup after 10s of searching during quiet hours
+  useEffect(() => {
+    if (!isSearching || !isQuietHours) {
+      setVisible(false);
+      setDismissed(false);
+      return;
+    }
+
+    if (dismissed) return;
+
+    const timer = setTimeout(() => {
+      setVisible(true);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [isSearching, isQuietHours, dismissed]);
 
   // Update countdown every second
   useEffect(() => {
-    if (!nextWin) return;
+    if (!nextWin || !visible) return;
     const tick = () => {
       const now = new Date();
       const currentDay = now.getDay();
@@ -149,7 +170,7 @@ const QuietHoursBanner = ({ userId }: Props) => {
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
-  }, [nextWin]);
+  }, [nextWin, visible]);
 
   const handleOptin = async () => {
     if (!phone || phone.replace(/\D/g, "").length < 10) {
@@ -186,65 +207,73 @@ const QuietHoursBanner = ({ userId }: Props) => {
     }
   };
 
-  // Don't show banner if no windows configured or we're inside a window
-  if (!windows.length || insideWindow) return null;
+  if (!visible) return null;
 
   return (
-    <div className="mx-3 mb-2 px-4 py-3 bg-amber-900/40 border border-amber-700/50 rounded-xl">
-      <div className="flex items-center gap-2 mb-1">
-        <Clock className="w-4 h-4 text-amber-400" />
-        <span className="text-amber-300 text-sm font-bold">Quiet Hours — Low Activity</span>
-      </div>
-
-      {nextWin && (
-        <p className="text-white/70 text-xs mb-2">
-          Next session:{" "}
-          <span className="text-white font-bold">
-            {DAY_NAMES[nextWin.window.day_of_week]}{" "}
-            {nextWin.window.start_time.slice(0, 5)}
-            {nextWin.window.label ? ` — ${nextWin.window.label}` : ""}
-          </span>
-          {countdown && (
-            <span className="text-amber-400 ml-1 font-mono">({countdown})</span>
-          )}
-        </p>
-      )}
-
-      <p className="text-white/50 text-[11px] mb-2">
-        You can still chat, but matches may take longer. Get notified before the next session!
-      </p>
-
-      {isOptedIn ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleOptout}
-          disabled={submitting}
-          className="text-amber-400 hover:text-amber-300 text-xs gap-1"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="mx-4 w-full max-w-sm px-5 py-4 bg-neutral-900 border border-amber-700/50 rounded-2xl shadow-2xl relative">
+        <button
+          onClick={() => { setVisible(false); setDismissed(true); }}
+          className="absolute top-3 right-3 text-white/50 hover:text-white transition-colors"
         >
-          <BellOff className="w-3 h-3" />
-          Turn off SMS reminders
-        </Button>
-      ) : (
-        <div className="flex items-center gap-2">
-          <Input
-            type="tel"
-            placeholder="+1 555 123 4567"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="h-8 text-xs bg-neutral-800 border-neutral-600 w-40"
-          />
-          <Button
-            size="sm"
-            onClick={handleOptin}
-            disabled={submitting}
-            className="h-8 text-xs bg-amber-600 hover:bg-amber-500 gap-1"
-          >
-            <Bell className="w-3 h-3" />
-            Notify Me
-          </Button>
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-2 mb-2">
+          <Clock className="w-5 h-5 text-amber-400" />
+          <span className="text-amber-300 text-sm font-bold">Quiet Hours — Low Activity</span>
         </div>
-      )}
+
+        <p className="text-white/60 text-xs mb-3">
+          It's taking a bit longer to find a match right now. Come back during a scheduled session for faster connections!
+        </p>
+
+        {nextWin && (
+          <p className="text-white/70 text-xs mb-3">
+            Next session:{" "}
+            <span className="text-white font-bold">
+              {DAY_NAMES[nextWin.window.day_of_week]}{" "}
+              {nextWin.window.start_time.slice(0, 5)}
+              {nextWin.window.label ? ` — ${nextWin.window.label}` : ""}
+            </span>
+            {countdown && (
+              <span className="text-amber-400 ml-1 font-mono text-[11px]">({countdown})</span>
+            )}
+          </p>
+        )}
+
+        {isOptedIn ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleOptout}
+            disabled={submitting}
+            className="text-amber-400 hover:text-amber-300 text-xs gap-1"
+          >
+            <BellOff className="w-3 h-3" />
+            Turn off SMS reminders
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Input
+              type="tel"
+              placeholder="+1 555 123 4567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-8 text-xs bg-neutral-800 border-neutral-600 w-40"
+            />
+            <Button
+              size="sm"
+              onClick={handleOptin}
+              disabled={submitting}
+              className="h-8 text-xs bg-amber-600 hover:bg-amber-500 gap-1"
+            >
+              <Bell className="w-3 h-3" />
+              Remind Me
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
