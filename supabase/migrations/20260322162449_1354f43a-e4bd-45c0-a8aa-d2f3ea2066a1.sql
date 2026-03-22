@@ -1,0 +1,1 @@
+ALTER TABLE public.rewards ADD COLUMN target_gender text DEFAULT null;
