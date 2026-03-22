@@ -1980,6 +1980,71 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_campaign_sends: {
+        Row: {
+          campaign_id: string
+          clicked_at: string | null
+          id: string
+          phone_number: string
+          recipient_gender: string | null
+          sent_at: string
+          tracking_code: string
+        }
+        Insert: {
+          campaign_id: string
+          clicked_at?: string | null
+          id?: string
+          phone_number: string
+          recipient_gender?: string | null
+          sent_at?: string
+          tracking_code: string
+        }
+        Update: {
+          campaign_id?: string
+          clicked_at?: string | null
+          id?: string
+          phone_number?: string
+          recipient_gender?: string | null
+          sent_at?: string
+          tracking_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_campaign_sends_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sms_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_campaigns: {
+        Row: {
+          created_at: string
+          destination_url: string
+          id: string
+          message_template: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          destination_url: string
+          id?: string
+          message_template: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          destination_url?: string
+          id?: string
+          message_template?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_delivery_log: {
         Row: {
           action: string

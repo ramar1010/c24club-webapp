@@ -1,0 +1,88 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Phone } from "lucide-react";
+
+const SmsOptinList = () => {
+  const { data: optins = [], isLoading } = useQuery({
+    queryKey: ["admin_sms_optins_list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sms_reminder_optins")
+        .select("id, phone_number, is_active, created_at, updated_at, user_id")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      // Fetch member names for user_ids
+      const userIds = (data || []).map((o: any) => o.user_id);
+      let memberMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: members } = await supabase
+          .from("members")
+          .select("id, name")
+          .in("id", userIds);
+        if (members) {
+          memberMap = Object.fromEntries(members.map((m: any) => [m.id, m.name]));
+        }
+      }
+
+      return (data || []).map((o: any) => ({
+        ...o,
+        member_name: memberMap[o.user_id] || "Unknown",
+      }));
+    },
+  });
+
+  const activeCount = optins.filter((o: any) => o.is_active).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Phone className="h-5 w-5" />
+          Opted-In Phone Numbers ({activeCount} active)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-muted-foreground">Loading...</p>
+        ) : optins.length === 0 ? (
+          <p className="text-muted-foreground">No opt-ins yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Member</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Opted In</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {optins.map((o: any) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-medium">{o.member_name}</TableCell>
+                    <TableCell className="font-mono text-xs">{o.phone_number}</TableCell>
+                    <TableCell>
+                      <Badge variant={o.is_active ? "default" : "secondary"}>
+                        {o.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(o.created_at).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default SmsOptinList;
