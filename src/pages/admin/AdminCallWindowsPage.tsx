@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Send } from "lucide-react";
+import { Plus, Trash2, Send, RefreshCw } from "lucide-react";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -39,6 +41,19 @@ const AdminCallWindowsPage = () => {
         .select("*", { count: "exact", head: true })
         .eq("is_active", true);
       return count || 0;
+    },
+  });
+
+  const { data: smsLogs = [], isLoading: logsLoading, refetch: refetchLogs } = useQuery({
+    queryKey: ["admin_sms_delivery_log"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sms_delivery_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data as any[];
     },
   });
 
@@ -93,9 +108,16 @@ const AdminCallWindowsPage = () => {
       });
       if (error) throw error;
       toast.success(`SMS blast sent to ${optinCount} subscribers`);
+      refetchLogs();
     } catch (e: any) {
       toast.error("Failed to send blast: " + e.message);
     }
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === "0") return <Badge className="bg-green-600 text-white">Delivered</Badge>;
+    if (status === "fetch_error") return <Badge variant="destructive">Fetch Error</Badge>;
+    return <Badge variant="secondary" className="bg-red-500/20 text-red-400">{status}</Badge>;
   };
 
   return (
@@ -178,6 +200,58 @@ const AdminCallWindowsPage = () => {
                   </Button>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* SMS Delivery Log */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">SMS Delivery Log</CardTitle>
+          <Button variant="outline" size="sm" onClick={() => refetchLogs()} disabled={logsLoading}>
+            <RefreshCw className={`w-3.5 h-3.5 mr-1 ${logsLoading ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {logsLoading ? (
+            <p className="text-muted-foreground">Loading logs...</p>
+          ) : smsLogs.length === 0 ? (
+            <p className="text-muted-foreground">No SMS logs yet. Send a blast or wait for an opt-in to see delivery data.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Error</TableHead>
+                    <TableHead>Network</TableHead>
+                    <TableHead>Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {smsLogs.map((log: any) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {new Date(log.created_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">{log.action}</Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{log.phone_number}</TableCell>
+                      <TableCell>{getStatusBadge(log.vonage_status)}</TableCell>
+                      <TableCell className="text-xs text-destructive max-w-[200px] truncate">
+                        {log.vonage_error_text || "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{log.vonage_network || "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{log.vonage_message_price ? `$${log.vonage_message_price}` : "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

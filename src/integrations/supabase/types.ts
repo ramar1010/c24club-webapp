@@ -1980,6 +1980,51 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_delivery_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          message_text: string | null
+          phone_number: string
+          raw_response: Json | null
+          vonage_error_text: string | null
+          vonage_message_id: string | null
+          vonage_message_price: string | null
+          vonage_network: string | null
+          vonage_remaining_balance: string | null
+          vonage_status: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          message_text?: string | null
+          phone_number: string
+          raw_response?: Json | null
+          vonage_error_text?: string | null
+          vonage_message_id?: string | null
+          vonage_message_price?: string | null
+          vonage_network?: string | null
+          vonage_remaining_balance?: string | null
+          vonage_status?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          message_text?: string | null
+          phone_number?: string
+          raw_response?: Json | null
+          vonage_error_text?: string | null
+          vonage_message_id?: string | null
+          vonage_message_price?: string | null
+          vonage_network?: string | null
+          vonage_remaining_balance?: string | null
+          vonage_status?: string | null
+        }
+        Relationships: []
+      }
       sms_reminder_optins: {
         Row: {
           created_at: string

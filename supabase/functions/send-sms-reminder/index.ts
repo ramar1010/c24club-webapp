@@ -7,6 +7,59 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+async function sendSmsAndLog(
+  supabase: any,
+  { apiKey, apiSecret, from, to, text, action }: {
+    apiKey: string; apiSecret: string; from: string; to: string; text: string; action: string;
+  }
+) {
+  const cleanTo = to.replace(/\D/g, "");
+  let vonageData: any = null;
+  let fetchError: string | null = null;
+
+  try {
+    const res = await fetch("https://rest.nexmo.com/sms/json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        api_key: apiKey,
+        api_secret: apiSecret,
+        from,
+        to: cleanTo,
+        text,
+      }),
+    });
+    vonageData = await res.json();
+  } catch (e) {
+    fetchError = (e as Error).message;
+  }
+
+  const msg = vonageData?.messages?.[0];
+  const logEntry = {
+    action,
+    phone_number: cleanTo,
+    message_text: text,
+    vonage_status: msg?.status ?? (fetchError ? "fetch_error" : "unknown"),
+    vonage_error_text: msg?.["error-text"] ?? fetchError ?? null,
+    vonage_message_id: msg?.["message-id"] ?? null,
+    vonage_network: msg?.network ?? null,
+    vonage_remaining_balance: msg?.["remaining-balance"] ?? null,
+    vonage_message_price: msg?.["message-price"] ?? null,
+    raw_response: vonageData ?? { error: fetchError },
+  };
+
+  // Log to DB (fire and forget, don't block on errors)
+  try {
+    await supabase.from("sms_delivery_log").insert(logEntry);
+  } catch (logErr) {
+    console.error("Failed to write SMS log:", logErr);
+  }
+
+  console.log(`SMS [${action}] to ${cleanTo}: status=${logEntry.vonage_status}, error=${logEntry.vonage_error_text}`);
+
+  return { status: logEntry.vonage_status, error: logEntry.vonage_error_text };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -26,18 +79,18 @@ serve(async (req) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const smsArgs = { apiKey: VONAGE_API_KEY, apiSecret: VONAGE_API_SECRET, from: VONAGE_FROM_NUMBER };
 
   try {
     const body = await req.json();
     const { action } = body;
 
-    // Action: auto_remind — cron-triggered: find windows starting in the next 5 min and blast SMS
+    // Action: auto_remind
     if (action === "auto_remind") {
       const now = new Date();
-      const dayOfWeek = now.getUTCDay(); // 0=Sun
+      const dayOfWeek = now.getUTCDay();
       const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
 
-      // Fetch today's active windows
       const { data: windows, error: winErr } = await supabase
         .from("call_windows")
         .select("*")
@@ -46,11 +99,9 @@ serve(async (req) => {
 
       if (winErr) throw winErr;
 
-      // Find windows starting within the next 5 minutes
-      const upcomingWindows = (windows || []).filter((w) => {
+      const upcomingWindows = (windows || []).filter((w: any) => {
         const [h, m] = w.start_time.split(":").map(Number);
-        const windowMinutes = h * 60 + m;
-        const diff = windowMinutes - currentMinutes;
+        const diff = h * 60 + m - currentMinutes;
         return diff >= 0 && diff <= 5;
       });
 
@@ -73,23 +124,10 @@ serve(async (req) => {
         const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.lovable.app/videocall Reply STOP to unsubscribe.`;
 
         for (const optin of optins || []) {
-          try {
-            const res = await fetch("https://rest.nexmo.com/sms/json", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                api_key: VONAGE_API_KEY,
-                api_secret: VONAGE_API_SECRET,
-                from: VONAGE_FROM_NUMBER,
-                to: optin.phone_number.replace(/\D/g, ""),
-                text: message,
-              }),
-            });
-            const data = await res.json();
-            allResults.push({ phone: optin.phone_number, window: win.label, status: data.messages?.[0]?.status || "unknown" });
-          } catch (e) {
-            allResults.push({ phone: optin.phone_number, window: win.label, status: "error", error: (e as Error).message });
-          }
+          const result = await sendSmsAndLog(supabase, {
+            ...smsArgs, to: optin.phone_number, text: message, action: "auto_remind",
+          });
+          allResults.push({ phone: optin.phone_number, window: win.label, ...result });
         }
       }
 
@@ -99,7 +137,7 @@ serve(async (req) => {
       );
     }
 
-    // Action: send_reminders — manual blast SMS to all opted-in users about an upcoming window
+    // Action: send_reminders (manual blast)
     if (action === "send_reminders") {
       const { window_label, start_time } = body;
 
@@ -114,23 +152,10 @@ serve(async (req) => {
 
       const results = [];
       for (const optin of optins || []) {
-        try {
-          const res = await fetch("https://rest.nexmo.com/sms/json", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              api_key: VONAGE_API_KEY,
-              api_secret: VONAGE_API_SECRET,
-              from: VONAGE_FROM_NUMBER,
-              to: optin.phone_number.replace(/\D/g, ""),
-              text: message,
-            }),
-          });
-          const data = await res.json();
-          results.push({ phone: optin.phone_number, status: data.messages?.[0]?.status || "unknown" });
-        } catch (e) {
-          results.push({ phone: optin.phone_number, status: "error", error: (e as Error).message });
-        }
+        const result = await sendSmsAndLog(supabase, {
+          ...smsArgs, to: optin.phone_number, text: message, action: "send_reminders",
+        });
+        results.push({ phone: optin.phone_number, ...result });
       }
 
       return new Response(
@@ -139,13 +164,12 @@ serve(async (req) => {
       );
     }
 
-    // Action: optin — user opts in for SMS reminders
+    // Action: optin
     if (action === "optin") {
       const authHeader = req.headers.get("authorization");
       if (!authHeader) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -153,16 +177,14 @@ serve(async (req) => {
       const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
       if (authErr || !user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const { phone_number } = body;
       if (!phone_number || phone_number.replace(/\D/g, "").length < 10) {
         return new Response(JSON.stringify({ error: "Invalid phone number" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -177,25 +199,11 @@ serve(async (req) => {
 
       if (upsertErr) throw upsertErr;
 
-      // Send confirmation SMS immediately
-      try {
-        const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before each live video chat window. Reply STOP to unsubscribe.`;
-        const smsRes = await fetch("https://rest.nexmo.com/sms/json", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            api_key: VONAGE_API_KEY,
-            api_secret: VONAGE_API_SECRET,
-            from: VONAGE_FROM_NUMBER,
-            to: cleanNumber,
-            text: confirmMsg,
-          }),
-        });
-        const smsData = await smsRes.json();
-        console.log("Confirmation SMS result:", JSON.stringify(smsData));
-      } catch (smsErr) {
-        console.error("Failed to send confirmation SMS:", smsErr);
-      }
+      // Send confirmation SMS
+      const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before each live video chat window. Reply STOP to unsubscribe.`;
+      await sendSmsAndLog(supabase, {
+        ...smsArgs, to: cleanNumber, text: confirmMsg, action: "optin_confirm",
+      });
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -210,8 +218,7 @@ serve(async (req) => {
       const { data: { user } } = await supabase.auth.getUser(token || "");
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
