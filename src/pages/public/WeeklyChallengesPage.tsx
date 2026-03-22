@@ -322,6 +322,12 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
   const storageKey = `${challenge.slug}_minutes`;
   const startedKey = `${challenge.slug}_started`;
 
+  // Reset localStorage progress if we're in a new week
+  useEffect(() => {
+    resetIfStaleWeek(storageKey);
+    resetIfStaleWeek(startedKey);
+  }, [storageKey, startedKey]);
+
   // Poll localStorage every 3s so the timer updates live
   const [savedMins, setSavedMins] = useState(() => parseInt(localStorage.getItem(storageKey) || "0", 10));
   const [started, setStarted] = useState(() => localStorage.getItem(startedKey) === "true");
