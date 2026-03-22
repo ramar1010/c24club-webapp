@@ -29,6 +29,7 @@ interface DiscoverMemberCardProps {
   myGender: string | null;
   isOwner?: boolean;
   isVip?: boolean;
+  isSelf?: boolean;
 }
 
 const DiscoverMemberCard = ({
