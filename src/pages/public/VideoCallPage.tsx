@@ -1072,6 +1072,7 @@ const VideoCallPage = () => {
                   myGender={memberGender ?? null}
                   myUserId={memberId}
                   onOpenDiscover={() => setOverlayPage("discover")}
+                  onOpenStore={() => setOverlayPage("store")}
                 />
               </div>
             </div>
