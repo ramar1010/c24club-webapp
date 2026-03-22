@@ -65,17 +65,21 @@ const RewardTeaser = ({ myGender, onOpenStore }: RewardTeaserProps) => {
 
       if (!data) return [];
 
-      return data.filter((r) => {
-        // Always include gift cards for both genders
+      const filtered = data.filter((r) => {
         const isGiftCard = r.type === "giftcard" || r.sub_type === "giftcard";
         if (isGiftCard) return true;
-
-        // Include items with matching target_gender or null (untagged)
         if (!r.target_gender) return true;
         if (gender && r.target_gender === gender) return true;
-
         return false;
-      }).slice(0, 12);
+      });
+
+      // Shuffle randomly
+      for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+      }
+
+      return filtered.slice(0, 12);
     },
   });
 
