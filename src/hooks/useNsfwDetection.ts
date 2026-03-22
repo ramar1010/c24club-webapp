@@ -146,21 +146,21 @@ export function useNsfwDetection({
         const predictions = await model.classify(canvas);
         const pornScore = predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
         const hentaiScore = predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
-        const nudityScore = Math.max(pornScore, hentaiScore);
+        const sexyScore = predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
+        const nudityScore = Math.max(pornScore, hentaiScore, sexyScore * 0.7);
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
-          setNsfwStrikes((prev) => {
-            if (prev >= maxStrikes) return maxStrikes;
-            const now = Date.now();
-            if (now - lastStrikeAtRef.current < strikeCooldownMs) return prev;
+          const now = Date.now();
+          if (strikesRef.current < maxStrikes && now - lastStrikeAtRef.current >= strikeCooldownMs) {
             lastStrikeAtRef.current = now;
-            const next = Math.min(maxStrikes, prev + 1);
+            const next = Math.min(maxStrikes, strikesRef.current + 1);
+            strikesRef.current = next;
+            setNsfwStrikes(next);
             console.log(`[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
             persistStrike(next);
             if (next >= maxStrikes) setShowConfirmPrompt(true);
-            return next;
-          });
+          }
         } else {
           setIsNsfwBlurred(false);
         }
