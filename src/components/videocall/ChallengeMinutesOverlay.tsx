@@ -250,7 +250,7 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
         </button>
 
         {/* Header */}
-        <div className="relative px-5 pb-3 -mt-8">
+        <div className="relative px-5 pb-3 clear-both">
           <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
             CHALLENGE MINUTES
           </h2>
