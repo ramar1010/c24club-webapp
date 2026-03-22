@@ -115,9 +115,9 @@ const AdminCallWindowsPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    if (status === "0") return <Badge className="bg-green-600 text-white">Delivered</Badge>;
+    if (status === "0") return <Badge variant="outline">Accepted by API</Badge>;
     if (status === "fetch_error") return <Badge variant="destructive">Fetch Error</Badge>;
-    return <Badge variant="secondary" className="bg-red-500/20 text-red-400">{status}</Badge>;
+    return <Badge variant="destructive">Failed ({status})</Badge>;
   };
 
   return (
