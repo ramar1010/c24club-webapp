@@ -250,12 +250,12 @@ const MembersPage = () => {
         searchKeys={["name", "email", "country", "gender", "membership"]}
         renderExpandedRow={(row) => (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
-            <div><span className="text-muted-foreground">Title:</span> <span className="font-medium">{row.title}</span></div>
-            <div><span className="text-muted-foreground">City:</span> <span className="font-medium">{row.city}</span></div>
-            <div><span className="text-muted-foreground">State:</span> <span className="font-medium">{row.state}</span></div>
-            <div><span className="text-muted-foreground">Zip:</span> <span className="font-medium">{row.zip}</span></div>
-            <div><span className="text-muted-foreground">Email:</span> <span className="font-medium">{row.email}</span></div>
-            <div><span className="text-muted-foreground">Profession:</span> <span className="font-medium">{row.profession}</span></div>
+            <div><span className="text-muted-foreground">Title:</span> <span className="font-medium text-foreground">{row.title}</span></div>
+            <div><span className="text-muted-foreground">City:</span> <span className="font-medium text-foreground">{row.city}</span></div>
+            <div><span className="text-muted-foreground">State:</span> <span className="font-medium text-foreground">{row.state}</span></div>
+            <div><span className="text-muted-foreground">Zip:</span> <span className="font-medium text-foreground">{row.zip}</span></div>
+            <div><span className="text-muted-foreground">Email:</span> <span className="font-medium text-foreground">{row.email}</span></div>
+            <div><span className="text-muted-foreground">Profession:</span> <span className="font-medium text-foreground">{row.profession}</span></div>
           </div>
         )}
         actions={(row) => (

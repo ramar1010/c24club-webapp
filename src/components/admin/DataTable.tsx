@@ -264,7 +264,7 @@ function DataTable<T extends Record<string, any>>({
                         </TableCell>
                       )}
                       {columns.map((col) => (
-                        <TableCell key={col.key} className={cn("text-sm", col.className)}>
+                        <TableCell key={col.key} className={cn("text-sm text-foreground", col.className)}>
                           {col.render ? col.render(row) : row[col.key] ?? "—"}
                         </TableCell>
                       ))}
