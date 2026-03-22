@@ -129,7 +129,7 @@ const AddRewardPage = () => {
         brief: existingReward.brief || "",
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
-        target_gender: existingReward.target_gender || "",
+        target_gender: existingReward.target_gender || "both",
         
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
