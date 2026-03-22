@@ -40,7 +40,7 @@ const memberColumns: DataTableColumn<Member>[] = [
     key: "id",
     header: "ID",
     className: "w-20",
-    render: (row) => <span className="font-mono text-xs">{row.id.slice(0, 8)}</span>,
+    render: (row) => <span className="font-mono text-xs text-foreground">{row.id.slice(0, 8)}</span>,
   },
   {
     key: "name" as any,
