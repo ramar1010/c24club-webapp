@@ -184,6 +184,7 @@ export const adminMenu: MenuItem[] = [
     title: "Member Challenges",
     submenu: [
       { key: "member-challenges", label: "Member Challenges", path: "/admin/member-challenges" },
+      { key: "challenge-issues", label: "Challenge Issues", path: "/admin/challenge-issues" },
     ],
   },
   {

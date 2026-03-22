@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 import blueEyeImg from "@/assets/challenges/blue-eye.jpg";
-import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart } from "lucide-react";
+import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -481,6 +481,9 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
   const [proofText, setProofText] = useState("");
   const [showCashout, setShowCashout] = useState(false);
   const [showGamble, setShowGamble] = useState(false);
+  const [reportingChallengeId, setReportingChallengeId] = useState<string | null>(null);
+  const [issueText, setIssueText] = useState("");
+  const [submittingIssue, setSubmittingIssue] = useState(false);
   const { data: memberGender } = useQuery({
     queryKey: ["member_gender_challenges", user?.id],
     enabled: !!user,
@@ -545,6 +548,26 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
     queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
   };
 
+  const handleIssueSubmit = async (challengeId: string) => {
+    if (!user || !issueText.trim()) {
+      toast.error("Please describe your issue");
+      return;
+    }
+    setSubmittingIssue(true);
+    const { error } = await supabase.from("challenge_issues").insert({
+      user_id: user.id,
+      challenge_id: challengeId,
+      message: issueText.trim(),
+    });
+    setSubmittingIssue(false);
+    if (error) {
+      toast.error("Failed to submit issue");
+      return;
+    }
+    toast.success("Issue reported! We'll look into it.");
+    setReportingChallengeId(null);
+    setIssueText("");
+  };
   const formatReward = (c: any) => {
     if (c.reward_type === "cash") return `$${c.reward_amount}`;
     if (c.reward_type === "minutes") return `${c.reward_amount} min`;
@@ -803,6 +826,43 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   </div>
                 </div>
               )}
+
+              {/* Report Issue Button */}
+              <div className="relative mt-3 border-t border-white/10 pt-3">
+                {reportingChallengeId === challenge.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={issueText}
+                      onChange={(e) => setIssueText(e.target.value)}
+                      placeholder="Describe the issue you're having..."
+                      className="w-full bg-black/30 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/30"
+                      rows={3}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleIssueSubmit(challenge.id)}
+                        disabled={submittingIssue}
+                        className="flex-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 font-bold text-xs py-2 rounded-full transition-colors active:scale-[0.97]"
+                      >
+                        {submittingIssue ? "SENDING..." : "SEND REPORT"}
+                      </button>
+                      <button
+                        onClick={() => { setReportingChallengeId(null); setIssueText(""); }}
+                        className="px-4 bg-neutral-800/60 text-neutral-400 font-bold text-xs py-2 rounded-full hover:opacity-90 active:scale-[0.97]"
+                      >
+                        CANCEL
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setReportingChallengeId(challenge.id)}
+                    className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-amber-400 font-bold transition-colors"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5" /> Run into an issue?
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
