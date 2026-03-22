@@ -126,13 +126,33 @@ const PrivacyPolicyPage = () => {
           </ul>
         </section>
 
+        {/* SMS Communications */}
+        <div className="border-t border-white/10 pt-8">
+          <h2 className="text-xl font-black text-white mb-4">SMS Communications</h2>
+        </div>
+
+        <section>
+          <h3 className="text-lg font-bold text-orange-400 mb-2">11. SMS Session Reminders</h3>
+          <ul className="list-disc list-inside space-y-2">
+            <li>C24 Club offers optional SMS reminders to notify users before scheduled video chat sessions begin.</li>
+            <li><strong className="text-white">Information Collected:</strong> When you opt in, we collect your phone number solely for the purpose of sending session reminder messages.</li>
+            <li><strong className="text-white">How We Use It:</strong> Your phone number is used exclusively to send automated text messages alerting you that a scheduled session is about to start. We do not use your phone number for marketing, advertising, or any other purpose.</li>
+            <li><strong className="text-white">Third-Party Service:</strong> SMS messages are delivered through a third-party communications provider. Your phone number is shared with this provider solely for message delivery.</li>
+            <li><strong className="text-white">Message Frequency:</strong> You will receive a maximum of one (1) text message per scheduled session, sent approximately 5 minutes before the session begins.</li>
+            <li><strong className="text-white">Message & Data Rates:</strong> Standard message and data rates from your mobile carrier may apply.</li>
+            <li><strong className="text-white">Opt-Out:</strong> You may unsubscribe at any time by replying <strong className="text-white">STOP</strong> to any message or by using the opt-out option within the app. Your phone number will be deactivated from future reminders immediately.</li>
+            <li><strong className="text-white">Data Retention:</strong> Your phone number is stored securely while your opt-in is active. Upon opting out, your number is deactivated but retained for compliance and abuse-prevention purposes. You may request permanent deletion by contacting business@c24club.com.</li>
+            <li><strong className="text-white">No Sharing:</strong> We will never sell, rent, or share your phone number with any third party other than our SMS delivery provider.</li>
+          </ul>
+        </section>
+
         {/* Promo Feature Privacy */}
         <div className="border-t border-white/10 pt-8">
           <h2 className="text-xl font-black text-white mb-4">Promo Feature Privacy</h2>
         </div>
 
         <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">11. Promo Data Collection</h3>
+          <h3 className="text-lg font-bold text-orange-400 mb-2">12. Promo Data Collection</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>When users create promos, C24 Club collects the promo title, description, target URL, and targeting criteria (country, interest, gender).</li>
             <li>This information is used solely for displaying the promo to the appropriate audience.</li>
@@ -143,7 +163,7 @@ const PrivacyPolicyPage = () => {
 
         {/* Updates */}
         <section>
-          <h3 className="text-lg font-bold text-orange-400 mb-2">12. Updates to This Policy</h3>
+          <h3 className="text-lg font-bold text-orange-400 mb-2">13. Updates to This Policy</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>C24 Club may update this Privacy Policy from time to time to reflect changes in our practices or for legal/regulatory reasons.</li>
             <li>Users will be notified of significant changes through the platform.</li>
