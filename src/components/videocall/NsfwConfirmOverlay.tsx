@@ -26,6 +26,7 @@ const NsfwConfirmOverlay = ({ onConfirmBan, onDismiss }: NsfwConfirmOverlayProps
 
         <div className="flex flex-col gap-3 pt-2">
           <Button
+            type="button"
             onClick={onConfirmBan}
             variant="destructive"
             className="w-full py-3 text-base font-semibold"
@@ -33,6 +34,7 @@ const NsfwConfirmOverlay = ({ onConfirmBan, onDismiss }: NsfwConfirmOverlayProps
             Yes, ban them
           </Button>
           <Button
+            type="button"
             onClick={onDismiss}
             variant="outline"
             className="w-full py-3 text-base font-semibold border-neutral-600 text-neutral-300 hover:bg-neutral-800"
