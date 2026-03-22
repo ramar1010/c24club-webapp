@@ -1,18 +1,20 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import RewardTeaser from "@/components/videocall/RewardTeaser";
 
 interface DiscoverTeaserProps {
   myGender: string | null;
   myUserId: string;
   onOpenDiscover: () => void;
+  onOpenStore?: () => void;
 }
 
 const MemberCard = ({
@@ -41,9 +43,17 @@ const MemberCard = ({
   </button>
 );
 
-const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserProps) => {
-  const isMobile = useIsMobile();
+const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover, onOpenStore }: DiscoverTeaserProps) => {
   const oppositeGender = myGender?.toLowerCase() === "female" ? "male" : "female";
+  const [showRewards, setShowRewards] = useState(false);
+
+  // Alternate between discover and rewards every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowRewards((prev) => !prev);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: members = [] } = useQuery({
     queryKey: ["discover-teaser", oppositeGender, myUserId],
@@ -67,10 +77,27 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover }: DiscoverTeaserPr
     },
   });
 
-  if (members.length === 0) return null;
+  const hasMembers = members.length > 0;
+
+  // If showing rewards phase and we have an onOpenStore handler
+  if (showRewards && onOpenStore) {
+    return (
+      <div className="transition-opacity duration-500 animate-in fade-in">
+        <RewardTeaser myGender={myGender} onOpenStore={onOpenStore} />
+      </div>
+    );
+  }
+
+  if (!hasMembers) {
+    // Fall back to rewards if no discover members
+    if (onOpenStore) {
+      return <RewardTeaser myGender={myGender} onOpenStore={onOpenStore} />;
+    }
+    return null;
+  }
 
   return (
-    <div className="w-full max-w-[260px] mt-3">
+    <div className="w-full max-w-[260px] mt-3 transition-opacity duration-500 animate-in fade-in">
       <button
         onClick={onOpenDiscover}
         className="flex items-center gap-1.5 mx-auto mb-1.5 text-amber-400 text-[10px] font-bold hover:text-amber-300 transition-colors"
