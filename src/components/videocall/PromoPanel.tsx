@@ -263,7 +263,9 @@ const PromoPanel = ({ userId, adPoints, onClose, onAdPointsChange }: PromoPanelP
     fetchMyPromos();
   };
 
-  const reachEstimate = Math.max(0, pointsToUse * 5);
+  const reachEstimate = totalMembers > 0
+    ? Math.min(totalMembers, Math.max(0, Math.round(totalMembers * (pointsToUse / Math.max(pointsToUse + 100, 200)))))
+    : 0;
 
   // Shared header
   const Header = ({ title: headerTitle, backTo }: { title: string; backTo?: PromoView }) => (
