@@ -147,6 +147,7 @@ const App = () => (
                 <Route path="challenges" element={<AdminChallengesPage />} />
                 <Route path="challenges/new" element={<AdminChallengesPage />} />
                 <Route path="member-challenges" element={<AdminMemberChallengesPage />} />
+                <Route path="challenge-issues" element={<AdminChallengeIssuesPage />} />
                 <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
                 <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
                 <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />

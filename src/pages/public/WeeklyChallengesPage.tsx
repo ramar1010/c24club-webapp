@@ -827,6 +827,43 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   </div>
                 </div>
               )}
+
+              {/* Report Issue Button */}
+              <div className="relative mt-3 border-t border-white/10 pt-3">
+                {reportingChallengeId === challenge.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={issueText}
+                      onChange={(e) => setIssueText(e.target.value)}
+                      placeholder="Describe the issue you're having..."
+                      className="w-full bg-black/30 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/30"
+                      rows={3}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleIssueSubmit(challenge.id)}
+                        disabled={submittingIssue}
+                        className="flex-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 font-bold text-xs py-2 rounded-full transition-colors active:scale-[0.97]"
+                      >
+                        {submittingIssue ? "SENDING..." : "SEND REPORT"}
+                      </button>
+                      <button
+                        onClick={() => { setReportingChallengeId(null); setIssueText(""); }}
+                        className="px-4 bg-neutral-800/60 text-neutral-400 font-bold text-xs py-2 rounded-full hover:opacity-90 active:scale-[0.97]"
+                      >
+                        CANCEL
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setReportingChallengeId(challenge.id)}
+                    className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-amber-400 font-bold transition-colors"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5" /> Run into an issue?
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
