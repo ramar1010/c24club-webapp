@@ -508,6 +508,39 @@ export type Database = {
         }
         Relationships: []
       }
+      call_windows: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          label: string | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       camera_unlock_requests: {
         Row: {
           created_at: string
@@ -1944,6 +1977,33 @@ export type Database = {
           member2_gender?: string | null
           member2_voice_mode?: boolean
           status?: string
+        }
+        Relationships: []
+      }
+      sms_reminder_optins: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          phone_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          phone_number: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          phone_number?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
