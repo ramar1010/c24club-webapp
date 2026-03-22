@@ -85,9 +85,10 @@ function useFakeWaitingCount() {
 interface Props {
   userId: string;
   isSearching: boolean;
+  userGender?: string | null;
 }
 
-const QuietHoursBanner = ({ userId, isSearching }: Props) => {
+const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -173,6 +174,7 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const isFemale = userGender?.toLowerCase() === "female";
   const isOptedIn = optin?.is_active ?? false;
   const insideWindow = useMemo(() => isInsideAnyWindow(windows), [windows]);
   const nextWin = useMemo(() => getNextWindow(windows), [windows]);
@@ -295,10 +297,12 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
 
           {/* Explanation */}
           <p className="text-white/60 text-xs leading-relaxed">
-            🎯 <span className="text-white/90 font-semibold">Why pick slots?</span> Everyone logs on at the same time = 
-            <span className="text-green-400 font-bold"> instant matches</span>. Pick the sessions you can actually make it to 
-            and we'll text you 5 min before so you don't miss out.
-          </p>
+            🎯 <span className="text-white/90 font-semibold">Why pick slots?</span> Everyone logs on at the same time ={" "}
+            <span className="text-green-400 font-bold">
+              {isFemale
+                ? "instant matches with guys and more money & rewards"
+                : "instant matches with girls"}
+            </span>. Pick the sessions you can make it to and we'll text you 5 min before.</p>
 
           {/* Slot picker */}
           {windows.length > 0 && (
