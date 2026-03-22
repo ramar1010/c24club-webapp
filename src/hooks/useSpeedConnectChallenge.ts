@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 
 interface SpeedConnectConfig {
   challengeId: string;
@@ -32,6 +33,8 @@ export function useSpeedConnectChallenge({ userId, currentPartnerId, isConnected
   useEffect(() => {
     if (!challengeConfig) return;
     const key = `speed_connect_${challengeConfig.slug}`;
+    // Reset if we're in a new week
+    if (resetIfStaleWeek(key)) return;
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
@@ -131,6 +134,7 @@ export function useSpeedConnectChallenge({ userId, currentPartnerId, isConnected
       startTime: Date.now(),
       partners: [],
     }));
+    stampWeek(`speed_connect_${challengeConfig.slug}`);
     
     toast.success(`⚡ ${challengeConfig.slug} activated!`, {
       description: `Connect to ${challengeConfig.targetPeople} people in ${challengeConfig.timeLimitMinutes} min!`,

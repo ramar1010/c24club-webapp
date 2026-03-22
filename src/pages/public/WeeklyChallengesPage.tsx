@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { getCurrentWeekStart, resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
 import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 import blueEyeImg from "@/assets/challenges/blue-eye.jpg";
@@ -321,6 +322,12 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
   const storageKey = `${challenge.slug}_minutes`;
   const startedKey = `${challenge.slug}_started`;
 
+  // Reset localStorage progress if we're in a new week
+  useEffect(() => {
+    resetIfStaleWeek(storageKey);
+    resetIfStaleWeek(startedKey);
+  }, [storageKey, startedKey]);
+
   // Poll localStorage every 3s so the timer updates live
   const [savedMins, setSavedMins] = useState(() => parseInt(localStorage.getItem(storageKey) || "0", 10));
   const [started, setStarted] = useState(() => localStorage.getItem(startedKey) === "true");
@@ -360,6 +367,8 @@ const AutoTrackProgress = ({ challenge, submission }: { challenge: any; submissi
       <button
         onClick={() => {
           localStorage.setItem(startedKey, "true");
+          stampWeek(startedKey);
+          stampWeek(storageKey);
           setStarted(true);
           toast.success(`${challenge.title} activated!`, { description: "Your call timer will track automatically." });
         }}
@@ -509,14 +518,17 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
   const visibleChallenges = dbChallenges.filter((c: any) => !c.female_only || isFemale);
 
+  const weekStart = getCurrentWeekStart();
+
   const { data: submissions = [] } = useQuery({
-    queryKey: ["my_challenge_submissions", user?.id],
+    queryKey: ["my_challenge_submissions", user?.id, weekStart],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("challenge_submissions")
         .select("*")
         .eq("user_id", user!.id)
+        .gte("created_at", `${weekStart}T00:00:00Z`)
         .order("created_at", { ascending: false });
       return data || [];
     },
@@ -729,6 +741,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
 
               {/* Blue Eyes Hunt */}
               {isBlueEyes && (() => {
+                resetIfStaleWeek("blue_eyes_hunt_started");
                 const huntStarted = localStorage.getItem("blue_eyes_hunt_started") === "true";
                 const blueSubmissions = submissions.filter((s: any) => s.challenge_id === challenge.id);
                 return huntStarted || blueSubmissions.length > 0 ? (
@@ -742,6 +755,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
                   <button
                     onClick={() => {
                       localStorage.setItem("blue_eyes_hunt_started", "true");
+                      stampWeek("blue_eyes_hunt_started");
                       toast.success("👁️ Blue Eyes Hunt activated!", { description: "The snap button will appear during your next call." });
                       setSubmittingSlug((prev) => prev === "__force" ? "" : "__force");
                       setTimeout(() => setSubmittingSlug(""), 50);

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Navigate, useLocation } from "react-router-dom";
@@ -605,6 +606,10 @@ const VideoCallPage = () => {
     // Filter to challenges that are started, not yet submitted
     const activeChallenges = autoChallenges.filter((c: any) => {
       const startedKey = `${c.slug}_started`;
+      const storageKey = `${c.slug}_minutes`;
+      // Reset stale week progress
+      resetIfStaleWeek(startedKey);
+      resetIfStaleWeek(storageKey);
       const isStarted = localStorage.getItem(startedKey) === "true";
       const hasSubmission = autoSubmissions.some((s: any) => s.challenge_id === c.id);
       return isStarted && !hasSubmission && !autoSubmittedRef.current.has(c.id);
