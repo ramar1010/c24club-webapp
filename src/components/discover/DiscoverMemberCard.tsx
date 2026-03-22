@@ -116,6 +116,11 @@ const DiscoverMemberCard = ({
               VIP
             </span>
           )}
+          {isSelf && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              👤 You
+            </span>
+          )}
         </div>
 
         {/* Photo */}
