@@ -173,6 +173,7 @@ const App = () => (
                 <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
+                <Route path="call-windows" element={<AdminCallWindowsPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
