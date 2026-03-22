@@ -91,7 +91,6 @@ export const useDiscover = () => {
       .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
       .eq("is_discoverable", true)
       .filter("image_status", "eq", "approved")
-      .neq("id", userId)
       .order("last_active_at", { ascending: false })
       .range(from, to);
 
@@ -191,8 +190,8 @@ export const useDiscover = () => {
 
       // Fetch admin & VIP members who aren't already in the discoverable list
       const discoverableIds = new Set(membersList.map(m => m.id));
-      const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
-      const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id) && id !== user.id);
+      const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id));
+      const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id));
 
       let priorityMembers: DiscoverableMember[] = [];
       const missingPriorityIds = [...missingAdminIds, ...missingVipIds];
