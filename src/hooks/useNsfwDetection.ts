@@ -10,6 +10,7 @@ interface UseNsfwDetectionOptions {
   nudityThreshold?: number;
   maxStrikes?: number;
   strikeCooldownMs?: number;
+  persistAcrossPartners?: boolean;
 }
 
 export function useNsfwDetection({
