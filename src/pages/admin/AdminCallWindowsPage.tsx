@@ -72,15 +72,12 @@ const AdminCallWindowsPage = () => {
       toast.success("Window added");
       setNewLabel("");
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from("call_windows")
-        .update({ is_active })
-        .eq("id", id);
+      const { error } = await supabase.from("call_windows").update({ is_active }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin_call_windows"] }),
@@ -124,12 +121,11 @@ const AdminCallWindowsPage = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Scheduled Call Windows</h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Manage time slots when users are encouraged to join. {optinCount} users opted in for SMS reminders.
         </p>
       </div>
 
-      {/* Add new window */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Add Time Slot</CardTitle>
@@ -144,7 +140,9 @@ const AdminCallWindowsPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {DAY_NAMES.map((name, i) => (
-                    <SelectItem key={i} value={String(i)}>{name}</SelectItem>
+                    <SelectItem key={i} value={String(i)}>
+                      {name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -162,13 +160,12 @@ const AdminCallWindowsPage = () => {
               <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="e.g. Power Hour" className="w-40" />
             </div>
             <Button onClick={() => addMutation.mutate()} disabled={addMutation.isPending}>
-              <Plus className="w-4 h-4 mr-1" /> Add
+              <Plus className="mr-1 h-4 w-4" /> Add
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Existing windows */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Active Schedule</CardTitle>
@@ -181,22 +178,19 @@ const AdminCallWindowsPage = () => {
           ) : (
             <div className="space-y-3">
               {windows.map((w: any) => (
-                <div key={w.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                  <Switch
-                    checked={w.is_active}
-                    onCheckedChange={(checked) => toggleMutation.mutate({ id: w.id, is_active: checked })}
-                  />
+                <div key={w.id} className="flex items-center gap-4 rounded-lg bg-muted/50 p-3">
+                  <Switch checked={w.is_active} onCheckedChange={(checked) => toggleMutation.mutate({ id: w.id, is_active: checked })} />
                   <div className="flex-1">
                     <span className="font-medium text-foreground">
                       {DAY_NAMES[w.day_of_week]} {w.start_time.slice(0, 5)} – {w.end_time.slice(0, 5)}
                     </span>
-                    {w.label && <span className="text-muted-foreground text-sm ml-2">({w.label})</span>}
+                    {w.label && <span className="ml-2 text-sm text-muted-foreground">({w.label})</span>}
                   </div>
                   <Button variant="outline" size="sm" onClick={() => sendBlast(w)} title="Send SMS blast">
-                    <Send className="w-3.5 h-3.5 mr-1" /> Blast
+                    <Send className="mr-1 h-3.5 w-3.5" /> Blast
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(w.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                    <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               ))}
@@ -205,12 +199,11 @@ const AdminCallWindowsPage = () => {
         </CardContent>
       </Card>
 
-      {/* SMS Delivery Log */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">SMS Delivery Log</CardTitle>
           <Button variant="outline" size="sm" onClick={() => refetchLogs()} disabled={logsLoading}>
-            <RefreshCw className={`w-3.5 h-3.5 mr-1 ${logsLoading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`mr-1 h-3.5 w-3.5 ${logsLoading ? "animate-spin" : ""}`} /> Refresh
           </Button>
         </CardHeader>
         <CardContent>
@@ -224,38 +217,43 @@ const AdminCallWindowsPage = () => {
                 Note: <span className="font-medium text-foreground">Accepted by API</span> means the provider queued the SMS, not that the handset received it.
               </p>
               <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Error</TableHead>
-                    <TableHead>Network</TableHead>
-                    <TableHead>Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {smsLogs.map((log: any) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(log.created_at).toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">{log.action}</Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">{log.phone_number}</TableCell>
-                      <TableCell>{getStatusBadge(log.vonage_status)}</TableCell>
-                      <TableCell className="text-xs text-destructive max-w-[200px] truncate">
-                        {log.vonage_error_text || "—"}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{log.vonage_network || "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{log.vonage_message_price ? `$${log.vonage_message_price}` : "—"}</TableCell>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Error</TableHead>
+                      <TableHead>Network</TableHead>
+                      <TableHead>Price</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {smsLogs.map((log: any) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                          {new Date(log.created_at).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {log.action}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">{log.phone_number}</TableCell>
+                        <TableCell>{getStatusBadge(log.vonage_status)}</TableCell>
+                        <TableCell className="max-w-[200px] truncate text-xs text-destructive">
+                          {log.vonage_error_text || "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{log.vonage_network || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {log.vonage_message_price ? `$${log.vonage_message_price}` : "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>
