@@ -15,7 +15,6 @@ function normalizePhoneNumber(input: string) {
     return `+${digits}`;
   }
 
-  // Default 10-digit local numbers to US format.
   if (digits.length === 10) {
     return `+1${digits}`;
   }
@@ -70,11 +69,7 @@ async function sendSmsAndLog(
     vonage_remaining_balance: msg?.["remaining-balance"] ?? null,
     vonage_message_price: msg?.["message-price"] ?? null,
     raw_response: {
-      request: {
-        to: normalizedTo,
-        from,
-        action,
-      },
+      request: { to: normalizedTo, from, action },
       response: vonageData ?? { error: fetchError },
     },
   };
@@ -147,18 +142,32 @@ serve(async (req) => {
         );
       }
 
-      const { data: optins, error: optErr } = await supabase
-        .from("sms_reminder_optins")
-        .select("phone_number")
-        .eq("is_active", true);
-
-      if (optErr) throw optErr;
-
       const allResults = [];
       for (const win of upcomingWindows) {
+        // Get users who signed up for THIS specific slot
+        const { data: signups } = await supabase
+          .from("slot_signups")
+          .select("user_id")
+          .eq("window_id", win.id);
+
+        const signedUpUserIds = (signups || []).map((s: any) => s.user_id);
+
+        // Get opted-in users — filter to only those who signed up for this slot
+        let optinsQuery = supabase
+          .from("sms_reminder_optins")
+          .select("phone_number, user_id")
+          .eq("is_active", true);
+
+        const { data: optins } = await optinsQuery;
+
+        // Filter: only send to users who signed up for this slot, OR if no signups exist send to all (backward compat)
+        const filteredOptins = signedUpUserIds.length > 0
+          ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
+          : optins || [];
+
         const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.lovable.app/videocall Reply STOP to unsubscribe.`;
 
-        for (const optin of optins || []) {
+        for (const optin of filteredOptins) {
           const result = await sendSmsAndLog(supabase, {
             ...smsArgs,
             to: optin.phone_number,
@@ -176,19 +185,44 @@ serve(async (req) => {
     }
 
     if (action === "send_reminders") {
-      const { window_label, start_time } = body;
+      const { window_label, start_time, window_id } = body;
 
-      const { data: optins, error: optErr } = await supabase
-        .from("sms_reminder_optins")
-        .select("phone_number")
-        .eq("is_active", true);
+      // If window_id provided, only send to users who signed up for this slot
+      let targetOptins: any[] = [];
 
-      if (optErr) throw optErr;
+      if (window_id) {
+        const { data: signups } = await supabase
+          .from("slot_signups")
+          .select("user_id")
+          .eq("window_id", window_id);
+
+        const signedUpUserIds = (signups || []).map((s: any) => s.user_id);
+
+        const { data: optins, error: optErr } = await supabase
+          .from("sms_reminder_optins")
+          .select("phone_number, user_id")
+          .eq("is_active", true);
+
+        if (optErr) throw optErr;
+
+        targetOptins = signedUpUserIds.length > 0
+          ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
+          : optins || [];
+      } else {
+        // Legacy: send to all opted-in users
+        const { data: optins, error: optErr } = await supabase
+          .from("sms_reminder_optins")
+          .select("phone_number")
+          .eq("is_active", true);
+
+        if (optErr) throw optErr;
+        targetOptins = optins || [];
+      }
 
       const message = `🎥 C24 Club: "${window_label || "Video Chat"}" session starts at ${start_time}! Hop on now for instant matches. Reply STOP to unsubscribe.`;
 
       const results = [];
-      for (const optin of optins || []) {
+      for (const optin of targetOptins) {
         const result = await sendSmsAndLog(supabase, {
           ...smsArgs,
           to: optin.phone_number,
@@ -207,7 +241,6 @@ serve(async (req) => {
     if (action === "send_campaign") {
       const { campaign_id } = body;
 
-      // Get campaign
       const { data: campaign, error: campErr } = await supabase
         .from("sms_campaigns")
         .select("*")
@@ -215,7 +248,6 @@ serve(async (req) => {
         .single();
       if (campErr || !campaign) throw new Error("Campaign not found");
 
-      // Get opted-in users
       const { data: optins, error: optErr } = await supabase
         .from("sms_reminder_optins")
         .select("phone_number, user_id")
@@ -223,7 +255,6 @@ serve(async (req) => {
       if (optErr) throw optErr;
       if (!optins || optins.length === 0) throw new Error("No opted-in users");
 
-      // Get genders
       const userIds = optins.map((o: any) => o.user_id);
       const { data: members } = await supabase
         .from("members")
@@ -242,7 +273,6 @@ serve(async (req) => {
       for (const optin of optins) {
         const trackingCode = crypto.randomUUID();
 
-        // Insert send record
         await supabase.from("sms_campaign_sends").insert({
           campaign_id: campaign.id,
           tracking_code: trackingCode,
@@ -250,7 +280,6 @@ serve(async (req) => {
           recipient_gender: genderMap[optin.user_id] || "unknown",
         });
 
-        // Build message with tracking link
         const trackingUrl = `${trackingBaseUrl}?code=${trackingCode}`;
         const messageText = campaign.message_template.includes("{{link}}")
           ? campaign.message_template.replace("{{link}}", trackingUrl)
@@ -301,7 +330,7 @@ serve(async (req) => {
 
       if (upsertErr) throw upsertErr;
 
-      const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before each live video chat window. Reply STOP to unsubscribe.`;
+      const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before your selected sessions. Reply STOP to unsubscribe.`;
       await sendSmsAndLog(supabase, {
         ...smsArgs,
         to: cleanNumber,

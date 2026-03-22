@@ -101,12 +101,13 @@ const AdminCallWindowsPage = () => {
       const { error } = await supabase.functions.invoke("send-sms-reminder", {
         body: {
           action: "send_reminders",
+          window_id: window.id,
           window_label: window.label || "Video Chat",
           start_time: window.start_time.slice(0, 5),
         },
       });
       if (error) throw error;
-      toast.success(`SMS blast sent to ${optinCount} subscribers`);
+      toast.success(`SMS blast sent to subscribers of this slot`);
       refetchLogs();
     } catch (e: any) {
       toast.error("Failed to send blast: " + e.message);
