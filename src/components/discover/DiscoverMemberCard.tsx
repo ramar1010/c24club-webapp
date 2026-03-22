@@ -167,6 +167,7 @@ const DiscoverMemberCard = ({
               )}
             </div>
 
+            {!isSelf && (
             <div className="flex flex-col gap-1.5 shrink-0">
               {/* Video Chat button — always visible */}
               <button
@@ -238,6 +239,7 @@ const DiscoverMemberCard = ({
                 )}
               </button>
             </div>
+            )}
           </div>
 
           {/* Socials reveal */}
