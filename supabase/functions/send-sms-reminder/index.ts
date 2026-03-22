@@ -204,6 +204,73 @@ serve(async (req) => {
       );
     }
 
+    if (action === "send_campaign") {
+      const { campaign_id } = body;
+
+      // Get campaign
+      const { data: campaign, error: campErr } = await supabase
+        .from("sms_campaigns")
+        .select("*")
+        .eq("id", campaign_id)
+        .single();
+      if (campErr || !campaign) throw new Error("Campaign not found");
+
+      // Get opted-in users
+      const { data: optins, error: optErr } = await supabase
+        .from("sms_reminder_optins")
+        .select("phone_number, user_id")
+        .eq("is_active", true);
+      if (optErr) throw optErr;
+      if (!optins || optins.length === 0) throw new Error("No opted-in users");
+
+      // Get genders
+      const userIds = optins.map((o: any) => o.user_id);
+      const { data: members } = await supabase
+        .from("members")
+        .select("id, gender")
+        .in("id", userIds);
+      const genderMap: Record<string, string> = {};
+      if (members) {
+        for (const m of members) {
+          genderMap[m.id] = m.gender || "unknown";
+        }
+      }
+
+      const trackingBaseUrl = `${SUPABASE_URL}/functions/v1/track-sms-click`;
+
+      const results = [];
+      for (const optin of optins) {
+        const trackingCode = crypto.randomUUID();
+
+        // Insert send record
+        await supabase.from("sms_campaign_sends").insert({
+          campaign_id: campaign.id,
+          tracking_code: trackingCode,
+          phone_number: optin.phone_number,
+          recipient_gender: genderMap[optin.user_id] || "unknown",
+        });
+
+        // Build message with tracking link
+        const trackingUrl = `${trackingBaseUrl}?code=${trackingCode}`;
+        const messageText = campaign.message_template.includes("{{link}}")
+          ? campaign.message_template.replace("{{link}}", trackingUrl)
+          : `${campaign.message_template} ${trackingUrl}`;
+
+        const result = await sendSmsAndLog(supabase, {
+          ...smsArgs,
+          to: optin.phone_number,
+          text: messageText,
+          action: `campaign:${campaign.name}`,
+        });
+        results.push(result);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, sent: results.length, results }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "optin") {
       const authHeader = req.headers.get("authorization");
       if (!authHeader) {
