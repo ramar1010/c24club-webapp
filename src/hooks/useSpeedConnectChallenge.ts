@@ -135,6 +135,7 @@ export function useSpeedConnectChallenge({ userId, currentPartnerId, isConnected
       startTime: Date.now(),
       partners: [],
     }));
+    stampWeek(`speed_connect_${challengeConfig.slug}`);
     
     toast.success(`⚡ ${challengeConfig.slug} activated!`, {
       description: `Connect to ${challengeConfig.targetPeople} people in ${challengeConfig.timeLimitMinutes} min!`,
