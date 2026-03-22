@@ -85,9 +85,10 @@ function useFakeWaitingCount() {
 interface Props {
   userId: string;
   isSearching: boolean;
+  userGender?: string | null;
 }
 
-const QuietHoursBanner = ({ userId, isSearching }: Props) => {
+const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
