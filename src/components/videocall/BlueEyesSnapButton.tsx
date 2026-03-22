@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ interface BlueEyesSnapButtonProps {
   snapsCount: number;
   maxSnaps: number;
   onSnapTaken: () => void;
+  onDisable?: () => void;
 }
 
 export default function BlueEyesSnapButton({
@@ -19,6 +20,7 @@ export default function BlueEyesSnapButton({
   snapsCount,
   maxSnaps,
   onSnapTaken,
+  onDisable,
 }: BlueEyesSnapButtonProps) {
   const [snapping, setSnapping] = useState(false);
 
@@ -77,18 +79,33 @@ export default function BlueEyesSnapButton({
     setSnapping(false);
   };
 
+  const handleDisable = () => {
+    localStorage.removeItem("blue_eyes_hunt_started");
+    toast.success("👁️ Blue Eyes Hunt disabled", { description: "You can re-enable it from Challenges." });
+    onDisable?.();
+  };
+
   return (
-    <button
-      onClick={handleSnap}
-      disabled={snapping}
-      className="flex items-center gap-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 backdrop-blur-sm text-cyan-200 font-black text-xs px-3 py-2 rounded-full transition-all active:scale-[0.95] shadow-[0_0_12px_rgba(34,211,238,0.3)]"
-    >
-      {snapping ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Camera className="w-4 h-4" />
-      )}
-      👁️ SNAP BLUE EYES ({snapsCount}/{maxSnaps})
-    </button>
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={handleSnap}
+        disabled={snapping}
+        className="flex items-center gap-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 backdrop-blur-sm text-cyan-200 font-black text-xs px-3 py-2 rounded-full transition-all active:scale-[0.95] shadow-[0_0_12px_rgba(34,211,238,0.3)]"
+      >
+        {snapping ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Camera className="w-4 h-4" />
+        )}
+        👁️ SNAP BLUE EYES ({snapsCount}/{maxSnaps})
+      </button>
+      <button
+        onClick={handleDisable}
+        className="bg-red-500/20 hover:bg-red-500/40 border border-red-400/50 backdrop-blur-sm text-red-300 p-2 rounded-full transition-all active:scale-[0.95]"
+        title="Disable Blue Eyes Hunt"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
   );
 }

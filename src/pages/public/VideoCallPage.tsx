@@ -537,6 +537,7 @@ const VideoCallPage = () => {
   }, [activeBestiePair, callState, memberId]);
 
   // ─── Blue Eyes Hunt: track challenge + snap count ───
+  const [blueEyesActive, setBlueEyesActive] = useState(localStorage.getItem("blue_eyes_hunt_started") === "true");
   const { data: blueEyesChallenge } = useQuery({
     queryKey: ["blue_eyes_challenge"],
     queryFn: async () => {
@@ -1126,7 +1127,7 @@ const VideoCallPage = () => {
           }
 
           {/* Blue Eyes Hunt snap button (only if hunt started) */}
-          {callState === "connected" && currentPartnerId && blueEyesChallenge && blueEyesSnaps.length < 2 && localStorage.getItem("blue_eyes_hunt_started") === "true" &&
+          {callState === "connected" && currentPartnerId && blueEyesChallenge && blueEyesSnaps.length < 2 && blueEyesActive &&
           <div className={`absolute z-20 ${isMobile ? "bottom-3 left-1/2 -translate-x-1/2" : "bottom-3 left-1/2 -translate-x-1/2"}`}>
               <BlueEyesSnapButton
                 remoteVideoRef={remoteVideoRef}
@@ -1135,6 +1136,7 @@ const VideoCallPage = () => {
                 snapsCount={blueEyesSnaps.length}
                 maxSnaps={2}
                 onSnapTaken={() => refetchBlueEyesSnaps()}
+                onDisable={() => setBlueEyesActive(false)}
               />
             </div>
           }
