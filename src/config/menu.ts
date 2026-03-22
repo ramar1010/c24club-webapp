@@ -274,6 +274,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "call-windows",
+    icon: Clock,
+    title: "Call Windows",
+    submenu: [
+      { key: "call-windows", label: "Manage Schedule", path: "/admin/call-windows" },
+    ],
+  },
+  {
     key: "settings",
     icon: Settings,
     title: "Settings",
