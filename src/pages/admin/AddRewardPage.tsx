@@ -40,6 +40,7 @@ type RewardForm = z.infer<typeof rewardSchema>;
 const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus", "Spins", "Ad Points"];
 const RARITIES = ["common", "rare", "legendary"];
 const DELIVERIES = ["digital", "physical", "both"];
+const GENDERS = [{ value: "", label: "Both (no filter)" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }];
 
 const AddRewardPage = () => {
   const navigate = useNavigate();
