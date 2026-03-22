@@ -239,22 +239,22 @@ const ChallengeMinutesOverlay = ({ onClose }: Props) => {
   const outcomeInfo = result ? OUTCOME_CONFIG[result.outcome] : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-md bg-gradient-to-b from-neutral-900 via-black to-neutral-900 border border-yellow-500/30 rounded-2xl shadow-[0_0_40px_rgba(234,179,8,0.2)] overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div className="relative w-full max-w-md my-auto bg-gradient-to-b from-neutral-900 via-black to-neutral-900 border border-yellow-500/30 rounded-2xl shadow-[0_0_40px_rgba(234,179,8,0.2)] overflow-hidden">
         {/* Shimmer */}
         <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(234,179,8,0.05)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite] pointer-events-none" />
 
+        {/* Sticky close button */}
+        <button onClick={onClose} className="sticky top-2 right-2 float-right z-10 p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors mr-2 mt-2">
+          <X className="w-6 h-6 text-white" />
+        </button>
+
         {/* Header */}
-        <div className="relative p-5 pb-3 flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
-              CHALLENGE MINUTES
-            </h2>
-            <p className="text-xs text-neutral-400 mt-1">Wager your earned minutes for a chance to win big!</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
-            <X className="w-5 h-5 text-neutral-400" />
-          </button>
+        <div className="relative px-5 pb-3 -mt-8">
+          <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500">
+            CHALLENGE MINUTES
+          </h2>
+          <p className="text-xs text-neutral-400 mt-1">Wager your earned minutes for a chance to win big!</p>
         </div>
 
         {/* Jackpot Banner */}
