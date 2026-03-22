@@ -219,7 +219,11 @@ const AdminCallWindowsPage = () => {
           ) : smsLogs.length === 0 ? (
             <p className="text-muted-foreground">No SMS logs yet. Send a blast or wait for an opt-in to see delivery data.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Note: <span className="font-medium text-foreground">Accepted by API</span> means the provider queued the SMS, not that the handset received it.
+              </p>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

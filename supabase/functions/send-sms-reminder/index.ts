@@ -7,13 +7,37 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function normalizePhoneNumber(input: string) {
+  const trimmed = input.trim();
+  const digits = trimmed.replace(/\D/g, "");
+
+  if (trimmed.startsWith("+") && digits.length >= 10 && digits.length <= 15) {
+    return `+${digits}`;
+  }
+
+  // Default 10-digit local numbers to US format.
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+${digits}`;
+  }
+
+  if (digits.length >= 10 && digits.length <= 15) {
+    return `+${digits}`;
+  }
+
+  throw new Error(`Invalid phone number format: ${input}`);
+}
+
 async function sendSmsAndLog(
   supabase: any,
   { apiKey, apiSecret, from, to, text, action }: {
     apiKey: string; apiSecret: string; from: string; to: string; text: string; action: string;
   }
 ) {
-  const cleanTo = to.replace(/\D/g, "");
+  const normalizedTo = normalizePhoneNumber(to);
   let vonageData: any = null;
   let fetchError: string | null = null;
 
@@ -25,7 +49,7 @@ async function sendSmsAndLog(
         api_key: apiKey,
         api_secret: apiSecret,
         from,
-        to: cleanTo,
+        to: normalizedTo,
         text,
       }),
     });
@@ -37,7 +61,7 @@ async function sendSmsAndLog(
   const msg = vonageData?.messages?.[0];
   const logEntry = {
     action,
-    phone_number: cleanTo,
+    phone_number: normalizedTo,
     message_text: text,
     vonage_status: msg?.status ?? (fetchError ? "fetch_error" : "unknown"),
     vonage_error_text: msg?.["error-text"] ?? fetchError ?? null,
@@ -45,19 +69,30 @@ async function sendSmsAndLog(
     vonage_network: msg?.network ?? null,
     vonage_remaining_balance: msg?.["remaining-balance"] ?? null,
     vonage_message_price: msg?.["message-price"] ?? null,
-    raw_response: vonageData ?? { error: fetchError },
+    raw_response: {
+      request: {
+        to: normalizedTo,
+        from,
+        action,
+      },
+      response: vonageData ?? { error: fetchError },
+    },
   };
 
-  // Log to DB (fire and forget, don't block on errors)
   try {
     await supabase.from("sms_delivery_log").insert(logEntry);
   } catch (logErr) {
     console.error("Failed to write SMS log:", logErr);
   }
 
-  console.log(`SMS [${action}] to ${cleanTo}: status=${logEntry.vonage_status}, error=${logEntry.vonage_error_text}`);
+  console.log(`SMS [${action}] to ${normalizedTo}: status=${logEntry.vonage_status}, error=${logEntry.vonage_error_text}`);
 
-  return { status: logEntry.vonage_status, error: logEntry.vonage_error_text };
+  return {
+    status: logEntry.vonage_status,
+    error: logEntry.vonage_error_text,
+    phone: normalizedTo,
+    messageId: logEntry.vonage_message_id,
+  };
 }
 
 serve(async (req) => {
@@ -79,13 +114,13 @@ serve(async (req) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const smsArgs = { apiKey: VONAGE_API_KEY, apiSecret: VONAGE_API_SECRET, from: VONAGE_FROM_NUMBER };
+  const normalizedFrom = normalizePhoneNumber(VONAGE_FROM_NUMBER);
+  const smsArgs = { apiKey: VONAGE_API_KEY, apiSecret: VONAGE_API_SECRET, from: normalizedFrom };
 
   try {
     const body = await req.json();
     const { action } = body;
 
-    // Action: auto_remind
     if (action === "auto_remind") {
       const now = new Date();
       const dayOfWeek = now.getUTCDay();
@@ -125,9 +160,12 @@ serve(async (req) => {
 
         for (const optin of optins || []) {
           const result = await sendSmsAndLog(supabase, {
-            ...smsArgs, to: optin.phone_number, text: message, action: "auto_remind",
+            ...smsArgs,
+            to: optin.phone_number,
+            text: message,
+            action: "auto_remind",
           });
-          allResults.push({ phone: optin.phone_number, window: win.label, ...result });
+          allResults.push({ phone: result.phone, window: win.label, ...result });
         }
       }
 
@@ -137,7 +175,6 @@ serve(async (req) => {
       );
     }
 
-    // Action: send_reminders (manual blast)
     if (action === "send_reminders") {
       const { window_label, start_time } = body;
 
@@ -153,9 +190,12 @@ serve(async (req) => {
       const results = [];
       for (const optin of optins || []) {
         const result = await sendSmsAndLog(supabase, {
-          ...smsArgs, to: optin.phone_number, text: message, action: "send_reminders",
+          ...smsArgs,
+          to: optin.phone_number,
+          text: message,
+          action: "send_reminders",
         });
-        results.push({ phone: optin.phone_number, ...result });
+        results.push({ phone: result.phone, ...result });
       }
 
       return new Response(
@@ -164,12 +204,12 @@ serve(async (req) => {
       );
     }
 
-    // Action: optin
     if (action === "optin") {
       const authHeader = req.headers.get("authorization");
       if (!authHeader) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -177,18 +217,13 @@ serve(async (req) => {
       const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
       if (authErr || !user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const { phone_number } = body;
-      if (!phone_number || phone_number.replace(/\D/g, "").length < 10) {
-        return new Response(JSON.stringify({ error: "Invalid phone number" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const cleanNumber = phone_number.replace(/\D/g, "");
+      const cleanNumber = normalizePhoneNumber(phone_number);
 
       const { error: upsertErr } = await supabase
         .from("sms_reminder_optins")
@@ -199,26 +234,28 @@ serve(async (req) => {
 
       if (upsertErr) throw upsertErr;
 
-      // Send confirmation SMS
       const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before each live video chat window. Reply STOP to unsubscribe.`;
       await sendSmsAndLog(supabase, {
-        ...smsArgs, to: cleanNumber, text: confirmMsg, action: "optin_confirm",
+        ...smsArgs,
+        to: cleanNumber,
+        text: confirmMsg,
+        action: "optin_confirm",
       });
 
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, normalized_phone_number: cleanNumber }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Action: optout
     if (action === "optout") {
       const authHeader = req.headers.get("authorization");
       const token = authHeader?.replace("Bearer ", "");
       const { data: { user } } = await supabase.auth.getUser(token || "");
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
