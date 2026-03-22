@@ -548,7 +548,28 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
     queryClient.invalidateQueries({ queryKey: ["my_challenge_submissions"] });
   };
 
-  const formatReward = (c: any) => {
+  const handleIssueSubmit = async (challengeId: string) => {
+    if (!user || !issueText.trim()) {
+      toast.error("Please describe your issue");
+      return;
+    }
+    setSubmittingIssue(true);
+    const { error } = await supabase.from("challenge_issues").insert({
+      user_id: user.id,
+      challenge_id: challengeId,
+      message: issueText.trim(),
+    });
+    setSubmittingIssue(false);
+    if (error) {
+      toast.error("Failed to submit issue");
+      return;
+    }
+    toast.success("Issue reported! We'll look into it.");
+    setReportingChallengeId(null);
+    setIssueText("");
+  };
+
+
     if (c.reward_type === "cash") return `$${c.reward_amount}`;
     if (c.reward_type === "minutes") return `${c.reward_amount} min`;
     return `${c.reward_amount || 7} days freeze-free`;
