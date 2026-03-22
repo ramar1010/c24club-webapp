@@ -357,10 +357,10 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="target_gender" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Gender <span className="text-xs text-muted-foreground">(for reward carousel)</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select onValueChange={field.onChange} value={field.value || "both"}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Both genders" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {GENDERS.map((g) => <SelectItem key={g.value || "both"} value={g.value}>{g.label}</SelectItem>)}
+                      {GENDERS.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
