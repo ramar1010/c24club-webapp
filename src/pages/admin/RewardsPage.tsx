@@ -19,6 +19,7 @@ type Reward = {
   delivery: string;
   visible: boolean;
   info: string | null;
+  target_gender: string | null;
   reward_categories: { name: string } | null;
 };
 
