@@ -568,8 +568,7 @@ const WeeklyChallengesPage = ({ onClose }: { onClose?: () => void }) => {
     setReportingChallengeId(null);
     setIssueText("");
   };
-
-
+  const formatReward = (c: any) => {
     if (c.reward_type === "cash") return `$${c.reward_amount}`;
     if (c.reward_type === "minutes") return `${c.reward_amount} min`;
     return `${c.reward_amount || 7} days freeze-free`;
