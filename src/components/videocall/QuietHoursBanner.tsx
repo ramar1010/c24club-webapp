@@ -271,7 +271,7 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
         {/* Gradient header */}
         <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 px-5 py-3 flex items-center gap-2 sticky top-0 z-10">
           <Clock className="w-5 h-5 text-amber-200" />
-          <span className="text-white font-bold text-sm">Quiet Hours — Pick Your Slots</span>
+          <span className="text-white font-bold text-sm">Schedule Your Sessions</span>
           <button
             onClick={() => { setVisible(false); setDismissed(true); }}
             className="ml-auto text-white/60 hover:text-white transition-colors"
