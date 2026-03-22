@@ -33,10 +33,12 @@ export function useNsfwDetection({
   const loadedUserIdRef = useRef<string | null>(null);
   const lastStrikeAtRef = useRef(0);
   const strikesRef = useRef(0);
+  const lastValidTargetRef = useRef<string | null>(null);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
     if (viewerUserId && userId === viewerUserId) return null;
+    lastValidTargetRef.current = userId;
     return userId;
   }, [userId, viewerUserId]);
 
@@ -174,10 +176,15 @@ export function useNsfwDetection({
 
   // Called when user clicks "Yes" — ban the target
   const confirmBan = useCallback(async () => {
-    const targetUserId = getValidatedTargetUserId();
-    if (!targetUserId) return;
+    const targetUserId = getValidatedTargetUserId() || lastValidTargetRef.current;
+    if (!targetUserId) {
+      console.error("[NSFW] No valid target user ID for ban");
+      return;
+    }
+    console.log("[NSFW] Banning user:", targetUserId);
     try {
       await supabase.functions.invoke("nsfw-ban", { body: { targetUserId } });
+      console.log("[NSFW] Ban request sent successfully");
     } catch (err) {
       console.error("[NSFW] Ban failed:", err);
     }
@@ -185,6 +192,7 @@ export function useNsfwDetection({
     strikesRef.current = 0;
     setNsfwStrikes(0);
     setIsNsfwBlurred(false);
+    lastValidTargetRef.current = null;
   }, [getValidatedTargetUserId]);
 
   // Called when user clicks "No" — reset all strikes
