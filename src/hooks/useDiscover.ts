@@ -190,8 +190,8 @@ export const useDiscover = () => {
 
       // Fetch admin & VIP members who aren't already in the discoverable list
       const discoverableIds = new Set(membersList.map(m => m.id));
-      const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id) && id !== user.id);
-      const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id) && id !== user.id);
+      const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id));
+      const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id));
 
       let priorityMembers: DiscoverableMember[] = [];
       const missingPriorityIds = [...missingAdminIds, ...missingVipIds];
