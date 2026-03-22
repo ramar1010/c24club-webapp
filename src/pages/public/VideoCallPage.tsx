@@ -537,6 +537,7 @@ const VideoCallPage = () => {
   }, [activeBestiePair, callState, memberId]);
 
   // ─── Blue Eyes Hunt: track challenge + snap count ───
+  const [blueEyesActive, setBlueEyesActive] = useState(localStorage.getItem("blue_eyes_hunt_started") === "true");
   const { data: blueEyesChallenge } = useQuery({
     queryKey: ["blue_eyes_challenge"],
     queryFn: async () => {
