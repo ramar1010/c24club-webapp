@@ -175,6 +175,7 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   });
 
   const isFemale = userGender?.toLowerCase() === "female";
+  const isOptedIn = optin?.is_active ?? false;
   const insideWindow = useMemo(() => isInsideAnyWindow(windows), [windows]);
   const nextWin = useMemo(() => getNextWindow(windows), [windows]);
   const isQuietHours = windows.length > 0 && !insideWindow;
