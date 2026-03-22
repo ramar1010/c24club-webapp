@@ -182,6 +182,7 @@ export function useNsfwDetection({
       console.error("[NSFW] Ban failed:", err);
     }
     setShowConfirmPrompt(false);
+    strikesRef.current = 0;
     setNsfwStrikes(0);
     setIsNsfwBlurred(false);
   }, [getValidatedTargetUserId]);
@@ -189,6 +190,7 @@ export function useNsfwDetection({
   // Called when user clicks "No" — reset all strikes
   const dismissStrikes = useCallback(async () => {
     lastStrikeAtRef.current = 0;
+    strikesRef.current = 0;
     setNsfwStrikes(0);
     setShowConfirmPrompt(false);
     setIsNsfwBlurred(false);
