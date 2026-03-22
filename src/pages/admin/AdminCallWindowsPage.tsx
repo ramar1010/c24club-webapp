@@ -260,6 +260,10 @@ const AdminCallWindowsPage = () => {
           )}
         </CardContent>
       </Card>
+
+      <SmsOptinList />
+
+      <SmsCampaignDashboard />
     </div>
   );
 };

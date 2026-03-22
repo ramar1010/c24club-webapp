@@ -76,67 +76,15 @@ const SmsCampaignDashboard = () => {
 
   const sendMutation = useMutation({
     mutationFn: async (campaign: any) => {
-      // Fetch opted-in users with their genders
-      const { data: optins, error: optErr } = await supabase
-        .from("sms_reminder_optins")
-        .select("phone_number, user_id")
-        .eq("is_active", true);
-      if (optErr) throw optErr;
-      if (!optins || optins.length === 0) throw new Error("No opted-in users");
-
-      // Get genders
-      const userIds = optins.map((o: any) => o.user_id);
-      const { data: members } = await supabase
-        .from("members")
-        .select("id, gender")
-        .in("id", userIds);
-      const genderMap: Record<string, string> = {};
-      if (members) {
-        for (const m of members) {
-          genderMap[m.id] = m.gender || "unknown";
-        }
-      }
-
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const trackingBaseUrl = `https://${projectId}.supabase.co/functions/v1/track-sms-click`;
-
-      // Create send records with unique tracking codes
-      const sends = optins.map((o: any) => {
-        const trackingCode = crypto.randomUUID();
-        return {
+      const { data, error } = await supabase.functions.invoke("send-sms-reminder", {
+        body: {
+          action: "send_campaign",
           campaign_id: campaign.id,
-          tracking_code: trackingCode,
-          phone_number: o.phone_number,
-          recipient_gender: genderMap[o.user_id] || "unknown",
-        };
+        },
       });
-
-      const { error: insertErr } = await supabase.from("sms_campaign_sends").insert(sends);
-      if (insertErr) throw insertErr;
-
-      // Send SMS via the existing edge function with custom messages
-      for (const send of sends) {
-        const trackingUrl = `${trackingBaseUrl}?code=${send.tracking_code}`;
-        const messageText = campaign.message_template.replace("{{link}}", trackingUrl);
-
-        await supabase.functions.invoke("send-sms-reminder", {
-          body: {
-            action: "send_reminders",
-            window_label: campaign.name,
-            start_time: "",
-            custom_message: messageText,
-          },
-        });
-        // We only need to send once since send_reminders sends to all optins
-        break;
-      }
-
-      // Actually, let's use a direct approach - invoke with individual sends
-      // The send_reminders action sends to all optins with the same message
-      // For tracking, each user needs a unique link, so we need individual sends
-      // Let me adjust to use a campaign-specific action
-
-      return sends.length;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data?.sent || 0;
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ["admin_sms_campaign_stats"] });
