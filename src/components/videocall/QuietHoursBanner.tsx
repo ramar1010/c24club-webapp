@@ -163,7 +163,7 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
       } else {
         const { error } = await supabase
           .from("slot_signups")
-          .insert({ user_id: userId, window_id: windowId });
+          .upsert({ user_id: userId, window_id: windowId }, { onConflict: "user_id,window_id" });
         if (error) throw error;
       }
     },
