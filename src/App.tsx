@@ -32,6 +32,7 @@ const EditMemberRewardPage = lazy(() => import("@/pages/admin/EditMemberRewardPa
 const FreezeSettingsPage = lazy(() => import("@/pages/admin/FreezeSettingsPage"));
 const AdminChallengesPage = lazy(() => import("@/pages/admin/AdminChallengesPage"));
 const AdminMemberChallengesPage = lazy(() => import("@/pages/admin/AdminMemberChallengesPage"));
+const AdminChallengeIssuesPage = lazy(() => import("@/pages/admin/AdminChallengeIssuesPage"));
 const AdminSpinPrizesPage = lazy(() => import("@/pages/admin/AdminSpinPrizesPage"));
 const AdminSpinWinnersPage = lazy(() => import("@/pages/admin/AdminSpinWinnersPage"));
 const LegendaryCashoutPage = lazy(() => import("@/pages/admin/LegendaryCashoutPage"));
