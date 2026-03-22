@@ -33,10 +33,12 @@ export function useNsfwDetection({
   const loadedUserIdRef = useRef<string | null>(null);
   const lastStrikeAtRef = useRef(0);
   const strikesRef = useRef(0);
+  const lastValidTargetRef = useRef<string | null>(null);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
     if (viewerUserId && userId === viewerUserId) return null;
+    lastValidTargetRef.current = userId;
     return userId;
   }, [userId, viewerUserId]);
 
