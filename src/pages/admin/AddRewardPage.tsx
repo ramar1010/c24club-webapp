@@ -146,7 +146,7 @@ const AddRewardPage = () => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
-      target_gender: values.target_gender || null,
+      target_gender: values.target_gender === "both" ? null : values.target_gender || null,
       
       variation_images: variationImages,
       color_options: colorOptions,
