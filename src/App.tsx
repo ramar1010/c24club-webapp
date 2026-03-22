@@ -57,6 +57,7 @@ const CameraUnlockSuccessPage = lazy(() => import("@/pages/public/CameraUnlockSu
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
 const AdminJackpotPayoutsPage = lazy(() => import("@/pages/admin/AdminJackpotPayoutsPage"));
 const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettingsPage"));
+const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
