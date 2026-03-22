@@ -178,17 +178,17 @@ const QuietHoursBanner = ({ userId, isSearching }: Props) => {
   const nextWin = useMemo(() => getNextWindow(windows), [windows]);
   const isQuietHours = windows.length > 0 && !insideWindow;
 
-  // Show popup after 10s of searching during quiet hours
+  // Show popup after 8s of searching (always, not just quiet hours)
   useEffect(() => {
-    if (!isSearching || !isQuietHours) {
+    if (!isSearching) {
       setVisible(false);
       setDismissed(false);
       return;
     }
     if (dismissed) return;
-    const timer = setTimeout(() => setVisible(true), 10000);
+    const timer = setTimeout(() => setVisible(true), 8000);
     return () => clearTimeout(timer);
-  }, [isSearching, isQuietHours, dismissed]);
+  }, [isSearching, dismissed]);
 
   // Countdown ticker
   useEffect(() => {
