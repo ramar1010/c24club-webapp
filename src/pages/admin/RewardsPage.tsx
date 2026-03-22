@@ -54,6 +54,13 @@ const rewardColumns: DataTableColumn<Reward>[] = [
     header: "Category",
     render: (row) => row.reward_categories?.name || <span className="text-muted-foreground">—</span>,
   },
+  {
+    key: "target_gender",
+    header: "Gender",
+    render: (row) => row.target_gender
+      ? <Badge className={row.target_gender === "female" ? "bg-pink-500/10 text-pink-500" : "bg-blue-500/10 text-blue-500"}>{row.target_gender}</Badge>
+      : <span className="text-muted-foreground">Both</span>,
+  },
 ];
 
 const RewardsPage = () => {
