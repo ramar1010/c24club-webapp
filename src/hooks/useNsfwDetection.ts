@@ -27,6 +27,7 @@ export function useNsfwDetection({
   const [isNsfwBlurred, setIsNsfwBlurred] = useState(false);
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
   const [showConfirmPrompt, setShowConfirmPrompt] = useState(false);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const modelRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loadingRef = useRef(false);
@@ -35,13 +36,35 @@ export function useNsfwDetection({
   const strikesRef = useRef(0);
   const lastValidTargetRef = useRef<string | null>(null);
   const pendingBanUserIdRef = useRef<string | null>(null);
+  const viewerIdentity = viewerUserId && viewerUserId !== "anonymous" ? viewerUserId : authUserId;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (isMounted) {
+        setAuthUserId(data.user?.id ?? null);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUserId(session?.user?.id ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const getValidatedTargetUserId = useCallback(() => {
     if (!userId || userId === "anonymous") return null;
-    if (viewerUserId && userId === viewerUserId) return null;
+    if (viewerIdentity && userId === viewerIdentity) return null;
     lastValidTargetRef.current = userId;
     return userId;
-  }, [userId, viewerUserId]);
+  }, [userId, viewerIdentity]);
 
   const getActionTargetUserId = useCallback(() => {
     return pendingBanUserIdRef.current || getValidatedTargetUserId() || lastValidTargetRef.current;
@@ -52,12 +75,13 @@ export function useNsfwDetection({
     const targetUserId = getValidatedTargetUserId();
     if (!targetUserId) {
       loadedUserIdRef.current = null;
+      lastValidTargetRef.current = null;
+      pendingBanUserIdRef.current = null;
+      setShowConfirmPrompt(false);
       if (!persistAcrossPartners) {
         lastStrikeAtRef.current = 0;
         strikesRef.current = 0;
-        pendingBanUserIdRef.current = null;
         setNsfwStrikes(0);
-        setShowConfirmPrompt(false);
       }
       setIsNsfwBlurred(false);
       return;
@@ -230,6 +254,18 @@ export function useNsfwDetection({
       return;
     }
 
+    const currentAuthUserId = viewerIdentity || (await supabase.auth.getUser()).data.user?.id || null;
+    if (currentAuthUserId && targetUserId === currentAuthUserId) {
+      console.warn("[NSFW] Refusing to ban current user; clearing stale NSFW target:", targetUserId);
+      pendingBanUserIdRef.current = null;
+      lastValidTargetRef.current = null;
+      strikesRef.current = 0;
+      setNsfwStrikes(0);
+      setShowConfirmPrompt(false);
+      setIsNsfwBlurred(false);
+      return;
+    }
+
     console.log("[NSFW] Banning user:", targetUserId);
 
     try {
@@ -246,7 +282,7 @@ export function useNsfwDetection({
     } catch (err) {
       console.error("[NSFW] Ban failed:", err);
     }
-  }, [getActionTargetUserId]);
+  }, [getActionTargetUserId, viewerIdentity]);
 
   // Called when user clicks "No" — reset all strikes
   const dismissStrikes = useCallback(async () => {
