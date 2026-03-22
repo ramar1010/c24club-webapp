@@ -31,7 +31,75 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // Action: send_reminders — blast SMS to all opted-in users about an upcoming window
+    // Action: auto_remind — cron-triggered: find windows starting in the next 5 min and blast SMS
+    if (action === "auto_remind") {
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay(); // 0=Sun
+      const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+
+      // Fetch today's active windows
+      const { data: windows, error: winErr } = await supabase
+        .from("call_windows")
+        .select("*")
+        .eq("is_active", true)
+        .eq("day_of_week", dayOfWeek);
+
+      if (winErr) throw winErr;
+
+      // Find windows starting within the next 5 minutes
+      const upcomingWindows = (windows || []).filter((w) => {
+        const [h, m] = w.start_time.split(":").map(Number);
+        const windowMinutes = h * 60 + m;
+        const diff = windowMinutes - currentMinutes;
+        return diff >= 0 && diff <= 5;
+      });
+
+      if (upcomingWindows.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, message: "No upcoming windows in the next 5 min", sent: 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: optins, error: optErr } = await supabase
+        .from("sms_reminder_optins")
+        .select("phone_number")
+        .eq("is_active", true);
+
+      if (optErr) throw optErr;
+
+      const allResults = [];
+      for (const win of upcomingWindows) {
+        const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.lovable.app/videocall Reply STOP to unsubscribe.`;
+
+        for (const optin of optins || []) {
+          try {
+            const res = await fetch("https://rest.nexmo.com/sms/json", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                api_key: VONAGE_API_KEY,
+                api_secret: VONAGE_API_SECRET,
+                from: VONAGE_FROM_NUMBER,
+                to: optin.phone_number.replace(/\D/g, ""),
+                text: message,
+              }),
+            });
+            const data = await res.json();
+            allResults.push({ phone: optin.phone_number, window: win.label, status: data.messages?.[0]?.status || "unknown" });
+          } catch (e) {
+            allResults.push({ phone: optin.phone_number, window: win.label, status: "error", error: (e as Error).message });
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, windows: upcomingWindows.length, sent: allResults.length, results: allResults }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Action: send_reminders — manual blast SMS to all opted-in users about an upcoming window
     if (action === "send_reminders") {
       const { window_label, start_time } = body;
 
