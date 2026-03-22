@@ -34,6 +34,8 @@ export function useSpeedConnectChallenge({ userId, currentPartnerId, isConnected
   useEffect(() => {
     if (!challengeConfig) return;
     const key = `speed_connect_${challengeConfig.slug}`;
+    // Reset if we're in a new week
+    if (resetIfStaleWeek(key)) return;
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
