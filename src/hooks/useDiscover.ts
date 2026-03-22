@@ -91,7 +91,6 @@ export const useDiscover = () => {
       .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
       .eq("is_discoverable", true)
       .filter("image_status", "eq", "approved")
-      .neq("id", userId)
       .order("last_active_at", { ascending: false })
       .range(from, to);
 
