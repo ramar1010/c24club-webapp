@@ -28,6 +28,7 @@ import {
   Camera,
   MousePointerClick,
   Dices,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -271,6 +272,14 @@ export const adminMenu: MenuItem[] = [
     title: "User Roles",
     submenu: [
       { key: "user-roles", label: "Manage Roles", path: "/admin/user-roles" },
+    ],
+  },
+  {
+    key: "call-windows",
+    icon: Clock,
+    title: "Call Windows",
+    submenu: [
+      { key: "call-windows", label: "Manage Schedule", path: "/admin/call-windows" },
     ],
   },
   {

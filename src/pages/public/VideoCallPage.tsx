@@ -54,6 +54,7 @@ import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
 import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
+import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -932,6 +933,9 @@ const VideoCallPage = () => {
           {error}
         </div>
       }
+
+      {/* Quiet Hours Banner */}
+      {!isActive && <QuietHoursBanner userId={memberId} />}
 
       {/* Video Area */}
       <div className="flex-1 flex flex-col md:flex-row gap-3 mx-3 mb-2 min-h-0 md:justify-center md:items-center md:max-w-4xl md:mx-auto md:w-full md:flex-none">
