@@ -1866,6 +1866,7 @@ export type Database = {
           ships_to: string[] | null
           sizes: string | null
           sub_type: string | null
+          target_gender: string | null
           title: string
           type: string
           updated_at: string
@@ -1891,6 +1892,7 @@ export type Database = {
           ships_to?: string[] | null
           sizes?: string | null
           sub_type?: string | null
+          target_gender?: string | null
           title: string
           type: string
           updated_at?: string
@@ -1916,6 +1918,7 @@ export type Database = {
           ships_to?: string[] | null
           sizes?: string | null
           sub_type?: string | null
+          target_gender?: string | null
           title?: string
           type?: string
           updated_at?: string
