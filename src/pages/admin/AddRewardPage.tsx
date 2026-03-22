@@ -40,7 +40,7 @@ type RewardForm = z.infer<typeof rewardSchema>;
 const TYPES = ["Product / Giftcard", "Badge", "Trophy", "Certificate", "Points Bonus", "Spins", "Ad Points"];
 const RARITIES = ["common", "rare", "legendary"];
 const DELIVERIES = ["digital", "physical", "both"];
-const GENDERS = [{ value: "", label: "Both (no filter)" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }];
+const GENDERS = [{ value: "both", label: "Both (no filter)" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }];
 
 const AddRewardPage = () => {
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ const AddRewardPage = () => {
         brief: existingReward.brief || "",
         info: existingReward.info || "",
         image_url: existingReward.image_url || "",
-        target_gender: existingReward.target_gender || "",
+        target_gender: existingReward.target_gender || "both",
         
         minutes_cost: existingReward.minutes_cost || 0,
         shipping_fee: existingReward.shipping_fee || 0,
@@ -146,7 +146,7 @@ const AddRewardPage = () => {
     const payload = {
       ...values,
       category_id: values.category_id || null,
-      target_gender: values.target_gender || null,
+      target_gender: values.target_gender === "both" ? null : values.target_gender || null,
       
       variation_images: variationImages,
       color_options: colorOptions,
@@ -357,10 +357,10 @@ const AddRewardPage = () => {
               <FormField control={form.control} name="target_gender" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Gender <span className="text-xs text-muted-foreground">(for reward carousel)</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select onValueChange={field.onChange} value={field.value || "both"}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Both genders" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {GENDERS.map((g) => <SelectItem key={g.value || "both"} value={g.value}>{g.label}</SelectItem>)}
+                      {GENDERS.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
