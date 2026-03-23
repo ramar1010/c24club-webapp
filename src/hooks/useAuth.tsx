@@ -211,6 +211,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setIsModerator(false);
+    setModPermissions(new Set());
     setBanInfo(null);
   };
 

@@ -272,6 +272,7 @@ export const adminMenu: MenuItem[] = [
     title: "User Roles",
     submenu: [
       { key: "user-roles", label: "Manage Roles", path: "/admin/user-roles" },
+      { key: "mod-permissions", label: "Moderator Permissions", path: "/admin/moderator-permissions" },
     ],
   },
   {
