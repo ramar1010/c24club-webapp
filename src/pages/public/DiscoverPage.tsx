@@ -18,7 +18,7 @@ const DiscoverPage = () => {
   const {
     user, members, allMembers, loading, loadingMore, hasMore, loadMore,
     myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
-    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds, vipUserIds,
+    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds, vipUserIds, modUserIds,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
