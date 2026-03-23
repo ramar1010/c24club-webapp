@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SENDER_DOMAIN = "c24club.com";
-const SITE_URL = "https://c24club.lovable.app";
+const SITE_URL = "https://c24club.com";
 
 function buildInterestEmailHtml(interested: any, target: any): { subject: string; html: string } {
   const isFemale = target.gender?.toLowerCase() === "female";
