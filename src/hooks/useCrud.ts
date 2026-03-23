@@ -2,27 +2,45 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Helper to fetch all rows from a table, bypassing the 1000-row limit
+async function fetchAllRows<T>(
+  table: string,
+  selectQuery: string,
+  orderCol: string,
+  ascending: boolean
+): Promise<T[]> {
+  const PAGE = 1000;
+  let allRows: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectQuery)
+      .order(orderCol, { ascending })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allRows = allRows.concat(data as T[]);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return allRows;
+}
+
 export function useMembers() {
   return useQuery({
     queryKey: ["members"],
     queryFn: async () => {
-      const { data: members, error: membersError } = await supabase
-        .from("members")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (membersError) throw membersError;
+      const members = await fetchAllRows<any>("members", "*", "created_at", false);
 
-      const { data: minutes, error: minutesError } = await supabase
-        .from("member_minutes")
-        .select("user_id, total_minutes");
-      if (minutesError) throw minutesError;
+      const minutes = await fetchAllRows<any>("member_minutes", "user_id, total_minutes", "user_id", true);
 
-      const minutesMap = new Map(minutes?.map((m) => [m.user_id, m.total_minutes]) ?? []);
+      const minutesMap = new Map(minutes.map((m: any) => [m.user_id, m.total_minutes]));
 
-      return members?.map((member) => ({
+      return members.map((member: any) => ({
         ...member,
         minutes: minutesMap.get(member.id) ?? 0,
-      })) ?? [];
+      }));
     },
   });
 }
