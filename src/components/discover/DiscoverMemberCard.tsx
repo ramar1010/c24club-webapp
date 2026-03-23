@@ -324,9 +324,12 @@ const DiscoverMemberCard = ({
           >
             <X className="w-6 h-6 text-white" />
           </button>
-          <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
+          <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none px-6">
             <p className="text-white font-bold text-lg">{member.name}</p>
             {member.country && <p className="text-white/50 text-sm">{member.country}</p>}
+            {member.bio && (
+              <p className="text-white/70 text-sm mt-2 italic max-w-sm mx-auto">"{member.bio}"</p>
+            )}
           </div>
           <img
             src={member.image_url}
