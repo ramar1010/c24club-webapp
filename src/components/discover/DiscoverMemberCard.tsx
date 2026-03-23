@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
+import { isOnlineNow, isNewListing, getTimeAgo, isFakeOnline } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useVipStatus } from "@/hooks/useVipStatus";

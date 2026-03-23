@@ -361,7 +361,7 @@ export const useDiscover = () => {
     .filter(m => {
       if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
       if (filters.country && m.country !== filters.country) return false;
-      if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
+      if (filters.onlineOnly && !isEffectivelyOnline(m.id, m.gender, m.last_active_at)) return false;
       return true;
     });
 
