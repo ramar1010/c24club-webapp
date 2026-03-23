@@ -618,8 +618,6 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                 </div>
               </div>
             )}
-              </div>
-            </div>
           </div>
         )}
 
