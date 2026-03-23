@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, X } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo, isFakeOnline } from "@/hooks/useDiscover";
