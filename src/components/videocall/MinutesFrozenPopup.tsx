@@ -123,7 +123,11 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
             <div className="flex flex-col gap-1.5 mb-2.5">
               {vipFeatures.map((f, i) => (
                 <div key={i} className="flex items-center gap-2 justify-center">
-                  <img src={f.icon} alt="" className="w-5 h-5 object-contain" />
+                  {f.icon ? (
+                    <img src={f.icon} alt="" className="w-5 h-5 object-contain" />
+                  ) : (
+                    <span className="text-base leading-none">👩</span>
+                  )}
                   <span className="text-white text-sm font-bold">{f.label}</span>
                 </div>
               ))}
