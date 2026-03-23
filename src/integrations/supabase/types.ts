@@ -1170,6 +1170,7 @@ export type Database = {
       member_minutes: {
         Row: {
           ad_points: number
+          admin_granted_vip: boolean
           cap_popup_shown: boolean
           ce_minutes_checkpoint: number
           chance_enhancer: number
@@ -1197,6 +1198,7 @@ export type Database = {
         }
         Insert: {
           ad_points?: number
+          admin_granted_vip?: boolean
           cap_popup_shown?: boolean
           ce_minutes_checkpoint?: number
           chance_enhancer?: number
@@ -1224,6 +1226,7 @@ export type Database = {
         }
         Update: {
           ad_points?: number
+          admin_granted_vip?: boolean
           cap_popup_shown?: boolean
           ce_minutes_checkpoint?: number
           chance_enhancer?: number
