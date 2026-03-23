@@ -62,6 +62,7 @@ export const VIP_TIERS = {
       { label: "One Time 2x on Minutes Per Month!", icon: stopwatchIcon },
       { label: "Create Promos", icon: createPromosIcon },
       { label: "No Minute Loss for Quick Skips", icon: chanceEnhancerIcon },
+      { label: "Video Call Females on Discover & DMs", icon: genderSelectIcon },
     ] as VipFeature[],
   },
 } as const;

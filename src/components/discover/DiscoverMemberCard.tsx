@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useVipStatus } from "@/hooks/useVipStatus";
+import VipCallGate, { shouldBlockCall } from "./VipCallGate";
 
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
@@ -48,7 +50,9 @@ const DiscoverMemberCard = ({
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
   const [showGift, setShowGift] = useState(false);
   const [showFullImage, setShowFullImage] = useState(false);
+  const [showVipGate, setShowVipGate] = useState(false);
   const { user } = useAuth();
+  const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
   const navigate = useNavigate();
   const online = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
@@ -56,6 +60,11 @@ const DiscoverMemberCard = ({
 
   const handleVideoChat = async () => {
     if (!user) return;
+    // Block non-premium males from calling females
+    if (shouldBlockCall(myGender, member.gender, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
     try {
       const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
@@ -277,6 +286,18 @@ const DiscoverMemberCard = ({
           recipientId={member.id}
           recipientName={member.name}
           onClose={() => setShowGift(false)}
+        />
+      )}
+
+      {/* VIP call gate modal */}
+      {showVipGate && (
+        <VipCallGate
+          onClose={() => setShowVipGate(false)}
+          onSubscribe={async () => {
+            setShowVipGate(false);
+            const { VIP_TIERS } = await import("@/config/vip-tiers");
+            void startCheckout(VIP_TIERS.premium.price_id);
+          }}
         />
       )}
 

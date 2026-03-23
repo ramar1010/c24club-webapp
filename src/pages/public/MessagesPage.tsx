@@ -15,6 +15,8 @@ import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import CashoutModal from "@/components/discover/CashoutModal";
+import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
+import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
@@ -45,6 +47,9 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
+  const [showVipGate, setShowVipGate] = useState(false);
+
+  const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
 
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
     queryKey: ["cashout-minutes-messages", user?.id],
@@ -140,6 +145,14 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const handleStartCall = async () => {
     if (!user || !selectedConvo?.other_user?.id || startingCall) return;
     const partnerId = selectedConvo.other_user.id;
+    const partnerGender = selectedConvo.other_user.gender ?? null;
+
+    // Block non-premium males from calling females
+    if (shouldBlockCall(myGender ?? null, partnerGender, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
+
     setStartingCall(true);
 
     try {
@@ -672,6 +685,18 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           currentMinutes={minutesData?.total_minutes ?? 0}
           giftedMinutes={minutesData?.gifted_minutes ?? 0}
           onSuccess={() => refetchMinutes()}
+        />
+      )}
+
+      {/* VIP call gate modal */}
+      {showVipGate && (
+        <VipCallGate
+          onClose={() => setShowVipGate(false)}
+          onSubscribe={async () => {
+            setShowVipGate(false);
+            const { VIP_TIERS } = await import("@/config/vip-tiers");
+            void startCheckout(VIP_TIERS.premium.price_id);
+          }}
         />
       )}
     </div>
