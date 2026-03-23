@@ -114,8 +114,8 @@ export const useDiscover = () => {
     return (data ?? []) as DiscoverableMember[];
   }, []);
 
-  // Sort members: admins first, VIP second, rest by order
-  const sortMembers = useCallback((list: DiscoverableMember[], adminIds: Set<string>, vipIds: Set<string>) => {
+  // Sort members: admins first, VIP second, mods third, rest by order
+  const sortMembers = useCallback((list: DiscoverableMember[], adminIds: Set<string>, vipIds: Set<string>, modIds?: Set<string>) => {
     return [...list].sort((a, b) => {
       const aAdmin = adminIds.has(a.id) ? 0 : 1;
       const bAdmin = adminIds.has(b.id) ? 0 : 1;
@@ -123,6 +123,9 @@ export const useDiscover = () => {
       const aVip = vipIds.has(a.id) ? 0 : 1;
       const bVip = vipIds.has(b.id) ? 0 : 1;
       if (aVip !== bVip) return aVip - bVip;
+      const amod = modIds?.has(a.id) ? 0 : 1;
+      const bmod = modIds?.has(b.id) ? 0 : 1;
+      if (amod !== bmod) return amod - bmod;
       return 0;
     });
   }, []);
@@ -144,7 +147,7 @@ export const useDiscover = () => {
         const existingIds = new Set(prev.map(m => m.id));
         const unique = newMembers.filter(m => !existingIds.has(m.id));
         const combined = [...prev, ...unique];
-        return sortMembers(combined, adminUserIds, vipUserIds);
+        return sortMembers(combined, adminUserIds, vipUserIds, modUserIds);
       });
 
       // Load socials for new members
@@ -166,7 +169,7 @@ export const useDiscover = () => {
     }
 
     setLoadingMore(false);
-  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, fetchMembersPage, sortMembers]);
+  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, modUserIds, fetchMembersPage, sortMembers]);
 
   // Initial load
   useEffect(() => {
@@ -213,13 +216,14 @@ export const useDiscover = () => {
       const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
       setVipUserIds(vipIds);
 
-      // Fetch admin & VIP members who aren't already in the discoverable list
+      // Fetch admin, VIP & mod members who aren't already in the discoverable list
       const discoverableIds = new Set(membersList.map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id));
       const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id));
+      const missingModIds = [...modIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id) && !vipIds.has(id));
 
       let priorityMembers: DiscoverableMember[] = [];
-      const missingPriorityIds = [...missingAdminIds, ...missingVipIds];
+      const missingPriorityIds = [...missingAdminIds, ...missingVipIds, ...missingModIds];
       if (missingPriorityIds.length > 0) {
         const { data: priorityProfiles } = await supabase
           .from("members")
@@ -232,7 +236,7 @@ export const useDiscover = () => {
       adminMembersFetchedRef.current = true;
 
       const combined = [...membersList, ...priorityMembers];
-      const sorted = sortMembers(combined, adminIds, vipIds);
+      const sorted = sortMembers(combined, adminIds, vipIds, modIds);
       setAllFetchedMembers(sorted);
 
       // Extract unique countries
