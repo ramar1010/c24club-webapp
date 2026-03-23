@@ -147,7 +147,7 @@ export const useDiscover = () => {
         const existingIds = new Set(prev.map(m => m.id));
         const unique = newMembers.filter(m => !existingIds.has(m.id));
         const combined = [...prev, ...unique];
-        return sortMembers(combined, adminUserIds, vipUserIds);
+        return sortMembers(combined, adminUserIds, vipUserIds, modUserIds);
       });
 
       // Load socials for new members
