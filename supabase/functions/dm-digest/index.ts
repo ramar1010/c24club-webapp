@@ -6,6 +6,70 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const SENDER_DOMAIN = "c24club.com";
+const SITE_URL = "https://c24club.com";
+
+function buildDigestHtml(
+  member: any,
+  senderNames: string[],
+  unreadCount: number,
+  messageSnippets: { sender: string; content: string }[]
+): string {
+  const senderText =
+    senderNames.length > 2
+      ? `${senderNames.slice(0, 2).join(", ")} and ${senderNames.length - 2} other${senderNames.length - 2 > 1 ? "s" : ""}`
+      : senderNames.join(" and ");
+
+  const snippetRows = messageSnippets
+    .slice(0, 3)
+    .map(
+      (s) => `
+      <tr>
+        <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+          <p style="margin:0 0 4px;font-weight:600;font-size:14px;color:#1a1a2e;">${s.sender}</p>
+          <p style="margin:0;font-size:13px;color:#666;line-height:1.4;max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.content}</p>
+        </td>
+      </tr>`
+    )
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr><td style="padding:28px 24px 0;">
+          <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="100" style="display:block;margin-bottom:20px;"/>
+        </td></tr>
+
+        <tr><td style="padding:0 24px;">
+          <h1 style="font-size:20px;font-weight:bold;color:#1a1a2e;margin:0 0 8px;">💬 ${senderText} sent you a message</h1>
+          <p style="font-size:14px;color:#666;margin:0 0 20px;">You have ${unreadCount} unread message${unreadCount > 1 ? "s" : ""} waiting for you.</p>
+        </td></tr>
+
+        ${snippetRows ? `
+        <tr><td style="padding:0 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+            ${snippetRows}
+          </table>
+        </td></tr>
+        ` : ""}
+
+        <tr><td style="padding:0 24px 28px;" align="center">
+          <a href="${SITE_URL}/messages" style="display:inline-block;padding:14px 32px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:15px;font-weight:600;border-radius:8px;text-decoration:none;">
+            See What They Said
+          </a>
+        </td></tr>
+      </table>
+      <p style="margin:20px 0 0;font-size:12px;color:#999999;text-align:center;">© ${new Date().getFullYear()} C24 Club</p>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -46,24 +110,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build recipient -> unread info map
-    const recipientUnread: Record<string, { count: number; senderIds: Set<string> }> = {};
+    // Build recipient -> unread info map with message snippets
+    const recipientUnread: Record<
+      string,
+      {
+        count: number;
+        senderIds: Set<string>;
+        snippets: { senderId: string; content: string }[];
+      }
+    > = {};
 
     for (const msg of unreadMessages) {
       const convo = convos.find((c: any) => c.id === msg.conversation_id);
       if (!convo) continue;
 
-      // Recipient is the participant who is NOT the sender
       const recipientId =
         convo.participant_1 === msg.sender_id
           ? convo.participant_2
           : convo.participant_1;
 
       if (!recipientUnread[recipientId]) {
-        recipientUnread[recipientId] = { count: 0, senderIds: new Set() };
+        recipientUnread[recipientId] = { count: 0, senderIds: new Set(), snippets: [] };
       }
       recipientUnread[recipientId].count++;
       recipientUnread[recipientId].senderIds.add(msg.sender_id);
+      if (recipientUnread[recipientId].snippets.length < 3) {
+        recipientUnread[recipientId].snippets.push({
+          senderId: msg.sender_id,
+          content: (msg.content || "").slice(0, 80),
+        });
+      }
     }
 
     const recipientIds = Object.keys(recipientUnread);
@@ -100,20 +176,20 @@ Deno.serve(async (req) => {
       .in("id", allSenderIds);
 
     const senderNameMap = new Map(
-      (senders || []).map((s: any) => [s.id, s.name])
+      (senders || []).map((s: any) => [s.id, s.name || "Someone"])
     );
 
-    // Check for active email template
-    const { data: template } = await supabase
-      .from("email_templates")
-      .select("subject, body")
-      .eq("template_key", "unread_dm_digest")
-      .eq("is_active", true)
-      .single();
+    // Get suppressed emails
+    const { data: suppressedList } = await supabase
+      .from("suppressed_emails")
+      .select("email");
+    const suppressedSet = new Set((suppressedList || []).map((s: any) => s.email));
 
     let emailsSent = 0;
 
     for (const member of members) {
+      if (suppressedSet.has(member.email)) continue;
+
       const info = recipientUnread[member.id];
       if (!info) continue;
 
@@ -126,16 +202,18 @@ Deno.serve(async (req) => {
           ? `${senderNames.slice(0, 2).join(", ")} and others`
           : senderNames.join(" and ");
 
+      // Personalized subject with sender name(s)
       const subject =
-        template?.subject?.replace("{{count}}", String(info.count)) ||
-        `You have ${info.count} unread message${info.count > 1 ? "s" : ""} on C24CLUB`;
+        senderNames.length === 1
+          ? `${senderNames[0]} sent you a message 💬`
+          : `${senderText} sent you ${info.count} messages 💬`;
 
-      const body =
-        template?.body
-          ?.replace("{{name}}", member.name || "there")
-          ?.replace("{{count}}", String(info.count))
-          ?.replace("{{senders}}", senderText) ||
-        `Hey ${member.name || "there"}! You have ${info.count} unread message${info.count > 1 ? "s" : ""} from ${senderText}. Check them out on C24CLUB!`;
+      const messageSnippets = info.snippets.map((s) => ({
+        sender: senderNameMap.get(s.senderId) || "Someone",
+        content: s.content,
+      }));
+
+      const html = buildDigestHtml(member, senderNames, info.count, messageSnippets);
 
       // Enqueue email via pgmq
       try {
@@ -166,18 +244,11 @@ Deno.serve(async (req) => {
             run_id: crypto.randomUUID(),
             message_id: dmMessageId,
             to: member.email,
-            from: `C24Club <support@c24club.com>`,
-            sender_domain: "c24club.com",
+            from: `C24Club <support@${SENDER_DOMAIN}>`,
+            sender_domain: SENDER_DOMAIN,
             subject,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <h2 style="color:#1a1a2e;">💬 ${subject}</h2>
-              <p style="color:#333;font-size:16px;line-height:1.6;">${body}</p>
-              <a href="https://c24club.com/messages" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;font-weight:bold;">
-                Read Messages
-              </a>
-              <p style="color:#999;font-size:12px;margin-top:30px;">C24CLUB</p>
-            </div>`,
-            text: body,
+            html,
+            text: `${senderText} sent you a message on C24Club. You have ${info.count} unread message${info.count > 1 ? "s" : ""}. Read them at ${SITE_URL}/messages`,
             purpose: "transactional",
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),

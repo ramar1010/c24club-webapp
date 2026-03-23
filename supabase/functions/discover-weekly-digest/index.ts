@@ -4,51 +4,75 @@ const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number }): string {
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #1a1a1a; color: #fff; border-radius: 12px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #8b5cf6, #ec4899); padding: 24px; text-align: center;">
-        <h1 style="margin: 0; font-size: 22px; color: #fff;">Your Weekly Discover Update 📊</h1>
-      </div>
-      <div style="padding: 24px;">
-        <p style="font-size: 16px; margin: 0 0 20px; text-align: center;">Hey <strong>${member.name}</strong>, here's what happened this week!</p>
-        
-        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-          <div style="flex: 1; background: #262626; border-radius: 10px; padding: 16px; text-align: center;">
-            <p style="font-size: 28px; font-weight: bold; color: #ec4899; margin: 0;">${stats.newInterests}</p>
-            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0;">New Interests</p>
-          </div>
-          <div style="flex: 1; background: #262626; border-radius: 10px; padding: 16px; text-align: center;">
-            <p style="font-size: 28px; font-weight: bold; color: #f59e0b; margin: 0;">${stats.mutualMatches}</p>
-            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0;">Matches</p>
-          </div>
-          <div style="flex: 1; background: #262626; border-radius: 10px; padding: 16px; text-align: center;">
-            <p style="font-size: 28px; font-weight: bold; color: #3b82f6; margin: 0;">${stats.totalDiscoverable}</p>
-            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0;">People Online</p>
-          </div>
+  const earnBlock = member.gender?.toLowerCase() === "female"
+    ? `<tr><td style="padding:0 24px 16px;">
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:14px;text-align:center;">
+          <p style="color:#059669;font-weight:bold;margin:0;">💰 Don't forget — you earn CASH for every video chat!</p>
         </div>
+      </td></tr>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr><td style="background:linear-gradient(135deg,hsl(205,65%,45%),#6366f1);padding:24px;text-align:center;">
+          <h1 style="margin:0;font-size:22px;color:#fff;">Your Weekly Discover Update 📊</h1>
+        </td></tr>
+        <tr><td style="padding:24px;">
+          <p style="font-size:16px;margin:0 0 20px;text-align:center;color:#333;">Hey <strong>${member.name}</strong>, here's what happened this week!</p>
+        </td></tr>
+        <tr><td style="padding:0 24px 20px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
+                <p style="font-size:28px;font-weight:bold;color:#ec4899;margin:0;">${stats.newInterests}</p>
+                <p style="font-size:11px;color:#888;margin:4px 0 0;">New Interests</p>
+              </td>
+              <td width="6"></td>
+              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
+                <p style="font-size:28px;font-weight:bold;color:#f59e0b;margin:0;">${stats.mutualMatches}</p>
+                <p style="font-size:11px;color:#888;margin:4px 0 0;">Matches</p>
+              </td>
+              <td width="6"></td>
+              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
+                <p style="font-size:28px;font-weight:bold;color:hsl(205,65%,45%);margin:0;">${stats.totalDiscoverable}</p>
+                <p style="font-size:11px;color:#888;margin:4px 0 0;">People Online</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
 
         ${stats.newInterests > 0 ? `
-          <div style="background: #065f46; border: 1px solid #10b981; border-radius: 10px; padding: 14px; margin-bottom: 16px; text-align: center;">
-            <p style="color: #34d399; font-weight: bold; margin: 0;">🔥 ${stats.newInterests} ${stats.newInterests === 1 ? "person wants" : "people want"} to connect with you!</p>
+        <tr><td style="padding:0 24px 16px;">
+          <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:14px;text-align:center;">
+            <p style="color:#059669;font-weight:bold;margin:0;">🔥 ${stats.newInterests} ${stats.newInterests === 1 ? "person wants" : "people want"} to connect with you!</p>
           </div>
+        </td></tr>
         ` : ""}
 
         ${stats.mutualMatches > 0 ? `
-          <div style="background: #78350f; border: 1px solid #f59e0b; border-radius: 10px; padding: 14px; margin-bottom: 16px; text-align: center;">
-            <p style="color: #fbbf24; font-weight: bold; margin: 0;">🎉 You have ${stats.mutualMatches} mutual ${stats.mutualMatches === 1 ? "match" : "matches"}!</p>
+        <tr><td style="padding:0 24px 16px;">
+          <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px;text-align:center;">
+            <p style="color:#b45309;font-weight:bold;margin:0;">🎉 You have ${stats.mutualMatches} mutual ${stats.mutualMatches === 1 ? "match" : "matches"}!</p>
           </div>
+        </td></tr>
         ` : ""}
 
-        ${member.gender?.toLowerCase() === "female" ? `
-          <div style="background: #1e1b4b; border: 1px solid #6366f1; border-radius: 10px; padding: 14px; margin-bottom: 16px; text-align: center;">
-            <p style="color: #a5b4fc; font-weight: bold; margin: 0;">💰 Don't forget — you earn CASH for every video chat!</p>
-          </div>
-        ` : ""}
+        ${earnBlock}
 
-        <a href="${SITE_URL}/discover" style="display: block; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; text-align: center; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin-top: 16px;">Open Discover →</a>
-        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 16px;">C24Club — Your weekly discovery recap</p>
-      </div>
-    </div>`;
+        <tr><td style="padding:0 24px 28px;" align="center">
+          <a href="${SITE_URL}/discover" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,hsl(205,65%,45%),#6366f1);color:#fff;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">Open Discover →</a>
+        </td></tr>
+      </table>
+      <p style="margin:20px 0 0;font-size:12px;color:#999;text-align:center;">© ${new Date().getFullYear()} C24 Club</p>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 Deno.serve(async (req) => {
@@ -119,9 +143,10 @@ Deno.serve(async (req) => {
         totalDiscoverable,
       });
 
+      // More curiosity-driven subject line
       const subject = (newInterests || 0) > 0
-        ? `📊 ${newInterests} new ${(newInterests || 0) === 1 ? "person is" : "people are"} interested in you this week!`
-        : `📊 Your weekly C24Club Discover update`;
+        ? `${newInterests} ${(newInterests || 0) === 1 ? "person" : "people"} checked out your profile this week 👀`
+        : `Your weekly C24Club update — ${mutualMatches} match${mutualMatches === 1 ? "" : "es"} 🎉`;
 
       const messageId = `digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
 

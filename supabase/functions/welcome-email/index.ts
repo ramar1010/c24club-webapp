@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const SENDER_DOMAIN = "c24club.com";
+const SITE_URL = "https://c24club.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -51,7 +52,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const subject = template.subject;
+    const firstName = (member.name || "").split(" ")[0] || "there";
+
+    // Personalized subject with user's name
+    const subject = `You're in, ${firstName}! Here's how to start earning 💰`;
+
     const rawBody = template.body.replace(/\{\{user_name\}\}/g, member.name);
 
     // Wrap in styled HTML email layout
@@ -61,15 +66,15 @@ Deno.serve(async (req) => {
 <body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;padding:40px 0;">
     <tr><td align="center">
-      <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;padding:32px 28px;max-width:480px;">
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;padding:32px 28px;max-width:480px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <tr><td>
           <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="120" style="margin-bottom:24px;" />
           <h1 style="font-size:22px;font-weight:bold;color:#1a1a2e;margin:0 0 20px;">Welcome to C24Club! 🎉</h1>
           <div style="font-size:14px;color:#55575d;line-height:1.8;">
             ${rawBody.includes('<') ? rawBody : rawBody.replace(/\n/g, '<br/>')}
           </div>
-          <a href="https://c24club.com" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
-            GET STARTED
+          <a href="${SITE_URL}/videocall" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
+            Start Earning Now
           </a>
           <p style="font-size:12px;color:#999999;margin:30px 0 0;">C24CLUB</p>
         </td></tr>
