@@ -73,7 +73,7 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
       // If admin-granted VIP, preserve it
-      if (currentMinutes?.is_vip && !currentMinutes?.stripe_customer_id) {
+      if (currentMinutes?.admin_granted_vip) {
         logStep("Admin-granted VIP preserved");
         return new Response(JSON.stringify({
           subscribed: true,
