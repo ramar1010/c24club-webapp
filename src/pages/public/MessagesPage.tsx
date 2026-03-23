@@ -187,21 +187,37 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     }
   };
 
+  // DM paywall: count messages sent by current user to a female partner
+  const DM_FREE_LIMIT = 3;
+  const partnerGender = selectedConvo?.other_user?.gender?.toLowerCase() ?? null;
+  const isMaleToFemale = myGender === "male" && partnerGender === "female";
+  const hasBasicVip = vipTier === "basic" || vipTier === "premium";
+  const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
+  const dmBlocked = isMaleToFemale && !hasBasicVip && mySentCount >= DM_FREE_LIMIT;
+
+  // Female-side: detect if male partner is likely blocked
+  const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
+
   const handleSend = () => {
     if (!messageText.trim() || !selectedConvo) return;
     const otherId = selectedConvo.other_user?.id;
     if (!otherId) return;
 
+    // Block if limit reached
+    if (dmBlocked) {
+      setShowDmPaywall(true);
+      return;
+    }
+
     sendMessage.mutate(
       {
         recipientId: otherId,
         content: messageText.trim(),
-        conversationId: selectedConvo.id || undefined, // empty string = create new
+        conversationId: selectedConvo.id || undefined,
       },
       {
         onSuccess: (convoId) => {
           setMessageText("");
-          // Update the selected convo with real id if it was new
           if (!selectedConvo.id && convoId) {
             setSelectedConvo((prev) => prev ? { ...prev, id: convoId } : prev);
           }
