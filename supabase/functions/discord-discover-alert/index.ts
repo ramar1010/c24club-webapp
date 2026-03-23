@@ -21,7 +21,7 @@ serve(async (req) => {
     }
 
     const { discoverUrl } = await req.json();
-    const linkUrl = discoverUrl || "https://c24club.lovable.app/discover";
+    const linkUrl = discoverUrl || "https://c24club.com/discover";
 
     const message = `A potential buyer has added their listing here: ${linkUrl}`;
 

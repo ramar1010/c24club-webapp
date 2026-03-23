@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
           <p style="font-size:14px;color:#55575d;line-height:1.8;margin:0 0 24px;">
             Your reward of <strong style="color:#1a1a2e;">${rewardText || "your prize"}</strong> has been credited to your account.
           </p>
-          <a href="https://c24club.lovable.app/videocall" style="display:inline-block;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
+          <a href="https://c24club.com/videocall" style="display:inline-block;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
             VIEW YOUR REWARDS
           </a>
           <p style="font-size:12px;color:#999999;margin:30px 0 0;">C24CLUB</p>

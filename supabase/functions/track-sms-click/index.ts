@@ -39,7 +39,7 @@ serve(async (req) => {
     .eq("id", send.campaign_id)
     .single();
 
-  const redirectUrl = campaign?.destination_url || "https://c24club.lovable.app";
+  const redirectUrl = campaign?.destination_url || "https://c24club.com";
 
   return new Response(null, {
     status: 302,

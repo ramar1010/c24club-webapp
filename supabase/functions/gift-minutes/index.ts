@@ -254,7 +254,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 .footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}
 </style></head>
 <body><div class="wrap">
-<div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
+<div class="header"><img src="https://c24club.com/favicon-96x96.png" alt="C24Club"></div>
 <div class="content">
 <h1>Hey ${recipientName}! 🎉</h1>
 <p><strong>${senderName}</strong> just sent you a cash gift on C24Club!</p>
@@ -264,7 +264,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 </div>
 <p>You can <strong>cash out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
 <div style="text-align:center">
-<a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
+<a href="https://c24club.com/my-rewards" class="cta">Go to My Rewards</a>
 </div>
 </div>
 <div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div>
@@ -289,7 +289,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
               sender_domain: "c24club.com",
               subject,
               html: body,
-              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.lovable.app/my-rewards`,
+              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
               purpose: "transactional",
               label: "gift-received",
               queued_at: new Date().toISOString(),
@@ -392,7 +392,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 .footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}
 </style></head>
 <body><div class="wrap">
-<div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
+<div class="header"><img src="https://c24club.com/favicon-96x96.png" alt="C24Club"></div>
 <div class="content">
 <h1>Hey ${recipientName}! 🎉</h1>
 <p><strong>${senderName}</strong> just sent you a gift on C24Club!</p>
@@ -402,7 +402,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 </div>
 <p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
 <div style="text-align:center">
-<a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
+<a href="https://c24club.com/my-rewards" class="cta">Go to My Rewards</a>
 </div>
 </div>
 <div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div>
@@ -427,7 +427,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
               sender_domain: "c24club.com",
               subject,
               html: body,
-              text: `Hey ${recipientName}! ${senderName} just gifted you ${giftMinutes} minutes on C24Club! You can cash these out for real money via PayPal. Go to My Rewards > Cash Out Minutes to convert them. https://c24club.lovable.app/my-rewards`,
+              text: `Hey ${recipientName}! ${senderName} just gifted you ${giftMinutes} minutes on C24Club! You can cash these out for real money via PayPal. Go to My Rewards > Cash Out Minutes to convert them. https://c24club.com/my-rewards`,
               purpose: "transactional",
               label: "gift-received",
               queued_at: new Date().toISOString(),

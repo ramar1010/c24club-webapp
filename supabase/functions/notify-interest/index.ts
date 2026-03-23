@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SENDER_DOMAIN = "c24club.com";
-const SITE_URL = "https://c24club.lovable.app";
+const SITE_URL = "https://c24club.com";
 
 function buildInterestEmailHtml(interested: any, target: any): { subject: string; html: string } {
   const isFemale = target.gender?.toLowerCase() === "female";
@@ -247,7 +247,7 @@ serve(async (req) => {
     const discordUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
     if (discordUrl) {
       const isMutual = emailsSent.includes("mutual_match");
-      const siteUrl = "https://c24club.lovable.app/discover";
+      const siteUrl = "https://c24club.com/discover";
       await fetch(discordUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

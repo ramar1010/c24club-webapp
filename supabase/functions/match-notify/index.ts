@@ -271,7 +271,7 @@ async function sendDiscordNotification(
 ): Promise<boolean> {
   if (!webhookUrl) return false;
 
-  const siteUrl = "https://c24club.lovable.app";
+  const siteUrl = "https://c24club.com";
   let content: string;
   if (gender === "male") {
     content = `EARN CASH NOW! A male user joined which means you can earn just by connecting with him or just by idling on our website! - C24Club video chat\n${siteUrl}/videocall`;
@@ -325,7 +325,7 @@ async function sendFcmV1Notifications(
             token,
             notification: { title, body },
             webpush: {
-              fcm_options: { link: "https://c24club.lovable.app/videocall" },
+              fcm_options: { link: "https://c24club.com/videocall" },
               notification: { icon: "/favicon-96x96.png" },
             },
           },

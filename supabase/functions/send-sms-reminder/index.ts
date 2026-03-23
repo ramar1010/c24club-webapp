@@ -165,7 +165,7 @@ serve(async (req) => {
           ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
           : optins || [];
 
-        const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.lovable.app/videocall Reply STOP to unsubscribe.`;
+        const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.com/videocall Reply STOP to unsubscribe.`;
 
         for (const optin of filteredOptins) {
           const result = await sendSmsAndLog(supabase, {
