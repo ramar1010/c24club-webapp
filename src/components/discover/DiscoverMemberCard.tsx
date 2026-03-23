@@ -56,22 +56,20 @@ const DiscoverMemberCard = ({
   const navigate = useNavigate();
   const realOnline = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
+  const isFemale = member.gender?.toLowerCase() === "female";
 
   // Fake online indicator for a handful of female profiles to boost engagement
   const fakeOnline = (() => {
     if (realOnline || !isFemale || isSelf) return false;
-    // Deterministic hash from member id + current hour so it rotates
     const hourSeed = Math.floor(Date.now() / (1000 * 60 * 60));
     let hash = 0;
     const str = member.id + String(hourSeed);
     for (let i = 0; i < str.length; i++) {
       hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
     }
-    // ~20% of female profiles show as online
     return Math.abs(hash) % 5 === 0;
   })();
   const online = realOnline || fakeOnline;
-  const isFemale = member.gender?.toLowerCase() === "female";
 
   const handleVideoChat = async () => {
     if (!user) return;
