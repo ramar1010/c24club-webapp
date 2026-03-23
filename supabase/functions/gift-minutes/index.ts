@@ -254,7 +254,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 .footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}
 </style></head>
 <body><div class="wrap">
-<div class="header"><img src="https://c24club.lovable.app/favicon-96x96.png" alt="C24Club"></div>
+<div class="header"><img src="https://c24club.com/favicon-96x96.png" alt="C24Club"></div>
 <div class="content">
 <h1>Hey ${recipientName}! 🎉</h1>
 <p><strong>${senderName}</strong> just sent you a cash gift on C24Club!</p>
