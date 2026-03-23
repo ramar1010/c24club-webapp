@@ -128,6 +128,12 @@ const DiscoverMemberCard = ({
               VIP
             </span>
           )}
+          {isModerator && !isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Shield className="w-2.5 h-2.5" />
+              Mod
+            </span>
+          )}
           {isSelf && (
             <span className="flex items-center gap-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
               👤 You
