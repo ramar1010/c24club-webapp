@@ -289,7 +289,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
               sender_domain: "c24club.com",
               subject,
               html: body,
-              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.lovable.app/my-rewards`,
+              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
               purpose: "transactional",
               label: "gift-received",
               queued_at: new Date().toISOString(),
