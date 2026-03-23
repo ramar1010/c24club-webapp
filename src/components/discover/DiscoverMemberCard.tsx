@@ -60,6 +60,11 @@ const DiscoverMemberCard = ({
 
   const handleVideoChat = async () => {
     if (!user) return;
+    // Block non-premium males from calling females
+    if (shouldBlockCall(myGender, member.gender, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
     try {
       const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
