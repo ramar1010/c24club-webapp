@@ -12,6 +12,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isModerator: boolean;
+  modPermissions: Set<string>;
   loading: boolean;
   banInfo: BanInfo | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
