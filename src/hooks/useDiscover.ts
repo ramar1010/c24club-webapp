@@ -94,6 +94,7 @@ export const useDiscover = () => {
   const [countries, setCountries] = useState<string[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [vipUserIds, setVipUserIds] = useState<Set<string>>(new Set());
+  const [modUserIds, setModUserIds] = useState<Set<string>>(new Set());
   const pageRef = useRef(0);
   const adminMembersFetchedRef = useRef(false);
 
