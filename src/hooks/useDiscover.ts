@@ -38,7 +38,7 @@ export const isOnlineNow = (lastActive: string | null) => {
   return Date.now() - new Date(lastActive).getTime() < ONLINE_THRESHOLD_MS;
 };
 
-/** Returns true for ~20% of female profiles (rotates hourly) to show fake "Online" badge */
+/** Returns true for ~35% of female profiles (rotates hourly) to show fake "Online" badge */
 export const isFakeOnline = (memberId: string, gender: string | null) => {
   if (!gender || gender.toLowerCase() !== "female") return false;
   const hourSeed = Math.floor(Date.now() / (1000 * 60 * 60));
@@ -47,7 +47,7 @@ export const isFakeOnline = (memberId: string, gender: string | null) => {
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
   }
-  return Math.abs(hash) % 5 === 0;
+  return Math.abs(hash) % 100 < 35;
 };
 
 export const isEffectivelyOnline = (memberId: string, gender: string | null, lastActive: string | null) => {
