@@ -402,7 +402,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
 </div>
 <p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong> to convert them.</p>
 <div style="text-align:center">
-<a href="https://c24club.lovable.app/my-rewards" class="cta">Go to My Rewards</a>
+<a href="https://c24club.com/my-rewards" class="cta">Go to My Rewards</a>
 </div>
 </div>
 <div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div>
