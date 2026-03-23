@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { isOnlineNow, isNewListing, getTimeAgo } from "@/hooks/useDiscover";
+import { isOnlineNow, isNewListing, getTimeAgo, isFakeOnline } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useVipStatus } from "@/hooks/useVipStatus";
@@ -57,19 +57,7 @@ const DiscoverMemberCard = ({
   const realOnline = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
-
-  // Fake online indicator for a handful of female profiles to boost engagement
-  const fakeOnline = (() => {
-    if (realOnline || !isFemale || isSelf) return false;
-    const hourSeed = Math.floor(Date.now() / (1000 * 60 * 60));
-    let hash = 0;
-    const str = member.id + String(hourSeed);
-    for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-    }
-    return Math.abs(hash) % 5 === 0;
-  })();
-  const online = realOnline || fakeOnline;
+  const online = realOnline || (!isSelf && isFakeOnline(member.id, member.gender));
 
   const handleVideoChat = async () => {
     if (!user) return;

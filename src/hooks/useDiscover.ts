@@ -38,6 +38,22 @@ export const isOnlineNow = (lastActive: string | null) => {
   return Date.now() - new Date(lastActive).getTime() < ONLINE_THRESHOLD_MS;
 };
 
+/** Returns true for ~20% of female profiles (rotates hourly) to show fake "Online" badge */
+export const isFakeOnline = (memberId: string, gender: string | null) => {
+  if (!gender || gender.toLowerCase() !== "female") return false;
+  const hourSeed = Math.floor(Date.now() / (1000 * 60 * 60));
+  let hash = 0;
+  const str = memberId + String(hourSeed);
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % 5 === 0;
+};
+
+export const isEffectivelyOnline = (memberId: string, gender: string | null, lastActive: string | null) => {
+  return isOnlineNow(lastActive) || isFakeOnline(memberId, gender);
+};
+
 export const isNewListing = (createdAt: string) => {
   return Date.now() - new Date(createdAt).getTime() < 48 * 60 * 60 * 1000;
 };
@@ -345,7 +361,7 @@ export const useDiscover = () => {
     .filter(m => {
       if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
       if (filters.country && m.country !== filters.country) return false;
-      if (filters.onlineOnly && !isOnlineNow(m.last_active_at)) return false;
+      if (filters.onlineOnly && !isEffectivelyOnline(m.id, m.gender, m.last_active_at)) return false;
       return true;
     });
 
