@@ -216,13 +216,14 @@ export const useDiscover = () => {
       const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
       setVipUserIds(vipIds);
 
-      // Fetch admin & VIP members who aren't already in the discoverable list
+      // Fetch admin, VIP & mod members who aren't already in the discoverable list
       const discoverableIds = new Set(membersList.map(m => m.id));
       const missingAdminIds = [...adminIds].filter(id => !discoverableIds.has(id));
       const missingVipIds = [...vipIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id));
+      const missingModIds = [...modIds].filter(id => !discoverableIds.has(id) && !adminIds.has(id) && !vipIds.has(id));
 
       let priorityMembers: DiscoverableMember[] = [];
-      const missingPriorityIds = [...missingAdminIds, ...missingVipIds];
+      const missingPriorityIds = [...missingAdminIds, ...missingVipIds, ...missingModIds];
       if (missingPriorityIds.length > 0) {
         const { data: priorityProfiles } = await supabase
           .from("members")
@@ -235,7 +236,7 @@ export const useDiscover = () => {
       adminMembersFetchedRef.current = true;
 
       const combined = [...membersList, ...priorityMembers];
-      const sorted = sortMembers(combined, adminIds, vipIds);
+      const sorted = sortMembers(combined, adminIds, vipIds, modIds);
       setAllFetchedMembers(sorted);
 
       // Extract unique countries
