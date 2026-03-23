@@ -289,6 +289,19 @@ const DiscoverMemberCard = ({
         />
       )}
 
+      {/* VIP call gate modal */}
+      {showVipGate && (
+        <VipCallGate
+          onClose={() => setShowVipGate(false)}
+          onSubscribe={() => {
+            setShowVipGate(false);
+            void startCheckout(
+              (await import("@/config/vip-tiers")).VIP_TIERS.premium.price_id
+            );
+          }}
+        />
+      )}
+
       {/* Full image viewer */}
       {showFullImage && member.image_url && (
         <div
