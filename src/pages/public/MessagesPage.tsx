@@ -561,25 +561,63 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="px-3 py-2 bg-neutral-900 border-t border-white/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value.slice(0, 500))}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50"
-                  maxLength={500}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!messageText.trim() || sendMessage.isPending}
-                  className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-30 disabled:hover:bg-blue-600 flex items-center justify-center transition-colors shrink-0"
-                >
-                  <Send className="w-4 h-4 text-white" />
-                </button>
+            {/* Female-side notice: male partner may have hit DM limit */}
+            {isFemaleFromMale && (() => {
+              const partnerSentCount = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).length;
+              const partnerLastMsg = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).at(-1);
+              const myLastMsg = messages.filter((m) => m.sender_id === user?.id).at(-1);
+              // Show notice if partner sent exactly 3 msgs and hasn't replied after our last message
+              const partnerStopped = partnerSentCount >= 3 && myLastMsg && (!partnerLastMsg || new Date(partnerLastMsg.created_at) < new Date(myLastMsg.created_at));
+              if (!partnerStopped) return null;
+              return (
+                <div className="mx-3 mb-1 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="text-xs text-amber-300/90">
+                    {selectedConvo?.other_user?.name} may have reached their free message limit. They'll need to subscribe to VIP to continue chatting with you.
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Input or DM paywall */}
+            {dmBlocked ? (
+              <div className="px-3 py-3 bg-neutral-900 border-t border-white/10 shrink-0">
+                <div className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
+                  <Lock className="w-5 h-5 text-blue-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-semibold">Free messages used up</p>
+                    <p className="text-xs text-white/50">Subscribe to Basic VIP to send unlimited messages</p>
+                  </div>
+                  <button
+                    onClick={() => setShowDmPaywall(true)}
+                    className="shrink-0 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:from-blue-400 hover:to-cyan-400 transition-all"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="px-3 py-2 bg-neutral-900 border-t border-white/10 shrink-0">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value.slice(0, 500))}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                    placeholder={isMaleToFemale && !hasBasicVip ? `Type a message... (${DM_FREE_LIMIT - mySentCount} free left)` : "Type a message..."}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50"
+                    maxLength={500}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!messageText.trim() || sendMessage.isPending}
+                    className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-30 disabled:hover:bg-blue-600 flex items-center justify-center transition-colors shrink-0"
+                  >
+                    <Send className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
               </div>
             </div>
           </div>
