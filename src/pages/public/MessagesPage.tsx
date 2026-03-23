@@ -49,6 +49,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
+  const [showDmPaywall, setShowDmPaywall] = useState(false);
 
   const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
 
