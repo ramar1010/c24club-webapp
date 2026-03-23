@@ -45,6 +45,7 @@ const DiscoverMemberCard = ({
   myGender,
   isOwner,
   isVip,
+  isModerator,
   isSelf,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
