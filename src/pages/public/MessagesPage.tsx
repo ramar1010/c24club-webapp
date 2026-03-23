@@ -47,6 +47,9 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
+  const [showVipGate, setShowVipGate] = useState(false);
+
+  const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
 
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
     queryKey: ["cashout-minutes-messages", user?.id],
