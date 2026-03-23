@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
               <h2 style="color:#1a1a2e;">💬 ${subject}</h2>
               <p style="color:#333;font-size:16px;line-height:1.6;">${body}</p>
-              <a href="https://c24club.lovable.app/messages" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;font-weight:bold;">
+              <a href="https://c24club.com/messages" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;font-weight:bold;">
                 Read Messages
               </a>
               <p style="color:#999;font-size:12px;margin-top:30px;">C24CLUB</p>

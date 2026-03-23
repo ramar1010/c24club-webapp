@@ -325,7 +325,7 @@ async function sendFcmV1Notifications(
             token,
             notification: { title, body },
             webpush: {
-              fcm_options: { link: "https://c24club.lovable.app/videocall" },
+              fcm_options: { link: "https://c24club.com/videocall" },
               notification: { icon: "/favicon-96x96.png" },
             },
           },

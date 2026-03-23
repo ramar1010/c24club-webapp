@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       let customerId;
       if (customers.data.length > 0) customerId = customers.data[0].id;
 
-      const origin = req.headers.get("origin") || "https://react-code-hug.lovable.app";
+      const origin = req.headers.get("origin") || "https://c24club.com";
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,

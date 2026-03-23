@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
             body: "Your Discover match is waiting for you. Join now!",
           },
           webpush: {
-            fcm_options: { link: "https://c24club.lovable.app/videocall" },
+            fcm_options: { link: "https://c24club.com/videocall" },
             notification: { icon: "/favicon-96x96.png" },
           },
         },

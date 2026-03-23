@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
           <div style="font-size:14px;color:#55575d;line-height:1.8;">
             ${rawBody.includes('<') ? rawBody : rawBody.replace(/\n/g, '<br/>')}
           </div>
-          <a href="https://c24club.lovable.app" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
+          <a href="https://c24club.com" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
             GET STARTED
           </a>
           <p style="font-size:12px;color:#999999;margin:30px 0 0;">C24CLUB</p>
