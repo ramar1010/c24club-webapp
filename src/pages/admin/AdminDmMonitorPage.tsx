@@ -204,6 +204,19 @@ const AdminDmMonitorPage = () => {
                     </div>
                   </button>
                 ))}
+                {hasMore && !search && (
+                  <div className="p-3 text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="w-full text-muted-foreground"
+                    >
+                      {loadingMore ? "Loading..." : "Load More"}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
