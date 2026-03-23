@@ -687,6 +687,18 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           onSuccess={() => refetchMinutes()}
         />
       )}
+
+      {/* VIP call gate modal */}
+      {showVipGate && (
+        <VipCallGate
+          onClose={() => setShowVipGate(false)}
+          onSubscribe={async () => {
+            setShowVipGate(false);
+            const { VIP_TIERS } = await import("@/config/vip-tiers");
+            void startCheckout(VIP_TIERS.premium.price_id);
+          }}
+        />
+      )}
     </div>
   );
 };
