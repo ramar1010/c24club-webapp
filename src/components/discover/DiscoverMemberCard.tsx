@@ -54,9 +54,22 @@ const DiscoverMemberCard = ({
   const { user } = useAuth();
   const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
   const navigate = useNavigate();
-  const online = isOnlineNow(member.last_active_at);
+  const realOnline = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
+
+  // Fake online indicator for a handful of female profiles to boost engagement
+  const fakeOnline = (() => {
+    if (realOnline || !isFemale || isSelf) return false;
+    const hourSeed = Math.floor(Date.now() / (1000 * 60 * 60));
+    let hash = 0;
+    const str = member.id + String(hourSeed);
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash) % 5 === 0;
+  })();
+  const online = realOnline || fakeOnline;
 
   const handleVideoChat = async () => {
     if (!user) return;
