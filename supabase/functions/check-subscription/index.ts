@@ -60,10 +60,10 @@ serve(async (req) => {
     }
     logStep("User authenticated", { userId: user.id });
 
-    // First check if user has admin-granted VIP (no stripe_customer_id but is_vip = true)
+    // First check if user has admin-granted VIP
     const { data: currentMinutes } = await supabaseClient
       .from("member_minutes")
-      .select("is_vip, vip_tier, subscription_end, stripe_customer_id")
+      .select("is_vip, vip_tier, subscription_end, stripe_customer_id, admin_granted_vip")
       .eq("user_id", user.id)
       .maybeSingle();
 
