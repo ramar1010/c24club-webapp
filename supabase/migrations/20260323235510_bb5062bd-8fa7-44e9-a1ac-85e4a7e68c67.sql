@@ -1,0 +1,1 @@
+ALTER TABLE public.member_minutes ADD COLUMN admin_granted_vip boolean NOT NULL DEFAULT false;

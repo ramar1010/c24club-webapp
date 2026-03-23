@@ -60,10 +60,10 @@ serve(async (req) => {
     }
     logStep("User authenticated", { userId: user.id });
 
-    // First check if user has admin-granted VIP (no stripe_customer_id but is_vip = true)
+    // First check if user has admin-granted VIP
     const { data: currentMinutes } = await supabaseClient
       .from("member_minutes")
-      .select("is_vip, vip_tier, subscription_end, stripe_customer_id")
+      .select("is_vip, vip_tier, subscription_end, stripe_customer_id, admin_granted_vip")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -73,7 +73,7 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
       // If admin-granted VIP, preserve it
-      if (currentMinutes?.is_vip && !currentMinutes?.stripe_customer_id) {
+      if (currentMinutes?.admin_granted_vip) {
         logStep("Admin-granted VIP preserved");
         return new Response(JSON.stringify({
           subscribed: true,
@@ -122,7 +122,7 @@ serve(async (req) => {
       const productId = sub.items.data[0].price.product as string;
       vipTier = VIP_TIERS[productId] || "basic";
       logStep("Active subscription", { vipTier, subscriptionEnd });
-    } else if (currentMinutes?.is_vip && !currentMinutes?.stripe_customer_id) {
+    } else if (currentMinutes?.admin_granted_vip) {
       // Admin-granted VIP, preserve it even though they have a Stripe customer
       logStep("Admin-granted VIP preserved (has Stripe customer but no active sub)");
       return new Response(JSON.stringify({
