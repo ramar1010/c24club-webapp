@@ -753,6 +753,19 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           }}
         />
       )}
+
+      {/* DM paywall modal */}
+      {showDmPaywall && selectedConvo?.other_user && (
+        <DmPaywall
+          partnerName={selectedConvo.other_user.name || "this user"}
+          onClose={() => setShowDmPaywall(false)}
+          onSubscribe={async () => {
+            setShowDmPaywall(false);
+            const { VIP_TIERS } = await import("@/config/vip-tiers");
+            void startCheckout(VIP_TIERS.basic.price_id);
+          }}
+        />
+      )}
     </div>
   );
 };
