@@ -16,6 +16,7 @@ import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import CashoutModal from "@/components/discover/CashoutModal";
 import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
+import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
 
