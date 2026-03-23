@@ -197,6 +197,14 @@ export const useDiscover = () => {
       const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
       setAdminUserIds(adminIds);
 
+      // Fetch moderator user IDs
+      const { data: allModRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "moderator");
+      const modIds = new Set((allModRoles || []).map((r: any) => r.user_id as string));
+      setModUserIds(modIds);
+
       // Fetch VIP user IDs
       const { data: vipRows } = await supabase
         .from("member_minutes")
