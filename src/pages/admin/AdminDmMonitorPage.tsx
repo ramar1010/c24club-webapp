@@ -31,6 +31,8 @@ interface DmMessage {
   read_at: string | null;
 }
 
+const PAGE_SIZE = 30;
+
 const AdminDmMonitorPage = () => {
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [members, setMembers] = useState<Map<string, MemberInfo>>(new Map());
@@ -38,43 +40,65 @@ const AdminDmMonitorPage = () => {
   const [messages, setMessages] = useState<DmMessage[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [msgLoading, setMsgLoading] = useState(false);
 
-  // Load all conversations
+  const fetchMemberInfo = async (convos: ConversationRow[], existingMap: Map<string, MemberInfo>) => {
+    const userIds = new Set<string>();
+    convos.forEach((c) => {
+      if (!existingMap.has(c.participant_1)) userIds.add(c.participant_1);
+      if (!existingMap.has(c.participant_2)) userIds.add(c.participant_2);
+    });
+    if (userIds.size === 0) return existingMap;
+
+    const { data: memberData } = await supabase
+      .from("members")
+      .select("id, name, email, image_thumb_url")
+      .in("id", Array.from(userIds));
+
+    const map = new Map(existingMap);
+    memberData?.forEach((m) => map.set(m.id, m));
+    return map;
+  };
+
+  // Load initial conversations
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       const { data: convos } = await supabase
         .from("conversations")
         .select("*")
-        .order("last_message_at", { ascending: false, nullsFirst: false });
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .range(0, PAGE_SIZE - 1);
 
       if (convos) {
         setConversations(convos);
-
-        // Gather unique user IDs
-        const userIds = new Set<string>();
-        convos.forEach((c) => {
-          userIds.add(c.participant_1);
-          userIds.add(c.participant_2);
-        });
-
-        // Fetch member info
-        const { data: memberData } = await supabase
-          .from("members")
-          .select("id, name, email, image_thumb_url")
-          .in("id", Array.from(userIds));
-
-        if (memberData) {
-          const map = new Map<string, MemberInfo>();
-          memberData.forEach((m) => map.set(m.id, m));
-          setMembers(map);
-        }
+        setHasMore(convos.length === PAGE_SIZE);
+        const map = await fetchMemberInfo(convos, new Map());
+        setMembers(map);
       }
       setLoading(false);
     };
     load();
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    const { data: convos } = await supabase
+      .from("conversations")
+      .select("*")
+      .order("last_message_at", { ascending: false, nullsFirst: false })
+      .range(conversations.length, conversations.length + PAGE_SIZE - 1);
+
+    if (convos) {
+      setConversations((prev) => [...prev, ...convos]);
+      setHasMore(convos.length === PAGE_SIZE);
+      const map = await fetchMemberInfo(convos, members);
+      setMembers(map);
+    }
+    setLoadingMore(false);
+  };
 
   // Load messages for selected conversation
   useEffect(() => {
@@ -180,6 +204,19 @@ const AdminDmMonitorPage = () => {
                     </div>
                   </button>
                 ))}
+                {hasMore && !search && (
+                  <div className="p-3 text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="w-full text-muted-foreground"
+                    >
+                      {loadingMore ? "Loading..." : "Load More"}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
