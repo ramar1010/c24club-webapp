@@ -395,6 +395,7 @@ export const useDiscover = () => {
     mutualSocials,
     adminUserIds,
     vipUserIds,
+    modUserIds,
     isMutualMatch,
     handleInterest,
     handleRemoveListing,
