@@ -55,14 +55,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const checkAdmin = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", userId);
 
-    setIsAdmin(!!data);
+    const roleSet = new Set((roles || []).map((r: any) => r.role as string));
+    setIsAdmin(roleSet.has("admin"));
+    const isMod = roleSet.has("moderator");
+    setIsModerator(isMod);
+
+    if (isMod && !roleSet.has("admin")) {
+      const { data: perms } = await supabase
+        .from("moderator_permissions")
+        .select("menu_key")
+        .eq("user_id", userId);
+      setModPermissions(new Set((perms || []).map((p: any) => p.menu_key as string)));
+    } else {
+      setModPermissions(new Set());
+    }
   }, []);
 
   const checkBan = useCallback(async (userId: string) => {
