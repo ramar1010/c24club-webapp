@@ -145,6 +145,14 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const handleStartCall = async () => {
     if (!user || !selectedConvo?.other_user?.id || startingCall) return;
     const partnerId = selectedConvo.other_user.id;
+    const partnerGender = selectedConvo.other_user.gender ?? null;
+
+    // Block non-premium males from calling females
+    if (shouldBlockCall(myGender ?? null, partnerGender, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
+
     setStartingCall(true);
 
     try {
