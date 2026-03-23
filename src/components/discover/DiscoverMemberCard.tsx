@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, X } from "lucide-react";
+import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo, isFakeOnline } from "@/hooks/useDiscover";
@@ -31,6 +31,7 @@ interface DiscoverMemberCardProps {
   myGender: string | null;
   isOwner?: boolean;
   isVip?: boolean;
+  isModerator?: boolean;
   isSelf?: boolean;
 }
 
@@ -44,6 +45,7 @@ const DiscoverMemberCard = ({
   myGender,
   isOwner,
   isVip,
+  isModerator,
   isSelf,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
@@ -124,6 +126,12 @@ const DiscoverMemberCard = ({
             <span className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
               <Sparkles className="w-2.5 h-2.5" />
               VIP
+            </span>
+          )}
+          {isModerator && !isOwner && (
+            <span className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              <Shield className="w-2.5 h-2.5" />
+              Mod
             </span>
           )}
           {isSelf && (

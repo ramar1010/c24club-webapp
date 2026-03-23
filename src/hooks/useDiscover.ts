@@ -94,6 +94,7 @@ export const useDiscover = () => {
   const [countries, setCountries] = useState<string[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [vipUserIds, setVipUserIds] = useState<Set<string>>(new Set());
+  const [modUserIds, setModUserIds] = useState<Set<string>>(new Set());
   const pageRef = useRef(0);
   const adminMembersFetchedRef = useRef(false);
 
@@ -195,6 +196,14 @@ export const useDiscover = () => {
 
       const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
       setAdminUserIds(adminIds);
+
+      // Fetch moderator user IDs
+      const { data: allModRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "moderator");
+      const modIds = new Set((allModRoles || []).map((r: any) => r.user_id as string));
+      setModUserIds(modIds);
 
       // Fetch VIP user IDs
       const { data: vipRows } = await supabase
@@ -386,6 +395,7 @@ export const useDiscover = () => {
     mutualSocials,
     adminUserIds,
     vipUserIds,
+    modUserIds,
     isMutualMatch,
     handleInterest,
     handleRemoveListing,
