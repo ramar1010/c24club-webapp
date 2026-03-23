@@ -44,6 +44,7 @@ export const VIP_TIERS = {
     price_id: "price_1T9yhEA5n8uAZoY1zwb5wVdp",
     product_id: "prod_U8FBD9R49k8Kvd",
     features: [
+      { label: "Video Call & DM Females from Discover", icon: undefined },
       { label: "Choose a Gender to Connect With", icon: genderSelectIcon },
       { label: "Top of Discover Feed", icon: discoverIcon },
       { label: "Get Gifted by Anyone", icon: getGiftedIcon },
@@ -62,7 +63,6 @@ export const VIP_TIERS = {
       { label: "One Time 2x on Minutes Per Month!", icon: stopwatchIcon },
       { label: "Create Promos", icon: createPromosIcon },
       { label: "No Minute Loss for Quick Skips", icon: chanceEnhancerIcon },
-      { label: "Video Call Females on Discover & DMs", icon: genderSelectIcon },
     ] as VipFeature[],
   },
 } as const;
