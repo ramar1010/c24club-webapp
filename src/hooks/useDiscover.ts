@@ -169,7 +169,7 @@ export const useDiscover = () => {
     }
 
     setLoadingMore(false);
-  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, fetchMembersPage, sortMembers]);
+  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, modUserIds, fetchMembersPage, sortMembers]);
 
   // Initial load
   useEffect(() => {
