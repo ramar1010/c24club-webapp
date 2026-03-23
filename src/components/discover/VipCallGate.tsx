@@ -49,7 +49,7 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
                 {f.icon ? (
                   <img src={f.icon} alt="" className="w-4 h-4" />
                 ) : (
-                  <Crown className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm leading-none">👩</span>
                 )}
                 <span>{f.label}</span>
               </div>

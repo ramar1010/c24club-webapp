@@ -12,8 +12,10 @@ interface VipFeaturesOverlayProps {
 
 const FeatureCard = ({ feature }: { feature: VipFeature }) => (
   <div className="bg-neutral-900 rounded-2xl p-3 text-center border border-neutral-700/60 flex flex-col items-center gap-1.5 relative">
-    {feature.icon && (
+    {feature.icon ? (
       <img src={feature.icon} alt="" className="w-14 h-14 object-contain" />
+    ) : (
+      <span className="text-4xl leading-none">👩</span>
     )}
     <p className="text-white text-[11px] font-black leading-tight tracking-wide uppercase">{feature.label}</p>
   </div>
