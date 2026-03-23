@@ -218,11 +218,18 @@ async function handleWebhook(req: Request): Promise<Response> {
   }
 
   // Build template props from payload.data (HookData structure)
+  // Rewrite confirmation URLs to use the custom domain instead of the lovable.app staging URL
+  const rawUrl = payload.data.url || ''
+  const confirmationUrl = rawUrl.replace(
+    /https:\/\/[^/]*\.lovable\.app/,
+    `https://${ROOT_DOMAIN}`
+  )
+
   const templateProps = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
-    confirmationUrl: payload.data.url,
+    confirmationUrl,
     token: payload.data.token,
     email: payload.data.email,
     newEmail: payload.data.new_email,
