@@ -31,6 +31,7 @@ interface DiscoverMemberCardProps {
   myGender: string | null;
   isOwner?: boolean;
   isVip?: boolean;
+  isModerator?: boolean;
   isSelf?: boolean;
 }
 
