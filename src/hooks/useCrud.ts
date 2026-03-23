@@ -13,7 +13,7 @@ async function fetchAllRows<T>(
   let allRows: T[] = [];
   let from = 0;
   while (true) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(table)
       .select(selectQuery)
       .order(orderCol, { ascending })
