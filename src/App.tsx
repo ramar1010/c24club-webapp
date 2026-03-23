@@ -51,6 +51,7 @@ const TapAnalyticsPage = lazy(() => import("@/pages/admin/TapAnalyticsPage"));
 const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage"));
 const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
 const AdminUserRolesPage = lazy(() => import("@/pages/admin/AdminUserRolesPage"));
+const ModeratorPermissionsPage = lazy(() => import("@/pages/admin/ModeratorPermissionsPage"));
 const AdminGiftHistoryPage = lazy(() => import("@/pages/admin/AdminGiftHistoryPage"));
 const CameraUnlockSettingsPage = lazy(() => import("@/pages/admin/CameraUnlockSettingsPage"));
 const CameraUnlockSuccessPage = lazy(() => import("@/pages/public/CameraUnlockSuccessPage"));
@@ -172,6 +173,7 @@ const App = () => (
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />
                 <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
+                <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
                 <Route path="call-windows" element={<AdminCallWindowsPage />} />
               </Route>

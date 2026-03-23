@@ -1523,6 +1523,27 @@ export type Database = {
         }
         Relationships: []
       }
+      moderator_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          menu_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_cooldowns: {
         Row: {
           email_notify_counter: number

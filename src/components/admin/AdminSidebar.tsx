@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { adminMenu, type MenuItem } from "@/config/menu";
@@ -94,6 +94,16 @@ const SidebarItem = ({ item, collapsed }: { item: MenuItem; collapsed: boolean }
 };
 
 const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
+  const { isAdmin, modPermissions } = useAuth();
+
+  const visibleMenu = useMemo(() => {
+    if (isAdmin) return adminMenu;
+    // Moderator: only show sections they have permission for + logout
+    return adminMenu.filter(
+      (item) => item.key === "logout" || modPermissions.has(item.key)
+    );
+  }, [isAdmin, modPermissions]);
+
   return (
     <aside
       className={cn(
@@ -115,7 +125,7 @@ const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
       {/* Nav */}
       <ScrollArea className="flex-1 px-2 py-3">
         <nav className="space-y-0.5">
-          {adminMenu.map((item) => (
+          {visibleMenu.map((item) => (
             <SidebarItem key={item.key} item={item} collapsed={collapsed} />
           ))}
         </nav>

@@ -12,6 +12,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isModerator: boolean;
+  modPermissions: Set<string>;
   loading: boolean;
   banInfo: BanInfo | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -25,6 +27,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+  const [modPermissions, setModPermissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
   const ipCheckedRef = useRef(false);
@@ -51,14 +55,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const checkAdmin = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", userId);
 
-    setIsAdmin(!!data);
+    const roleSet = new Set((roles || []).map((r: any) => r.role as string));
+    setIsAdmin(roleSet.has("admin"));
+    const isMod = roleSet.has("moderator");
+    setIsModerator(isMod);
+
+    if (isMod && !roleSet.has("admin")) {
+      const { data: perms } = await supabase
+        .from("moderator_permissions")
+        .select("menu_key")
+        .eq("user_id", userId);
+      setModPermissions(new Set((perms || []).map((p: any) => p.menu_key as string)));
+    } else {
+      setModPermissions(new Set());
+    }
   }, []);
 
   const checkBan = useCallback(async (userId: string) => {
@@ -137,6 +152,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setIsModerator(false);
+      setModPermissions(new Set());
       setBanInfo(null);
       return;
     }
@@ -194,11 +211,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setIsModerator(false);
+    setModPermissions(new Set());
     setBanInfo(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, loading, banInfo, signIn, signOut, recheckBan }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isModerator, modPermissions, loading, banInfo, signIn, signOut, recheckBan }}>
       {children}
     </AuthContext.Provider>
   );
