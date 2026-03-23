@@ -152,6 +152,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setIsModerator(false);
+      setModPermissions(new Set());
       setBanInfo(null);
       return;
     }
