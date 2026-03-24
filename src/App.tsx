@@ -181,6 +181,9 @@ const App = () => (
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
                 <Route path="call-windows" element={<AdminCallWindowsPage />} />
+                <Route path="blog" element={<AdminBlogPage />} />
+                <Route path="blog/new" element={<AdminBlogEditorPage />} />
+                <Route path="blog/:id/edit" element={<AdminBlogEditorPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
