@@ -59,6 +59,8 @@ const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage")
 const AdminJackpotPayoutsPage = lazy(() => import("@/pages/admin/AdminJackpotPayoutsPage"));
 const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettingsPage"));
 const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
+const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
+const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
