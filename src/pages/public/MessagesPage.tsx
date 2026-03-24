@@ -54,6 +54,9 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const CONVOS_PER_PAGE = 20;
+  const [visibleCount, setVisibleCount] = useState(CONVOS_PER_PAGE);
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = searchParams.get("to");
