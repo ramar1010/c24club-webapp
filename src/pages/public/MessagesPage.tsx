@@ -106,7 +106,51 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   );
   const sendMessage = useSendMessage();
 
-  // Fetch gifted minutes received from selected conversation partner
+  // Fetch roles & VIP status for all conversation partners
+  const otherUserIds = useMemo(
+    () => conversations.map((c) => c.other_user?.id).filter(Boolean) as string[],
+    [conversations]
+  );
+
+  const { data: userBadges = {} } = useQuery({
+    queryKey: ["dm-user-badges", otherUserIds],
+    enabled: otherUserIds.length > 0,
+    queryFn: async () => {
+      const badges: Record<string, "owner" | "vip" | "mod" | null> = {};
+
+      // Fetch roles
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", otherUserIds);
+
+      const roleMap = new Map<string, Set<string>>();
+      (roles || []).forEach((r: any) => {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, new Set());
+        roleMap.get(r.user_id)!.add(r.role);
+      });
+
+      // Fetch VIP status
+      const { data: vipData } = await supabase
+        .from("member_minutes")
+        .select("user_id, is_vip")
+        .in("user_id", otherUserIds)
+        .eq("is_vip", true);
+
+      const vipSet = new Set((vipData || []).map((v: any) => v.user_id));
+
+      for (const uid of otherUserIds) {
+        const userRoles = roleMap.get(uid);
+        if (userRoles?.has("admin")) badges[uid] = "owner";
+        else if (vipSet.has(uid)) badges[uid] = "vip";
+        else if (userRoles?.has("moderator")) badges[uid] = "mod";
+        else badges[uid] = null;
+      }
+      return badges;
+    },
+  });
+
+
   const otherUserId = selectedConvo?.other_user?.id || null;
   const { data: giftedFromUser = 0 } = useQuery({
     queryKey: ["gifted_from_user", user?.id, otherUserId],
