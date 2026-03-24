@@ -173,7 +173,7 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
           <img
             src={promo.image_thumb_url}
             alt={promo.title}
-            className="w-full max-h-32 md:max-h-44 object-cover rounded-xl mb-3"
+            className="w-full max-h-[60vh] object-contain rounded-xl mb-3"
           />
         )}
 
