@@ -54,13 +54,37 @@ const AdminBlogPage = () => {
     fetchPosts();
   };
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const xml = await file.text();
+      const { data, error } = await supabase.functions.invoke("import-wordpress", { body: { xml } });
+      if (error) throw error;
+      toast.success(`Imported ${data.imported} posts (${data.skipped} skipped)`);
+      fetchPosts();
+    } catch (err: any) {
+      toast.error("Import failed: " + (err.message || "Unknown error"));
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Blog Posts</h1>
-        <Button onClick={() => navigate("/admin/blog/new")} className="gap-2">
-          <Plus className="w-4 h-4" /> New Post
-        </Button>
+        <div className="flex gap-2">
+          <input ref={fileInputRef} type="file" accept=".xml" onChange={handleImport} className="hidden" />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="gap-2">
+            <Upload className="w-4 h-4" /> {importing ? "Importing..." : "Import WordPress"}
+          </Button>
+          <Button onClick={() => navigate("/admin/blog/new")} className="gap-2">
+            <Plus className="w-4 h-4" /> New Post
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card rounded-xl border overflow-hidden">
