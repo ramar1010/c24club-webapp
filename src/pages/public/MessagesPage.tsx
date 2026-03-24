@@ -318,6 +318,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     return d.toLocaleDateString();
   };
 
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter((c) =>
+      c.other_user?.name?.toLowerCase().includes(q)
+    );
+  }, [conversations, searchQuery]);
+
+  const paginatedConversations = useMemo(
+    () => filteredConversations.slice(0, visibleCount),
+    [filteredConversations, visibleCount]
+  );
+  const hasMore = filteredConversations.length > visibleCount;
+
   const showList = !selectedConvo || !isMobile;
   const showThread = !!selectedConvo;
 
