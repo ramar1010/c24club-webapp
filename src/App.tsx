@@ -77,6 +77,8 @@ const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
 const ReferralPage = lazy(() => import("@/pages/public/ReferralPage"));
 const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
+const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
+const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
