@@ -61,13 +61,30 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
 
       const seenPromoIds = new Set((seenData ?? []).map((r) => r.promo_id));
 
+      const normalizeValue = (value: string | null) => value?.trim().toLowerCase() ?? null;
+
       const eligible = promos.filter((p) => {
+        const promoGender = normalizeValue(p.gender);
+        const promoCountry = normalizeValue(p.country);
+        const normalizedViewerGender = normalizeValue(viewerGender);
+        const normalizedViewerCountry = normalizeValue(viewerCountry);
+
+        const genderIsWildcard = !promoGender || promoGender === "both" || promoGender === "all";
+        const countryIsWildcard =
+          !promoCountry ||
+          promoCountry === "all countries" ||
+          promoCountry === "all" ||
+          promoCountry === "worldwide";
+
         // sameuser filter: if false, don't show to same viewer twice
         if (!p.sameuser && seenPromoIds.has(p.id)) return false;
-        // Gender targeting: if promo targets a specific gender, viewer must match
-        if (p.gender && viewerGender && p.gender !== viewerGender) return false;
-        // Country targeting: if promo targets a specific country, viewer must match
-        if (p.country && viewerCountry && p.country.toLowerCase() !== viewerCountry.toLowerCase()) return false;
+
+        // Gender targeting: only filter if promo explicitly targets one gender
+        if (!genderIsWildcard && normalizedViewerGender && promoGender !== normalizedViewerGender) return false;
+
+        // Country targeting: only filter if promo explicitly targets one country
+        if (!countryIsWildcard && normalizedViewerCountry && promoCountry !== normalizedViewerCountry) return false;
+
         return true;
       });
 
