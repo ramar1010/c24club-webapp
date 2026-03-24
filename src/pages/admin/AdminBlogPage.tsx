@@ -22,7 +22,6 @@ const AdminBlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(true);
 
   const fetchPosts = async () => {
     const { data } = await supabase
