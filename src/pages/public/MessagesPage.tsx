@@ -456,9 +456,12 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm truncate">
+                    <div className="flex justify-between items-center gap-1">
+                      <span className="font-semibold text-sm truncate flex items-center gap-1.5">
                         {convo.other_user?.name || "Unknown"}
+                        {convo.other_user?.id && userBadges[convo.other_user.id] && (
+                          <RoleBadge role={userBadges[convo.other_user.id]!} />
+                        )}
                       </span>
                       <span className="text-[10px] text-white/30 shrink-0 ml-2">
                         {formatTime(convo.last_message_at)}
