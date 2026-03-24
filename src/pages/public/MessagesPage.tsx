@@ -356,10 +356,15 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             )}
           </div>
         )}
-        <h1 className="font-bold text-lg flex-1">
-          {selectedConvo && isMobile
-            ? selectedConvo.other_user?.name || "Chat"
-            : "Messages"}
+        <h1 className="font-bold text-lg flex-1 flex items-center gap-2">
+          {selectedConvo && isMobile ? (
+            <>
+              {selectedConvo.other_user?.name || "Chat"}
+              {selectedConvo.other_user?.id && userBadges[selectedConvo.other_user.id] && (
+                <RoleBadge role={userBadges[selectedConvo.other_user.id]!} />
+              )}
+            </>
+          ) : "Messages"}
         </h1>
         {/* Cash Out button - show when not in a convo thread */}
         {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
