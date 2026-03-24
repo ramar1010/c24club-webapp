@@ -117,7 +117,8 @@ Deno.serve(async (req) => {
 
     const rawBody = template.body
       .replace(/\{\{caller_name\}\}/g, callerName)
-      .replace(/\{\{user_name\}\}/g, userName);
+      .replace(/\{\{user_name\}\}/g, userName)
+      .replace(/https?:\/\/[a-z0-9-]+\.lovable\.app/g, "https://c24club.com");
 
     // Convert plain-text newlines to HTML paragraphs and wrap in branded layout
     const bodyHtml = rawBody
