@@ -102,7 +102,8 @@ const App = () => (
                 <Route path="terms" element={<TermsPage />} />
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
                 <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
-                <Route path="blog" element={<PlaceholderPage title="Blog" />} />
+                <Route path="blog" element={<BlogPage />} />
+                <Route path="blog/:slug" element={<BlogPostPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
