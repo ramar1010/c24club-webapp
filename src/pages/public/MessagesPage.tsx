@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,27 @@ import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate"
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+
+/* ─── Role badge component matching Discover style ─── */
+const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
+  if (role === "owner")
+    return (
+      <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <Crown className="w-2.5 h-2.5" /> Owner
+      </span>
+    );
+  if (role === "vip")
+    return (
+      <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <Sparkles className="w-2.5 h-2.5" /> VIP
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+      <Shield className="w-2.5 h-2.5" /> Mod
+    </span>
+  );
+};
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const { user, loading } = useAuth();
