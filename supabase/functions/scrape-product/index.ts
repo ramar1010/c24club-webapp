@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 1: Get page content — use Firecrawl (renders JS) or fallback to direct fetch
+    // Step 1: Get page content — try Firecrawl FIRST (handles JS-rendered pages like AliExpress)
     let pageContent = "";
 
     if (firecrawlKey) {
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
             url: formattedUrl,
             formats: ["markdown"],
             onlyMainContent: true,
-            waitFor: 3000,
+            waitFor: 5000,
             timeout: 60000,
           }),
         });
@@ -60,28 +60,36 @@ Deno.serve(async (req) => {
           pageContent = fcData.data.markdown;
           console.log(`Firecrawl returned ${pageContent.length} chars of markdown`);
         } else {
-          console.warn("Firecrawl failed, falling back to direct fetch:", fcData?.error || fcRes.status);
+          console.warn("Firecrawl response not ok:", fcRes.status, JSON.stringify(fcData).substring(0, 300));
         }
       } catch (fcErr) {
-        console.warn("Firecrawl error, falling back:", fcErr);
+        console.warn("Firecrawl error:", fcErr);
       }
+    } else {
+      console.log("No FIRECRAWL_API_KEY, skipping Firecrawl");
     }
 
-    // Fallback: direct fetch (won't work well for JS-rendered pages)
+    // Fallback: direct fetch (only if Firecrawl didn't work)
     if (!pageContent) {
       console.log(`Direct fetch fallback: ${formattedUrl}`);
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
         const pageRes = await fetch(formattedUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           },
           redirect: "follow",
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         pageContent = await pageRes.text();
+        console.log(`Direct fetch returned ${pageContent.length} chars`);
       } catch (fetchErr) {
+        console.error("Page fetch failed:", fetchErr);
         return new Response(
-          JSON.stringify({ success: false, error: "Could not fetch the product page. Check the URL and try again." }),
+          JSON.stringify({ success: false, error: "Could not fetch the product page. This site may block scraping — try a different URL or paste the product details manually." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
