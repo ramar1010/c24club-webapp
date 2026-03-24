@@ -517,7 +517,12 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm">{selectedConvo.other_user?.name}</span>
+                  <span className="font-semibold text-sm flex items-center gap-1.5">
+                    {selectedConvo.other_user?.name}
+                    {selectedConvo.other_user?.id && userBadges[selectedConvo.other_user.id] && (
+                      <RoleBadge role={userBadges[selectedConvo.other_user.id]!} />
+                    )}
+                  </span>
                   <p className="text-[10px] text-white/40">
                     {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at)
                       ? "Online now"
