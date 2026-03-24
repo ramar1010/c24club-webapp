@@ -120,10 +120,22 @@ Deno.serve(async (req) => {
       .replace(/\{\{user_name\}\}/g, userName)
       .replace(/https?:\/\/[a-z0-9-]+\.lovable\.app/g, "https://c24club.com");
 
-    // Convert plain-text newlines to HTML paragraphs and wrap in branded layout
+    // Convert plain-text newlines to HTML paragraphs, turning URLs into buttons
     const bodyHtml = rawBody
       .split(/\n\n+/)
-      .map((p: string) => `<p style="margin:0 0 16px;line-height:1.6;color:#333333;font-size:15px;">${p.replace(/\n/g, "<br/>")}</p>`)
+      .map((p: string) => {
+        // Detect lines with a standalone URL (e.g. "👉 https://...")
+        const urlMatch = p.match(/👉\s*(https?:\/\/[^\s]+)/);
+        if (urlMatch) {
+          const url = urlMatch[1];
+          return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
+            <tr><td align="center">
+              <a href="${url}" target="_blank" style="display:inline-block;background-color:#6366f1;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:8px;text-align:center;">View Profile on Discover</a>
+            </td></tr>
+          </table>`;
+        }
+        return `<p style="margin:0 0 16px;line-height:1.6;color:#333333;font-size:15px;">${p.replace(/\n/g, "<br/>")}</p>`;
+      })
       .join("");
 
     const html = `<!DOCTYPE html>
