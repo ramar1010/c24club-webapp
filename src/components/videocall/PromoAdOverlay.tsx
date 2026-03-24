@@ -31,12 +31,19 @@ const PromoAdOverlay = ({ viewerId, onDismiss }: PromoAdOverlayProps) => {
   // Fetch a random active promo, respecting sameuser/gender/country targeting
   useEffect(() => {
     const fetchPromo = async () => {
-      // Fetch viewer's profile for gender/country matching
+      // Fetch viewer's profile for gender/country matching + account age
       const { data: viewerProfile } = await supabase
         .from("members")
-        .select("gender, country")
+        .select("gender, country, created_at")
         .eq("id", viewerId)
         .maybeSingle();
+
+      // Skip promos for users who joined less than 2 days ago
+      if (viewerProfile?.created_at) {
+        const accountAge = Date.now() - new Date(viewerProfile.created_at).getTime();
+        const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+        if (accountAge < twoDaysMs) { onDismiss(); return; }
+      }
 
       const viewerGender = viewerProfile?.gender ?? null;
       const viewerCountry = viewerProfile?.country ?? null;
