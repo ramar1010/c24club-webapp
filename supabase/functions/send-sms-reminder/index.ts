@@ -32,45 +32,47 @@ function normalizePhoneNumber(input: string) {
 
 async function sendSmsAndLog(
   supabase: any,
-  { apiKey, apiSecret, from, to, text, action }: {
-    apiKey: string; apiSecret: string; from: string; to: string; text: string; action: string;
+  { apiKey, from, to, text, action }: {
+    apiKey: string; from: string; to: string; text: string; action: string;
   }
 ) {
   const normalizedTo = normalizePhoneNumber(to);
-  let vonageData: any = null;
+  let telnyxData: any = null;
   let fetchError: string | null = null;
 
   try {
-    const res = await fetch("https://rest.nexmo.com/sms/json", {
+    const res = await fetch("https://api.telnyx.com/v2/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        api_key: apiKey,
-        api_secret: apiSecret,
         from,
         to: normalizedTo,
         text,
+        type: "SMS",
       }),
     });
-    vonageData = await res.json();
+    telnyxData = await res.json();
   } catch (e) {
     fetchError = (e as Error).message;
   }
 
-  const msg = vonageData?.messages?.[0];
+  const msgData = telnyxData?.data;
   const logEntry = {
     action,
     phone_number: normalizedTo,
     message_text: text,
-    vonage_status: msg?.status ?? (fetchError ? "fetch_error" : "unknown"),
-    vonage_error_text: msg?.["error-text"] ?? fetchError ?? null,
-    vonage_message_id: msg?.["message-id"] ?? null,
-    vonage_network: msg?.network ?? null,
-    vonage_remaining_balance: msg?.["remaining-balance"] ?? null,
-    vonage_message_price: msg?.["message-price"] ?? null,
+    vonage_status: msgData?.to?.[0]?.status ?? (fetchError ? "fetch_error" : telnyxData?.errors ? "api_error" : "unknown"),
+    vonage_error_text: telnyxData?.errors?.[0]?.detail ?? fetchError ?? null,
+    vonage_message_id: msgData?.id ?? null,
+    vonage_network: msgData?.to?.[0]?.carrier ?? null,
+    vonage_remaining_balance: null,
+    vonage_message_price: msgData?.cost?.amount ?? null,
     raw_response: {
       request: { to: normalizedTo, from, action },
-      response: vonageData ?? { error: fetchError },
+      response: telnyxData ?? { error: fetchError },
     },
   };
 
@@ -95,22 +97,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const VONAGE_API_KEY = Deno.env.get("VONAGE_API_KEY");
-  const VONAGE_API_SECRET = Deno.env.get("VONAGE_API_SECRET");
-  const VONAGE_FROM_NUMBER = Deno.env.get("VONAGE_FROM_NUMBER");
+  const TELNYX_API_KEY = Deno.env.get("TELNYX_API_KEY");
+  const TELNYX_FROM_NUMBER = Deno.env.get("TELNYX_FROM_NUMBER");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-  if (!VONAGE_API_KEY || !VONAGE_API_SECRET || !VONAGE_FROM_NUMBER) {
+  if (!TELNYX_API_KEY || !TELNYX_FROM_NUMBER) {
     return new Response(
-      JSON.stringify({ error: "Vonage credentials not configured" }),
+      JSON.stringify({ error: "Telnyx credentials not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const normalizedFrom = normalizePhoneNumber(VONAGE_FROM_NUMBER);
-  const smsArgs = { apiKey: VONAGE_API_KEY, apiSecret: VONAGE_API_SECRET, from: normalizedFrom };
+  const normalizedFrom = normalizePhoneNumber(TELNYX_FROM_NUMBER);
+  const smsArgs = { apiKey: TELNYX_API_KEY, from: normalizedFrom };
 
   try {
     const body = await req.json();
@@ -144,7 +145,6 @@ serve(async (req) => {
 
       const allResults = [];
       for (const win of upcomingWindows) {
-        // Get users who signed up for THIS specific slot
         const { data: signups } = await supabase
           .from("slot_signups")
           .select("user_id")
@@ -152,7 +152,6 @@ serve(async (req) => {
 
         const signedUpUserIds = (signups || []).map((s: any) => s.user_id);
 
-        // Get opted-in users — filter to only those who signed up for this slot
         let optinsQuery = supabase
           .from("sms_reminder_optins")
           .select("phone_number, user_id")
@@ -160,7 +159,6 @@ serve(async (req) => {
 
         const { data: optins } = await optinsQuery;
 
-        // Filter: only send to users who signed up for this slot, OR if no signups exist send to all (backward compat)
         const filteredOptins = signedUpUserIds.length > 0
           ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
           : optins || [];
@@ -187,7 +185,6 @@ serve(async (req) => {
     if (action === "send_reminders") {
       const { window_label, start_time, window_id } = body;
 
-      // If window_id provided, only send to users who signed up for this slot
       let targetOptins: any[] = [];
 
       if (window_id) {
@@ -209,7 +206,6 @@ serve(async (req) => {
           ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
           : optins || [];
       } else {
-        // Legacy: send to all opted-in users
         const { data: optins, error: optErr } = await supabase
           .from("sms_reminder_optins")
           .select("phone_number")
