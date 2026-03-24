@@ -19,166 +19,120 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get("FIRECRAWL_API_KEY");
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Firecrawl not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     let formattedUrl = url.trim();
     if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
       formattedUrl = `https://${formattedUrl}`;
     }
 
-    const toAliExpressMobileUrl = (inputUrl: string) => {
-      try {
-        const parsed = new URL(inputUrl);
-        if (!parsed.hostname.includes("aliexpress")) return null;
-        return `https://m.aliexpress.com${parsed.pathname}`;
-      } catch {
-        return null;
-      }
-    };
-
-    const mobileUrl = toAliExpressMobileUrl(formattedUrl);
-    const attempts = [
-      {
-        label: "primary",
-        url: formattedUrl,
-        waitFor: 2500,
-        timeout: 45000,
-        onlyMainContent: true,
-      },
-      mobileUrl && mobileUrl !== formattedUrl
-        ? {
-            label: "mobile-fallback",
-            url: mobileUrl,
-            waitFor: 3500,
-            timeout: 70000,
-            onlyMainContent: true,
-          }
-        : {
-            label: "slow-fallback",
-            url: formattedUrl,
-            waitFor: 5000,
-            timeout: 90000,
-            onlyMainContent: false,
-          },
-    ];
-
-    const schema = {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Product title/name" },
-        description: { type: "string", description: "Product description text" },
-        price: { type: "string", description: "Product price" },
-        images: {
-          type: "array",
-          items: { type: "string" },
-          description: "All product image URLs (full resolution, not thumbnails)",
-        },
-        sizes: {
-          type: "array",
-          items: { type: "string" },
-          description: "Available sizes like S, M, L, XL, or numeric sizes",
-        },
-        colors: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string", description: "Color name" },
-              image_url: { type: "string", description: "Image URL for this color variant" },
-            },
-          },
-          description: "Available color options with their variant images",
-        },
-      },
-    };
-
-    let lastTimeoutError: string | null = null;
-
-    for (const attempt of attempts) {
-      console.log(
-        `Scraping product URL (${attempt.label}): ${attempt.url} | waitFor=${attempt.waitFor} timeout=${attempt.timeout}`
-      );
-
-      const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
+    // Step 1: Fetch the page HTML
+    console.log(`Fetching page: ${formattedUrl}`);
+    let pageHtml = "";
+    try {
+      const pageRes = await fetch(formattedUrl, {
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
         },
-        body: JSON.stringify({
-          url: attempt.url,
-          formats: ["extract"],
-          extract: {
-            schema,
-            prompt:
-              "Extract the product title, description, all product image URLs (not thumbnails — full size images), available sizes, available colors with their variant image URLs, and the price. For images, get ALL product gallery images.",
-          },
-          onlyMainContent: attempt.onlyMainContent,
-          waitFor: attempt.waitFor,
-          timeout: attempt.timeout,
-        }),
+        redirect: "follow",
       });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.ok) {
-        const extracted = data?.data?.extract || data?.extract || data?.data?.json || data?.json || {};
-
-        const result = {
-          success: true,
-          title: extracted.title || "",
-          description: extracted.description || "",
-          price: extracted.price || "",
-          images: (extracted.images || []).filter((u: string) => u && u.startsWith("http")),
-          sizes: extracted.sizes || [],
-          colors: (extracted.colors || []).map((c: any) => ({
-            name: c.name || "",
-            hex: "#000000",
-            image_url: c.image_url || "",
-          })),
-        };
-
-        console.log(
-          `Scraped: ${result.title}, ${result.images.length} images, ${result.sizes.length} sizes, ${result.colors.length} colors`
-        );
-
-        return new Response(JSON.stringify(result), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      pageHtml = await pageRes.text();
+      // Truncate to ~30k chars to fit in AI context
+      if (pageHtml.length > 30000) {
+        pageHtml = pageHtml.substring(0, 30000);
       }
-
-      const isTimeout = response.status === 408 || data?.code === "SCRAPE_TIMEOUT";
-      if (isTimeout) {
-        lastTimeoutError =
-          data?.error ||
-          "The scrape operation timed out before completing."
-;
-        console.warn(`Timeout on ${attempt.label}, trying next strategy...`);
-        continue;
-      }
-
-      console.error("Firecrawl error:", data);
+    } catch (fetchErr) {
+      console.error("Page fetch failed:", fetchErr);
       return new Response(
-        JSON.stringify({ success: false, error: data.error || `Scrape failed (${response.status})` }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: "Could not fetch the product page. Check the URL and try again." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error:
-          lastTimeoutError ||
-          "Scrape timed out after multiple attempts. Try a different product URL or retry in a moment.",
+    // Step 2: Use AI to extract product info from the HTML
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableApiKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "AI not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const aiPrompt = `Extract product information from this HTML page. Return ONLY valid JSON with these fields:
+{
+  "title": "product title",
+  "description": "product description text",
+  "price": "price as shown",
+  "images": ["array of full product image URLs (https://...) - get ALL product gallery images, not thumbnails"],
+  "sizes": ["array of available sizes like S, M, L, XL"],
+  "colors": [{"name": "color name", "image_url": "image URL for this color variant"}]
+}
+
+Rules:
+- For images: extract ALL product image URLs. Look for high-res/full-size URLs in img tags, data attributes, and JSON-LD data. Skip tiny icons/logos.
+- For AliExpress: look for image URLs in window.runParams, <script> blocks with JSON data, and img tags with src containing ae01.alicdn.com
+- If a field is not found, use empty string or empty array.
+- Return ONLY the JSON object, no markdown, no explanation.
+
+HTML content:
+${pageHtml}`;
+
+    const aiRes = await fetch("https://ai.lovable.dev/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${lovableApiKey}`,
+      },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: aiPrompt }],
+        model: "google/gemini-2.5-flash",
       }),
-      { status: 408, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    });
+
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      console.error("AI error:", errText);
+      return new Response(
+        JSON.stringify({ success: false, error: "AI extraction failed. Try pasting product details manually." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const aiData = await aiRes.json();
+    const aiContent = aiData?.choices?.[0]?.message?.content || "";
+
+    // Parse JSON from AI response (strip markdown code fences if present)
+    let extracted: any = {};
+    try {
+      const jsonStr = aiContent.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      extracted = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error("Failed to parse AI response:", aiContent);
+      return new Response(
+        JSON.stringify({ success: false, error: "Could not parse product data. Try a different URL." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const result = {
+      success: true,
+      title: extracted.title || "",
+      description: extracted.description || "",
+      price: extracted.price || "",
+      images: (extracted.images || []).filter((u: string) => u && u.startsWith("http")),
+      sizes: extracted.sizes || [],
+      colors: (extracted.colors || []).map((c: any) => ({
+        name: c.name || "",
+        hex: "#000000",
+        image_url: c.image_url || "",
+      })),
+    };
+
+    console.log(`Extracted: ${result.title}, ${result.images.length} images, ${result.sizes.length} sizes, ${result.colors.length} colors`);
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Scrape error:", error);
     return new Response(
