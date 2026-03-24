@@ -284,6 +284,15 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "blog",
+    icon: BookOpen,
+    title: "Blog",
+    submenu: [
+      { key: "blog", label: "All Posts", path: "/admin/blog" },
+      { key: "blog-new", label: "New Post", path: "/admin/blog/new" },
+    ],
+  },
+  {
     key: "settings",
     icon: Settings,
     title: "Settings",

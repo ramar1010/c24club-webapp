@@ -59,6 +59,8 @@ const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage")
 const AdminJackpotPayoutsPage = lazy(() => import("@/pages/admin/AdminJackpotPayoutsPage"));
 const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettingsPage"));
 const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
+const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
+const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -75,6 +77,8 @@ const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
 const ReferralPage = lazy(() => import("@/pages/public/ReferralPage"));
 const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
+const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
+const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -98,7 +102,8 @@ const App = () => (
                 <Route path="terms" element={<TermsPage />} />
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
                 <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
-                <Route path="blog" element={<PlaceholderPage title="Blog" />} />
+                <Route path="blog" element={<BlogPage />} />
+                <Route path="blog/:slug" element={<BlogPostPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
@@ -176,6 +181,9 @@ const App = () => (
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
                 <Route path="call-windows" element={<AdminCallWindowsPage />} />
+                <Route path="blog" element={<AdminBlogPage />} />
+                <Route path="blog/new" element={<AdminBlogEditorPage />} />
+                <Route path="blog/:id/edit" element={<AdminBlogEditorPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
