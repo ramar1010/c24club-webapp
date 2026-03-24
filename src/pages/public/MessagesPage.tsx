@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -54,6 +54,9 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const CONVOS_PER_PAGE = 20;
+  const [visibleCount, setVisibleCount] = useState(CONVOS_PER_PAGE);
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = searchParams.get("to");
@@ -315,6 +318,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     return d.toLocaleDateString();
   };
 
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter((c) =>
+      c.other_user?.name?.toLowerCase().includes(q)
+    );
+  }, [conversations, searchQuery]);
+
+  const paginatedConversations = useMemo(
+    () => filteredConversations.slice(0, visibleCount),
+    [filteredConversations, visibleCount]
+  );
+  const hasMore = filteredConversations.length > visibleCount;
+
   const showList = !selectedConvo || !isMobile;
   const showThread = !!selectedConvo;
 
@@ -411,26 +428,45 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           <div
             className={`${
               isMobile ? "w-full" : "w-80 border-r border-white/10"
-            } flex flex-col overflow-y-auto`}
+            } flex flex-col overflow-hidden`}
           >
+            {/* Search bar */}
+            <div className="px-3 py-2 border-b border-white/10 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setVisibleCount(CONVOS_PER_PAGE);
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
             {loadingConvos ? (
               <div className="flex items-center justify-center py-20 text-white/40">
                 Loading...
               </div>
-            ) : conversations.length === 0 ? (
+            ) : filteredConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                 <MessageCircle className="w-12 h-12 text-white/20 mb-3" />
-                <p className="text-white/40 text-sm">No messages yet</p>
+                <p className="text-white/40 text-sm">{searchQuery ? "No matches found" : "No messages yet"}</p>
                 <p className="text-white/25 text-xs mt-1">
-                  Message someone from Discover to start chatting
+                  {searchQuery ? "Try a different search" : "Message someone from Discover to start chatting"}
                 </p>
               </div>
             ) : (
-              conversations.map((convo) => (
+              <>
+              {paginatedConversations.map((convo) => (
                 <button
                   key={convo.id}
                   onClick={() => setSelectedConvo(convo)}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left ${
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
                     selectedConvo?.id === convo.id ? "bg-white/10" : ""
                   }`}
                 >
@@ -484,8 +520,18 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                     </div>
                   </div>
                 </button>
-              ))
+              ))}
+              {hasMore && (
+                <button
+                  onClick={() => setVisibleCount((v) => v + CONVOS_PER_PAGE)}
+                  className="w-full py-3 text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 transition-colors font-medium"
+                >
+                  Load More ({filteredConversations.length - visibleCount} remaining)
+                </button>
+              )}
+              </>
             )}
+            </div>
           </div>
         )}
 
