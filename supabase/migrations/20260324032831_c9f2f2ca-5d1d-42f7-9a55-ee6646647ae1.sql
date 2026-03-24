@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can read blog images" ON storage.objects FOR SELECT TO public USING (bucket_id = 'blog-images');
