@@ -520,8 +520,18 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                     </div>
                   </div>
                 </button>
-              ))
+              ))}
+              {hasMore && (
+                <button
+                  onClick={() => setVisibleCount((v) => v + CONVOS_PER_PAGE)}
+                  className="w-full py-3 text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 transition-colors font-medium"
+                >
+                  Load More ({filteredConversations.length - visibleCount} remaining)
+                </button>
+              )}
+              </>
             )}
+            </div>
           </div>
         )}
 
