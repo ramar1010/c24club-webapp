@@ -428,26 +428,45 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
           <div
             className={`${
               isMobile ? "w-full" : "w-80 border-r border-white/10"
-            } flex flex-col overflow-y-auto`}
+            } flex flex-col overflow-hidden`}
           >
+            {/* Search bar */}
+            <div className="px-3 py-2 border-b border-white/10 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setVisibleCount(CONVOS_PER_PAGE);
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
             {loadingConvos ? (
               <div className="flex items-center justify-center py-20 text-white/40">
                 Loading...
               </div>
-            ) : conversations.length === 0 ? (
+            ) : filteredConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                 <MessageCircle className="w-12 h-12 text-white/20 mb-3" />
-                <p className="text-white/40 text-sm">No messages yet</p>
+                <p className="text-white/40 text-sm">{searchQuery ? "No matches found" : "No messages yet"}</p>
                 <p className="text-white/25 text-xs mt-1">
-                  Message someone from Discover to start chatting
+                  {searchQuery ? "Try a different search" : "Message someone from Discover to start chatting"}
                 </p>
               </div>
             ) : (
-              conversations.map((convo) => (
+              <>
+              {paginatedConversations.map((convo) => (
                 <button
                   key={convo.id}
                   onClick={() => setSelectedConvo(convo)}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left ${
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
                     selectedConvo?.id === convo.id ? "bg-white/10" : ""
                   }`}
                 >
