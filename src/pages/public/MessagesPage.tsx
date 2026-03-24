@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,27 @@ import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate"
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { toast } from "sonner";
+
+/* ─── Role badge component matching Discover style ─── */
+const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
+  if (role === "owner")
+    return (
+      <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <Crown className="w-2.5 h-2.5" /> Owner
+      </span>
+    );
+  if (role === "vip")
+    return (
+      <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <Sparkles className="w-2.5 h-2.5" /> VIP
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+      <Shield className="w-2.5 h-2.5" /> Mod
+    </span>
+  );
+};
 
 const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const { user, loading } = useAuth();
@@ -85,7 +106,51 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   );
   const sendMessage = useSendMessage();
 
-  // Fetch gifted minutes received from selected conversation partner
+  // Fetch roles & VIP status for all conversation partners
+  const otherUserIds = useMemo(
+    () => conversations.map((c) => c.other_user?.id).filter(Boolean) as string[],
+    [conversations]
+  );
+
+  const { data: userBadges = {} } = useQuery({
+    queryKey: ["dm-user-badges", otherUserIds],
+    enabled: otherUserIds.length > 0,
+    queryFn: async () => {
+      const badges: Record<string, "owner" | "vip" | "mod" | null> = {};
+
+      // Fetch roles
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", otherUserIds);
+
+      const roleMap = new Map<string, Set<string>>();
+      (roles || []).forEach((r: any) => {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, new Set());
+        roleMap.get(r.user_id)!.add(r.role);
+      });
+
+      // Fetch VIP status
+      const { data: vipData } = await supabase
+        .from("member_minutes")
+        .select("user_id, is_vip")
+        .in("user_id", otherUserIds)
+        .eq("is_vip", true);
+
+      const vipSet = new Set((vipData || []).map((v: any) => v.user_id));
+
+      for (const uid of otherUserIds) {
+        const userRoles = roleMap.get(uid);
+        if (userRoles?.has("admin")) badges[uid] = "owner";
+        else if (vipSet.has(uid)) badges[uid] = "vip";
+        else if (userRoles?.has("moderator")) badges[uid] = "mod";
+        else badges[uid] = null;
+      }
+      return badges;
+    },
+  });
+
+
   const otherUserId = selectedConvo?.other_user?.id || null;
   const { data: giftedFromUser = 0 } = useQuery({
     queryKey: ["gifted_from_user", user?.id, otherUserId],
@@ -291,10 +356,15 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
             )}
           </div>
         )}
-        <h1 className="font-bold text-lg flex-1">
-          {selectedConvo && isMobile
-            ? selectedConvo.other_user?.name || "Chat"
-            : "Messages"}
+        <h1 className="font-bold text-lg flex-1 flex items-center gap-2">
+          {selectedConvo && isMobile ? (
+            <>
+              {selectedConvo.other_user?.name || "Chat"}
+              {selectedConvo.other_user?.id && userBadges[selectedConvo.other_user.id] && (
+                <RoleBadge role={userBadges[selectedConvo.other_user.id]!} />
+              )}
+            </>
+          ) : "Messages"}
         </h1>
         {/* Cash Out button - show when not in a convo thread */}
         {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
@@ -391,9 +461,12 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm truncate">
+                    <div className="flex justify-between items-center gap-1">
+                      <span className="font-semibold text-sm truncate flex items-center gap-1.5">
                         {convo.other_user?.name || "Unknown"}
+                        {convo.other_user?.id && userBadges[convo.other_user.id] && (
+                          <RoleBadge role={userBadges[convo.other_user.id]!} />
+                        )}
                       </span>
                       <span className="text-[10px] text-white/30 shrink-0 ml-2">
                         {formatTime(convo.last_message_at)}
@@ -444,7 +517,12 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm">{selectedConvo.other_user?.name}</span>
+                  <span className="font-semibold text-sm flex items-center gap-1.5">
+                    {selectedConvo.other_user?.name}
+                    {selectedConvo.other_user?.id && userBadges[selectedConvo.other_user.id] && (
+                      <RoleBadge role={userBadges[selectedConvo.other_user.id]!} />
+                    )}
+                  </span>
                   <p className="text-[10px] text-white/40">
                     {selectedConvo.other_user?.last_active_at && isOnlineNow(selectedConvo.other_user.last_active_at)
                       ? "Online now"
