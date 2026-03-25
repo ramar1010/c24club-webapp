@@ -75,6 +75,7 @@ const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
 const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
 const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
+const SafetyCenterPage = lazy(() => import("@/pages/public/SafetyCenterPage"));
 const ReferralPage = lazy(() => import("@/pages/public/ReferralPage"));
 const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
 const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
@@ -103,7 +104,7 @@ const App = () => (
                 <Route path="rules" element={<RulesPage />} />
                 <Route path="terms" element={<TermsPage />} />
                 <Route path="privacy" element={<PrivacyPolicyPage />} />
-                <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
+                <Route path="safety" element={<SafetyCenterPage />} />
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogPostPage />} />
                 <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
