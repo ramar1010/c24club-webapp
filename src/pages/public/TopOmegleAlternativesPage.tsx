@@ -241,9 +241,9 @@ const TopOmegleAlternativesPage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            headline: "Top 5 Omegle Alternatives in 2026",
+            headline: "Top 7 Omegle Alternatives in 2026",
             description:
-              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, and Tinychat.",
+              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, and Emerald Chat.",
             author: { "@type": "Organization", name: "C24 Club" },
             publisher: { "@type": "Organization", name: "C24 Club", url: "https://c24club.com" },
             datePublished: "2026-01-15",
@@ -260,7 +260,7 @@ const TopOmegleAlternativesPage = () => {
           className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
         >
-          <span className="text-white">Top 5 </span>
+          <span className="text-white">Top 7 </span>
           <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
             Omegle Alternatives
           </span>
