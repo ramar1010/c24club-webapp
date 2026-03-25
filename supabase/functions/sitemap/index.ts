@@ -27,6 +27,7 @@ Deno.serve(async () => {
     { loc: "/spin", priority: "0.6", changefreq: "monthly" },
     { loc: "/referral", priority: "0.6", changefreq: "monthly" },
     { loc: "/omegle-alternative", priority: "0.9", changefreq: "weekly" },
+    { loc: "/top-omegle-alternatives", priority: "0.9", changefreq: "weekly" },
   ];
 
   // Fetch published blog posts
