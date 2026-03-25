@@ -409,6 +409,15 @@ const VideoCallPage = () => {
     }
   }, [isFemale]);
 
+  // Start camera preview on page load (before clicking START)
+  const previewStartedRef = useRef(false);
+  useEffect(() => {
+    if (memberId !== "anonymous" && !previewStartedRef.current && !(isFemale && voiceMode)) {
+      previewStartedRef.current = true;
+      startPreview();
+    }
+  }, [memberId, isFemale, voiceMode, startPreview]);
+
 
   // Manage female anchor slot via backend queue/session logic
   // DISABLED: Anchor earning system is hidden/deactivated — no polling needed
