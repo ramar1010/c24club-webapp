@@ -29,15 +29,30 @@ const AdminRoomsPage = () => {
     refetchInterval: 5000,
   });
 
+  const memberIds = Array.from(
+    new Set(
+      (rooms ?? []).flatMap((r) => [r.member1, r.member2].filter(Boolean) as string[])
+    )
+  );
+
   const { data: members } = useQuery({
-    queryKey: ["admin-members-lookup"],
+    queryKey: ["admin-members-lookup", memberIds.sort().join(",")],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("members")
-        .select("id, name");
-      if (error) throw error;
-      return data;
+      if (memberIds.length === 0) return [];
+      // Fetch in batches of 100 to avoid URI limits
+      const results: { id: string; name: string }[] = [];
+      for (let i = 0; i < memberIds.length; i += 100) {
+        const batch = memberIds.slice(i, i + 100);
+        const { data, error } = await supabase
+          .from("members")
+          .select("id, name")
+          .in("id", batch);
+        if (error) throw error;
+        if (data) results.push(...data);
+      }
+      return results;
     },
+    enabled: memberIds.length > 0,
   });
 
   const memberName = (id: string | null) => {
