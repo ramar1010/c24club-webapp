@@ -1172,9 +1172,9 @@ const VideoCallPage = () => {
             <video ref={localVideoRef} autoPlay muted playsInline
             className="w-full h-full object-cover block" style={{ transform: "scaleX(-1)" }} />
             }
-              {callState !== "connected" &&
-            <div className="w-full h-full flex items-center justify-center">
-                  <p className="text-neutral-600 text-[10px] text-center px-1">
+              {callState !== "connected" && callState !== "idle" &&
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-neutral-800/60">
+                  <p className="text-neutral-300 text-[10px] text-center px-1">
                     {callState === "connecting" ? "Connecting..." : callState === "waiting" ? "Searching..." : ""}
                   </p>
                 </div>
