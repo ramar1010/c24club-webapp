@@ -9,7 +9,7 @@ const features = [
     icon: Video,
     title: "Random 1-on-1 Video Chat",
     description:
-      Instantly connect with strangers worldwide for real-time face-to-face conversations. No need to download anything; just click and chat.",
+      "Instantly connect with strangers worldwide for real-time face-to-face conversations. No need to download anything; just click and chat.",
   },
   {
     icon: Gift,
