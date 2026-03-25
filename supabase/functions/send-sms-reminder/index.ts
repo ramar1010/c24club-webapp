@@ -326,7 +326,7 @@ serve(async (req) => {
 
       if (upsertErr) throw upsertErr;
 
-      const confirmMsg = `✅ You're subscribed to C24 Club session alerts! We'll text you before your selected sessions. Reply STOP to unsubscribe.`;
+      const confirmMsg = `C24 Club: Thanks for subscribing to session reminders! Reply HELP for help. Message frequency may vary. Msg&data rates may apply. Consent is not a condition of purchase. Reply STOP to opt out.`;
       await sendSmsAndLog(supabase, {
         ...smsArgs,
         to: cleanNumber,
