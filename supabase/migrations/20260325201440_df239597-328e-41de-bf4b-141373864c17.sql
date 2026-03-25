@@ -1,0 +1,1 @@
+UPDATE member_minutes SET is_vip = true, vip_tier = 'premium' WHERE user_id = '6f8bb0e2-a36a-4bc0-920f-312c340f7921' AND admin_granted_vip = true;

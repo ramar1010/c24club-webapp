@@ -77,7 +77,7 @@ serve(async (req) => {
         logStep("Admin-granted VIP preserved");
         return new Response(JSON.stringify({
           subscribed: true,
-          vip_tier: currentMinutes.vip_tier,
+         vip_tier: currentMinutes.vip_tier || "premium",
           subscription_end: null,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -127,7 +127,7 @@ serve(async (req) => {
       logStep("Admin-granted VIP preserved (has Stripe customer but no active sub)");
       return new Response(JSON.stringify({
         subscribed: true,
-        vip_tier: currentMinutes.vip_tier,
+         vip_tier: currentMinutes.vip_tier || "premium",
         subscription_end: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
