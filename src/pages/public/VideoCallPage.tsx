@@ -1049,7 +1049,7 @@ const VideoCallPage = () => {
             </> :
 
           <video ref={localVideoRef} autoPlay muted playsInline
-          className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          className={`absolute inset-0 w-full h-full object-cover ${isFemale && voiceMode && isActive ? "hidden" : "block"}`} />
           }
 
           {/* Promo Ad - shown inside local video box between skips */}
