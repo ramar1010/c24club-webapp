@@ -85,6 +85,32 @@ const alternatives: Alternative[] = [
     rating: 2.8,
     blogSlug: "c24-club-vs-tinychat",
   },
+  {
+    rank: 6,
+    name: "Uhmegle",
+    tagline: "Free no-signup video chat inspired by Omegle",
+    description:
+      "Uhmegle is a free, no-signup random video chat platform that closely mirrors the original Omegle experience. Users simply open the website, enable their camera, and start matching with strangers worldwide. While its simplicity and zero-barrier entry are appealing, Uhmegle lacks any reward system, advanced moderation, or gamification features that keep users engaged long-term.",
+    tags: ["No Signup", "Free", "Web-Based", "Omegle Clone"],
+    pros: ["No account required", "Completely free to use", "Simple and familiar interface", "Works on mobile browsers"],
+    cons: ["No rewards or earning system", "Limited moderation tools", "No unique features beyond basic chat", "No community or social features"],
+    rating: 2.5,
+    blogSlug: "c24-club-vs-uhmegle",
+    externalUrl: "https://uhmegle.com",
+  },
+  {
+    rank: 7,
+    name: "Emerald Chat",
+    tagline: "Moderated video chat with matching filters",
+    description:
+      "Emerald Chat positions itself as a safer Omegle alternative with 24/7 moderation, age verification, and interest-based matching. It offers both 1-on-1 video chat and group chat rooms. While it has better safety features than many competitors, it lacks the earning and reward mechanics that make platforms like C24 Club stand out.",
+    tags: ["Moderated", "Interest Matching", "Group Chat", "Age Verified"],
+    pros: ["24/7 moderation team", "Interest-based matching", "Age verification system", "Group chat option"],
+    cons: ["No rewards or earning system", "Premium features behind paywall", "Smaller user base", "Can be slow to find matches"],
+    rating: 3.1,
+    blogSlug: "c24-club-vs-emerald-chat",
+    externalUrl: "https://emeraldchat.com",
+  },
 ];
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -197,12 +223,12 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
 
 const TopOmegleAlternativesPage = () => {
   useEffect(() => {
-    document.title = "Top 5 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
+    document.title = "Top 7 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
         "content",
-        "Compare the top 5 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV & Tinychat — find the best random video chat site that pays you to chat.",
+        "Compare the top 7 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle & Emerald Chat — find the best random video chat site that pays you to chat.",
       );
     }
   }, []);
