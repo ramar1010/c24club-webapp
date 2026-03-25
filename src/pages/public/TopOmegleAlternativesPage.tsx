@@ -274,7 +274,7 @@ const TopOmegleAlternativesPage = () => {
 
       {/* Quick comparison strip */}
       <section className="px-4 max-w-4xl mx-auto mb-12">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           {alternatives.map((alt) => (
             <a
               key={alt.rank}
