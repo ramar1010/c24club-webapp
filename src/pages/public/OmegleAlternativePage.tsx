@@ -9,31 +9,31 @@ const features = [
     icon: Video,
     title: "Random 1-on-1 Video Chat",
     description:
-      "Get matched instantly with strangers worldwide for live face-to-face conversations. No downloads, no apps — just click and chat.",
+      Instantly connect with strangers worldwide for real-time face-to-face conversations. No need to download anything; just click and chat.",
   },
   {
     icon: Gift,
     title: "Earn Real Rewards",
     description:
-      "Unlike Omegle, every minute you spend chatting earns you rewards. Redeem for PayPal cash, gift cards, designer items, and more.",
+      "Unlike Omegle, you earn rewards for every minute you spend talking to strangers. You can use these rewards to buy PayPal money, gift cards, designer products, etc.",
   },
   {
     icon: Shield,
     title: "Safer Than Omegle",
     description:
-      "AI-powered moderation, NSFW detection, report system, and strict community rules keep the platform safe and enjoyable for everyone.",
+      "Our platform uses AI moderation, NSFW content detection, reporting, and a strict community policy to create a safe environment for users.",
   },
   {
     icon: Users,
     title: "Active Community",
     description:
-      "Thousands of users online during scheduled call windows. Meet people from every country and build real connections.",
+      "Thousands of users are online during scheduled call windows. Meet strangers from all over the world and create real connections.",
   },
   {
     icon: Clock,
     title: "Scheduled Sessions",
     description:
-      "Call windows ensure there are always people online when you chat. No more waiting in empty lobbies like other Omegle alternatives.",
+      "Scheduled calls ensure that there are always people available for you to talk to during the scheduled call window. Forget about waiting in empty lobbies for strangers to appear, unlike other Omegle alternatives.",
   },
   {
     icon: DollarSign,
