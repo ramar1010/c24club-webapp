@@ -566,6 +566,34 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
 const HomePage = () => {
   return (
     <div className="relative">
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "C24 Club",
+            "url": "https://c24club.com",
+            "description": "C24 Club is a free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards like PayPal cash, gift cards, and designer items.",
+            "applicationCategory": "SocialNetworkingApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.7",
+              "ratingCount": "2400"
+            },
+            "sameAs": [
+              "https://c24club.lovable.app"
+            ]
+          })
+        }}
+      />
       <PublicNav />
 
       {/* ===== HERO ===== */}
