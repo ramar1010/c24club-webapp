@@ -509,6 +509,15 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
+  // Acquire camera for preview without starting matchmaking
+  async function startPreview() {
+    try {
+      await getLocalStream();
+    } catch (err) {
+      console.warn("[WebRTC] Preview camera failed:", err);
+    }
+  }
+
   return {
     callState,
     hasStartedMatchmaking,
@@ -524,5 +533,6 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     stop,
     disconnect,
     enableCamera,
+    startPreview,
   };
 }
