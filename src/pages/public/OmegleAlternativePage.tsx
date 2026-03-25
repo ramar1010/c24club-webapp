@@ -153,7 +153,7 @@ const OmegleAlternativePage = () => {
             After Omegle shut down in November 2023, millions of users worldwide were on the lookout for the next great random video chat site. C24 Club is here to fill that void, and then some. We are not just another Omegle clone; we are a <strong className="text-white">video chat site that rewards you</strong> for socializing.
           </p>
           <p>
-            Every minute you spend in a video call earns you reward minutes. Trade those minutes for <strong className="text-white">PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories</strong>, and over 100 other prizes in our Reward Store.
+            Every minute you spend on a video call gets you reward minutes, which you can redeem for cash from PayPal, Cash App, or other prizes in our Reward Store, from cash and gift cards to designer bags, clothes, tech accessories, and over 100 other prizes.
           </p>
           <p>
             You might have called it Omegle, Chatroulette, OmeTV, or whatever other names you came up with for "that random video chat site." Whatever you want to call it, C24 Club is here, and we are better in every way, with safer moderation, better features, and actual rewards for your time.
