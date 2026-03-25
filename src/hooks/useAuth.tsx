@@ -52,6 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       console.warn("Failed to ensure member row:", error.message);
     }
+
+    // Update last_active_at so Discover shows correct online status
+    await supabase
+      .from("members")
+      .update({ last_active_at: new Date().toISOString() })
+      .eq("id", authUser.id);
   }, []);
 
   const checkAdmin = useCallback(async (userId: string) => {
