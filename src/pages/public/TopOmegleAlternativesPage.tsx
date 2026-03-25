@@ -24,9 +24,15 @@ const alternatives: Alternative[] = [
     name: "C24 Club",
     tagline: "The Omegle alternative that pays you to chat",
     description:
-      "C24 Club is the only random video chat platform where every minute you spend talking earns you real rewards. Cash out via PayPal, redeem gift cards, win designer items, and compete in weekly challenges. With AI-powered moderation, scheduled call windows ensuring active users, and a thriving community of thousands — C24 Club isn't just an Omegle replacement, it's a massive upgrade.",
+      "C24 Club is the only random video chat site where every minute of conversation earns you real rewards. Redeem your money via PayPal, gift cards, designer prizes, and participate in weekly challenges. With AI moderation, scheduled call windows to ensure active users, and a thriving user base of thousands, C24 Club is not just a replacement for Omegle but a huge upgrade.",
     tags: ["Earn Rewards", "PayPal Cash Out", "AI Moderation", "No Download", "Weekly Challenges", "Spin to Win"],
-    pros: ["Earn real money & rewards for chatting", "AI-powered NSFW moderation", "100+ redeemable prizes", "Active community with scheduled sessions", "Female earning bonus program"],
+    pros: [
+      "Earn real money & rewards for chatting",
+      "AI-powered NSFW moderation",
+      "100+ redeemable prizes",
+      "Active community with scheduled sessions",
+      "Female earning bonus program",
+    ],
     cons: ["Requires account signup", "Call windows mean you can't chat 24/7"],
     rating: 4.8,
     isBest: true,
@@ -36,7 +42,7 @@ const alternatives: Alternative[] = [
     name: "Monkey App",
     tagline: "Mobile-first video chat app popular with Gen Z",
     description:
-      "Monkey App gained popularity as a mobile-focused Omegle alternative aimed at younger users. It offers quick 15-second video matches that can be extended if both users agree. While the swipe-based matching feels modern, it lacks the reward system and earning opportunities that C24 Club provides.",
+      "Monkey App became popular as a mobile-oriented alternative to Omegle, especially designed for young people. The platform offers a chance to make video matches lasting 15 seconds, which can be extended if both users agree. Although the swipe feature is modern, it lacks a reward system and money-making opportunities offered by C24 Club.",
     tags: ["Mobile App", "Quick Matching", "Young Community"],
     pros: ["Fast matching speed", "Mobile-optimized experience", "Simple swipe interface"],
     cons: ["No rewards or earning system", "Requires app download", "Limited moderation", "Primarily mobile only"],
@@ -48,7 +54,7 @@ const alternatives: Alternative[] = [
     name: "Chatroulette",
     tagline: "The original random video chat pioneer",
     description:
-      "Chatroulette was one of the first random video chat sites alongside Omegle. While it still operates, the platform has struggled with content moderation issues and a declining user base. It offers basic random matching but none of the gamification or rewards that make modern alternatives like C24 Club more engaging.",
+      "Chatroulette was another pioneer of random video chat, along with Omegle. Although the site is still active, the site has been struggling with issues of content moderation and the number of users on the site has also been decreasing significantly. The site does not have any of the gamification and reward aspects that the modern version of the site, i.e., C24 Club, has to offer.",
     tags: ["No Signup", "Web-Based", "Classic"],
     pros: ["No account required", "Simple interface", "Established brand"],
     cons: ["Persistent moderation problems", "No rewards system", "Declining user base", "Outdated interface"],
@@ -98,7 +104,9 @@ const StarRating = ({ rating }: { rating: number }) => {
 };
 
 const AlternativeCard = ({ alt }: { alt: Alternative }) => (
-  <div className={`relative rounded-2xl border overflow-hidden ${alt.isBest ? "border-orange-500/50 bg-gradient-to-br from-[#1a1a2e] to-[#2a1a1e]" : "border-white/10 bg-[#1a1a2e]"}`}>
+  <div
+    className={`relative rounded-2xl border overflow-hidden ${alt.isBest ? "border-orange-500/50 bg-gradient-to-br from-[#1a1a2e] to-[#2a1a1e]" : "border-white/10 bg-[#1a1a2e]"}`}
+  >
     {alt.isBest && (
       <div className="absolute top-0 right-0 px-4 py-1.5 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-bl-xl">
         <span className="text-white font-black text-xs uppercase tracking-wider">🏆 #1 Best Choice</span>
@@ -106,7 +114,9 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
     )}
     <div className="p-6 md:p-8">
       <div className="flex items-start gap-4 mb-4">
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl ${alt.isBest ? "bg-gradient-to-br from-orange-500 to-yellow-500 text-white" : "bg-white/10 text-white/60"}`}>
+        <div
+          className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl ${alt.isBest ? "bg-gradient-to-br from-orange-500 to-yellow-500 text-white" : "bg-white/10 text-white/60"}`}
+        >
           #{alt.rank}
         </div>
         <div className="flex-1 min-w-0">
@@ -120,7 +130,10 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
 
       <div className="flex flex-wrap gap-2 mb-4">
         {alt.tags.map((tag) => (
-          <span key={tag} className={`px-3 py-1 rounded-full text-xs font-bold ${alt.isBest ? "bg-orange-500/20 text-orange-300 border border-orange-500/30" : "bg-white/5 text-white/60 border border-white/10"}`}>
+          <span
+            key={tag}
+            className={`px-3 py-1 rounded-full text-xs font-bold ${alt.isBest ? "bg-orange-500/20 text-orange-300 border border-orange-500/30" : "bg-white/5 text-white/60 border border-white/10"}`}
+          >
             {tag}
           </span>
         ))}
@@ -189,7 +202,7 @@ const TopOmegleAlternativesPage = () => {
     if (meta) {
       meta.setAttribute(
         "content",
-        "Compare the top 5 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV & Tinychat — find the best random video chat site that pays you to chat."
+        "Compare the top 5 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV & Tinychat — find the best random video chat site that pays you to chat.",
       );
     }
   }, []);
@@ -202,12 +215,13 @@ const TopOmegleAlternativesPage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Top 5 Omegle Alternatives in 2026",
-            "description": "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, and Tinychat.",
-            "author": { "@type": "Organization", "name": "C24 Club" },
-            "publisher": { "@type": "Organization", "name": "C24 Club", "url": "https://c24club.com" },
-            "datePublished": "2026-01-15",
-            "dateModified": "2026-03-25",
+            headline: "Top 5 Omegle Alternatives in 2026",
+            description:
+              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, and Tinychat.",
+            author: { "@type": "Organization", name: "C24 Club" },
+            publisher: { "@type": "Organization", name: "C24 Club", url: "https://c24club.com" },
+            datePublished: "2026-01-15",
+            dateModified: "2026-03-25",
           }),
         }}
       />
@@ -221,11 +235,14 @@ const TopOmegleAlternativesPage = () => {
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
         >
           <span className="text-white">Top 5 </span>
-          <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">Omegle Alternatives</span>
+          <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+            Omegle Alternatives
+          </span>
           <span className="text-white"> in 2026</span>
         </h1>
         <p className="mt-4 text-lg text-white/60 max-w-2xl mx-auto">
-          Find the best platform for random video chatting with strangers. We compared features, safety, rewards, and user experience.
+          Find the best platform for random video chatting with strangers. We compared features, safety, rewards, and
+          user experience.
         </p>
       </section>
 
@@ -242,8 +259,12 @@ const TopOmegleAlternativesPage = () => {
                   : "border-white/10 bg-white/5 hover:border-white/20"
               }`}
             >
-              <span className={`block text-xs font-black ${alt.isBest ? "text-orange-400" : "text-white/40"}`}>#{alt.rank}</span>
-              <span className={`block text-sm font-bold ${alt.isBest ? "text-white" : "text-white/70"}`}>{alt.name}</span>
+              <span className={`block text-xs font-black ${alt.isBest ? "text-orange-400" : "text-white/40"}`}>
+                #{alt.rank}
+              </span>
+              <span className={`block text-sm font-bold ${alt.isBest ? "text-white" : "text-white/70"}`}>
+                {alt.name}
+              </span>
               <StarRating rating={alt.rating} />
             </a>
           ))}
