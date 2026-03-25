@@ -32,6 +32,7 @@ interface DmMessage {
 }
 
 const PAGE_SIZE = 30;
+const ADMIN_USER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
 
 const AdminDmMonitorPage = () => {
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
