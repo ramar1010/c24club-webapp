@@ -150,7 +150,7 @@ const OmegleAlternativePage = () => {
         </h2>
         <div className="text-white/60 text-base md:text-lg leading-relaxed space-y-4 text-center max-w-3xl mx-auto">
           <p>
-            After Omegle shut down in November 2023, millions of users searched for the next great random video chat site. C24 Club fills that gap — and goes further. We're not just an Omegle clone; we're a <strong className="text-white">video chat platform that rewards you</strong> for socializing.
+            After Omegle shut down in November 2023, millions of users worldwide were on the lookout for the next great random video chat site. C24 Club is here to fill that void, and then some. We are not just another Omegle clone; we are a <strong className="text-white">video chat site that rewards you</strong> for socializing.
           </p>
           <p>
             Every minute you spend in a video call earns you reward minutes. Trade those minutes for <strong className="text-white">PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories</strong>, and over 100 other prizes in our Reward Store.
