@@ -1170,7 +1170,7 @@ const VideoCallPage = () => {
                 </div> :
 
             <video ref={localVideoRef} autoPlay muted playsInline
-            className={`w-full h-full object-cover ${isActive ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
+            className="w-full h-full object-cover block" style={{ transform: "scaleX(-1)" }} />
             }
               {callState !== "connected" &&
             <div className="w-full h-full flex items-center justify-center">
