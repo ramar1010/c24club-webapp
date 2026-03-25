@@ -27,6 +27,7 @@ const DiscoverPage = () => {
   const [showMessages, setShowMessages] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const { startCheckout } = useVipStatus(user?.id ?? null);
 
   const { user: authUser } = useAuth();
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
