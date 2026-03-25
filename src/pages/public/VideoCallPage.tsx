@@ -155,7 +155,8 @@ const VideoCallPage = () => {
     startCall,
     next,
     stop,
-    enableCamera
+    enableCamera,
+    startPreview
   } = useWebRTC({
     memberId,
     genderPreference: genderMap[genderFilter],
@@ -407,6 +408,15 @@ const VideoCallPage = () => {
       setVoiceMode(true);
     }
   }, [isFemale]);
+
+  // Start camera preview on page load (before clicking START)
+  const previewStartedRef = useRef(false);
+  useEffect(() => {
+    if (memberId !== "anonymous" && !previewStartedRef.current && !(isFemale && voiceMode)) {
+      previewStartedRef.current = true;
+      startPreview();
+    }
+  }, [memberId, isFemale, voiceMode, startPreview]);
 
 
   // Manage female anchor slot via backend queue/session logic
@@ -945,7 +955,7 @@ const VideoCallPage = () => {
         {/* Local Video */}
         <div className="flex-1 md:flex-none md:w-[420px] md:aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive &&
-          <div className="flex flex-col items-center gap-3">
+          <div className="absolute inset-0 z-10 bg-black/70 flex flex-col items-center justify-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
               
               {/* Voice Mode indicator - females always in voice mode */}
@@ -1039,7 +1049,7 @@ const VideoCallPage = () => {
             </> :
 
           <video ref={localVideoRef} autoPlay muted playsInline
-          className={`absolute inset-0 w-full h-full object-cover ${isActive && !(isFemale && voiceMode) ? "block" : "hidden"}`} />
+          className={`absolute inset-0 w-full h-full object-cover ${isFemale && voiceMode && isActive ? "hidden" : "block"}`} />
           }
 
           {/* Promo Ad - shown inside local video box between skips */}
@@ -1160,11 +1170,11 @@ const VideoCallPage = () => {
                 </div> :
 
             <video ref={localVideoRef} autoPlay muted playsInline
-            className={`w-full h-full object-cover ${isActive ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
+            className="w-full h-full object-cover block" style={{ transform: "scaleX(-1)" }} />
             }
-              {callState !== "connected" &&
-            <div className="w-full h-full flex items-center justify-center">
-                  <p className="text-neutral-600 text-[10px] text-center px-1">
+              {callState !== "connected" && callState !== "idle" &&
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-neutral-800/60">
+                  <p className="text-neutral-300 text-[10px] text-center px-1">
                     {callState === "connecting" ? "Connecting..." : callState === "waiting" ? "Searching..." : ""}
                   </p>
                 </div>
