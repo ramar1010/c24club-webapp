@@ -277,17 +277,22 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-amber-600/40 relative max-h-[90vh] overflow-y-auto">
         {/* Gradient header */}
-        <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 px-5 py-3 flex items-center gap-2 sticky top-0 z-10">
-          <Clock className="w-5 h-5 text-amber-200" />
-          <span className="text-white font-bold text-sm">
+        <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 px-5 py-3 flex flex-col gap-1 sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-amber-200" />
+            <span className="text-amber-100 font-black text-xs uppercase tracking-wider">
+              Quiet Hours — Join During Busy Hours Instead!
+            </span>
+            <button
+              onClick={() => { setVisible(false); setDismissed(true); }}
+              className="ml-auto text-white/60 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <span className="text-white font-bold text-sm pl-7">
             {isFemale ? "Schedule Your Sessions to Earn" : "Schedule Your Sessions with Girls"}
           </span>
-          <button
-            onClick={() => { setVisible(false); setDismissed(true); }}
-            className="ml-auto text-white/60 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         <div className="bg-neutral-900 px-5 py-4 space-y-3">
