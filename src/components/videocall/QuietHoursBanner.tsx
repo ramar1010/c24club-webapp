@@ -293,12 +293,6 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
           <span className="text-white font-bold text-sm pl-7">
             {isFemale ? "Schedule Your Sessions to Earn" : "Schedule Your Sessions with Girls"}
           </span>
-          <button
-            onClick={() => { setVisible(false); setDismissed(true); }}
-            className="ml-auto text-white/60 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         <div className="bg-neutral-900 px-5 py-4 space-y-3">
