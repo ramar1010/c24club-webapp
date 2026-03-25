@@ -52,6 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       console.warn("Failed to ensure member row:", error.message);
     }
+
+    // Update last_active_at so Discover shows correct online status
+    await supabase
+      .from("members")
+      .update({ last_active_at: new Date().toISOString() })
+      .eq("id", authUser.id);
   }, []);
 
   const checkAdmin = useCallback(async (userId: string) => {
@@ -148,6 +154,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch((err) => console.warn("IP ban check failed:", err));
   }, []);
+
+  // Heartbeat: update last_active_at every 5 minutes while logged in
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      supabase
+        .from("members")
+        .update({ last_active_at: new Date().toISOString() })
+        .eq("id", user.id)
+        .then(() => {});
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
