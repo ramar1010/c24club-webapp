@@ -80,6 +80,7 @@ const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
 const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
+const TopOmegleAlternativesPage = lazy(() => import("@/pages/public/TopOmegleAlternativesPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -106,6 +107,7 @@ const App = () => (
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogPostPage />} />
                 <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
+                <Route path="top-omegle-alternatives" element={<TopOmegleAlternativesPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
