@@ -8,32 +8,38 @@ const features = [
   {
     icon: Video,
     title: "Random 1-on-1 Video Chat",
-    description: "Get matched instantly with strangers worldwide for live face-to-face conversations. No downloads, no apps — just click and chat.",
+    description:
+      "Get matched instantly with strangers worldwide for live face-to-face conversations. No downloads, no apps — just click and chat.",
   },
   {
     icon: Gift,
     title: "Earn Real Rewards",
-    description: "Unlike Omegle, every minute you spend chatting earns you rewards. Redeem for PayPal cash, gift cards, designer items, and more.",
+    description:
+      "Unlike Omegle, every minute you spend chatting earns you rewards. Redeem for PayPal cash, gift cards, designer items, and more.",
   },
   {
     icon: Shield,
     title: "Safer Than Omegle",
-    description: "AI-powered moderation, NSFW detection, report system, and strict community rules keep the platform safe and enjoyable for everyone.",
+    description:
+      "AI-powered moderation, NSFW detection, report system, and strict community rules keep the platform safe and enjoyable for everyone.",
   },
   {
     icon: Users,
     title: "Active Community",
-    description: "Thousands of users online during scheduled call windows. Meet people from every country and build real connections.",
+    description:
+      "Thousands of users online during scheduled call windows. Meet people from every country and build real connections.",
   },
   {
     icon: Clock,
     title: "Scheduled Sessions",
-    description: "Call windows ensure there are always people online when you chat. No more waiting in empty lobbies like other Omegle alternatives.",
+    description:
+      "Call windows ensure there are always people online when you chat. No more waiting in empty lobbies like other Omegle alternatives.",
   },
   {
     icon: DollarSign,
     title: "Female Earning Bonus",
-    description: "Female users earn bonus minutes and can cash out via PayPal. The anchor program lets women earn real money just for chatting.",
+    description:
+      "Female users earn bonus minutes and can cash out via PayPal. The anchor program lets women earn real money just for chatting.",
   },
 ];
 
@@ -69,7 +75,10 @@ const OmegleAlternativePage = () => {
     document.title = "Best Omegle Alternative 2026 — Video Chat & Earn Rewards | C24 Club";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
-      meta.setAttribute("content", "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and earn real rewards like PayPal cash, gift cards & more. Free, safe, and fun.");
+      meta.setAttribute(
+        "content",
+        "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and earn real rewards like PayPal cash, gift cards & more. Free, safe, and fun.",
+      );
     }
   }, []);
 
@@ -81,13 +90,14 @@ const OmegleAlternativePage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "C24 Club — Best Omegle Alternative",
-            "url": "https://c24club.com/omegle-alternative",
-            "description": "C24 Club is the best free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards.",
-            "applicationCategory": "SocialNetworkingApplication",
-            "operatingSystem": "Web",
-            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-          })
+            name: "C24 Club — Best Omegle Alternative",
+            url: "https://c24club.com/omegle-alternative",
+            description:
+              "C24 Club is the best free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards.",
+            applicationCategory: "SocialNetworkingApplication",
+            operatingSystem: "Web",
+            offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          }),
         }}
       />
       <script
@@ -96,33 +106,35 @@ const OmegleAlternativePage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            "mainEntity": faqs.map(f => ({
+            mainEntity: faqs.map((f) => ({
               "@type": "Question",
-              "name": f.q,
-              "acceptedAnswer": { "@type": "Answer", "text": f.a }
-            }))
-          })
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
         }}
       />
       <PublicNav />
 
       {/* Hero */}
       <section className="pt-28 pb-16 px-4 text-center">
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">
-          The #1 Omegle Alternative
-        </p>
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">The #1 Omegle Alternative</p>
         <h1
           className="text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
         >
           <span className="text-white">The Best </span>
-          <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">Omegle Alternative</span>
+          <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+            Omegle Alternative
+          </span>
           <br />
           <span className="text-white">That </span>
           <span className="text-yellow-300">Pays You To Chat</span>
         </h1>
         <p className="mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
-          Omegle shut down, but the fun didn't stop. C24 Club is a free random video chat platform where you meet strangers 1-on-1 and <span className="text-green-400 font-bold">earn real rewards</span> for every conversation.
+          Omegle shut down, but the fun didn't stop. C24 Club is a free random video chat platform where you meet
+          strangers 1-on-1 and <span className="text-green-400 font-bold">earn real rewards</span> for every
+          conversation.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
@@ -150,13 +162,22 @@ const OmegleAlternativePage = () => {
         </h2>
         <div className="text-white/60 text-base md:text-lg leading-relaxed space-y-4 text-center max-w-3xl mx-auto">
           <p>
-            After Omegle shut down in November 2023, millions of users worldwide were on the lookout for the next great random video chat site. C24 Club is here to fill that void, and then some. We are not just another Omegle clone; we are a <strong className="text-white">video chat site that rewards you</strong> for socializing.
+            After Omegle shut down in November 2023, millions of users worldwide were on the lookout for the next great
+            random video chat site. C24 Club is here to fill that void, and then some. We are not just another Omegle
+            clone; we are a <strong className="text-white">video chat site that rewards you</strong> for socializing.
           </p>
           <p>
-            Every minute you spend in a video call earns you reward minutes. Trade those minutes for <strong className="text-white">PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories</strong>, and over 100 other prizes in our Reward Store.
+            Every minute you spend in a video call earns you reward minutes. Trade those minutes for{" "}
+            <strong className="text-white">
+              {" "}
+              PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories
+            </strong>
+            , and over 100 other prizes in our Reward Store.
           </p>
           <p>
-            You might have called it Omegle, Chatroulette, OmeTV, or whatever other names you came up with for "that random video chat site." Whatever you want to call it, C24 Club is here, and we are better in every way, with safer moderation, better features, and actual rewards for your time.
+            You might have called it Omegle, Chatroulette, OmeTV, or whatever other names you came up with for "that
+            random video chat site." Whatever you want to call it, C24 Club is here, and we are better in every way,
+            with safer moderation, better features, and actual rewards for your time.
           </p>
         </div>
       </section>
@@ -221,7 +242,9 @@ const OmegleAlternativePage = () => {
                 <tr key={i} className={i % 2 === 0 ? "bg-white/[0.02]" : ""}>
                   <td className="text-left px-5 py-3 text-white/70 font-medium">{feat}</td>
                   {vals.map((v, j) => (
-                    <td key={j} className={`px-5 py-3 ${j === 0 ? "text-base" : "text-base"}`}>{v}</td>
+                    <td key={j} className={`px-5 py-3 ${j === 0 ? "text-base" : "text-base"}`}>
+                      {v}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -240,17 +263,12 @@ const OmegleAlternativePage = () => {
         </h2>
         <div className="space-y-4">
           {faqs.map((faq, i) => (
-            <details
-              key={i}
-              className="group bg-[#1a1a2e] rounded-2xl border border-white/10 overflow-hidden"
-            >
+            <details key={i} className="group bg-[#1a1a2e] rounded-2xl border border-white/10 overflow-hidden">
               <summary className="flex items-center justify-between cursor-pointer px-6 py-5 text-white font-bold text-base hover:text-orange-400 transition-colors list-none">
                 {faq.q}
                 <ChevronRight className="h-5 w-5 text-white/30 group-open:rotate-90 transition-transform flex-shrink-0 ml-4" />
               </summary>
-              <div className="px-6 pb-5 text-white/60 text-sm leading-relaxed">
-                {faq.a}
-              </div>
+              <div className="px-6 pb-5 text-white/60 text-sm leading-relaxed">{faq.a}</div>
             </details>
           ))}
         </div>
