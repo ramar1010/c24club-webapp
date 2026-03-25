@@ -6,6 +6,7 @@ const footerLinks = [
   { label: "Site Rules", href: "/rules" },
   { label: "How To Guide", href: "/how-to-guide" },
   { label: "Safety Center", href: "/safety" },
+  { label: "Omegle Alternative", href: "/omegle-alternative" },
 ];
 
 const PublicFooter = () => {
