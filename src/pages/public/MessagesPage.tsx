@@ -318,12 +318,20 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
     return d.toLocaleDateString();
   };
 
+  const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
+
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
-    const q = searchQuery.toLowerCase();
-    return conversations.filter((c) =>
-      c.other_user?.name?.toLowerCase().includes(q)
-    );
+    let list = conversations;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((c) =>
+        c.other_user?.name?.toLowerCase().includes(q)
+      );
+    }
+    // Pin owner conversation to the top
+    const ownerConvo = list.find((c) => c.other_user?.id === OWNER_ID);
+    const rest = list.filter((c) => c.other_user?.id !== OWNER_ID);
+    return ownerConvo ? [ownerConvo, ...rest] : rest;
   }, [conversations, searchQuery]);
 
   const paginatedConversations = useMemo(
