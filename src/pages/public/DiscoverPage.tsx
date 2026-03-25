@@ -128,7 +128,7 @@ const DiscoverPage = () => {
           <div className="flex items-center gap-2">
             <span className="text-lg">👑</span>
             <p className="text-white text-sm font-bold leading-snug">
-              Get noticed & gifted by thousands of guys — stay at the top of the listing with{" "}
+              Get noticed & gifted by thousands of guys — stay at the top of the Discover page with{" "}
               <span className="text-yellow-200 underline underline-offset-2">VIP starting at $2.49/week!</span>
             </p>
             <Sparkles className="w-5 h-5 text-yellow-200 shrink-0" />
