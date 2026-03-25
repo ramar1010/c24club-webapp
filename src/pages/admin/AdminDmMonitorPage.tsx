@@ -32,6 +32,7 @@ interface DmMessage {
 }
 
 const PAGE_SIZE = 30;
+const ADMIN_USER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
 
 const AdminDmMonitorPage = () => {
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
@@ -69,6 +70,8 @@ const AdminDmMonitorPage = () => {
       const { data: convos } = await supabase
         .from("conversations")
         .select("*")
+        .neq("participant_1", ADMIN_USER_ID)
+        .neq("participant_2", ADMIN_USER_ID)
         .order("last_message_at", { ascending: false, nullsFirst: false })
         .range(0, PAGE_SIZE - 1);
 
@@ -88,6 +91,8 @@ const AdminDmMonitorPage = () => {
     const { data: convos } = await supabase
       .from("conversations")
       .select("*")
+      .neq("participant_1", ADMIN_USER_ID)
+      .neq("participant_2", ADMIN_USER_ID)
       .order("last_message_at", { ascending: false, nullsFirst: false })
       .range(conversations.length, conversations.length + PAGE_SIZE - 1);
 
