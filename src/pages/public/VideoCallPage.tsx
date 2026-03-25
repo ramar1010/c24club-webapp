@@ -955,7 +955,7 @@ const VideoCallPage = () => {
         {/* Local Video */}
         <div className="flex-1 md:flex-none md:w-[420px] md:aspect-[3/4] rounded-xl border border-neutral-700 bg-neutral-900 relative overflow-hidden flex items-center justify-center">
           {!isActive &&
-          <div className="flex flex-col items-center gap-3">
+          <div className="absolute inset-0 z-10 bg-black/70 flex flex-col items-center justify-center gap-3">
               <img src={c24Logo} alt="C24 Club" className="w-48 md:w-56 drop-shadow-lg" />
               
               {/* Voice Mode indicator - females always in voice mode */}
