@@ -36,20 +36,20 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   return (
     <div className="min-h-full bg-[#111] text-white pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#111]/95 backdrop-blur-md border-b border-white/10 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Users className="w-5 h-5 text-pink-400" />
-          <div className="flex-1">
-            <h1 className="font-bold text-lg">Discover People</h1>
-            <p className="text-white/50 text-xs">Browse while you wait for a match</p>
+      <div className="sticky top-0 z-10 bg-[#111]/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Users className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h1 className="font-bold text-base sm:text-lg">Discover</h1>
+            <p className="text-white/50 text-[10px] sm:text-xs hidden sm:block">Browse while you wait for a match</p>
           </div>
           {/* DMs button */}
           <button
             onClick={() => setShowMessages(true)}
-            className="relative flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
+            className="relative flex items-center gap-1 sm:gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors border border-blue-500/30"
           >
-            <MessageSquare className="w-4 h-4" />
-            DMs
+            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">DMs</span>
             {unreadDmCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {unreadDmCount > 9 ? "9+" : unreadDmCount}
@@ -59,18 +59,19 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
-              className="flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-1 sm:gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors"
             >
-              <Camera className="w-4 h-4" />
-              Get Listed
+              <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Get Listed</span>
+              <span className="sm:hidden">List</span>
             </button>
           ) : (
             <button
               onClick={handleRemoveListing}
-              className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-red-500/30"
+              className="flex items-center gap-1 sm:gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors border border-red-500/30"
             >
-              <Trash2 className="w-4 h-4" />
-              Remove
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Remove</span>
             </button>
           )}
         </div>
