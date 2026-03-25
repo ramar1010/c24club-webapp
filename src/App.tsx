@@ -79,6 +79,7 @@ const ReferralPage = lazy(() => import("@/pages/public/ReferralPage"));
 const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
 const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
+const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -104,6 +105,7 @@ const App = () => (
                 <Route path="safety" element={<PlaceholderPage title="Safety Center" />} />
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogPostPage />} />
+                <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
