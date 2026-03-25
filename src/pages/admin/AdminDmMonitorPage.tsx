@@ -70,6 +70,8 @@ const AdminDmMonitorPage = () => {
       const { data: convos } = await supabase
         .from("conversations")
         .select("*")
+        .neq("participant_1", ADMIN_USER_ID)
+        .neq("participant_2", ADMIN_USER_ID)
         .order("last_message_at", { ascending: false, nullsFirst: false })
         .range(0, PAGE_SIZE - 1);
 
