@@ -228,6 +228,8 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
     return () => clearInterval(iv);
   }, [nextWin, visible]);
 
+  const [smsConsent, setSmsConsent] = useState(false);
+
   const handleOptin = async () => {
     if (!phone || phone.replace(/\D/g, "").length < 10) {
       toast.error("Please enter a valid phone number");
@@ -235,6 +237,10 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
     }
     if (mySignups.length === 0) {
       toast.error("Pick at least one slot you'll attend first!");
+      return;
+    }
+    if (!smsConsent) {
+      toast.error("Please check the SMS consent box to continue");
       return;
     }
     setSubmitting(true);
@@ -386,6 +392,7 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
+              <label className="text-white/80 text-xs font-medium">Mobile phone number</label>
               <div className="flex items-center gap-2">
                 <Input
                   type="tel"
@@ -397,11 +404,11 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
                 <Button
                   size="sm"
                   onClick={handleOptin}
-                  disabled={submitting || mySignups.length === 0}
+                  disabled={submitting || mySignups.length === 0 || !smsConsent}
                   className="h-9 text-sm bg-amber-600 hover:bg-amber-500 gap-1 px-4 font-bold"
                 >
                   <Bell className="w-3.5 h-3.5" />
-                  Remind Me
+                  Text Me
                 </Button>
               </div>
               {mySignups.length === 0 && (
@@ -409,9 +416,22 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
                   ☝️ Pick at least one slot above to get reminded
                 </p>
               )}
+              {/* 10DLC compliant SMS consent checkbox — unchecked by default */}
+              <label className="flex items-start gap-2 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={smsConsent}
+                  onChange={(e) => setSmsConsent(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-neutral-500 bg-neutral-800 accent-amber-500 shrink-0"
+                />
+                <span className="text-white/60 text-[10px] leading-relaxed select-none">
+                  I agree to receive recurring automated SMS session reminder messages from C24 Club at the phone number provided. Consent is not a condition of purchase.
+                </span>
+              </label>
               <p className="text-white/30 text-[10px] text-center leading-relaxed">
-                By clicking "Remind Me," you consent to receive automated SMS reminders about your selected sessions. 
-                Message & data rates may apply. Reply STOP to unsubscribe at any time. No spam — only your chosen slots.
+                By providing your phone number, you agree to receive SMS session reminders from C24 Club. Message frequency may vary. Standard Message and Data Rates may apply. Reply STOP to opt out. Reply HELP for help. We will not share mobile information with third parties for promotional or marketing purposes. View our{" "}
+                <a href="/privacy-policy" className="underline text-amber-400/60 hover:text-amber-400">Privacy Policy</a>{" "}and{" "}
+                <a href="/terms" className="underline text-amber-400/60 hover:text-amber-400">Terms of Service</a>.
               </p>
             </div>
           )}
