@@ -462,64 +462,78 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
               </div>
             ) : (
               <>
-              {paginatedConversations.map((convo) => (
-                <button
-                  key={convo.id}
-                  onClick={() => setSelectedConvo(convo)}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
-                    selectedConvo?.id === convo.id ? "bg-white/10" : ""
-                  }`}
-                >
-                  {/* Avatar with online dot */}
-                  <div
-                    className="relative shrink-0 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (convo.other_user) setProfileCard(convo.other_user);
-                    }}
+              {paginatedConversations.map((convo, index) => (
+                <div key={convo.id}>
+                  {/* Female VIP promo banner after 3rd contact */}
+                  {index === 3 && myGender === "female" && (
+                    <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">👑</span>
+                        <p className="text-white text-[11px] font-bold leading-snug">
+                          Get noticed & gifted by thousands of guys — stay at the top with{" "}
+                          <span className="text-yellow-200 underline underline-offset-2">VIP starting at $2.49/week!</span>
+                        </p>
+                        <Sparkles className="w-4 h-4 text-yellow-200 shrink-0" />
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setSelectedConvo(convo)}
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
+                      selectedConvo?.id === convo.id ? "bg-white/10" : ""
+                    }`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden">
-                      {convo.other_user?.image_url ? (
-                        <img
-                          src={convo.other_user.image_url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
-                          {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
-                        </div>
-                      )}
-                    </div>
-                    {convo.other_user?.last_active_at && isOnlineNow(convo.other_user.last_active_at) && (
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center gap-1">
-                      <span className="font-semibold text-sm truncate flex items-center gap-1.5">
-                        {convo.other_user?.name || "Unknown"}
-                        {convo.other_user?.id && userBadges[convo.other_user.id] && (
-                          <RoleBadge role={userBadges[convo.other_user.id]!} />
+                    {/* Avatar with online dot */}
+                    <div
+                      className="relative shrink-0 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (convo.other_user) setProfileCard(convo.other_user);
+                      }}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden">
+                        {convo.other_user?.image_url ? (
+                          <img
+                            src={convo.other_user.image_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
+                            {convo.other_user?.name?.charAt(0)?.toUpperCase() || "?"}
+                          </div>
                         )}
-                      </span>
-                      <span className="text-[10px] text-white/30 shrink-0 ml-2">
-                        {formatTime(convo.last_message_at)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mt-0.5">
-                      <p className="text-xs text-white/40 truncate">
-                        {convo.last_message || "Start chatting..."}
-                      </p>
-                      {(convo.unread_count || 0) > 0 && (
-                        <span className="bg-blue-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 ml-2">
-                          {convo.unread_count! > 9 ? "9+" : convo.unread_count}
-                        </span>
+                      </div>
+                      {convo.other_user?.last_active_at && isOnlineNow(convo.other_user.last_active_at) && (
+                        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
                       )}
                     </div>
-                  </div>
-                </button>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center gap-1">
+                        <span className="font-semibold text-sm truncate flex items-center gap-1.5">
+                          {convo.other_user?.name || "Unknown"}
+                          {convo.other_user?.id && userBadges[convo.other_user.id] && (
+                            <RoleBadge role={userBadges[convo.other_user.id]!} />
+                          )}
+                        </span>
+                        <span className="text-[10px] text-white/30 shrink-0 ml-2">
+                          {formatTime(convo.last_message_at)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mt-0.5">
+                        <p className="text-xs text-white/40 truncate">
+                          {convo.last_message || "Start chatting..."}
+                        </p>
+                        {(convo.unread_count || 0) > 0 && (
+                          <span className="bg-blue-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 ml-2">
+                            {convo.unread_count! > 9 ? "9+" : convo.unread_count}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                </div>
               ))}
               {hasMore && (
                 <button
