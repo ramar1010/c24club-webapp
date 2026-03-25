@@ -13,6 +13,7 @@ import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
+import { useVipStatus } from "@/hooks/useVipStatus";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
