@@ -156,7 +156,7 @@ const OmegleAlternativePage = () => {
             Every minute you spend in a video call earns you reward minutes. Trade those minutes for <strong className="text-white">PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories</strong>, and over 100 other prizes in our Reward Store.
           </p>
           <p>
-            Whether you called it Omegle, Chatroulette, OmeTV, or just "that random video chat site," C24 Club is your new home. Safer moderation, better features, and actual rewards for your time.
+            You might have called it Omegle, Chatroulette, OmeTV, or whatever other names you came up with for "that random video chat site." Whatever you want to call it, C24 Club is here, and we are better in every way, with safer moderation, better features, and actual rewards for your time.
           </p>
         </div>
       </section>
