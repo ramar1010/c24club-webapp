@@ -98,44 +98,44 @@ const DiscoverMemberCard = ({
         onClick={openFullImage}
       >
         {/* Badges */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 flex flex-col gap-0.5 sm:gap-1">
           {online && (
-            <span className="flex items-center gap-1 bg-emerald-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span className="flex items-center gap-0.5 bg-emerald-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+              <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white animate-pulse" />
               Online
             </span>
           )}
           {isNew && (
-            <span className="flex items-center gap-1 bg-amber-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
-              <Sparkles className="w-2.5 h-2.5" />
+            <span className="flex items-center gap-0.5 bg-amber-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+              <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               New
             </span>
           )}
           {isMutualMatch && (
-            <span className="flex items-center gap-1 bg-pink-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+            <span className="flex items-center gap-0.5 bg-pink-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">
               💕 Match!
             </span>
           )}
           {isOwner && (
-            <span className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-              <Crown className="w-2.5 h-2.5" />
+            <span className="flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+              <Crown className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               Owner
             </span>
           )}
           {isVip && !isOwner && (
-            <span className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-              <Sparkles className="w-2.5 h-2.5" />
+            <span className="flex items-center gap-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+              <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               VIP
             </span>
           )}
           {isModerator && !isOwner && (
-            <span className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-              <Shield className="w-2.5 h-2.5" />
+            <span className="flex items-center gap-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+              <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               Mod
             </span>
           )}
           {isSelf && (
-            <span className="flex items-center gap-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+            <span className="flex items-center gap-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
               👤 You
             </span>
           )}
