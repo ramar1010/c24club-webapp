@@ -122,6 +122,20 @@ const DiscoverPage = () => {
         </div>
       </div>
 
+      {/* Female VIP promo banner */}
+      {myGender === "female" && (
+        <div className="mx-4 mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 animate-pulse-slow">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">👑</span>
+            <p className="text-white text-sm font-bold leading-snug">
+              Get noticed & gifted by thousands of guys — stay at the top of the listing with{" "}
+              <span className="text-yellow-200 underline underline-offset-2">VIP starting at $2.49/week!</span>
+            </p>
+            <Sparkles className="w-5 h-5 text-yellow-200 shrink-0" />
+          </div>
+        </div>
+      )}
+
       {/* Not discoverable banner */}
       {!isDiscoverable && (
         <div className="mx-4 mt-4 p-4 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
