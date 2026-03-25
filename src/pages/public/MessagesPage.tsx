@@ -470,7 +470,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                       <div className="flex items-center gap-2">
                         <span className="text-base">👑</span>
                         <p className="text-white text-[11px] font-bold leading-snug">
-                          Get noticed & gifted by thousands of guys — stay at the top with{" "}
+                          Get noticed & gifted by thousands of guys — stay at the top of the Discover page with{" "}
                           <span className="text-yellow-200 underline underline-offset-2">VIP starting at $2.49/week!</span>
                         </p>
                         <Sparkles className="w-4 h-4 text-yellow-200 shrink-0" />
