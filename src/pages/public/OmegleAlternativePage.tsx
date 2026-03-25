@@ -66,7 +66,7 @@ const faqs = [
   },
   {
     q: "Does C24 Club work on mobile?",
-    a: "Yes, C24 Club works on any device with a browser and camera — phones, tablets, laptops, and desktops. No app download required.",
+    a: "Yes, C24 Club works on any device with a browser and cameras phones, tablets, laptops, and desktops. No app download is actually required.",
   },
 ];
 
