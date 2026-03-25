@@ -46,19 +46,19 @@ const features = [
 const faqs = [
   {
     q: "What is the best Omegle alternative in 2026?",
-    a: "C24 Club is widely considered the best Omegle alternative because it combines random video chat with a rewards system. Unlike Omegle, you earn minutes for every conversation which can be redeemed for real cash via PayPal, gift cards, and physical products.",
+    a: "It is considered the best alternative to Omegle as it includes a reward feature along with random video chat. You can earn money by having a conversation on C24 Club. The earned minutes can be redeemed as real money through PayPal, gift cards, and other products.",
   },
   {
     q: "Is C24 Club free to use?",
-    a: "Yes! C24 Club is completely free to join and use. You can video chat with strangers and earn rewards without paying anything. Optional VIP memberships unlock extra features like priority matching and bonus minutes.",
+    a: "Yes, C24 Club is free to join and use. You can video chat and earn money by chatting with strangers. You don't need to pay anything to join C24 Club.",
   },
   {
     q: "Is C24 Club safer than Omegle?",
-    a: "Absolutely. C24 Club uses AI-powered NSFW detection, a community report system, IP banning, and active moderation. Users must be 18+ and agree to strict community rules. Omegle had minimal moderation before shutting down.",
+    a: "Yes, C24 Club is a lot safer compared to Omegle. C24 Club uses NSFW detection, a report feature, IP blocking, and moderation. The age limit to join C24 Club is 18+, and the user must agree to the community guidelines. Omegle was not moderated before it was shut down.",
   },
   {
     q: "How does C24 Club compare to other Omegle alternatives like Chatroulette?",
-    a: "While sites like Chatroulette and OmeTV offer basic random video chat, C24 Club is the only Omegle alternative that rewards you for chatting. Earn minutes, redeem for cash and prizes, join weekly challenges, and spin to win — no other platform offers this.",
+    a: "Chatroulette and OmeTV are video chat alternatives to Omegle. C24 Club is the best alternative as it rewards its users for video chatting. You can earn money by chatting and playing games on C24 Club. No other alternative to Omegle offers this feature.",
   },
   {
     q: "Can I earn money on C24 Club?",
