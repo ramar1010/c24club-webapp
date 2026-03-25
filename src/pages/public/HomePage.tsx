@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
@@ -847,6 +848,31 @@ const HomePage = () => {
         {/* Bottom CTA */}
         <div className="pt-8">
           <CTAButtons variant="bottom" />
+        </div>
+      </section>
+
+      {/* Omegle Alternatives CTA Section */}
+      <section className="px-4 py-12 max-w-4xl mx-auto">
+        <div className="relative rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 p-8 text-center overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-orange-400 mb-2">
+            Looking for Omegle alternatives?
+          </p>
+          <h2
+            className="text-2xl md:text-3xl font-black text-white mb-3"
+            style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+          >
+            See How C24 Club Compares To <span className="text-yellow-400">Other Platforms</span>
+          </h2>
+          <p className="text-white/50 text-sm mb-6 max-w-lg mx-auto">
+            We ranked the top 5 Omegle alternatives. Spoiler: C24 Club is #1 because we're the only one that pays you to chat.
+          </p>
+          <Link
+            to="/top-omegle-alternatives"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-black text-sm uppercase tracking-wide shadow-lg transition-all hover:scale-105"
+          >
+            View Top 5 Omegle Alternatives →
+          </Link>
         </div>
       </section>
 
