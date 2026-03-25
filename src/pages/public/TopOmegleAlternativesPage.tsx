@@ -66,7 +66,7 @@ const alternatives: Alternative[] = [
     name: "OmeTV",
     tagline: "International video chat with country filters",
     description:
-      "OmeTV offers random video chat with the ability to filter by country and translate messages in real-time. It has a large international user base and is available as both a web app and mobile app. However, it monetizes through ads rather than rewarding its users, and premium features require payment.",
+      "OmeTV provides a random video chat feature that also allows for filtering by country, as well as translating messages in real-time. It has a large international user base and is available as a web app and a mobile app. However, instead of rewarding its users, OmeTV uses ads for profit, and users have to pay for premium features.",
     tags: ["Country Filter", "Translation", "Multi-Platform"],
     pros: ["Country-based filtering", "Real-time translation", "Large user base"],
     cons: ["Ad-heavy experience", "No earning system", "Premium features cost money", "Reports of bots"],
