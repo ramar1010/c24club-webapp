@@ -13,6 +13,7 @@ import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
+import { useVipStatus } from "@/hooks/useVipStatus";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
@@ -26,6 +27,7 @@ const DiscoverPage = () => {
   const [showMessages, setShowMessages] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const { startCheckout } = useVipStatus(user?.id ?? null);
 
   const { user: authUser } = useAuth();
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
@@ -124,7 +126,13 @@ const DiscoverPage = () => {
 
       {/* Female VIP promo banner */}
       {myGender === "female" && (
-        <div className="mx-4 mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 animate-pulse-slow">
+        <button
+          onClick={async () => {
+            const { VIP_TIERS } = await import("@/config/vip-tiers");
+            void startCheckout(VIP_TIERS.basic.price_id);
+          }}
+          className="mx-4 mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 animate-pulse-slow text-left w-[calc(100%-2rem)] cursor-pointer hover:brightness-110 transition"
+        >
           <div className="flex items-center gap-2">
             <span className="text-lg">👑</span>
             <p className="text-white text-sm font-bold leading-snug">
@@ -133,7 +141,7 @@ const DiscoverPage = () => {
             </p>
             <Sparkles className="w-5 h-5 text-yellow-200 shrink-0" />
           </div>
-        </div>
+        </button>
       )}
 
       {/* Not discoverable banner */}

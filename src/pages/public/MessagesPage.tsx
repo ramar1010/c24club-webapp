@@ -466,7 +466,14 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                 <div key={convo.id}>
                   {/* Female VIP promo banner after 3rd contact */}
                   {index === 3 && myGender === "female" && (
-                    <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const { VIP_TIERS } = await import("@/config/vip-tiers");
+                        void startCheckout(VIP_TIERS.basic.price_id);
+                      }}
+                      className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 text-left w-[calc(100%-1.5rem)] cursor-pointer hover:brightness-110 transition"
+                    >
                       <div className="flex items-center gap-2">
                         <span className="text-base">👑</span>
                         <p className="text-white text-[11px] font-bold leading-snug">
@@ -475,7 +482,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
                         </p>
                         <Sparkles className="w-4 h-4 text-yellow-200 shrink-0" />
                       </div>
-                    </div>
+                    </button>
                   )}
                   <button
                     onClick={() => setSelectedConvo(convo)}
