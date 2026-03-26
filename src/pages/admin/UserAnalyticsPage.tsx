@@ -141,6 +141,19 @@ const UserAnalyticsPage = () => {
       .map(([name, value]) => ({ name, value }));
   }, [filteredMembers]);
 
+  // Traffic source distribution
+  const trafficSourceData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    filteredMembers.forEach((m) => {
+      const source = (m as any).found_us_via || "Not set";
+      const label = source.charAt(0).toUpperCase() + source.slice(1);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredMembers]);
+
   // VIP stats
   const vipCount = memberMinutes.filter((m) => m.is_vip).length;
   const vipRate = members.length > 0 ? ((vipCount / members.length) * 100).toFixed(1) : "0";
