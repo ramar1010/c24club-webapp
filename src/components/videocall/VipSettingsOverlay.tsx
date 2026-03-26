@@ -1,4 +1,4 @@
-import { X, Plus, Trash2, Pencil, Check } from "lucide-react";
+import { X, Plus, Trash2, Pencil, Check, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -295,6 +295,30 @@ const VipSettingsOverlay = ({ onClose, userId, vipTier, genderFilter, onGenderFi
               ))}
             </div>
           )}
+
+          {/* Manage / Cancel Subscription via Stripe Portal */}
+          <button
+            onClick={async () => {
+              try {
+                toast.loading("Opening subscription manager...");
+                const { data, error } = await supabase.functions.invoke("customer-portal");
+                toast.dismiss();
+                if (error) throw error;
+                if (data?.url) {
+                  window.open(data.url, "_blank");
+                } else {
+                  toast.error("Could not open subscription manager");
+                }
+              } catch (e: any) {
+                toast.dismiss();
+                toast.error(e?.message || "Failed to open subscription manager");
+              }
+            }}
+            className="w-full bg-neutral-800 border border-neutral-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-700 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Manage / Cancel Subscription
+          </button>
 
           <div className="h-8" />
         </div>
