@@ -20,9 +20,27 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
   const [expanded, setExpanded] = useState(true);
   const { user } = useAuth();
   const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
+  const [showVipGate, setShowVipGate] = useState(false);
+  const { vipTier } = useVipStatus();
 
-  const handleVideoChat = async (targetId: string, targetName: string) => {
+  // Determine caller gender from first interest's context (user's own gender)
+  const myGender = user ? null : null; // We'll fetch below
+
+  const handleVideoChat = async (targetId: string, targetName: string, targetGender?: string) => {
     if (!user) return;
+
+    // Fetch caller's gender for VIP gate check
+    const { data: myProfile } = await supabase
+      .from("members")
+      .select("gender")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (shouldBlockCall(myProfile?.gender ?? null, targetGender ?? null, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
