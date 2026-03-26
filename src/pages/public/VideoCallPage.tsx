@@ -1359,8 +1359,7 @@ const VideoCallPage = () => {
       {showRedeem ?
       <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
-        </div> :
-
+        </div> : <>
       {showRedeemTooltip && (
         <div className="flex justify-center px-4 pb-1">
           <div className="bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg animate-bounce text-center">
