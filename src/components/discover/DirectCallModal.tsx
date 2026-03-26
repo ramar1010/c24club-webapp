@@ -24,6 +24,7 @@ const DirectCallModal = ({
   onClose,
 }: DirectCallModalProps) => {
   const [showGift, setShowGift] = useState(false);
+  const navigate = useNavigate();
 
   const {
     callState,
