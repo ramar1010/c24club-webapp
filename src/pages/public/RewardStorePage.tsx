@@ -696,6 +696,10 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           setShowShipping(false);
           setSelectedReward(null);
           queryClient.invalidateQueries({ queryKey: ["user-minutes-balance"] });
+          if (selectedReward._isWishlist) {
+            refetchWishlist();
+            queryClient.invalidateQueries({ queryKey: ["wishlist-items"] });
+          }
         }}
       />
     );
