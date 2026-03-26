@@ -85,6 +85,21 @@ Deno.serve(async (req) => {
       // Don't block the email flow
     }
 
+    // Rate-limit: max 3 missed-call emails per caller per hour
+    const hourKey = new Date().toISOString().slice(0, 13); // e.g. "2026-03-26T14"
+    const { count: recentSends } = await supabase
+      .from("email_send_log")
+      .select("id", { count: "exact", head: true })
+      .like("message_id", `missed-call-${inviterId}-%`)
+      .gte("created_at", new Date(Date.now() - 3600_000).toISOString());
+
+    if ((recentSends ?? 0) >= 3) {
+      console.log(`⛔ Rate-limited: ${inviterId} already triggered ${recentSends} missed-call emails this hour`);
+      return new Response(JSON.stringify({ skipped: true, reason: "caller_rate_limited" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check suppression
     const { data: suppressed } = await supabase
       .from("suppressed_emails")

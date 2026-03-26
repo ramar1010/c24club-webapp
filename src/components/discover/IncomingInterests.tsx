@@ -6,6 +6,8 @@ import { getTimeAgo, isOnlineNow } from "@/hooks/useDiscover";
 import type { IncomingInterest } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import DirectCallModal from "./DirectCallModal";
+import VipCallGate, { shouldBlockCall } from "./VipCallGate";
+import { useVipStatus } from "@/hooks/useVipStatus";
 
 interface IncomingInterestsProps {
   interests: IncomingInterest[];
@@ -18,9 +20,24 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
   const [expanded, setExpanded] = useState(true);
   const { user } = useAuth();
   const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
+  const [showVipGate, setShowVipGate] = useState(false);
+  const { vipTier } = useVipStatus(user?.id ?? null);
 
-  const handleVideoChat = async (targetId: string, targetName: string) => {
+  const handleVideoChat = async (targetId: string, targetName: string, targetGender?: string) => {
     if (!user) return;
+
+    // Fetch caller's gender for VIP gate check
+    const { data: myProfile } = await supabase
+      .from("members")
+      .select("gender")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (shouldBlockCall(myProfile?.gender ?? null, targetGender ?? null, vipTier)) {
+      setShowVipGate(true);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.from("direct_call_invites").insert({
         inviter_id: user.id,
@@ -129,7 +146,7 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleVideoChat(interest.user_id, interest.name)}
+                    onClick={() => handleVideoChat(interest.user_id, interest.name, interest.gender ?? undefined)}
                     className="shrink-0 flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors"
                   >
                     <Video className="w-3.5 h-3.5" />
@@ -154,6 +171,9 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
         onClose={() => setDirectCall(null)}
       />
     )}
+
+    {/* VIP gate modal */}
+    {showVipGate && <VipCallGate onClose={() => setShowVipGate(false)} onSubscribe={() => setShowVipGate(false)} />}
     </>
   );
 };
