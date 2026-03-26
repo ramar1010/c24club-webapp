@@ -1009,15 +1009,6 @@ const VideoCallPage = () => {
                   Quick selfie so others can discover you — takes 3 seconds!
                 </p>
             }
-              {/* Female "Pick an Item" button — shows after selfie taken */}
-              {!needsSelfie && isFemale && wishlistCount < 3 && (
-                <button
-                  onClick={() => setShowPickItem(true)}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
-                >
-                  🎁 Pick an Item to Redeem
-                </button>
-              )}
             </div>
           }
 
@@ -1351,7 +1342,17 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Challenge Carousel — HIDDEN for now */}
+      {/* Female "Pick an Item" button — below video boxes */}
+      {!showRedeem && !needsSelfie && isFemale && wishlistCount < 3 && (
+        <div className="flex justify-center py-2">
+          <button
+            onClick={() => setShowPickItem(true)}
+            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
+          >
+            🎁 Pick an Item to Redeem
+          </button>
+        </div>
+      )}
 
       {/* Panels */}
       {showRedeem ?
