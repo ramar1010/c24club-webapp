@@ -181,7 +181,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         .select("*")
         .eq("user_id", user!.id)
         .in("status", ["active", "rejected"])
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data || [];
     },
@@ -209,9 +209,10 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     const commons = shuffled.slice(0, Math.min(3, shuffled.length));
     if (commons.length === 0) return;
     
-    // Determine win based on chance enhancer
+    // Wishlist items always win (guaranteed spin)
+    const isWishlist = targetReward._isWishlist === true;
     const roll = Math.random() * 100;
-    const won = roll < chanceEnhancer;
+    const won = isWishlist ? true : roll < chanceEnhancer;
     
     // Build the reel
     const { items, winnerIndex } = buildSpinReel(commons, targetReward, won);
