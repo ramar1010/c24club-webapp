@@ -173,7 +173,7 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
     )}
 
     {/* VIP gate modal */}
-    {showVipGate && <VipCallGate onClose={() => setShowVipGate(false)} />}
+    {showVipGate && <VipCallGate onClose={() => setShowVipGate(false)} onSubscribe={() => setShowVipGate(false)} />}
     </>
   );
 };
