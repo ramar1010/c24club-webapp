@@ -44,7 +44,7 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
             <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-2">
               Premium VIP includes:
             </p>
-            {VIP_TIERS.premium.features.slice(0, 5).map((f, i) => (
+            {VIP_TIERS.basic.features.slice(0, 5).map((f, i) => (
               <div key={i} className="flex items-center gap-2 text-white/70 text-sm">
                 {f.icon ? (
                   <img src={f.icon} alt="" className="w-4 h-4" />
