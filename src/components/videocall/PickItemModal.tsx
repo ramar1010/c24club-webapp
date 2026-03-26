@@ -66,7 +66,7 @@ function BrandStrip() {
           key={i}
           src={l.src}
           alt={l.alt}
-          className="h-5 w-auto object-contain opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all"
+          className="h-8 w-auto object-contain opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all"
         />
       ))}
     </div>
@@ -85,7 +85,7 @@ function ShopperStickers() {
           alt=""
           className="object-contain drop-shadow-lg"
           style={{
-            height: i === 1 ? "100px" : "85px",
+            height: i === 1 ? "140px" : "120px",
             transform: i === 0 ? "rotate(-6deg)" : i === 2 ? "rotate(6deg)" : "none",
             marginBottom: i === 1 ? "4px" : "0",
             zIndex: i === 1 ? 2 : 1,
