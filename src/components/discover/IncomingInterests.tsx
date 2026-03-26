@@ -21,10 +21,7 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
   const { user } = useAuth();
   const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
   const [showVipGate, setShowVipGate] = useState(false);
-  const { vipTier } = useVipStatus();
-
-  // Determine caller gender from first interest's context (user's own gender)
-  const myGender = user ? null : null; // We'll fetch below
+  const { vipTier } = useVipStatus(user?.id ?? null);
 
   const handleVideoChat = async (targetId: string, targetName: string, targetGender?: string) => {
     if (!user) return;
