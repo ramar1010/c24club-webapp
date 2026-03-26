@@ -171,6 +171,22 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Fetch user's wishlist/goal items
+  const { data: wishlistItems = [], refetch: refetchWishlist } = useQuery({
+    queryKey: ["wishlist-items", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wishlist_items")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Get common rewards for the spin mechanic
   const commonRewards = rewards?.filter((r: any) => r.rarity === "common") || [];
 
