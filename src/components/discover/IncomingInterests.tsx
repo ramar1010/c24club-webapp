@@ -6,6 +6,8 @@ import { getTimeAgo, isOnlineNow } from "@/hooks/useDiscover";
 import type { IncomingInterest } from "@/hooks/useDiscover";
 import { toast } from "@/hooks/use-toast";
 import DirectCallModal from "./DirectCallModal";
+import VipCallGate, { shouldBlockCall } from "./VipCallGate";
+import { useVipStatus } from "@/hooks/useVipStatus";
 
 interface IncomingInterestsProps {
   interests: IncomingInterest[];
