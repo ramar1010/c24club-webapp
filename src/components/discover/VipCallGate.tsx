@@ -90,6 +90,6 @@ export function shouldBlockCall(
 ): boolean {
   const isMale = callerGender?.toLowerCase() === "male";
   const isFemaleTarget = targetGender?.toLowerCase() === "female";
-  const hasPremium = vipTier === "premium";
-  return isMale && isFemaleTarget && !hasPremium;
+  const hasVip = vipTier === "premium" || vipTier === "basic";
+  return isMale && isFemaleTarget && !hasVip;
 }
