@@ -185,6 +185,7 @@ const App = () => (
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
+                <Route path="wishlist-settings" element={<WishlistSettingsPage />} />
                 <Route path="call-windows" element={<AdminCallWindowsPage />} />
                 <Route path="blog" element={<AdminBlogPage />} />
                 <Route path="blog/new" element={<AdminBlogEditorPage />} />
