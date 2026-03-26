@@ -3,9 +3,7 @@ import { X, Loader2, Sparkles, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-import shopper1 from "@/assets/pick-reward/shopper1.png";
-import shopper2 from "@/assets/pick-reward/shopper2.png";
-import shopper3 from "@/assets/pick-reward/shopper3.png";
+import shopperHero from "@/assets/pick-reward/shopper-hero.jpg";
 import sheinLogo from "@/assets/pick-reward/shein-logo.png";
 import amazonLogo from "@/assets/pick-reward/amazon-logo.png";
 import hmLogo from "@/assets/pick-reward/hm-logo.png";
@@ -74,24 +72,14 @@ function BrandStrip() {
 }
 
 /* ─── sticker decoration ─── */
-function ShopperStickers() {
-  const stickers = [shopper1, shopper2, shopper3];
+function ShopperSticker() {
   return (
-    <div className="flex items-end justify-center gap-0 -mb-1 mt-2">
-      {stickers.map((src, i) => (
-        <img
-          key={i}
-          src={src}
-          alt=""
-          className="object-contain drop-shadow-lg"
-          style={{
-            height: i === 1 ? "140px" : "120px",
-            transform: i === 0 ? "rotate(-6deg)" : i === 2 ? "rotate(6deg)" : "none",
-            marginBottom: i === 1 ? "4px" : "0",
-            zIndex: i === 1 ? 2 : 1,
-          }}
-        />
-      ))}
+    <div className="flex justify-center mt-1 -mb-1">
+      <img
+        src={shopperHero}
+        alt=""
+        className="h-36 w-auto object-cover rounded-2xl shadow-lg shadow-pink-500/20 border border-white/10"
+      />
     </div>
   );
 }
