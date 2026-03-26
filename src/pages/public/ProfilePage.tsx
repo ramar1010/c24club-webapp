@@ -63,6 +63,16 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Check true VIP status (includes admin-granted)
+  const { data: isVip } = useQuery({
+    queryKey: ["profile-is-vip", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_user_vip", { _user_id: user!.id });
+      return data ?? false;
+    },
+  });
+
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
 
   const handleLogout = async () => {
