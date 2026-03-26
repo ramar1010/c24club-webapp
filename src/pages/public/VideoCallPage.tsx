@@ -1360,16 +1360,19 @@ const VideoCallPage = () => {
       <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div> : <>
-      {showRedeemTooltip && (
-        <div className="flex justify-center px-4 pb-1">
-          <div className="bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg animate-bounce text-center">
-            👆 Tap REDEEM below to view your goals!
-          </div>
-        </div>
-      )}
       <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
-            <NavIcon src={storeIcon} label="REDEEM" onClick={() => { setShowRedeemTooltip(false); isActive ? setOverlayPage("store") : navigate("/store"); }} shake={showRedeemTooltip} />
+            <div className="relative flex flex-col items-center">
+              {showRedeemTooltip && (
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap">
+                  <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-lg animate-bounce">
+                    Tap to view your goals!
+                    <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-pink-500 rotate-45" />
+                  </div>
+                </div>
+              )}
+              <NavIcon src={storeIcon} label="REDEEM" onClick={() => { setShowRedeemTooltip(false); isActive ? setOverlayPage("store") : navigate("/store"); }} shake={showRedeemTooltip} />
+            </div>
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => isActive ? setOverlayPage("my-rewards") : navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
