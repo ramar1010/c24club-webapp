@@ -74,11 +74,11 @@ function BrandStrip() {
 /* ─── sticker decoration ─── */
 function ShopperSticker() {
   return (
-    <div className="flex justify-center mt-1 -mb-1">
+    <div className="flex justify-center mt-1 -mb-1 -mx-5">
       <img
         src={shopperHero}
         alt=""
-        className="h-36 w-auto object-cover rounded-2xl shadow-lg shadow-pink-500/20 border border-white/10"
+        className="w-full h-44 object-cover rounded-2xl shadow-lg shadow-pink-500/20"
       />
     </div>
   );
