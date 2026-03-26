@@ -103,6 +103,7 @@ const VideoCallPage = () => {
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
   const [showPickItem, setShowPickItem] = useState(false);
+  const [showRedeemTooltip, setShowRedeemTooltip] = useState(false);
   const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const { data: unreadDmCount = 0 } = useUnreadCount();
@@ -1362,7 +1363,15 @@ const VideoCallPage = () => {
 
       <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
-            <NavIcon src={storeIcon} label="REDEEM" onClick={() => isActive ? setOverlayPage("store") : navigate("/store")} shake />
+            <div className="relative">
+              <NavIcon src={storeIcon} label="REDEEM" onClick={() => { setShowRedeemTooltip(false); isActive ? setOverlayPage("store") : navigate("/store"); }} shake />
+              {showRedeemTooltip && (
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg z-50 animate-bounce">
+                  👆 Tap here to view your goals!
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-pink-500" />
+                </div>
+              )}
+            </div>
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => isActive ? setOverlayPage("my-rewards") : navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
@@ -1586,7 +1595,14 @@ const VideoCallPage = () => {
         userId={memberId}
         currentItemCount={wishlistCount}
         maxItems={3}
-        onItemAdded={() => refetchWishlist()}
+        onItemAdded={() => {
+          refetchWishlist();
+          if (!localStorage.getItem("c24_redeem_tooltip_shown")) {
+            localStorage.setItem("c24_redeem_tooltip_shown", "1");
+            setShowRedeemTooltip(true);
+            setTimeout(() => setShowRedeemTooltip(false), 6000);
+          }
+        }}
       />
       {/* NSFW Confirm Overlay */}
       {showConfirmPrompt && (
