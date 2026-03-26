@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,15 +50,15 @@ const WishlistSettingsPage = () => {
   };
 
   return (
-    <AdminLayout title="Wishlist Minutes Settings">
+    <div>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Wishlist Minutes Settings</h1>
       {loading ? (
-        <p className="text-neutral-400">Loading...</p>
+        <p className="text-muted-foreground">Loading...</p>
       ) : (
         <div className="max-w-md space-y-6">
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-muted-foreground">
             Control the random minutes range assigned when a female user picks a
-            wishlist item. The actual cost will be a random value between min and
-            max.
+            wishlist item. The actual cost will be a random value between min and max.
           </p>
           <div className="space-y-2">
             <Label>Minimum Minutes</Label>
@@ -79,7 +78,7 @@ const WishlistSettingsPage = () => {
               onChange={(e) => setMaxMinutes(Number(e.target.value))}
             />
           </div>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-muted-foreground">
             Current range: {minMinutes}–{maxMinutes} minutes per item
           </p>
           <Button onClick={handleSave} disabled={saving}>
@@ -87,7 +86,7 @@ const WishlistSettingsPage = () => {
           </Button>
         </div>
       )}
-    </AdminLayout>
+    </div>
   );
 };
 

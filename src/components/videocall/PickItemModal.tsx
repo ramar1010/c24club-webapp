@@ -27,8 +27,23 @@ export default function PickItemModal({
   const [isUnder25, setIsUnder25] = useState<boolean | null>(null);
   const [isInUSA, setIsInUSA] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
-  const [minutesCost] = useState(() => calculateMinutesCost());
+  const [minutesCost, setMinutesCost] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("wishlist_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      const min = (data as any)?.min_minutes ?? 400;
+      const max = (data as any)?.max_minutes ?? 800;
+      setMinutesCost(Math.round(min + Math.random() * (max - min)));
+    };
+    fetchSettings();
+  }, [open]);
 
   if (!open) return null;
 
