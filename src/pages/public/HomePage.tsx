@@ -340,6 +340,7 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
           email: user.email ?? null,
           name: name.trim(),
           gender,
+          found_us_via: foundVia || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
