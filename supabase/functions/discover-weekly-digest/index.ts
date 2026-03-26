@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
-function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number }): string {
+function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number; profileViews: number }): string {
   const earnBlock = member.gender?.toLowerCase() === "female"
     ? `<tr><td style="padding:0 24px 16px;">
         <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:14px;text-align:center;">

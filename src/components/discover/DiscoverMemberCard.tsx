@@ -61,6 +61,16 @@ const DiscoverMemberCard = ({
   const isFemale = member.gender?.toLowerCase() === "female";
   const online = realOnline || (!isSelf && isFakeOnline(member.id, member.gender));
 
+  // Track profile view (fire-and-forget, debounced by component mount)
+  useState(() => {
+    if (user && !isSelf && member.id) {
+      supabase.from("discover_profile_views").insert({
+        viewer_id: user.id,
+        viewed_member_id: member.id,
+      } as any).then(() => {});
+    }
+  });
+
   const handleVideoChat = async () => {
     if (!user) return;
     // Block non-premium males from calling females
