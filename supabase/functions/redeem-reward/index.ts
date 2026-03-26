@@ -313,6 +313,101 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── ACTION: redeem-wishlist (guaranteed spin win for wishlist items) ───
+    if (action === "redeem-wishlist") {
+      const { wishlistItemId, shipping: wishlistShipping } = await req.json().catch(() => ({}));
+      const itemId = wishlistItemId || rewardId;
+      if (!itemId) throw new Error("Missing wishlist item ID");
+
+      // Get the wishlist item
+      const { data: wishItem, error: wiErr } = await supabase
+        .from("wishlist_items")
+        .select("*")
+        .eq("id", itemId)
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single();
+      if (wiErr || !wishItem) throw new Error("Wishlist item not found or not active");
+
+      // Verify this is the first active item (sequential queue)
+      const { data: allActive } = await supabase
+        .from("wishlist_items")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (!allActive || allActive.length === 0 || allActive[0].id !== itemId) {
+        throw new Error("You must redeem your goal items in order — complete the first one first!");
+      }
+
+      // Check user has enough minutes
+      const { data: memberData } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const totalMinutes = memberData?.total_minutes ?? 0;
+      const giftedMins = (memberData as any)?.gifted_minutes ?? 0;
+      if (totalMinutes < wishItem.minutes_cost) {
+        throw new Error("Not enough minutes");
+      }
+
+      // Check for duplicate address if shipping provided
+      const shippingData = wishlistShipping || shipping;
+      if (shippingData) await checkDuplicateAddress(shippingData);
+
+      // Deduct minutes
+      const newTotal = totalMinutes - wishItem.minutes_cost;
+      const newGifted = Math.min(Math.max(0, giftedMins - wishItem.minutes_cost), newTotal);
+      await supabase.from("member_minutes").update({
+        total_minutes: newTotal,
+        gifted_minutes: newGifted,
+        updated_at: new Date().toISOString(),
+      }).eq("user_id", user.id);
+
+      // Create redemption record
+      const { data: redemption, error: insertErr } = await supabase.from("member_redemptions").insert({
+        user_id: user.id,
+        reward_id: null,
+        reward_title: wishItem.title,
+        reward_image_url: wishItem.image_url,
+        reward_rarity: "rare",
+        reward_type: "wishlist",
+        minutes_cost: wishItem.minutes_cost,
+        status: "pending_shipping",
+        shipping_name: shippingData?.firstName && shippingData?.lastName ? `${shippingData.firstName} ${shippingData.lastName}` : null,
+        shipping_address: shippingData?.address || null,
+        shipping_city: shippingData?.city || null,
+        shipping_state: shippingData?.state || null,
+        shipping_zip: shippingData?.zip || null,
+        shipping_country: shippingData?.country || null,
+        notes: `Wishlist item: ${wishItem.title}${wishItem.source_url ? ` | Source: ${wishItem.source_url}` : ""}`,
+      }).select().single();
+
+      if (insertErr) {
+        // Refund minutes
+        await supabase.from("member_minutes").update({
+          total_minutes: totalMinutes,
+          gifted_minutes: giftedMins,
+          updated_at: new Date().toISOString(),
+        }).eq("user_id", user.id);
+        throw insertErr;
+      }
+
+      // Mark wishlist item as redeemed
+      await supabase.from("wishlist_items").update({
+        status: "redeemed",
+        updated_at: new Date().toISOString(),
+      }).eq("id", itemId);
+
+      return new Response(JSON.stringify({
+        success: true,
+        redemptionId: redemption.id,
+        requiresShipping: true,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
