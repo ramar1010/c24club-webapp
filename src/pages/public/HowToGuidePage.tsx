@@ -4,23 +4,23 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const sections = [
   {
-    title: "🎥 Video Chatting & Earning Minutes",
+    title: "🎥 Video Chatting & Collecting Minutes",
     items: [
       {
-        q: "How do I earn minutes?",
-        a: "You earn minutes by video chatting with other users. For every 5 minutes you spend in a video call, you earn reward minutes. The longer you chat, the more you earn! Minutes are tracked automatically — just stay on the call.",
+        q: "How do I collect minutes?",
+        a: "You collect minutes by video chatting with other users. For every 5 minutes you spend in a video call, you get reward minutes. The longer you chat, the more you collect! Minutes are tracked automatically — just stay on the call.",
       },
       {
         q: "What are minutes used for?",
-        a: "Minutes are the platform currency. You use them to redeem rewards in the store — including clothes, accessories, gift cards, cash payouts, and more. You can also use them to buy spins on the Spin to Win wheel.",
+        a: "Minutes are the platform currency. You use them to redeem rewards in the store — including clothes, accessories, gift cards, and more. You can also use them to buy spins on the Spin to Win wheel.",
       },
       {
         q: "What happens if I skip too fast?",
-        a: "Quick skipping reduces your earning potential. If you skip a call within seconds of connecting, you lose potential minutes. The system is designed to reward quality conversations, not rapid clicking. Stay and chat to maximize your rewards!",
+        a: "Quick skipping reduces your reward potential. If you skip a call within seconds of connecting, you lose potential minutes. The system is designed to reward quality conversations, not rapid clicking. Stay and chat to maximize your rewards!",
       },
       {
-        q: "Is there an earning cap?",
-        a: "Yes — the earning cap is per user you connect with, not a daily total. Standard members can earn up to 10 minutes per partner per session. VIP members get a higher cap of 30 minutes per partner per session. Once you hit the cap with one person, you'll see a notification — just connect with someone new to keep earning! The cap resets each time you reconnect with the same partner.",
+        q: "Is there a collection cap?",
+        a: "Yes — the cap is per user you connect with, not a daily total. Standard members can collect up to 10 minutes per partner per session. VIP members get a higher cap of 30 minutes per partner per session. Once you hit the cap with one person, you'll see a notification — just connect with someone new to keep collecting! The cap resets each time you reconnect with the same partner.",
       },
     ],
   },
@@ -33,7 +33,7 @@ const sections = [
       },
       {
         q: "What types of rewards are available?",
-        a: "We offer 1,000+ rewards including: clothing (shirts, pants, hats, bags, boots), accessories (phone cases, jewelry), gift cards (PayPal, Cash App, etc.), and direct cash payouts. New items are added regularly.",
+        a: "We offer 1,000+ rewards including: clothing (shirts, pants, hats, bags, boots), accessories (phone cases, jewelry), gift cards, and more. New items are added regularly.",
       },
       {
         q: "What are reward rarities?",
@@ -67,7 +67,7 @@ const sections = [
     items: [
       {
         q: "What are the VIP tiers?",
-        a: "There are two tiers:\n• Basic VIP — $2.49/week: Access to gender filters, advanced promo features, 3 free Minute Unfreezes per month, and higher earning caps.\n• Premium VIP — $9.99/month: Everything in Basic plus 2x ad points, free shipping on all products, social media pinning, and a free re-spin on lost Legendary spins.",
+        a: "There are two tiers:\n• Basic VIP — $2.49/week: Access to gender filters, advanced promo features, 3 free Minute Unfreezes per month, and higher collection caps.\n• Premium VIP — $9.99/month: Everything in Basic plus 2x ad points, free shipping on all products, social media pinning, and a free re-spin on lost Legendary spins.",
       },
       {
         q: "What are gender filters?",
@@ -75,7 +75,7 @@ const sections = [
       },
       {
         q: "What is Minute Unfreezing?",
-        a: "If your account gets frozen (from hitting the earning cap), VIP members get 3 free unfreezes per month. Non-VIP users can purchase a one-time unfreeze. This lets you keep earning without waiting for the cap to reset.",
+        a: "If your account gets frozen (from hitting the collection cap), VIP members get 3 free unfreezes per month. Non-VIP users can purchase a one-time unfreeze. This lets you keep collecting without waiting for the cap to reset.",
       },
     ],
   },
@@ -84,7 +84,7 @@ const sections = [
     items: [
       {
         q: "What are Ad Points?",
-        a: "Ad Points are earned automatically while video chatting — no ads to watch! You accumulate points as you chat. Premium VIP members earn 2x ad points. Ad Points can be redeemed as a reward type in the store.",
+        a: "Ad Points are collected automatically while video chatting — no ads to watch! You accumulate points as you chat. Premium VIP members get 2x ad points. Ad Points can be redeemed as a reward type in the store.",
       },
       {
         q: "How do promos work?",
@@ -97,7 +97,7 @@ const sections = [
     items: [
       {
         q: "What are Weekly Challenges?",
-        a: "Weekly Challenges are special tasks you can complete to earn bonus rewards. Check the Challenges section from your profile to see active challenges. Submit proof of completion and earn extra minutes or special prizes once approved.",
+        a: "Weekly Challenges are special tasks you can complete for bonus rewards. Check the Challenges section from your profile to see active challenges. Submit proof of completion and get extra minutes or special prizes once approved.",
       },
     ],
   },
@@ -160,7 +160,7 @@ const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
 
       <div className="max-w-lg mx-auto px-4 py-6 pb-20">
         <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
-          Everything you need to know about C24 Club — from earning minutes to redeeming rewards and beyond.
+          Everything you need to know about C24 Club — from collecting minutes to redeeming rewards and beyond.
         </p>
 
         <Accordion type="multiple" className="space-y-3">
