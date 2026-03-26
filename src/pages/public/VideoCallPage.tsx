@@ -1359,19 +1359,17 @@ const VideoCallPage = () => {
       {showRedeem ?
       <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
-        </div> :
-
+        </div> : <>
+      {showRedeemTooltip && (
+        <div className="flex justify-center px-4 pb-1">
+          <div className="bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg animate-bounce text-center">
+            👆 Tap REDEEM below to view your goals!
+          </div>
+        </div>
+      )}
       <div className={`transition-all duration-300 overflow-hidden ${isMobile && mobileNavHidden ? "max-h-0 opacity-0" : "max-h-[300px] opacity-100"} md:max-h-none md:opacity-100`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
-            <div className="relative">
-              <NavIcon src={storeIcon} label="REDEEM" onClick={() => { setShowRedeemTooltip(false); isActive ? setOverlayPage("store") : navigate("/store"); }} shake />
-              {showRedeemTooltip && (
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg z-50 animate-bounce">
-                  👆 Tap here to view your goals!
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-pink-500" />
-                </div>
-              )}
-            </div>
+            <NavIcon src={storeIcon} label="REDEEM" onClick={() => { setShowRedeemTooltip(false); isActive ? setOverlayPage("store") : navigate("/store"); }} shake={showRedeemTooltip} />
             <NavIcon src={redeemIcon} label="MY REWARDS" onClick={() => isActive ? setOverlayPage("my-rewards") : navigate("/my-rewards")} highlight />
             <NavIcon src={topicsIcon} label="TOPICS" onClick={() => setOverlayPage("topics")} />
             <NavIcon src={promoIcon} label="PROMO" onClick={() => setOverlayPage("promo" as any)} />
@@ -1398,7 +1396,7 @@ const VideoCallPage = () => {
             </button>
           </div>
         </div>
-      }
+      </>}
 
       {/* Full-screen overlay pages */}
       {overlayPage === "store" &&
@@ -1599,8 +1597,10 @@ const VideoCallPage = () => {
           refetchWishlist();
           if (!localStorage.getItem("c24_redeem_tooltip_shown")) {
             localStorage.setItem("c24_redeem_tooltip_shown", "1");
-            setShowRedeemTooltip(true);
-            setTimeout(() => setShowRedeemTooltip(false), 6000);
+            setTimeout(() => {
+              setShowRedeemTooltip(true);
+              setTimeout(() => setShowRedeemTooltip(false), 8000);
+            }, 500);
           }
         }}
       />
