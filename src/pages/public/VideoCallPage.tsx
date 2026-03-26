@@ -752,12 +752,8 @@ const VideoCallPage = () => {
     queryKey: ["partner_is_vip", currentPartnerId],
     enabled: !!currentPartnerId && callState === "connected",
     queryFn: async () => {
-      const { data: mm } = await supabase.
-      from("member_minutes").
-      select("is_vip").
-      eq("user_id", currentPartnerId!).
-      maybeSingle();
-      return mm?.is_vip ?? false;
+      const { data } = await supabase.rpc("is_user_vip", { _user_id: currentPartnerId! });
+      return data ?? false;
     }
   });
 
