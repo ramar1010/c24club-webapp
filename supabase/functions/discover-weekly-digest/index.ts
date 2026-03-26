@@ -114,6 +114,13 @@ Deno.serve(async (req) => {
     for (const member of discoverableMembers) {
       if (!member.email || suppressedSet.has(member.email)) continue;
 
+      // Count profile views this week
+      const { count: profileViews } = await supabase
+        .from("discover_profile_views")
+        .select("id", { count: "exact", head: true })
+        .eq("viewed_member_id", member.id)
+        .gte("created_at", oneWeekAgo);
+
       // Count new interests received this week
       const { count: newInterests } = await supabase
         .from("member_interests")
@@ -140,17 +147,21 @@ Deno.serve(async (req) => {
       }
 
       // Skip if nothing to report
-      if ((newInterests || 0) === 0 && mutualMatches === 0) continue;
+      const views = profileViews || 0;
+      if ((newInterests || 0) === 0 && mutualMatches === 0 && views === 0) continue;
 
       const html = buildDigestHtml(member, {
         newInterests: newInterests || 0,
         mutualMatches,
         totalDiscoverable,
+        profileViews: views,
       });
 
-      // More curiosity-driven subject line
-      const subject = (newInterests || 0) > 0
-        ? `${newInterests} ${(newInterests || 0) === 1 ? "person" : "people"} checked out your profile this week 👀`
+      // Curiosity-driven subject line prioritizing views
+      const subject = views > 0
+        ? `👀 ${views} ${views === 1 ? "person" : "people"} viewed your profile this week!`
+        : (newInterests || 0) > 0
+        ? `💌 ${newInterests} ${(newInterests || 0) === 1 ? "person" : "people"} want to connect with you!`
         : `Your weekly C24Club update — ${mutualMatches} match${mutualMatches === 1 ? "" : "es"} 🎉`;
 
       const messageId = `digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
