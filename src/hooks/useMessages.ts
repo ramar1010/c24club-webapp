@@ -29,6 +29,8 @@ export interface DmMessage {
   created_at: string;
 }
 
+const CONVO_PAGE_SIZE = 30;
+
 export function useConversations() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -36,20 +38,22 @@ export function useConversations() {
   const query = useQuery({
     queryKey: ["conversations", user?.id],
     enabled: !!user,
+    staleTime: 15_000,
     queryFn: async () => {
       if (!user) return [];
 
-      // Get conversations
+      // Get conversations – only the most recent ones
       const { data: convos, error } = await supabase
         .from("conversations")
         .select("*")
         .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
-        .order("last_message_at", { ascending: false });
+        .order("last_message_at", { ascending: false })
+        .limit(CONVO_PAGE_SIZE);
 
       if (error) throw error;
       if (!convos || convos.length === 0) return [];
 
-      // Get other user details
+      // Get other user details – single batch
       const otherIds = convos.map((c: any) =>
         c.participant_1 === user.id ? c.participant_2 : c.participant_1
       );
@@ -61,62 +65,83 @@ export function useConversations() {
 
       const memberMap = new Map((members || []).map((m: any) => [m.id, m]));
 
-      // Get last message and unread count for each conversation
-      const enriched: Conversation[] = await Promise.all(
-        convos.map(async (c: any) => {
-          const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+      // Get last messages for ALL conversations in ONE query
+      // Using a subquery approach: get the most recent message per conversation
+      const convoIds = convos.map((c: any) => c.id);
+      const { data: allMessages } = await supabase
+        .from("dm_messages")
+        .select("conversation_id, content, created_at")
+        .in("conversation_id", convoIds)
+        .order("created_at", { ascending: false });
 
-          const { data: lastMsg } = await supabase
-            .from("dm_messages")
-            .select("content")
-            .eq("conversation_id", c.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+      // Build a map of conversation_id -> last message content
+      const lastMsgMap = new Map<string, string>();
+      if (allMessages) {
+        for (const msg of allMessages) {
+          if (!lastMsgMap.has(msg.conversation_id)) {
+            lastMsgMap.set(msg.conversation_id, msg.content);
+          }
+        }
+      }
 
-          const { count } = await supabase
-            .from("dm_messages")
-            .select("id", { count: "exact", head: true })
-            .eq("conversation_id", c.id)
-            .neq("sender_id", user.id)
-            .is("read_at", null);
+      // Get total unread count across all conversations in ONE query
+      const { data: unreadMessages } = await supabase
+        .from("dm_messages")
+        .select("conversation_id")
+        .in("conversation_id", convoIds)
+        .neq("sender_id", user.id)
+        .is("read_at", null);
 
-          return {
-            ...c,
-            other_user: memberMap.get(otherId) || { id: otherId, name: "Unknown", image_url: null, gender: null },
-            last_message: lastMsg?.content || "",
-            unread_count: count || 0,
-          };
-        })
-      );
+      // Count unread per conversation
+      const unreadMap = new Map<string, number>();
+      if (unreadMessages) {
+        for (const msg of unreadMessages) {
+          unreadMap.set(msg.conversation_id, (unreadMap.get(msg.conversation_id) || 0) + 1);
+        }
+      }
+
+      const enriched: Conversation[] = convos.map((c: any) => {
+        const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+        return {
+          ...c,
+          other_user: memberMap.get(otherId) || { id: otherId, name: "Unknown", image_url: null, gender: null },
+          last_message: lastMsgMap.get(c.id) || "",
+          unread_count: unreadMap.get(c.id) || 0,
+        };
+      });
 
       return enriched;
     },
   });
 
-  // Realtime subscription for new messages
+  // Realtime subscription for new messages – debounced invalidation
   useEffect(() => {
     if (!user) return;
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedInvalidate = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+      }, 2000);
+    };
 
     const channel = supabase
       .channel("dm-updates")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "dm_messages" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-        }
+        debouncedInvalidate
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-        }
+        debouncedInvalidate
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [user, queryClient]);
@@ -273,11 +298,13 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ["unread_dm_count", user?.id],
     enabled: !!user,
-    refetchInterval: 30000,
+    refetchInterval: 60000, // 60s instead of 30s
+    staleTime: 30000,
     queryFn: async () => {
       if (!user) return 0;
 
-      // Get all conversations for this user
+      // Single query: get unread messages across all conversations
+      // First get conversation IDs
       const { data: convos } = await supabase
         .from("conversations")
         .select("id")
