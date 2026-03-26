@@ -980,6 +980,78 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           </button>
         </div>
       )}
+      {/* My Goal Items */}
+      {wishlistItems.length > 0 && (
+        <div className="px-4 mb-4">
+          <h3 className="font-black text-sm text-pink-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Target className="w-4 h-4" /> My Goal Items
+          </h3>
+          <div className="space-y-2">
+            {(wishlistItems as any[]).map((item: any) => {
+              const progress = Math.min(100, ((userMinutes ?? 0) / item.minutes_cost) * 100);
+              const canRedeem = (userMinutes ?? 0) >= item.minutes_cost;
+
+              return (
+                <div key={item.id} className="bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 flex items-center gap-3">
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-neutral-800 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-white truncate">{item.title}</p>
+                    <p className="text-neutral-500 text-xs">🪙 {item.minutes_cost} Minutes needed</p>
+                    {/* Progress bar */}
+                    <div className="mt-1.5 h-2 bg-neutral-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${canRedeem ? "bg-green-500" : "bg-pink-500"}`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-neutral-500 mt-0.5">
+                      {canRedeem ? "✅ Ready to spin!" : `${Math.round(progress)}% — ${item.minutes_cost - (userMinutes ?? 0)} more to go`}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    {canRedeem && (
+                      <button
+                        onClick={() => {
+                          // Construct a reward-like object for the spin mechanic
+                          const fakeReward = {
+                            id: item.id,
+                            title: item.title,
+                            image_url: item.image_url,
+                            rarity: "rare",
+                            minutes_cost: item.minutes_cost,
+                            cashout_value: 0,
+                            type: "Product",
+                            _isWishlist: true,
+                          };
+                          handleSpinToWin(fakeReward);
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white font-black text-[10px] px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        🎰 SPIN
+                      </button>
+                    )}
+                    <button
+                      onClick={async () => {
+                        await supabase.from("wishlist_items").update({ status: "removed" } as any).eq("id", item.id);
+                        refetchWishlist();
+                        toast.success("Item removed from goals");
+                      }}
+                      className="text-neutral-600 hover:text-red-400 transition-colors p-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Categories Grid */}
       {loadingRewards ? (
         <div className="flex-1 flex items-center justify-center">
