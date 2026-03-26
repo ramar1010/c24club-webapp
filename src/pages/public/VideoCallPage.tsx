@@ -1351,14 +1351,7 @@ const VideoCallPage = () => {
         </div>
       }
 
-      {/* Challenge Carousel — below video boxes, above nav icons */}
-      {!showRedeem && (
-        <ChallengeCarousel
-          onOpenChallenges={() => setOverlayPage("challenges")}
-          onOpenReferral={() => navigate("/referral")}
-          isFemale={isFemale}
-        />
-      )}
+      {/* Challenge Carousel — HIDDEN for now */}
 
       {/* Panels */}
       {showRedeem ?
