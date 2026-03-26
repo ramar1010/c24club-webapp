@@ -31,12 +31,12 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
           </div>
 
           <h2 className="text-white font-bold text-xl">
-            Premium VIP Required
+            VIP Required
           </h2>
 
           <p className="text-white/60 text-sm leading-relaxed">
-            Video calling female members is a <strong className="text-purple-400">Premium VIP</strong> feature.
-            Upgrade to unlock unlimited video calls with anyone!
+            Video calling female members is a <strong className="text-purple-400">VIP</strong> feature.
+            Subscribe to any VIP plan to unlock video calls with anyone!
           </p>
 
           {/* Feature highlights */}
