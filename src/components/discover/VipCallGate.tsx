@@ -31,12 +31,12 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
           </div>
 
           <h2 className="text-white font-bold text-xl">
-            Premium VIP Required
+            VIP Required
           </h2>
 
           <p className="text-white/60 text-sm leading-relaxed">
-            Video calling female members is a <strong className="text-purple-400">Premium VIP</strong> feature.
-            Upgrade to unlock unlimited video calls with anyone!
+            Video calling female members is a <strong className="text-purple-400">VIP</strong> feature.
+            Subscribe to any VIP plan to unlock video calls with anyone!
           </p>
 
           {/* Feature highlights */}
@@ -44,7 +44,7 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
             <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-2">
               Premium VIP includes:
             </p>
-            {VIP_TIERS.premium.features.slice(0, 5).map((f, i) => (
+            {VIP_TIERS.basic.features.slice(0, 5).map((f, i) => (
               <div key={i} className="flex items-center gap-2 text-white/70 text-sm">
                 {f.icon ? (
                   <img src={f.icon} alt="" className="w-4 h-4" />
@@ -62,7 +62,7 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50"
           >
-            {loading ? "Loading..." : `Subscribe — ${VIP_TIERS.premium.price}/month`}
+            {loading ? "Loading..." : `Subscribe — ${VIP_TIERS.basic.price}/week`}
           </button>
 
           <button
@@ -90,6 +90,6 @@ export function shouldBlockCall(
 ): boolean {
   const isMale = callerGender?.toLowerCase() === "male";
   const isFemaleTarget = targetGender?.toLowerCase() === "female";
-  const hasPremium = vipTier === "premium";
-  return isMale && isFemaleTarget && !hasPremium;
+  const hasVip = vipTier === "premium" || vipTier === "basic";
+  return isMale && isFemaleTarget && !hasVip;
 }
