@@ -14,42 +14,58 @@ const COLORS = ["hsl(210, 80%, 55%)", "hsl(150, 60%, 45%)", "hsl(35, 90%, 55%)",
 
 type TimeRange = "7d" | "30d" | "90d" | "all";
 
+const PAGE_SIZE = 1000;
+
+async function fetchAllRows<T>(
+  table: string,
+  select: string,
+  orderCol?: string
+): Promise<T[]> {
+  const all: T[] = [];
+  let from = 0;
+  while (true) {
+    let q = (supabase.from as any)(table).select(select).range(from, from + PAGE_SIZE - 1);
+    if (orderCol) q = q.order(orderCol, { ascending: true });
+    const { data, error } = await q;
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...(data as T[]));
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return all;
+}
+
 const UserAnalyticsPage = () => {
   const [range, setRange] = useState<TimeRange>("30d");
 
   const { data: members = [] } = useQuery({
     queryKey: ["analytics-members"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("members")
-        .select("id, created_at, gender, country, membership, found_us_via")
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () =>
+      fetchAllRows<{ id: string; created_at: string; gender: string | null; country: string | null; membership: string | null; found_us_via: string | null }>(
+        "members",
+        "id, created_at, gender, country, membership, found_us_via",
+        "created_at"
+      ),
   });
 
   const { data: memberMinutes = [] } = useQuery({
     queryKey: ["analytics-minutes"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("member_minutes")
-        .select("user_id, is_vip, total_minutes, vip_tier");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () =>
+      fetchAllRows<{ user_id: string; is_vip: boolean; total_minutes: number; vip_tier: string | null }>(
+        "member_minutes",
+        "user_id, is_vip, total_minutes, vip_tier"
+      ),
   });
 
   const { data: redemptions = [] } = useQuery({
     queryKey: ["analytics-redemptions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("member_redemptions")
-        .select("id, created_at, user_id")
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () =>
+      fetchAllRows<{ id: string; created_at: string; user_id: string }>(
+        "member_redemptions",
+        "id, created_at, user_id",
+        "created_at"
+      ),
   });
 
   const rangeStart = useMemo(() => {
