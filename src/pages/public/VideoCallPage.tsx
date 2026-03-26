@@ -144,6 +144,20 @@ const VideoCallPage = () => {
 
   const isFemale = memberGender?.toLowerCase() === "female";
 
+  // Wishlist items count for female "Pick Item" feature
+  const { data: wishlistCount = 0, refetch: refetchWishlist } = useQuery({
+    queryKey: ["wishlist_count", memberId],
+    enabled: memberId !== "anonymous" && isFemale,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("wishlist_items")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", memberId)
+        .eq("status", "active");
+      return count ?? 0;
+    },
+  });
+
   const {
     callState,
     hasStartedMatchmaking,
