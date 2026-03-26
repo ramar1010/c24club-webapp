@@ -253,7 +253,7 @@ export default function PickItemModal({
             {step === "image" && (
               <div className="space-y-3">
                 {/* Shopper stickers */}
-                <ShopperStickers />
+                <ShopperSticker />
 
                 <div className="text-center space-y-1.5">
                   <p className="text-white font-bold text-sm">
