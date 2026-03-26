@@ -22,7 +22,7 @@ const UserAnalyticsPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("members")
-        .select("id, created_at, gender, country, membership")
+        .select("id, created_at, gender, country, membership, found_us_via")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data ?? [];
