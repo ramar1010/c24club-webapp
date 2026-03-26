@@ -98,30 +98,42 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Load template
-    const { data: template } = await supabase
-      .from("email_templates")
-      .select("subject, body")
-      .eq("template_key", "missed_video_call")
-      .eq("is_active", true)
-      .maybeSingle();
+    let subject: string;
+    let rawBody: string;
 
-    if (!template) {
-      return new Response(JSON.stringify({ skipped: true, reason: "template_disabled" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (isFemale) {
+      // Cash-focused messaging for female users
+      subject = `💰 You missed a cash video call from ${callerName}!`;
+      rawBody = `Hey ${userName},\n\n${callerName} tried to video chat with you — and that's money you left on the table! 💸\n\nEvery private call earns you real cash. The longer you chat, the more you make.\n\n👉 https://c24club.com/discover\n\nDon't let the next payout slip away — check their profile and connect!\n\n— The C24Club Team`;
+    } else {
+      // Load template from DB for non-female users
+      const { data: template } = await supabase
+        .from("email_templates")
+        .select("subject, body")
+        .eq("template_key", "missed_video_call")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!template) {
+        return new Response(JSON.stringify({ skipped: true, reason: "template_disabled" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      subject = template.subject
+        .replace(/\{\{caller_name\}\}/g, callerName)
+        .replace(/\{\{user_name\}\}/g, userName);
+
+      rawBody = template.body
+        .replace(/\{\{caller_name\}\}/g, callerName)
+        .replace(/\{\{user_name\}\}/g, userName);
     }
 
-    const subject = template.subject
-      .replace(/\{\{caller_name\}\}/g, callerName)
-      .replace(/\{\{user_name\}\}/g, userName);
-
-    const rawBody = template.body
-      .replace(/\{\{caller_name\}\}/g, callerName)
-      .replace(/\{\{user_name\}\}/g, userName)
-      .replace(/https?:\/\/[a-z0-9-]+\.lovable\.app/g, "https://c24club.com");
+    // Rewrite staging URLs to production
+    rawBody = rawBody.replace(/https?:\/\/[a-z0-9-]+\.lovable\.app/g, "https://c24club.com");
 
     // Convert plain-text newlines to HTML paragraphs, turning URLs into buttons
+    const ctaLabel = isFemale ? "See Who's Paying 💰" : "View Profile on Discover";
     const bodyHtml = rawBody
       .split(/\n\n+/)
       .map((p: string) => {
@@ -131,7 +143,7 @@ Deno.serve(async (req) => {
           const url = urlMatch[1];
           return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
             <tr><td align="center">
-              <a href="${url}" target="_blank" style="display:inline-block;background-color:#6366f1;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:8px;text-align:center;">View Profile on Discover</a>
+              <a href="${url}" target="_blank" style="display:inline-block;background-color:#6366f1;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:8px;text-align:center;">${ctaLabel}</a>
             </td></tr>
           </table>`;
         }
