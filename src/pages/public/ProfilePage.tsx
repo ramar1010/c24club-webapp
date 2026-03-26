@@ -63,6 +63,16 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  // Check true VIP status (includes admin-granted)
+  const { data: isVip } = useQuery({
+    queryKey: ["profile-is-vip", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_user_vip", { _user_id: user!.id });
+      return data ?? false;
+    },
+  });
+
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
 
   const handleLogout = async () => {
@@ -75,7 +85,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       <VipSettingsOverlay
         onClose={() => setShowVipSettings(false)}
         userId={user.id}
-        vipTier={ceData?.is_vip ? (ceData?.vip_tier === "premium" ? "premium" : "basic") : null}
+        vipTier={isVip ? (ceData?.vip_tier === "premium" ? "premium" : "basic") : null}
         genderFilter="everyone"
         onGenderFilterChange={() => {}}
       />
@@ -118,7 +128,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
           <span className="text-orange-400 text-sm font-black">
             🔥 {Math.round(chanceEnhancer)}% Chance Enhancer
           </span>
-          {ceData?.is_vip && (
+          {isVip && (
             <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold">VIP</span>
           )}
         </div>
@@ -133,7 +143,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex justify-center gap-8 mb-8">
         <IconButton src={eventsIcon} label="EVENTS" onClick={() => { setEventsInitialView("hub"); setShowEvents(true); }} />
         <IconButton src={myRewardsIcon} label="MY REWARDS" onClick={() => navigate("/my-rewards")} />
-        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={ceData?.is_vip ? () => setShowVipSettings(true) : undefined} disabled={!ceData?.is_vip} />
+        <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={isVip ? () => setShowVipSettings(true) : undefined} disabled={!isVip} />
       </div>
 
       {/* Feature Cards */}
