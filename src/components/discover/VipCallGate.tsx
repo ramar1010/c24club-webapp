@@ -62,7 +62,7 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50"
           >
-            {loading ? "Loading..." : `Subscribe — ${VIP_TIERS.premium.price}/month`}
+            {loading ? "Loading..." : `Subscribe — ${VIP_TIERS.basic.price}/week`}
           </button>
 
           <button
