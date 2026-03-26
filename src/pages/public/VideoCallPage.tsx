@@ -1611,6 +1611,8 @@ const VideoCallPage = () => {
           refetchWishlist();
           if (!localStorage.getItem("c24_redeem_tooltip_shown")) {
             localStorage.setItem("c24_redeem_tooltip_shown", "1");
+            // On mobile, expand nav so tooltip is visible
+            if (isMobile) setMobileNavHidden(false);
             setTimeout(() => {
               setShowRedeemTooltip(true);
               setTimeout(() => setShowRedeemTooltip(false), 8000);
