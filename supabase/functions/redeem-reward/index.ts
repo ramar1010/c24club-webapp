@@ -316,8 +316,8 @@ Deno.serve(async (req) => {
 
     // ─── ACTION: redeem-wishlist (guaranteed spin win for wishlist items) ───
     if (action === "redeem-wishlist") {
-      const { wishlistItemId, shipping: wishlistShipping } = await req.json().catch(() => ({}));
       const itemId = wishlistItemId || rewardId;
+      const wishlistShipping = shipping;
       if (!itemId) throw new Error("Missing wishlist item ID");
 
       // Get the wishlist item
