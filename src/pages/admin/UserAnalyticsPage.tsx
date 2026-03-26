@@ -24,7 +24,7 @@ async function fetchAllRows<T>(
   const all: T[] = [];
   let from = 0;
   while (true) {
-    let q = supabase.from(table).select(select).range(from, from + PAGE_SIZE - 1);
+    let q = (supabase.from as any)(table).select(select).range(from, from + PAGE_SIZE - 1);
     if (orderCol) q = q.order(orderCol, { ascending: true });
     const { data, error } = await q;
     if (error) throw error;
