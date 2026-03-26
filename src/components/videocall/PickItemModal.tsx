@@ -255,12 +255,12 @@ export default function PickItemModal({
                 {/* Shopper stickers */}
                 <ShopperSticker />
 
-                <div className="text-center space-y-1.5">
-                  <p className="text-white font-bold text-sm">
-                    Shop from <span className="text-pink-400">ANY</span> website 💕
+                <div className="text-center space-y-2">
+                  <p className="text-white font-black text-lg">
+                    Pick from <span className="text-pink-400">any website</span> 💕
                   </p>
-                  <p className="text-white/50 text-xs leading-relaxed">
-                    Screenshot any item under <span className="text-yellow-400 font-bold">$25</span> from your fave stores and upload it!
+                  <p className="text-white/70 text-sm font-medium leading-relaxed">
+                    Choose any item under <span className="text-yellow-400 font-bold">$25</span> — earn it for <span className="text-pink-400 font-bold">FREE</span> just by chatting!
                   </p>
                 </div>
 
