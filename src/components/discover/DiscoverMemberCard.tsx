@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +60,18 @@ const DiscoverMemberCard = ({
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
   const online = realOnline || (!isSelf && isFakeOnline(member.id, member.gender));
+
+  // Track profile view (fire-and-forget, once per mount)
+  const viewTracked = useRef(false);
+  useEffect(() => {
+    if (user && !isSelf && member.id && !viewTracked.current) {
+      viewTracked.current = true;
+      supabase.from("discover_profile_views").insert({
+        viewer_id: user.id,
+        viewed_member_id: member.id,
+      } as any).then(() => {});
+    }
+  }, [user, isSelf, member.id]);
 
   const handleVideoChat = async () => {
     if (!user) return;

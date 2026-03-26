@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SENDER_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
-function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number }): string {
+function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number; profileViews: number }): string {
   const earnBlock = member.gender?.toLowerCase() === "female"
     ? `<tr><td style="padding:0 24px 16px;">
         <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:14px;text-align:center;">
@@ -28,19 +28,24 @@ function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatch
         <tr><td style="padding:0 24px 20px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:#ec4899;margin:0;">${stats.newInterests}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">New Interests</p>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#8b5cf6;margin:0;">${stats.profileViews}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">👀 Profile Views</p>
               </td>
-              <td width="6"></td>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:#f59e0b;margin:0;">${stats.mutualMatches}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">Matches</p>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#ec4899;margin:0;">${stats.newInterests}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">💌 Interests</p>
               </td>
-              <td width="6"></td>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:hsl(205,65%,45%);margin:0;">${stats.totalDiscoverable}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">People Online</p>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#f59e0b;margin:0;">${stats.mutualMatches}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">🎉 Matches</p>
+              </td>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:hsl(205,65%,45%);margin:0;">${stats.totalDiscoverable}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">🌐 Online</p>
               </td>
             </tr>
           </table>
@@ -109,6 +114,13 @@ Deno.serve(async (req) => {
     for (const member of discoverableMembers) {
       if (!member.email || suppressedSet.has(member.email)) continue;
 
+      // Count profile views this week
+      const { count: profileViews } = await supabase
+        .from("discover_profile_views")
+        .select("id", { count: "exact", head: true })
+        .eq("viewed_member_id", member.id)
+        .gte("created_at", oneWeekAgo);
+
       // Count new interests received this week
       const { count: newInterests } = await supabase
         .from("member_interests")
@@ -135,17 +147,21 @@ Deno.serve(async (req) => {
       }
 
       // Skip if nothing to report
-      if ((newInterests || 0) === 0 && mutualMatches === 0) continue;
+      const views = profileViews || 0;
+      if ((newInterests || 0) === 0 && mutualMatches === 0 && views === 0) continue;
 
       const html = buildDigestHtml(member, {
         newInterests: newInterests || 0,
         mutualMatches,
         totalDiscoverable,
+        profileViews: views,
       });
 
-      // More curiosity-driven subject line
-      const subject = (newInterests || 0) > 0
-        ? `${newInterests} ${(newInterests || 0) === 1 ? "person" : "people"} checked out your profile this week 👀`
+      // Curiosity-driven subject line prioritizing views
+      const subject = views > 0
+        ? `👀 ${views} ${views === 1 ? "person" : "people"} viewed your profile this week!`
+        : (newInterests || 0) > 0
+        ? `💌 ${newInterests} ${(newInterests || 0) === 1 ? "person" : "people"} want to connect with you!`
         : `Your weekly C24Club update — ${mutualMatches} match${mutualMatches === 1 ? "" : "es"} 🎉`;
 
       const messageId = `digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
