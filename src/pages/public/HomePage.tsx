@@ -319,6 +319,7 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
 const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [gender, setGender] = useState<string>("");
+  const [foundVia, setFoundVia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
