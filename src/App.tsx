@@ -61,6 +61,7 @@ const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettin
 const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
 const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
+const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -185,6 +186,7 @@ const App = () => (
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
+                <Route path="wishlist-settings" element={<WishlistSettingsPage />} />
                 <Route path="call-windows" element={<AdminCallWindowsPage />} />
                 <Route path="blog" element={<AdminBlogPage />} />
                 <Route path="blog/new" element={<AdminBlogEditorPage />} />

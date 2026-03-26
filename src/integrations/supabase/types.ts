@@ -2708,6 +2708,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlist_settings: {
+        Row: {
+          id: string
+          max_minutes: number
+          min_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          max_minutes?: number
+          min_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          max_minutes?: number
+          min_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
