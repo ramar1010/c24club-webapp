@@ -301,6 +301,7 @@ export const adminMenu: MenuItem[] = [
       { key: "manage-minutes", label: "Manage Minutes", path: "/admin/manage-minutes" },
       { key: "freeze-settings", label: "Freeze Settings", path: "/admin/freeze-settings" },
       { key: "camera-unlock", label: "Camera Unlock", path: "/admin/camera-unlock" },
+      { key: "wishlist-settings", label: "Wishlist Minutes", path: "/admin/wishlist-settings" },
     ],
   },
   {

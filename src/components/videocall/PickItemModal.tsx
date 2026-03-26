@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X, Loader2, ShoppingBag, Sparkles, Camera, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,11 +10,6 @@ interface PickItemModalProps {
   currentItemCount: number;
   maxItems: number;
   onItemAdded: () => void;
-}
-
-function calculateMinutesCost(): number {
-  // Random cost between 400–800 minutes for items under $25
-  return Math.round(400 + Math.random() * 400);
 }
 
 export default function PickItemModal({
