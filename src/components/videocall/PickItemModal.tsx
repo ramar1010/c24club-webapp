@@ -148,9 +148,17 @@ export default function PickItemModal({
           {/* Step 1: Upload Image */}
           {step === "image" && (
             <div className="space-y-4">
-              <p className="text-white/60 text-sm text-center">
-                Take a screenshot of any item you want (AliExpress, Shein, etc.) and upload it here!
-              </p>
+              <div className="text-center space-y-2">
+                <p className="text-white/80 text-sm font-medium">
+                  Find any item you want from <span className="text-pink-400">any website</span> — AliExpress, Shein, Amazon, Temu, wherever!
+                </p>
+                <p className="text-white/50 text-xs">
+                  📸 Take a screenshot of the item and upload it below. Items must be <span className="text-yellow-400 font-bold">under $25</span> and you must be in the <span className="text-yellow-400 font-bold">USA</span> to be eligible.
+                </p>
+                <p className="text-white/40 text-[10px]">
+                  You can add up to {maxItems} items at a time. Earn enough minutes chatting and spin to win your item!
+                </p>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
