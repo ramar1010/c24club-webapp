@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import SpinToWinPage from "@/pages/public/SpinToWinPage";
-import WeeklyChallengesPage from "@/pages/public/WeeklyChallengesPage";
 import ReferralPage from "@/pages/public/ReferralPage";
+import ChallengeMinutesOverlay from "@/components/videocall/ChallengeMinutesOverlay";
 import slotMachine from "@/assets/profile/slot-machine.png";
-import challengesPin from "@/assets/profile/challenges-pin.png";
-import challengesTarget from "@/assets/profile/challenges-target.png";
 
 const EventsPage = ({ onClose, initialView }: { onClose?: () => void; initialView?: "hub" | "spin" | "challenges" | "referral" }) => {
   const [view, setView] = useState<"hub" | "spin" | "challenges" | "referral">(initialView ?? "hub");
+  const [showWager, setShowWager] = useState(false);
 
   if (view === "spin") return <SpinToWinPage onClose={() => setView("hub")} />;
-  if (view === "challenges") return <WeeklyChallengesPage onClose={() => setView("hub")} />;
   if (view === "referral") return <ReferralPage onClose={() => setView("hub")} />;
 
   return (
@@ -25,7 +23,7 @@ const EventsPage = ({ onClose, initialView }: { onClose?: () => void; initialVie
 
       <h1 className="text-3xl font-black tracking-wide mt-4 mb-2">🎯 EVENTS</h1>
       <p className="text-neutral-400 text-sm mb-8 text-center">
-        Earn rewards, invite friends, and complete challenges!
+        Earn rewards, invite friends, and win big!
       </p>
 
       <div className="flex flex-col gap-5 w-full max-w-sm">
@@ -41,18 +39,20 @@ const EventsPage = ({ onClose, initialView }: { onClose?: () => void; initialVie
           </div>
         </button>
 
-        {/* Weekly Challenges */}
+        {/* Challenge Minutes / Wager */}
         <button
-          onClick={() => setView("challenges")}
-          className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 flex items-center gap-4 hover:opacity-90 transition-opacity border border-blue-500/30 shadow-lg"
+          onClick={() => setShowWager(true)}
+          className="w-full relative overflow-hidden bg-gradient-to-br from-yellow-600/25 via-amber-700/20 to-orange-900/30 border border-yellow-500/40 rounded-2xl p-5 shadow-[0_0_24px_rgba(234,179,8,0.25)] active:scale-[0.97] transition-transform text-left flex items-center gap-4"
         >
-          <div className="flex gap-1">
-            <img src={challengesPin} alt="Pin" className="w-10 h-10 object-contain" />
-            <img src={challengesTarget} alt="Target" className="w-10 h-10 object-contain" />
-          </div>
-          <div className="text-left">
-            <span className="font-black text-lg tracking-wide block">WEEKLY CHALLENGES</span>
-            <span className="text-xs font-bold text-blue-200">Complete tasks for rewards!</span>
+          <span className="text-4xl">🎰</span>
+          <div>
+            <span className="font-black text-lg tracking-wide block">CHALLENGE MINUTES</span>
+            <span className="text-xs text-neutral-400">Wager earned minutes for a chance to win up to $200 cash!</span>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-[10px] font-bold bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">🔥 2x MINUTES</span>
+              <span className="text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">💵 CASH WIN</span>
+              <span className="text-[10px] font-bold bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full">💎 $200 JACKPOT</span>
+            </div>
           </div>
         </button>
 
@@ -68,6 +68,9 @@ const EventsPage = ({ onClose, initialView }: { onClose?: () => void; initialVie
           </div>
         </button>
       </div>
+
+      {/* Challenge Minutes Overlay */}
+      {showWager && <ChallengeMinutesOverlay onClose={() => setShowWager(false)} />}
     </div>
   );
 };
