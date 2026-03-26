@@ -988,13 +988,14 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
             <Target className="w-4 h-4" /> My Goal Items
           </h3>
           <div className="space-y-2">
-            {(wishlistItems as any[]).map((item: any) => {
+            {(wishlistItems as any[]).map((item: any, index: number) => {
               const isRejected = item.status === "rejected";
+              const isFirstActive = !isRejected && index === (wishlistItems as any[]).findIndex((w: any) => w.status === "active");
               const progress = isRejected ? 0 : Math.min(100, ((userMinutes ?? 0) / item.minutes_cost) * 100);
-              const canRedeem = !isRejected && (userMinutes ?? 0) >= item.minutes_cost;
+              const canRedeem = !isRejected && isFirstActive && (userMinutes ?? 0) >= item.minutes_cost;
 
               return (
-                <div key={item.id} className={`bg-neutral-900 border rounded-xl p-3 flex items-center gap-3 ${isRejected ? "border-red-500/30 opacity-70" : "border-neutral-700/50"}`}>
+                <div key={item.id} className={`bg-neutral-900 border rounded-xl p-3 flex items-center gap-3 ${isRejected ? "border-red-500/30 opacity-70" : isFirstActive ? "border-pink-500/50" : "border-neutral-700/50"}`}>
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
                   ) : (
@@ -1006,6 +1007,16 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                       {isRejected && (
                         <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
                           REJECTED
+                        </span>
+                      )}
+                      {!isRejected && isFirstActive && (
+                        <span className="bg-pink-500/20 text-pink-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                          NEXT UP
+                        </span>
+                      )}
+                      {!isRejected && !isFirstActive && (
+                        <span className="bg-neutral-700/50 text-neutral-500 text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                          QUEUED
                         </span>
                       )}
                     </div>
@@ -1021,7 +1032,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                           />
                         </div>
                         <p className="text-[10px] text-neutral-500 mt-0.5">
-                          {canRedeem ? "✅ Ready to spin!" : `${Math.round(progress)}% — ${item.minutes_cost - (userMinutes ?? 0)} more to go`}
+                          {canRedeem ? "✅ Ready to spin! (Guaranteed win!)" : isFirstActive ? `${Math.round(progress)}% — ${item.minutes_cost - (userMinutes ?? 0)} more to go` : `${Math.round(progress)}% — complete previous items first`}
                         </p>
                       </>
                     )}
@@ -1039,6 +1050,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                             cashout_value: 0,
                             type: "Product",
                             _isWishlist: true,
+                            _wishlistSourceUrl: item.source_url,
                           };
                           handleSpinToWin(fakeReward);
                         }}
