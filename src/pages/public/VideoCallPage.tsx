@@ -1371,7 +1371,7 @@ const VideoCallPage = () => {
       <div className="px-3 pb-4">
           <RedeemPanel totalMinutes={totalMinutes} onClose={() => setShowRedeem(false)} />
         </div> : <>
-      <div className={`transition-all duration-300 ${isMobile && mobileNavHidden ? "max-h-0 opacity-hidden pointer-events-none" : ""} md:max-h-none md:opacity-100`}>
+      <div className={`transition-all duration-300 ${isMobile && mobileNavHidden ? "max-h-0 overflow-hidden opacity-0 pointer-events-none" : "max-h-[300px] opacity-100 overflow-visible"} md:max-h-none md:opacity-100 md:overflow-visible`}>
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <div className="relative flex flex-col items-center">
               {showRedeemTooltip && (
