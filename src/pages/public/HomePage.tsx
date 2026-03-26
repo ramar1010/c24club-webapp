@@ -597,7 +597,7 @@ const HomePage = () => {
             "@type": "WebApplication",
             "name": "C24 Club",
             "url": "https://c24club.com",
-            "description": "C24 Club is a free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards like PayPal cash, gift cards, and designer items.",
+            "description": "C24 Club is a free Omegle alternative where you video chat 1-on-1 with strangers and collect real rewards like gift cards and designer items.",
             "applicationCategory": "SocialNetworkingApplication",
             "operatingSystem": "Web",
             "offers": {

@@ -72,12 +72,12 @@ const faqs = [
 
 const OmegleAlternativePage = () => {
   useEffect(() => {
-    document.title = "Best Omegle Alternative 2026 — Video Chat & Earn Rewards | C24 Club";
+    document.title = "Best Omegle Alternative 2026 — Video Chat & Collect Rewards | C24 Club";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
         "content",
-        "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and earn real rewards like PayPal cash, gift cards & more. Free, safe, and fun.",
+        "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and collect real rewards like gift cards & more. Free, safe, and fun.",
       );
     }
   }, []);
