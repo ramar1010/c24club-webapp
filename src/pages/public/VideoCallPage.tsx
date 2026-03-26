@@ -55,6 +55,7 @@ import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
+import PickItemModal from "@/components/videocall/PickItemModal";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -101,6 +102,7 @@ const VideoCallPage = () => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
+  const [showPickItem, setShowPickItem] = useState(false);
   const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const { data: unreadDmCount = 0 } = useUnreadCount();
@@ -141,6 +143,20 @@ const VideoCallPage = () => {
   const needsSelfie = hasSelfie === false;
 
   const isFemale = memberGender?.toLowerCase() === "female";
+
+  // Wishlist items count for female "Pick Item" feature
+  const { data: wishlistCount = 0, refetch: refetchWishlist } = useQuery({
+    queryKey: ["wishlist_count", memberId],
+    enabled: memberId !== "anonymous" && isFemale,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("wishlist_items")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", memberId)
+        .eq("status", "active");
+      return count ?? 0;
+    },
+  });
 
   const {
     callState,
@@ -993,6 +1009,15 @@ const VideoCallPage = () => {
                   Quick selfie so others can discover you — takes 3 seconds!
                 </p>
             }
+              {/* Female "Pick an Item" button — shows after selfie taken */}
+              {!needsSelfie && isFemale && wishlistCount < 3 && (
+                <button
+                  onClick={() => setShowPickItem(true)}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
+                >
+                  🎁 Pick an Item to Redeem
+                </button>
+              )}
             </div>
           }
 
@@ -1560,6 +1585,15 @@ const VideoCallPage = () => {
           setShowSelfieCapture(false);
           refetchDiscoverable();
         }} />
+      {/* Pick Item Modal for females */}
+      <PickItemModal
+        open={showPickItem}
+        onClose={() => setShowPickItem(false)}
+        userId={memberId}
+        currentItemCount={wishlistCount}
+        maxItems={3}
+        onItemAdded={() => refetchWishlist()}
+      />
       {/* NSFW Confirm Overlay */}
       {showConfirmPrompt && (
         <NsfwConfirmOverlay
