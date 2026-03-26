@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import arrowRight from "@/assets/arrow-right.png";
-import heroImg from "@/assets/hero-videochat.jpg";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
@@ -647,13 +646,15 @@ const HomePage = () => {
           </div>
 
           <div className="flex-1 rounded-2xl overflow-hidden shadow-2xl">
-            <img
-              src={heroImg}
-              alt="C24 Club Video Chat — meet strangers and collect rewards"
-              className="w-full h-auto"
-              width={1280}
-              height={960}
-            />
+            <div className="relative w-full" style={{ paddingBottom: "75%" }}>
+              <iframe
+                src="https://streamable.com/e/esjsr0?autoplay=1&muted=1&loop=1"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full border-0"
+                title="C24 Club Video Chat Preview"
+              />
+            </div>
           </div>
 
           <div className="hidden sm:flex flex-col gap-3">
