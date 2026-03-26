@@ -86,8 +86,13 @@ serve(async (req) => {
 
       await supabaseClient
         .from("member_minutes")
-        .update({ is_vip: false, vip_tier: null, subscription_end: null, stripe_customer_id: null })
-        .eq("user_id", user.id);
+        .upsert({
+          user_id: user.id,
+          is_vip: false,
+          vip_tier: null,
+          subscription_end: null,
+          stripe_customer_id: null,
+        }, { onConflict: "user_id" });
 
       return new Response(JSON.stringify({ subscribed: false, vip_tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
