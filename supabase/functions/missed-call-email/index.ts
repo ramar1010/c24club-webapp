@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     // Get both users' info
     const [{ data: inviter }, { data: invitee }] = await Promise.all([
       supabase.from("members").select("name, image_url").eq("id", inviterId).maybeSingle(),
-      supabase.from("members").select("name, email").eq("id", inviteeId).maybeSingle(),
+      supabase.from("members").select("name, email, gender").eq("id", inviteeId).maybeSingle(),
     ]);
 
     if (!invitee?.email) {
@@ -40,6 +40,7 @@ Deno.serve(async (req) => {
 
     const callerName = inviter?.name || "Someone";
     const userName = invitee.name || "there";
+    const isFemale = invitee.gender === "female";
 
     // --- Auto-send a missed-call DM ---
     try {
