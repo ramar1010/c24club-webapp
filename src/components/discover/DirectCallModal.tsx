@@ -4,6 +4,7 @@ import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
+import { useNavigate } from "react-router-dom";
 
 interface DirectCallModalProps {
   myUserId: string;
@@ -23,6 +24,7 @@ const DirectCallModal = ({
   onClose,
 }: DirectCallModalProps) => {
   const [showGift, setShowGift] = useState(false);
+  const navigate = useNavigate();
 
   const {
     callState,
@@ -53,6 +55,45 @@ const DirectCallModal = ({
       }).catch(() => {});
     }
   }, [callState, myUserId, partnerId]);
+
+  // Realtime listener for incoming gift notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel("direct-call-gift-" + myUserId)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "gift_transactions",
+          filter: `recipient_id=eq.${myUserId}`,
+        },
+        (payload) => {
+          const gift = payload.new as any;
+          if (gift.status === "completed") {
+            const minutes = gift.minutes_amount || 0;
+            const cashValue = (minutes * 0.01).toFixed(2);
+            toast.success(
+              `🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`,
+              {
+                description: "Cash out via PayPal now!",
+                action: {
+                  label: "Cash Out",
+                  onClick: () => navigate("/my-rewards"),
+                },
+                duration: 10000,
+              }
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [myUserId, navigate]);
+
   const handleEnd = () => {
     if (isInitiator && callState !== "connected") {
       supabase.functions.invoke("missed-call-email", {
