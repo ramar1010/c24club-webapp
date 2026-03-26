@@ -376,7 +376,7 @@ Deno.serve(async (req) => {
         reward_rarity: "rare",
         reward_type: "wishlist",
         minutes_cost: wishItem.minutes_cost,
-        status: "pending_shipping",
+        status: shippingData?.address ? "processing" : "pending_shipping",
         shipping_name: shippingData?.firstName && shippingData?.lastName ? `${shippingData.firstName} ${shippingData.lastName}` : null,
         shipping_address: shippingData?.address || null,
         shipping_city: shippingData?.city || null,

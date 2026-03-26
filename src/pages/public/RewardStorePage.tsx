@@ -699,6 +699,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           if (selectedReward._isWishlist) {
             refetchWishlist();
             queryClient.invalidateQueries({ queryKey: ["wishlist-items"] });
+            navigate("/my-rewards");
           }
         }}
       />
