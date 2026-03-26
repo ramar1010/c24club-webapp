@@ -180,7 +180,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         .from("wishlist_items")
         .select("*")
         .eq("user_id", user!.id)
-        .eq("status", "active")
+        .in("status", ["active", "rejected"])
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
