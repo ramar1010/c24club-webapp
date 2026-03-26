@@ -19,10 +19,14 @@ const AdminRoomsPage = () => {
   const { data: rooms, isLoading } = useQuery({
     queryKey: ["admin-rooms"],
     queryFn: async () => {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 3);
       const { data, error } = await supabase
         .from("rooms")
         .select("*")
-        .order("created_at", { ascending: false });
+        .gte("created_at", cutoff.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data;
     },
