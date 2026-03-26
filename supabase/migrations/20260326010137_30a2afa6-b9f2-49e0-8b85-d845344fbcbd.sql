@@ -1,0 +1,1 @@
+ALTER TABLE public.members ADD COLUMN found_us_via text DEFAULT NULL;

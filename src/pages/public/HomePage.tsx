@@ -319,6 +319,7 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
 const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () => void }) => {
   const [name, setName] = useState("");
   const [gender, setGender] = useState<string>("");
+  const [foundVia, setFoundVia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
@@ -339,6 +340,7 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
           email: user.email ?? null,
           name: name.trim(),
           gender,
+          found_us_via: foundVia || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
@@ -389,7 +391,26 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
             </div>
           </div>
 
-          {/* 18+ Warning */}
+          <div>
+            <label className="block text-sm font-bold text-white/80 mb-2">How did you find us?</label>
+            <div className="flex flex-wrap gap-2">
+              {["Google", "TikTok", "Lemon8", "Reddit", "Other"].map((source) => (
+                <button
+                  key={source}
+                  onClick={() => setFoundVia(source.toLowerCase())}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all border ${
+                    foundVia === source.toLowerCase()
+                      ? "bg-yellow-400 text-black border-yellow-400"
+                      : "bg-white/10 text-white/70 border-white/20 hover:border-white/40"
+                  }`}
+                >
+                  {source}
+                </button>
+              ))}
+            </div>
+          </div>
+
+
           <div className="border border-red-500/30 bg-red-950/30 rounded-xl px-4 py-3 text-center space-y-1">
             <p className="text-red-400 font-black text-xs tracking-wide">🔞 18+ ONLY</p>
             <p className="text-white/50 text-[11px] leading-snug">

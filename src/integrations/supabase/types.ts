@@ -1402,6 +1402,7 @@ export type Database = {
           country: string | null
           created_at: string
           email: string | null
+          found_us_via: string | null
           gender: string | null
           id: string
           image_status: string
@@ -1429,6 +1430,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          found_us_via?: string | null
           gender?: string | null
           id?: string
           image_status?: string
@@ -1456,6 +1458,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          found_us_via?: string | null
           gender?: string | null
           id?: string
           image_status?: string
