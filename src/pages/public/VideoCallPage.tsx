@@ -751,6 +751,7 @@ const VideoCallPage = () => {
   const { data: partnerGiftEnabled } = useQuery({
     queryKey: ["partner_is_vip", currentPartnerId],
     enabled: !!currentPartnerId && callState === "connected",
+    refetchInterval: callState === "connected" ? 10000 : false,
     queryFn: async () => {
       const { data } = await supabase.rpc("is_user_vip", { _user_id: currentPartnerId! });
       return data ?? false;
@@ -772,6 +773,7 @@ const VideoCallPage = () => {
   const { data: partnerPinnedSocials = [] } = useQuery({
     queryKey: ["partner_pinned_socials", currentPartnerId],
     enabled: !!currentPartnerId && callState === "connected",
+    refetchInterval: callState === "connected" ? 10000 : false,
     queryFn: async () => {
       // Check if partner is VIP using security definer function
       const { data: isVip } = await supabase.rpc("is_user_vip", { _user_id: currentPartnerId! });
