@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Link2, Loader2, ShoppingBag, Sparkles } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, Loader2, ShoppingBag, Sparkles, Camera, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,35 +12,10 @@ interface PickItemModalProps {
   onItemAdded: () => void;
 }
 
-interface ScrapedProduct {
-  title: string;
-  description: string;
-  price: string;
-  images: string[];
-  sizes: string[];
-  colors: { name: string; hex: string; image_url: string }[];
+function calculateMinutesCost(): number {
+  // Random cost between 400–800 minutes for items under $25
+  return Math.round(400 + Math.random() * 400);
 }
-
-function parsePriceCents(priceStr: string): number {
-  // Extract numeric value from price string like "$12.99", "US $5.00", "12,99 €"
-  const cleaned = priceStr.replace(/[^0-9.,]/g, "");
-  // Handle comma as decimal separator
-  const normalized = cleaned.includes(",") && !cleaned.includes(".")
-    ? cleaned.replace(",", ".")
-    : cleaned.replace(",", "");
-  const num = parseFloat(normalized);
-  return isNaN(num) ? 0 : Math.round(num * 100);
-}
-
-function calculateMinutesCost(priceCents: number): number {
-  // Base: $1 = 50 minutes, so price_cents / 100 * 50
-  // Plus random bonus: 10-30% extra
-  const baseMinutes = (priceCents / 100) * 50;
-  const bonusMultiplier = 1 + (0.1 + Math.random() * 0.2); // 1.1 to 1.3
-  return Math.round(baseMinutes * bonusMultiplier);
-}
-
-const MAX_PRICE_CENTS = 2500; // $25 cap
 
 export default function PickItemModal({
   open,
@@ -50,84 +25,78 @@ export default function PickItemModal({
   maxItems,
   onItemAdded,
 }: PickItemModalProps) {
-  const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [product, setProduct] = useState<ScrapedProduct | null>(null);
+  const [step, setStep] = useState<"image" | "questions" | "confirm">("image");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [itemName, setItemName] = useState("");
+  const [isUnder25, setIsUnder25] = useState<boolean | null>(null);
+  const [isInUSA, setIsInUSA] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
-  const [minutesCost, setMinutesCost] = useState(0);
+  const [minutesCost] = useState(() => calculateMinutesCost());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!open) return null;
 
-  const handleScrape = async () => {
-    if (!url.trim()) return;
-    setLoading(true);
-    setProduct(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("scrape-product", {
-        body: { url: url.trim() },
-      });
-
-      if (error || !data?.success) {
-        toast.error("Couldn't load that product", {
-          description: data?.error || "Try a different URL or paste details manually.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const priceCents = parsePriceCents(data.price || "0");
-
-      if (priceCents > MAX_PRICE_CENTS) {
-        toast.error("Item too expensive!", {
-          description: `Max price is $${(MAX_PRICE_CENTS / 100).toFixed(2)}. Try a more affordable item.`,
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (priceCents === 0) {
-        toast.error("Couldn't detect the price", {
-          description: "Try a different product page.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const cost = calculateMinutesCost(priceCents);
-      setMinutesCost(cost);
-
-      setProduct({
-        title: data.title || "Unknown Product",
-        description: data.description || "",
-        price: data.price || "",
-        images: data.images || [],
-        sizes: data.sizes || [],
-        colors: data.colors || [],
-      });
-    } catch (err: any) {
-      toast.error("Failed to scrape", { description: err.message });
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large", { description: "Max 5MB" });
+      return;
     }
-    setLoading(false);
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    setStep("questions");
+  };
+
+  const handleQuestionsNext = () => {
+    if (!isUnder25) {
+      toast.error("Sorry!", { description: "Only items under $25 are eligible." });
+      return;
+    }
+    if (!isInUSA) {
+      toast.error("Sorry!", { description: "This feature is only available for members in the USA." });
+      return;
+    }
+    if (!itemName.trim()) {
+      toast.error("Please enter the item name");
+      return;
+    }
+    setStep("confirm");
   };
 
   const handleAddItem = async () => {
-    if (!product) return;
+    if (!imageFile) return;
     setSaving(true);
 
     try {
-      const priceCents = parsePriceCents(product.price);
+      // Upload image to storage
+      const ext = imageFile.name.split(".").pop() || "jpg";
+      const path = `wishlist/${userId}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("member-photos")
+        .upload(path, imageFile, { upsert: true });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from("member-photos")
+        .getPublicUrl(path);
+
+      const imageUrl = urlData.publicUrl;
 
       const { error } = await supabase.from("wishlist_items").insert({
         user_id: userId,
-        title: product.title,
-        description: product.description,
-        price_cents: priceCents,
-        source_url: url.trim(),
-        image_url: product.images[0] || null,
-        images: product.images,
-        sizes: product.sizes,
-        colors: product.colors,
+        title: itemName.trim(),
+        description: "",
+        price_cents: 2500,
+        source_url: "",
+        image_url: imageUrl,
+        images: [imageUrl],
+        sizes: [],
+        colors: [],
         minutes_cost: minutesCost,
         status: "active",
       } as any);
@@ -138,13 +107,21 @@ export default function PickItemModal({
         description: `Earn ${minutesCost} minutes to spin for this item!`,
       });
       onItemAdded();
+      handleReset();
       onClose();
-      setProduct(null);
-      setUrl("");
     } catch (err: any) {
       toast.error("Failed to save", { description: err.message });
     }
     setSaving(false);
+  };
+
+  const handleReset = () => {
+    setStep("image");
+    setImageFile(null);
+    setImagePreview(null);
+    setItemName("");
+    setIsUnder25(null);
+    setIsInUSA(null);
   };
 
   const slotsLeft = maxItems - currentItemCount;
@@ -158,69 +135,146 @@ export default function PickItemModal({
             <ShoppingBag className="w-5 h-5 text-pink-400" />
             Pick Your Reward
           </h2>
-          <button onClick={onClose} className="text-white/60 hover:text-white">
+          <button onClick={() => { handleReset(); onClose(); }} className="text-white/60 hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          {/* Slots info */}
           <p className="text-white/50 text-xs text-center">
             {slotsLeft} of {maxItems} item slots available
           </p>
 
-          {/* URL Input */}
-          {!product && (
-            <>
+          {/* Step 1: Upload Image */}
+          {step === "image" && (
+            <div className="space-y-4">
               <p className="text-white/60 text-sm text-center">
-                Paste a link from AliExpress, Shein, or any site and we'll load the item for you!
+                Take a screenshot of any item you want (AliExpress, Shein, etc.) and upload it here!
               </p>
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                  <input
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="Paste product URL..."
-                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
-                    onKeyDown={(e) => e.key === "Enter" && handleScrape()}
-                  />
-                </div>
-                <button
-                  onClick={handleScrape}
-                  disabled={loading || !url.trim()}
-                  className="bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Go"}
-                </button>
-              </div>
-              <p className="text-white/30 text-[10px] text-center">
-                Max item price: $25. Items under $25 only.
-              </p>
-            </>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full bg-white/5 border-2 border-dashed border-white/20 hover:border-pink-500/50 rounded-xl p-8 flex flex-col items-center gap-3 transition-colors"
+              >
+                <ImagePlus className="w-10 h-10 text-pink-400" />
+                <span className="text-white/70 text-sm font-medium">Tap to upload item photo</span>
+                <span className="text-white/30 text-xs">PNG, JPG up to 5MB</span>
+              </button>
+            </div>
           )}
 
-          {/* Product Preview */}
-          {product && (
-            <div className="space-y-3">
-              {/* Image */}
-              {product.images[0] && (
+          {/* Step 2: Questions */}
+          {step === "questions" && (
+            <div className="space-y-4">
+              {imagePreview && (
                 <div className="rounded-xl overflow-hidden bg-black aspect-square max-h-48 mx-auto">
-                  <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    className="w-full h-full object-contain"
-                  />
+                  <img src={imagePreview} alt="Item" className="w-full h-full object-contain" />
                 </div>
               )}
 
-              {/* Title & Price */}
+              {/* Item name */}
               <div>
-                <h3 className="text-white font-bold text-sm line-clamp-2">{product.title}</h3>
-                <p className="text-green-400 font-bold text-lg mt-1">{product.price}</p>
+                <label className="text-white/60 text-xs font-bold block mb-1.5">What's the item called?</label>
+                <input
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  placeholder="e.g. Pink Heart Necklace"
+                  maxLength={100}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
+                />
               </div>
 
-              {/* Minutes Cost — the star of the show */}
+              {/* Under $25? */}
+              <div>
+                <label className="text-white/60 text-xs font-bold block mb-2">Is this item under $25?</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsUnder25(true)}
+                    className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                      isUnder25 === true
+                        ? "bg-green-500 text-white"
+                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                    }`}
+                  >
+                    ✅ Yes
+                  </button>
+                  <button
+                    onClick={() => setIsUnder25(false)}
+                    className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                      isUnder25 === false
+                        ? "bg-red-500 text-white"
+                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                    }`}
+                  >
+                    ❌ No
+                  </button>
+                </div>
+              </div>
+
+              {/* In USA? */}
+              <div>
+                <label className="text-white/60 text-xs font-bold block mb-2">Are you in the USA?</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsInUSA(true)}
+                    className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                      isInUSA === true
+                        ? "bg-green-500 text-white"
+                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                    }`}
+                  >
+                    🇺🇸 Yes
+                  </button>
+                  <button
+                    onClick={() => setIsInUSA(false)}
+                    className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                      isInUSA === false
+                        ? "bg-red-500 text-white"
+                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                    }`}
+                  >
+                    ❌ No
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleReset}
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition-colors"
+                >
+                  Start Over
+                </button>
+                <button
+                  onClick={handleQuestionsNext}
+                  disabled={isUnder25 === null || isInUSA === null || !itemName.trim()}
+                  className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Confirm with minutes */}
+          {step === "confirm" && (
+            <div className="space-y-3">
+              {imagePreview && (
+                <div className="rounded-xl overflow-hidden bg-black aspect-square max-h-48 mx-auto">
+                  <img src={imagePreview} alt={itemName} className="w-full h-full object-contain" />
+                </div>
+              )}
+
+              <h3 className="text-white font-bold text-sm text-center">{itemName}</h3>
+
+              {/* Minutes Cost */}
               <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-xl p-4 text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Sparkles className="w-5 h-5 text-yellow-400" />
@@ -233,18 +287,9 @@ export default function PickItemModal({
                 </p>
               </div>
 
-              {/* Sizes */}
-              {product.sizes.length > 0 && (
-                <div>
-                  <span className="text-white/50 text-xs font-bold">Sizes: </span>
-                  <span className="text-white/70 text-xs">{product.sizes.join(", ")}</span>
-                </div>
-              )}
-
-              {/* Actions */}
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setProduct(null); setUrl(""); }}
+                  onClick={handleReset}
                   className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl transition-colors"
                 >
                   Try Another
