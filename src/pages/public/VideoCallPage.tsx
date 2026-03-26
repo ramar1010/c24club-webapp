@@ -1355,7 +1355,7 @@ const VideoCallPage = () => {
       }
 
       {/* Female "Pick an Item" button — below video boxes */}
-      {!showRedeem && !needsSelfie && isFemale && wishlistCount < 3 && (
+      {!showRedeem && isFemale && wishlistCount < 3 && (
         <div className="flex justify-center py-2">
           <button
             onClick={() => setShowPickItem(true)}
