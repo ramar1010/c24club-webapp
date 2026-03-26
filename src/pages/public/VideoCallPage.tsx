@@ -55,6 +55,7 @@ import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
+import PickItemModal from "@/components/videocall/PickItemModal";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -101,6 +102,7 @@ const VideoCallPage = () => {
     return !sessionStorage.getItem("c24_quickstart_seen");
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
+  const [showPickItem, setShowPickItem] = useState(false);
   const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const { data: unreadDmCount = 0 } = useUnreadCount();
