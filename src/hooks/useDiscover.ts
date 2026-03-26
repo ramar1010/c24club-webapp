@@ -191,29 +191,19 @@ export const useDiscover = () => {
       pageRef.current = 0;
       setHasMore(membersList.length >= PAGE_SIZE);
 
-      // Fetch all admin user IDs
-      const { data: allAdminRoles } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-
-      const adminIds = new Set((allAdminRoles || []).map((r: any) => r.user_id as string));
+      // Fetch all admin user IDs via security definer function
+      const { data: adminIdRows } = await supabase.rpc("get_admin_user_ids");
+      const adminIds = new Set((adminIdRows || []).map((id: string) => id));
       setAdminUserIds(adminIds);
 
-      // Fetch moderator user IDs
-      const { data: allModRoles } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "moderator");
-      const modIds = new Set((allModRoles || []).map((r: any) => r.user_id as string));
+      // Fetch moderator user IDs via security definer function
+      const { data: modIdRows } = await supabase.rpc("get_moderator_user_ids");
+      const modIds = new Set((modIdRows || []).map((id: string) => id));
       setModUserIds(modIds);
 
-      // Fetch VIP user IDs
-      const { data: vipRows } = await supabase
-        .from("member_minutes")
-        .select("user_id")
-        .eq("is_vip", true);
-      const vipIds = new Set((vipRows || []).map((r: any) => r.user_id as string));
+      // Fetch VIP user IDs via security definer function
+      const { data: vipIdRows } = await supabase.rpc("get_vip_user_ids");
+      const vipIds = new Set((vipIdRows || []).map((id: string) => id));
       setVipUserIds(vipIds);
 
       // Fetch admin, VIP & mod members who aren't already in the discoverable list
