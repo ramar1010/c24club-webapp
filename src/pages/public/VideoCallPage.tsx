@@ -454,6 +454,17 @@ const VideoCallPage = () => {
     return () => window.removeEventListener("open-dm-overlay", handler);
   }, []);
 
+  // Pause the random chat stack before opening a direct call so camera/mic can be reused cleanly
+  useEffect(() => {
+    const handler = () => {
+      setOverlayPage(null);
+      stop();
+    };
+
+    window.addEventListener("prepare-direct-call", handler);
+    return () => window.removeEventListener("prepare-direct-call", handler);
+  }, [stop]);
+
 
   // Reset gender filter if not VIP
   useEffect(() => {

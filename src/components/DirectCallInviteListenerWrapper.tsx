@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useDirectCallInviteListener } from "@/hooks/useDirectCallInviteListener";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import DirectCallModal from "@/components/discover/DirectCallModal";
+
 export function DirectCallInviteListenerWrapper() {
   const { user } = useAuth();
   const { incomingCall, clearCall, declineCall } = useDirectCallInviteListener();
@@ -47,6 +50,28 @@ function AcceptButton({
   onClose: () => void;
 }) {
   const [accepted, setAccepted] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+
+  const handleAccept = async () => {
+    if (accepting) return;
+
+    setAccepting(true);
+    window.dispatchEvent(new CustomEvent("prepare-direct-call"));
+
+    const { error } = await supabase
+      .from("direct_call_invites")
+      .update({ status: "accepted" } as any)
+      .eq("id", incomingCall.inviteId);
+
+    if (error) {
+      toast.error("Failed to accept call", { description: error.message });
+      setAccepting(false);
+      return;
+    }
+
+    setAccepted(true);
+    setAccepting(false);
+  };
 
   if (accepted) {
     return (
@@ -66,11 +91,11 @@ function AcceptButton({
 
   return (
     <button
-      onClick={() => setAccepted(true)}
-      className="px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-colors"
+      onClick={handleAccept}
+      disabled={accepting}
+      className="px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium transition-colors"
     >
-      Accept
+      {accepting ? "Accepting..." : "Accept"}
     </button>
   );
 }
-
