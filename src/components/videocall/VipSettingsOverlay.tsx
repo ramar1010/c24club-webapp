@@ -1,4 +1,4 @@
-import { X, Plus, Trash2, Pencil, Check } from "lucide-react";
+import { X, Plus, Trash2, Pencil, Check, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
