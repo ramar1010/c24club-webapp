@@ -878,6 +878,27 @@ export type Database = {
         }
         Relationships: []
       }
+      discover_profile_views: {
+        Row: {
+          created_at: string
+          id: string
+          viewed_member_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          viewed_member_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          viewed_member_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       dm_messages: {
         Row: {
           content: string
