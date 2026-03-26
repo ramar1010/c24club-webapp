@@ -74,7 +74,7 @@ export default function PickItemModal({
     try {
       // Upload image to storage
       const ext = imageFile.name.split(".").pop() || "jpg";
-      const path = `wishlist/${userId}/${Date.now()}.${ext}`;
+      const path = `${userId}/wishlist/${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from("member-photos")
         .upload(path, imageFile, { upsert: true });
