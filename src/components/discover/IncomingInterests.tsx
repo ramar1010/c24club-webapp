@@ -171,6 +171,9 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
         onClose={() => setDirectCall(null)}
       />
     )}
+
+    {/* VIP gate modal */}
+    {showVipGate && <VipCallGate onClose={() => setShowVipGate(false)} />}
     </>
   );
 };
