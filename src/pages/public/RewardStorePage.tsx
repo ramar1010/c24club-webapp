@@ -180,7 +180,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
         .from("wishlist_items")
         .select("*")
         .eq("user_id", user!.id)
-        .eq("status", "active")
+        .in("status", ["active", "rejected"])
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
@@ -988,35 +988,47 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           </h3>
           <div className="space-y-2">
             {(wishlistItems as any[]).map((item: any) => {
-              const progress = Math.min(100, ((userMinutes ?? 0) / item.minutes_cost) * 100);
-              const canRedeem = (userMinutes ?? 0) >= item.minutes_cost;
+              const isRejected = item.status === "rejected";
+              const progress = isRejected ? 0 : Math.min(100, ((userMinutes ?? 0) / item.minutes_cost) * 100);
+              const canRedeem = !isRejected && (userMinutes ?? 0) >= item.minutes_cost;
 
               return (
-                <div key={item.id} className="bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 flex items-center gap-3">
+                <div key={item.id} className={`bg-neutral-900 border rounded-xl p-3 flex items-center gap-3 ${isRejected ? "border-red-500/30 opacity-70" : "border-neutral-700/50"}`}>
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-lg bg-neutral-800 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-white truncate">{item.title}</p>
-                    <p className="text-neutral-500 text-xs">🪙 {item.minutes_cost} Minutes needed</p>
-                    {/* Progress bar */}
-                    <div className="mt-1.5 h-2 bg-neutral-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${canRedeem ? "bg-green-500" : "bg-pink-500"}`}
-                        style={{ width: `${progress}%` }}
-                      />
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm text-white truncate">{item.title}</p>
+                      {isRejected && (
+                        <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                          REJECTED
+                        </span>
+                      )}
                     </div>
-                    <p className="text-[10px] text-neutral-500 mt-0.5">
-                      {canRedeem ? "✅ Ready to spin!" : `${Math.round(progress)}% — ${item.minutes_cost - (userMinutes ?? 0)} more to go`}
-                    </p>
+                    {isRejected ? (
+                      <p className="text-red-400/80 text-xs mt-1">This item was rejected — it doesn't meet our guidelines. Try picking a different item.</p>
+                    ) : (
+                      <>
+                        <p className="text-neutral-500 text-xs">🪙 {item.minutes_cost} Minutes needed</p>
+                        <div className="mt-1.5 h-2 bg-neutral-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${canRedeem ? "bg-green-500" : "bg-pink-500"}`}
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">
+                          {canRedeem ? "✅ Ready to spin!" : `${Math.round(progress)}% — ${item.minutes_cost - (userMinutes ?? 0)} more to go`}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0">
                     {canRedeem && (
                       <button
                         onClick={() => {
-                          // Construct a reward-like object for the spin mechanic
                           const fakeReward = {
                             id: item.id,
                             title: item.title,
