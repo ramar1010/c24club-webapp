@@ -135,7 +135,11 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
   };
 
   const filtered = redemptions.filter(
-    (r: any) => r.reward_type === filterToType[selectedFilter]
+    (r: any) => {
+      const type = filterToType[selectedFilter];
+      if (type === "product") return r.reward_type === "product" || r.reward_type === "wishlist" || r.reward_type === "promo_link_clicks";
+      return r.reward_type === type;
+    }
   );
 
   const handleFilterSelect = (f: FilterType) => {
