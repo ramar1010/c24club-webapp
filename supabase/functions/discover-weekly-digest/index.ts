@@ -28,19 +28,24 @@ function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatch
         <tr><td style="padding:0 24px 20px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:#ec4899;margin:0;">${stats.newInterests}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">New Interests</p>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#8b5cf6;margin:0;">${stats.profileViews}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">👀 Profile Views</p>
               </td>
-              <td width="6"></td>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:#f59e0b;margin:0;">${stats.mutualMatches}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">Matches</p>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#ec4899;margin:0;">${stats.newInterests}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">💌 Interests</p>
               </td>
-              <td width="6"></td>
-              <td width="33%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 8px;">
-                <p style="font-size:28px;font-weight:bold;color:hsl(205,65%,45%);margin:0;">${stats.totalDiscoverable}</p>
-                <p style="font-size:11px;color:#888;margin:4px 0 0;">People Online</p>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:#f59e0b;margin:0;">${stats.mutualMatches}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">🎉 Matches</p>
+              </td>
+              <td width="4"></td>
+              <td width="25%" style="text-align:center;background:#fafafa;border-radius:10px;padding:16px 6px;">
+                <p style="font-size:26px;font-weight:bold;color:hsl(205,65%,45%);margin:0;">${stats.totalDiscoverable}</p>
+                <p style="font-size:10px;color:#888;margin:4px 0 0;">🌐 Online</p>
               </td>
             </tr>
           </table>
