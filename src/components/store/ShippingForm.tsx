@@ -37,12 +37,19 @@ const ShippingForm = ({ reward, onBack, onSuccess }: ShippingFormProps) => {
     }
     setLoading(true);
     try {
+      const isWishlist = reward._isWishlist === true;
       const { data, error } = await supabase.functions.invoke("redeem-reward", {
-        body: {
-          action: "create-redemption",
-          rewardId: reward.id,
-          shipping: form,
-        },
+        body: isWishlist
+          ? {
+              action: "redeem-wishlist",
+              wishlistItemId: reward.id,
+              shipping: form,
+            }
+          : {
+              action: "create-redemption",
+              rewardId: reward.id,
+              shipping: form,
+            },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
