@@ -1375,7 +1375,7 @@ const VideoCallPage = () => {
           <div className="flex justify-center gap-5 md:gap-10 px-4 pt-2 pb-3 flex-wrap">
             <div className="relative flex flex-col items-center">
               {showRedeemTooltip && (
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-[9999] whitespace-nowrap">
                   <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-lg animate-bounce">
                     Tap to view your goals!
                     <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-pink-500 rotate-45" />
