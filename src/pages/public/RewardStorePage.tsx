@@ -412,6 +412,15 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
                     handleInstantRedeem(targetReward);
                     setShowSpinToWin(null);
                     setSpinReelItems([]);
+                  } else if (targetReward._isWishlist) {
+                    // Wishlist win — go to shipping form with wishlist-specific redeem
+                    setShowSpinToWin(null);
+                    setSpinReelItems([]);
+                    setSelectedReward({
+                      ...targetReward,
+                      shipping_fee: 0,
+                    });
+                    setShowShipping(true);
                   } else {
                     setShowSpinToWin(null);
                     setSpinReelItems([]);
