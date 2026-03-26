@@ -66,7 +66,7 @@ const GrowthPanel = ({ onOpenReferral, onOpenChallenges }: GrowthPanelProps) => 
           <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(236,72,153,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer-bg_3s_ease-in-out_infinite]" />
           <div className="relative flex items-center gap-1.5">
             <UserPlus className="w-4 h-4 text-pink-300 drop-shadow-[0_0_6px_rgba(236,72,153,0.6)]" />
-            <span className="text-pink-300 font-black text-xs tracking-wide drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">INVITE & EARN</span>
+            <span className="text-pink-300 font-black text-xs tracking-wide drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">INVITE & WIN</span>
           </div>
 
           {totalEarned > 0 && (

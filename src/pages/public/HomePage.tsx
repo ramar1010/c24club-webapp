@@ -151,8 +151,8 @@ const MobileRewardSlider = () => {
 
   return (
     <div className="sm:hidden mt-5">
-      <p className="text-center text-sm font-black text-yellow-300 uppercase tracking-wider mb-3">
-        Rewards You Earn For Chatting
+        <p className="text-center text-sm font-black text-yellow-300 uppercase tracking-wider mb-3">
+        Rewards You Unlock By Chatting
       </p>
       <div
         className="overflow-hidden rounded-xl cursor-grab active:cursor-grabbing touch-pan-y"
@@ -250,7 +250,7 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
           <X className="h-5 w-5" />
         </button>
         <h2 className="text-xl font-black text-white text-center mb-2 uppercase">{isSignUp ? "Sign Up for C24 Club" : "Sign In to C24 Club"}</h2>
-        <p className="text-sm text-white/60 text-center mb-6">{isSignUp ? "Create your account to start earning" : "Choose how you'd like to sign in"}</p>
+        <p className="text-sm text-white/60 text-center mb-6">{isSignUp ? "Create your account to get started" : "Choose how you'd like to sign in"}</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={handleGoogle}
@@ -597,7 +597,7 @@ const HomePage = () => {
             "@type": "WebApplication",
             "name": "C24 Club",
             "url": "https://c24club.com",
-            "description": "C24 Club is a free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards like PayPal cash, gift cards, and designer items.",
+            "description": "C24 Club is a free Omegle alternative where you video chat 1-on-1 with strangers and collect real rewards like gift cards and designer items.",
             "applicationCategory": "SocialNetworkingApplication",
             "operatingSystem": "Web",
             "offers": {
@@ -625,15 +625,15 @@ const HomePage = () => {
             className="text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-tight tracking-tight"
             style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
           >
-            <span className="text-white">C24 CLUB</span>
+           <span className="text-white">C24 CLUB</span>
             <br />
             <span className="text-white">The Omegle Alternative</span>
             <br />
-            <span className="text-yellow-300">That </span>
-            <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">Rewards You!</span>
+            <span className="text-yellow-300">With </span>
+            <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">Real Rewards!</span>
           </h1>
           <p className="mt-4 text-lg md:text-xl font-bold text-white">
-            Video Chat Online With Strangers & <span className="text-green-400">Earn!</span>
+            Video Chat Online With Strangers & <span className="text-green-400">Unlock Rewards!</span>
           </p>
         </div>
 
@@ -675,10 +675,10 @@ const HomePage = () => {
       {/* ===== STEPS ===== */}
       <section className="px-4 py-16 max-w-5xl mx-auto space-y-16">
         <div className="text-center space-y-3">
-          <p className="text-sm font-black uppercase tracking-[0.25em] text-orange-400">Why settle for free?</p>
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-orange-400">More than just video chat</p>
           <h4 className="text-2xl md:text-3xl font-black text-white leading-snug" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-            On C24Club, every chat <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">pays you back</span><br />
-            with rewards, perks & <span className="text-yellow-300">real prizes.</span>
+            On C24Club, every chat <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">unlocks rewards</span><br />
+            including perks & <span className="text-yellow-300">real prizes.</span>
           </h4>
           <div className="flex items-center justify-center gap-2 pt-1">
             <span className="w-8 h-px bg-gradient-to-r from-transparent to-orange-500" />
@@ -700,15 +700,15 @@ const HomePage = () => {
                   <span className="text-orange-400 font-black text-sm">STEP 1</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-                  Video Chat With Anyone & <span className="text-yellow-400">Earn Minutes!</span>
+                  Video Chat With Anyone & <span className="text-yellow-400">Collect Minutes!</span>
                 </h3>
                 <p className="text-white/60 text-base leading-relaxed">
-                  Jump into random video chats with people worldwide. Every minute you talk, you earn. It's that simple — have fun, meet new people, stack minutes.
+                  Jump into random video chats with people worldwide. Every minute you talk, you collect reward minutes. Have fun, meet new people, stack minutes.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
                     <Clock className="h-4 w-4 text-orange-400" />
-                    <span className="text-white/80 text-sm font-medium">1 min chatting = 1 min earned</span>
+                    <span className="text-white/80 text-sm font-medium">1 min chatting = 1 min collected</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
                     <Users className="h-4 w-4 text-orange-400" />
@@ -762,15 +762,15 @@ const HomePage = () => {
                   <span className="text-yellow-400 font-black text-sm">STEP 2</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-                  Exchange Minutes For <span className="text-yellow-400">Cash & Rewards!</span>
+                  Redeem Minutes For <span className="text-yellow-400">Prizes & Rewards!</span>
                 </h3>
                 <p className="text-white/60 text-base leading-relaxed">
-                  Head to the Reward Store and trade your earned minutes for real cash via PayPal, gift cards, designer bags, clothing, tech accessories, and way more.
+                  Head to the Reward Store and redeem your minutes for gift cards, designer bags, clothing, tech accessories, and way more.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <DollarSign className="h-4 w-4 text-yellow-400" />
-                    <span className="text-white/80 text-sm font-medium">PayPal & Cash App</span>
+                    <Gift className="h-4 w-4 text-yellow-400" />
+                    <span className="text-white/80 text-sm font-medium">Gift cards & more</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
                     <Gift className="h-4 w-4 text-yellow-400" />
@@ -886,7 +886,7 @@ const HomePage = () => {
             See How C24 Club Compares To <span className="text-yellow-400">Other Platforms</span>
           </h2>
           <p className="text-white/50 text-sm mb-6 max-w-lg mx-auto">
-            We ranked the top 5 Omegle alternatives. Spoiler: C24 Club is #1 because we're the only one that pays you to chat.
+            We ranked the top 5 Omegle alternatives. Spoiler: C24 Club is #1 because we're the only one with a built-in rewards program.
           </p>
           <Link
             to="/top-omegle-alternatives"

@@ -79,9 +79,9 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
         </button>
       </div>
 
-      <h1 className="text-3xl font-black tracking-wide mt-4 mb-2">💸 REFER & EARN</h1>
+      <h1 className="text-3xl font-black tracking-wide mt-4 mb-2">🎁 INVITE FRIENDS</h1>
       <p className="text-neutral-400 text-sm mb-6 text-center max-w-sm">
-        Invite friends and earn cash when they join and start chatting!
+        Invite friends and get rewarded when they join and start chatting!
       </p>
 
       {/* Stats */}
@@ -99,7 +99,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
         <div className="bg-neutral-900 rounded-xl p-3 text-center border border-neutral-800">
           <DollarSign className="w-5 h-5 mx-auto mb-1 text-yellow-400" />
           <p className="text-xl font-black">${(data?.totalEarned ?? 0).toFixed(2)}</p>
-          <p className="text-[10px] text-neutral-500 font-bold">EARNED</p>
+          <p className="text-[10px] text-neutral-500 font-bold">REWARDS</p>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
       {(data?.pendingEarnings ?? 0) > 0 && (
         <div className="w-full max-w-sm bg-yellow-900/30 border border-yellow-600/30 rounded-xl p-3 mb-4 text-center">
           <p className="text-yellow-300 font-bold text-sm">
-            💰 ${data.pendingEarnings.toFixed(2)} pending payout
+            🎁 ${data.pendingEarnings.toFixed(2)} pending reward
           </p>
         </div>
       )}
@@ -132,7 +132,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
               </button>
             </div>
             <p className="text-[10px] text-neutral-500 mt-2">
-              Share this link — you earn cash when friends sign up and chat for 10+ minutes!
+              Share this link — you get rewarded when friends sign up and chat for 10+ minutes!
             </p>
           </div>
         ) : (
@@ -153,7 +153,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
         className="w-full max-w-sm mt-6 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
       >
         <DollarSign className="w-5 h-5" />
-        CASH OUT
+        REDEEM REWARDS
       </button>
 
       {/* Recent Referrals */}

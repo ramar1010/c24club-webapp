@@ -13,9 +13,9 @@ const features = [
   },
   {
     icon: Gift,
-    title: "Earn Real Rewards",
+    title: "Collect Real Rewards",
     description:
-      "Unlike Omegle, you earn rewards for every minute you spend talking to strangers. You can use these rewards to buy PayPal money, gift cards, designer products, etc.",
+      "Unlike Omegle, you collect rewards for every minute you spend talking to strangers. Use your minutes to redeem gift cards, designer products, and more from our Reward Store.",
   },
   {
     icon: Shield,
@@ -37,20 +37,20 @@ const features = [
   },
   {
     icon: DollarSign,
-    title: "Female Earning Bonus",
+    title: "Female Bonus Program",
     description:
-      "Female users earn bonus minutes and can cash out via PayPal. The anchor program lets women earn real money just for chatting.",
+      "Female users get bonus minutes and exclusive perks. The anchor program gives women extra rewards just for chatting.",
   },
 ];
 
 const faqs = [
   {
     q: "What is the best Omegle alternative in 2026?",
-    a: "It is considered the best alternative to Omegle as it includes a reward feature along with random video chat. You can earn money by having a conversation on C24 Club. The earned minutes can be redeemed as real money through PayPal, gift cards, and other products.",
+    a: "C24 Club is considered the best alternative to Omegle as it includes a rewards program along with random video chat. You collect minutes by having conversations on C24 Club. Those minutes can be redeemed for gift cards, products, and other prizes in the Reward Store.",
   },
   {
     q: "Is C24 Club free to use?",
-    a: "Yes, C24 Club is free to join and use. You can video chat and earn money by chatting with strangers. You don't need to pay anything to join C24 Club.",
+    a: "Yes, C24 Club is free to join and use. You can video chat and collect rewards by chatting with strangers. You don't need to pay anything to join C24 Club.",
   },
   {
     q: "Is C24 Club safer than Omegle?",
@@ -58,11 +58,11 @@ const faqs = [
   },
   {
     q: "How does C24 Club compare to other Omegle alternatives like Chatroulette?",
-    a: "Chatroulette and OmeTV are video chat alternatives to Omegle. C24 Club is the best alternative as it rewards its users for video chatting. You can earn money by chatting and playing games on C24 Club. No other alternative to Omegle offers this feature.",
+    a: "Chatroulette and OmeTV are video chat alternatives to Omegle. C24 Club stands out because it has a built-in rewards program for video chatting. You can collect minutes and redeem them for prizes. No other alternative to Omegle offers this.",
   },
   {
-    q: "Can I earn money on C24 Club?",
-    a: "Yes! Every minute of video chat earns you reward minutes. Once you hit the threshold, you can cash out via PayPal or Cash App. Female anchors can earn even more through the dedicated anchor earning program.",
+    q: "Can I get rewards on C24 Club?",
+    a: "Yes! Every minute of video chat collects reward minutes. Once you hit the threshold, you can redeem them in the Reward Store for gift cards, products, and other prizes. Female users get bonus rewards through the dedicated anchor program.",
   },
   {
     q: "Does C24 Club work on mobile?",
@@ -72,12 +72,12 @@ const faqs = [
 
 const OmegleAlternativePage = () => {
   useEffect(() => {
-    document.title = "Best Omegle Alternative 2026 — Video Chat & Earn Rewards | C24 Club";
+    document.title = "Best Omegle Alternative 2026 — Video Chat & Collect Rewards | C24 Club";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
         "content",
-        "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and earn real rewards like PayPal cash, gift cards & more. Free, safe, and fun.",
+        "Looking for an Omegle alternative? C24 Club lets you video chat with strangers 1-on-1 and collect real rewards like gift cards & more. Free, safe, and fun.",
       );
     }
   }, []);
@@ -93,7 +93,7 @@ const OmegleAlternativePage = () => {
             name: "C24 Club — Best Omegle Alternative",
             url: "https://c24club.com/omegle-alternative",
             description:
-              "C24 Club is the best free Omegle alternative where you video chat 1-on-1 with strangers and earn real rewards.",
+              "C24 Club is the best free Omegle alternative where you video chat 1-on-1 with strangers and collect real rewards.",
             applicationCategory: "SocialNetworkingApplication",
             operatingSystem: "Web",
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -129,11 +129,11 @@ const OmegleAlternativePage = () => {
           </span>
           <br />
           <span className="text-white">That </span>
-          <span className="text-yellow-300">Pays You To Chat</span>
+          <span className="text-yellow-300">Rewards You For Chatting</span>
         </h1>
         <p className="mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
           Omegle shut down, but the fun didn't stop. C24 Club is a free random video chat platform where you meet
-          strangers 1-on-1 and <span className="text-green-400 font-bold">earn real rewards</span> for every
+          strangers 1-on-1 and <span className="text-green-400 font-bold">collect real rewards</span> for every
           conversation.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -167,10 +167,10 @@ const OmegleAlternativePage = () => {
             clone; we are a <strong className="text-white">video chat site that rewards you</strong> for socializing.
           </p>
           <p>
-            Every minute you spend in a video call earns you reward minutes. Trade those minutes for{" "}
+            Every minute you spend in a video call collects reward minutes. Redeem those minutes for{" "}
             <strong className="text-white">
               {" "}
-              PayPal cash, Cash App payouts, gift cards, designer bags, clothing, tech accessories
+              gift cards, designer bags, clothing, tech accessories
             </strong>
             , and over 100 other prizes in our Reward Store.
           </p>
@@ -231,8 +231,8 @@ const OmegleAlternativePage = () => {
             <tbody className="text-center">
               {[
                 ["Free to use", "✅", "✅", "✅", "✅"],
-                ["Earn rewards", "✅", "❌", "❌", "❌"],
-                ["Cash out (PayPal)", "✅", "❌", "❌", "❌"],
+                ["Rewards program", "✅", "❌", "❌", "❌"],
+                ["Redeem prizes", "✅", "❌", "❌", "❌"],
                 ["AI moderation", "✅", "❌", "✅", "✅"],
                 ["No download needed", "✅", "✅", "✅", "❌"],
                 ["Spin to win prizes", "✅", "❌", "❌", "❌"],
@@ -283,7 +283,7 @@ const OmegleAlternativePage = () => {
           Ready To Try The Best <span className="text-yellow-400">Omegle Alternative</span>?
         </h2>
         <p className="text-white/50 mb-8 max-w-xl mx-auto">
-          Join thousands of users who switched from Omegle to C24 Club. Start chatting, start earning.
+         Join thousands of users who switched from Omegle to C24 Club. Start chatting, start collecting rewards.
         </p>
         <Link
           to="/"

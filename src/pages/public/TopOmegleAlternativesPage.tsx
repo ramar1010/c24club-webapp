@@ -22,16 +22,16 @@ const alternatives: Alternative[] = [
   {
     rank: 1,
     name: "C24 Club",
-    tagline: "The Omegle alternative that pays you to chat",
+    tagline: "The Omegle alternative with a built-in rewards program",
     description:
-      "C24 Club is the only random video chat site where every minute of conversation earns you real rewards. Redeem your money via PayPal, gift cards, designer prizes, and participate in weekly challenges. With AI moderation, scheduled call windows to ensure active users, and a thriving user base of thousands, C24 Club is not just a replacement for Omegle but a huge upgrade.",
-    tags: ["Earn Rewards", "PayPal Cash Out", "AI Moderation", "No Download", "Weekly Challenges", "Spin to Win"],
+      "C24 Club is the only random video chat site where every minute of conversation collects reward minutes. Redeem your minutes for gift cards, designer prizes, and participate in weekly challenges. With AI moderation, scheduled call windows to ensure active users, and a thriving user base of thousands, C24 Club is not just a replacement for Omegle but a huge upgrade.",
+    tags: ["Rewards Program", "Prize Redemption", "AI Moderation", "No Download", "Weekly Challenges", "Spin to Win"],
     pros: [
-      "Earn real money & rewards for chatting",
+      "Collect real rewards for chatting",
       "AI-powered NSFW moderation",
       "100+ redeemable prizes",
       "Active community with scheduled sessions",
-      "Female earning bonus program",
+      "Female bonus program",
     ],
     cons: ["Requires account signup", "Call windows mean you can't chat 24/7"],
     rating: 4.8,
@@ -42,7 +42,7 @@ const alternatives: Alternative[] = [
     name: "Monkey App",
     tagline: "Mobile-first video chat app popular with Gen Z",
     description:
-      "Monkey App became popular as a mobile-oriented alternative to Omegle, especially designed for young people. The platform offers a chance to make video matches lasting 15 seconds, which can be extended if both users agree. Although the swipe feature is modern, it lacks a reward system and money-making opportunities offered by C24 Club.",
+      "Monkey App became popular as a mobile-oriented alternative to Omegle, especially designed for young people. The platform offers a chance to make video matches lasting 15 seconds, which can be extended if both users agree. Although the swipe feature is modern, it lacks a rewards program offered by C24 Club.",
     tags: ["Mobile App", "Quick Matching", "Young Community"],
     pros: ["Fast matching speed", "Mobile-optimized experience", "Simple swipe interface"],
     cons: ["No rewards or earning system", "Requires app download", "Limited moderation", "Primarily mobile only"],
@@ -346,10 +346,10 @@ const TopOmegleAlternativesPage = () => {
       {/* Bottom CTA */}
       <section className="px-4 py-16 text-center bg-gradient-to-b from-transparent to-orange-500/5">
         <h2 className="text-3xl font-black text-white mb-3" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-          Stop Searching. Start <span className="text-yellow-400">Earning.</span>
+          Stop Searching. Start <span className="text-yellow-400">Chatting.</span>
         </h2>
         <p className="text-white/50 mb-8 max-w-lg mx-auto">
-          C24 Club is the only Omegle alternative that rewards you for every conversation. Join free today.
+          C24 Club is the only Omegle alternative with a built-in rewards program. Join free today.
         </p>
         <Link
           to="/"
