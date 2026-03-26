@@ -144,13 +144,13 @@ serve(async (req) => {
     // Sync to DB
     await supabaseClient
       .from("member_minutes")
-      .update({
+      .upsert({
+        user_id: user.id,
         is_vip: hasActive,
         vip_tier: vipTier,
         subscription_end: subscriptionEnd,
         stripe_customer_id: customerId,
-      })
-      .eq("user_id", user.id);
+      }, { onConflict: "user_id" });
 
     return new Response(JSON.stringify({
       subscribed: hasActive,
