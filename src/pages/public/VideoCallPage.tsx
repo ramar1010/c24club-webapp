@@ -1396,7 +1396,7 @@ const VideoCallPage = () => {
             </button>
           </div>
         </div>
-      }
+      </>}
 
       {/* Full-screen overlay pages */}
       {overlayPage === "store" &&
