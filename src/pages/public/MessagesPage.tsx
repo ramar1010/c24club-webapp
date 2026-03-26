@@ -133,14 +133,9 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
         roleMap.get(r.user_id)!.add(r.role);
       });
 
-      // Fetch VIP status
-      const { data: vipData } = await supabase
-        .from("member_minutes")
-        .select("user_id, is_vip")
-        .in("user_id", otherUserIds)
-        .eq("is_vip", true);
-
-      const vipSet = new Set((vipData || []).map((v: any) => v.user_id));
+      // Fetch VIP status using security definer function (member_minutes is restricted to own row)
+      const { data: vipIds } = await supabase.rpc("get_vip_user_ids");
+      const vipSet = new Set((vipIds || []).map((v: any) => v));
 
       for (const uid of otherUserIds) {
         const userRoles = roleMap.get(uid);
