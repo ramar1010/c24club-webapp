@@ -61,6 +61,7 @@ const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettin
 const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
 const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
+const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
