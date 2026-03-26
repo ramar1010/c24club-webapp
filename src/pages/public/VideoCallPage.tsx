@@ -1018,7 +1018,6 @@ const VideoCallPage = () => {
                   🎁 Pick an Item to Redeem
                 </button>
               )}
-            }
             </div>
           }
 
