@@ -35,10 +35,16 @@ const DmNotificationListener = () => {
         .order("created_at", { ascending: false })
         .limit(10);
 
+      // On first poll, seed all existing message IDs without toasting
+      if (firstPoll) {
+        messages?.forEach((item) => seenMessageIds.add(item.id));
+        firstPoll = false;
+        return;
+      }
+
       const msg = messages?.find((item) => !seenMessageIds.has(item.id));
-      if (!msg) { firstPoll = false; return; }
+      if (!msg) return;
       seenMessageIds.add(msg.id);
-      if (firstPoll) { firstPoll = false; return; }
 
       let senderName = senderCacheRef.current.get(msg.sender_id);
       if (!senderName) {
