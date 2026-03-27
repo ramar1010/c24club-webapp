@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Bell, BellOff, X, Users, Zap, TrendingUp, Check } from "lucide-react";
+import { Clock, Bell, BellOff, X, Users, Zap, TrendingUp, Check, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface CallWindow {
@@ -91,6 +91,7 @@ interface Props {
 const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState("");
   const [visible, setVisible] = useState(false);
@@ -122,6 +123,24 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
       return data;
     },
   });
+
+  // Fetch user's existing email
+  const { data: memberEmail } = useQuery({
+    queryKey: ["member_email", userId],
+    enabled: userId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("email")
+        .eq("id", userId)
+        .maybeSingle();
+      return data?.email || "";
+    },
+  });
+
+  useEffect(() => {
+    if (memberEmail) setEmail(memberEmail);
+  }, [memberEmail]);
 
   // Fetch user's slot signups
   const { data: mySignups = [] } = useQuery({
@@ -231,25 +250,44 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const [smsConsent, setSmsConsent] = useState(false);
 
   const handleOptin = async () => {
-    if (!phone || phone.replace(/\D/g, "").length < 10) {
-      toast.error("Please enter a valid phone number");
-      return;
-    }
     if (mySignups.length === 0) {
       toast.error("Pick at least one slot you'll attend first!");
       return;
     }
-    if (!smsConsent) {
+    const hasPhone = phone && phone.replace(/\D/g, "").length >= 10;
+    const hasEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!hasPhone && !hasEmail) {
+      toast.error("Please enter your email or phone number");
+      return;
+    }
+    if (hasPhone && !smsConsent) {
       toast.error("Please check the SMS consent box to continue");
       return;
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("send-sms-reminder", {
-        body: { action: "optin", phone_number: phone },
-      });
-      if (error) throw error;
-      toast.success("You'll get a text before your selected sessions!");
+      // Save email to members table for power hour notifications
+      if (hasEmail) {
+        const { error: emailErr } = await supabase
+          .from("members")
+          .update({ email })
+          .eq("id", userId);
+        if (emailErr) throw emailErr;
+      }
+      // If phone provided, also opt in for SMS
+      if (hasPhone) {
+        const { error } = await supabase.functions.invoke("send-sms-reminder", {
+          body: { action: "optin", phone_number: phone },
+        });
+        if (error) throw error;
+      }
+      toast.success(
+        hasEmail && hasPhone
+          ? "You'll get email & text reminders for your selected sessions!"
+          : hasEmail
+          ? "You'll get email reminders for your selected sessions!"
+          : "You'll get a text before your selected sessions!"
+      );
       refetchOptin();
     } catch {
       toast.error("Failed to opt in. Try again.");
@@ -379,7 +417,7 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
           {/* Benefit callout */}
           <div className="flex items-start gap-2 text-[11px] text-white/50">
             <TrendingUp className="w-3.5 h-3.5 text-green-400 mt-0.5 shrink-0" />
-            <span>Get a text <span className="text-white/80 font-semibold">5 min before</span> your selected slots so you're first in line.</span>
+            <span>Get an <span className="text-white/80 font-semibold">email reminder</span> before your selected slots so you're first in line.</span>
           </div>
 
           {/* CTA */}
@@ -399,7 +437,20 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <label className="text-white/80 text-xs font-medium">Mobile phone number</label>
+              {/* Email field */}
+              <label className="text-white/80 text-xs font-medium flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-amber-400" /> Email address
+              </label>
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-9 text-sm bg-neutral-800 border-neutral-600"
+              />
+
+              {/* Phone field (optional) */}
+              <label className="text-white/80 text-xs font-medium mt-2">Mobile phone number <span className="text-white/40">(optional)</span></label>
               <div className="flex items-center gap-2">
                 <Input
                   type="tel"
@@ -408,38 +459,46 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
                   onChange={(e) => setPhone(e.target.value)}
                   className="h-9 text-sm bg-neutral-800 border-neutral-600 flex-1"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleOptin}
-                  disabled={submitting || mySignups.length === 0 || !smsConsent}
-                  className="h-9 text-sm bg-amber-600 hover:bg-amber-500 gap-1 px-4 font-bold"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  Text Me
-                </Button>
               </div>
+
               {mySignups.length === 0 && (
                 <p className="text-amber-400/80 text-[10px] text-center font-medium">
                   ☝️ Pick at least one slot above to get reminded
                 </p>
               )}
-              {/* 10DLC compliant SMS consent checkbox — unchecked by default */}
-              <label className="flex items-start gap-2 cursor-pointer pt-1">
-                <input
-                  type="checkbox"
-                  checked={smsConsent}
-                  onChange={(e) => setSmsConsent(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-neutral-500 bg-neutral-800 accent-amber-500 shrink-0"
-                />
-                <span className="text-white/60 text-[10px] leading-relaxed select-none">
-                  I agree to receive recurring automated SMS session reminder messages from C24 Club at the phone number provided. Consent is not a condition of purchase.
-                </span>
-              </label>
-              <p className="text-white/30 text-[10px] text-center leading-relaxed">
-                By providing your phone number, you agree to receive SMS session reminders from C24 Club. Message frequency may vary. Standard Message and Data Rates may apply. Reply STOP to opt out. Reply HELP for help. We will not share mobile information with third parties for promotional or marketing purposes. View our{" "}
-                <a href="/privacy-policy" className="underline text-amber-400/60 hover:text-amber-400">Privacy Policy</a>{" "}and{" "}
-                <a href="/terms" className="underline text-amber-400/60 hover:text-amber-400">Terms of Service</a>.
-              </p>
+
+              {/* 10DLC compliant SMS consent checkbox — only shown when phone entered */}
+              {phone && phone.replace(/\D/g, "").length >= 10 && (
+                <label className="flex items-start gap-2 cursor-pointer pt-1">
+                  <input
+                    type="checkbox"
+                    checked={smsConsent}
+                    onChange={(e) => setSmsConsent(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-neutral-500 bg-neutral-800 accent-amber-500 shrink-0"
+                  />
+                  <span className="text-white/60 text-[10px] leading-relaxed select-none">
+                    I agree to receive recurring automated SMS session reminder messages from C24 Club at the phone number provided. Consent is not a condition of purchase.
+                  </span>
+                </label>
+              )}
+
+              {phone && phone.replace(/\D/g, "").length >= 10 && (
+                <p className="text-white/30 text-[10px] text-center leading-relaxed">
+                  By providing your phone number, you agree to receive SMS session reminders from C24 Club. Message frequency may vary. Standard Message and Data Rates may apply. Reply STOP to opt out. Reply HELP for help. We will not share mobile information with third parties for promotional or marketing purposes. View our{" "}
+                  <a href="/privacy-policy" className="underline text-amber-400/60 hover:text-amber-400">Privacy Policy</a>{" "}and{" "}
+                  <a href="/terms" className="underline text-amber-400/60 hover:text-amber-400">Terms of Service</a>.
+                </p>
+              )}
+
+              <Button
+                size="sm"
+                onClick={handleOptin}
+                disabled={submitting || mySignups.length === 0}
+                className="w-full h-10 text-sm bg-amber-600 hover:bg-amber-500 gap-1.5 font-bold"
+              >
+                <Bell className="w-4 h-4" />
+                Remind Me
+              </Button>
             </div>
           )}
         </div>
