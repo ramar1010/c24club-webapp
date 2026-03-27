@@ -91,6 +91,7 @@ interface Props {
 const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const queryClient = useQueryClient();
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState("");
   const [visible, setVisible] = useState(false);
