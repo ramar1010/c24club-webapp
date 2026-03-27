@@ -22,7 +22,7 @@ import cashImg from "@/assets/rewards/cash.png";
 import phonecase2 from "@/assets/rewards/phonecase-2.png";
 import bag3 from "@/assets/rewards/bag-3.png";
 import boots2 from "@/assets/rewards/boots-2.png";
-import cash2 from "@/assets/rewards/cash-2.png";
+
 import slippers from "@/assets/rewards/slippers.png";
 import shorts2 from "@/assets/rewards/shorts-2.jpg";
 import hat2 from "@/assets/rewards/hat-2.jpg";
