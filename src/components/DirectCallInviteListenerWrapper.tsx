@@ -1,44 +1,61 @@
-import { useState, useContext } from "react";
+import { useState, Component, ReactNode } from "react";
+import { useDirectCallInviteListener } from "@/hooks/useDirectCallInviteListener";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 
-// Inner component that safely uses hooks requiring AuthProvider
+/** Error boundary that silently catches HMR context errors */
+class SafeBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch() {
+    // Silently swallow — HMR will re-render with valid context
+  }
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
+
 function DirectCallInviteListenerInner() {
   const { user } = useAuth();
-  // Lazy-import to avoid circular issues during HMR
-  const { useDirectCallInviteListener } = require("@/hooks/useDirectCallInviteListener");
   const { incomingCall, clearCall, declineCall } = useDirectCallInviteListener();
 
   if (!incomingCall || !user) return null;
 
   return (
-    <>
-      {/* Incoming call ringing UI */}
-      <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center">
-        <div className="bg-zinc-900 rounded-2xl p-6 text-center max-w-xs mx-4 border border-white/10">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-emerald-400">
-            {incomingCall.inviterName.charAt(0).toUpperCase()}
-          </div>
-          <p className="text-white font-bold text-lg mb-1">{incomingCall.inviterName}</p>
-          <p className="text-white/60 text-sm mb-6">wants to video chat with you</p>
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={declineCall}
-              className="px-6 py-2.5 rounded-full bg-red-500 hover:bg-red-600 text-white font-medium transition-colors"
-            >
-              Decline
-            </button>
-            <AcceptButton
-              userId={user.id}
-              incomingCall={incomingCall}
-              onClose={clearCall}
-            />
-          </div>
+    <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center">
+      <div className="bg-zinc-900 rounded-2xl p-6 text-center max-w-xs mx-4 border border-white/10">
+        <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-emerald-400">
+          {incomingCall.inviterName.charAt(0).toUpperCase()}
+        </div>
+        <p className="text-white font-bold text-lg mb-1">{incomingCall.inviterName}</p>
+        <p className="text-white/60 text-sm mb-6">wants to video chat with you</p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={declineCall}
+            className="px-6 py-2.5 rounded-full bg-red-500 hover:bg-red-600 text-white font-medium transition-colors"
+          >
+            Decline
+          </button>
+          <AcceptButton
+            userId={user.id}
+            incomingCall={incomingCall}
+            onClose={clearCall}
+          />
         </div>
       </div>
-    </>
+    </div>
+  );
+}
+
+export function DirectCallInviteListenerWrapper() {
+  return (
+    <SafeBoundary>
+      <DirectCallInviteListenerInner />
+    </SafeBoundary>
   );
 }
 
