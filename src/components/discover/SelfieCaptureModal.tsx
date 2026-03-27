@@ -149,6 +149,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     await supabase.from("members").update({
       image_url: imageUrl,
       image_thumb_url: imageUrl,
+      image_status: "pending",
       is_discoverable: false,
       last_active_at: new Date().toISOString(),
       ...(bio.trim() ? { bio: bio.trim() } : {}),
