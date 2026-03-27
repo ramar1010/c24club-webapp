@@ -136,27 +136,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [ensureMemberRow]);
 
-  // Check IP ban on initial load (regardless of auth state)
+  // Consolidated session-init: IP ban + subscription in one call
   useEffect(() => {
     if (ipCheckedRef.current) return;
     ipCheckedRef.current = true;
 
     supabase.functions
-      .invoke("check-ip-ban")
+      .invoke("session-init")
       .then(({ data }) => {
-        if (data?.banned && !banInfo) {
+        // Handle IP ban
+        if (data?.ip_ban?.banned && !banInfo) {
           setBanInfo({
-            reason: data.reason || "Your IP address has been banned",
-            ban_type: data.ban_type || "standard",
-            created_at: data.created_at || new Date().toISOString(),
+            reason: data.ip_ban.reason || "Your IP address has been banned",
+            ban_type: data.ip_ban.ban_type || "standard",
+            created_at: data.ip_ban.created_at || new Date().toISOString(),
           });
         }
-        // Store IP from combined response so VideoCallPage doesn't need a separate call
+        // Cache IP for VideoCallPage
         if (data?.ip) {
           sessionStorage.setItem("client_ip", data.ip);
         }
+        // Cache subscription data so useVipStatus doesn't need a separate call
+        if (data?.subscription) {
+          const cacheKey = "vip_status_session_init";
+          sessionStorage.setItem(cacheKey, JSON.stringify({ data: data.subscription, ts: Date.now() }));
+        }
       })
-      .catch((err) => console.warn("IP ban check failed:", err));
+      .catch((err) => console.warn("Session init failed:", err));
   }, []);
 
   // Heartbeat: update last_active_at every 5 minutes while logged in
