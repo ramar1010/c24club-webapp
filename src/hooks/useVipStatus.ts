@@ -23,9 +23,29 @@ export function useVipStatus(userId: string | null) {
       return;
     }
 
+    // Use sessionStorage cache to avoid repeated edge function calls (5-min TTL)
+    const cacheKey = `vip_status_${userId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const { data: cachedData, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 5 * 60 * 1000) {
+          setStatus({
+            subscribed: cachedData?.subscribed ?? false,
+            vipTier: cachedData?.vip_tier ?? null,
+            subscriptionEnd: cachedData?.subscription_end ?? null,
+            loading: false,
+          });
+          return;
+        }
+      } catch {}
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
+
+      sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
 
       setStatus({
         subscribed: data?.subscribed ?? false,
