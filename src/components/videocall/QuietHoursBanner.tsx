@@ -437,7 +437,20 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <label className="text-white/80 text-xs font-medium">Mobile phone number</label>
+              {/* Email field */}
+              <label className="text-white/80 text-xs font-medium flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-amber-400" /> Email address
+              </label>
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-9 text-sm bg-neutral-800 border-neutral-600"
+              />
+
+              {/* Phone field (optional) */}
+              <label className="text-white/80 text-xs font-medium mt-2">Mobile phone number <span className="text-white/40">(optional)</span></label>
               <div className="flex items-center gap-2">
                 <Input
                   type="tel"
@@ -446,38 +459,46 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
                   onChange={(e) => setPhone(e.target.value)}
                   className="h-9 text-sm bg-neutral-800 border-neutral-600 flex-1"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleOptin}
-                  disabled={submitting || mySignups.length === 0 || !smsConsent}
-                  className="h-9 text-sm bg-amber-600 hover:bg-amber-500 gap-1 px-4 font-bold"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  Text Me
-                </Button>
               </div>
+
               {mySignups.length === 0 && (
                 <p className="text-amber-400/80 text-[10px] text-center font-medium">
                   ☝️ Pick at least one slot above to get reminded
                 </p>
               )}
-              {/* 10DLC compliant SMS consent checkbox — unchecked by default */}
-              <label className="flex items-start gap-2 cursor-pointer pt-1">
-                <input
-                  type="checkbox"
-                  checked={smsConsent}
-                  onChange={(e) => setSmsConsent(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-neutral-500 bg-neutral-800 accent-amber-500 shrink-0"
-                />
-                <span className="text-white/60 text-[10px] leading-relaxed select-none">
-                  I agree to receive recurring automated SMS session reminder messages from C24 Club at the phone number provided. Consent is not a condition of purchase.
-                </span>
-              </label>
-              <p className="text-white/30 text-[10px] text-center leading-relaxed">
-                By providing your phone number, you agree to receive SMS session reminders from C24 Club. Message frequency may vary. Standard Message and Data Rates may apply. Reply STOP to opt out. Reply HELP for help. We will not share mobile information with third parties for promotional or marketing purposes. View our{" "}
-                <a href="/privacy-policy" className="underline text-amber-400/60 hover:text-amber-400">Privacy Policy</a>{" "}and{" "}
-                <a href="/terms" className="underline text-amber-400/60 hover:text-amber-400">Terms of Service</a>.
-              </p>
+
+              {/* 10DLC compliant SMS consent checkbox — only shown when phone entered */}
+              {phone && phone.replace(/\D/g, "").length >= 10 && (
+                <label className="flex items-start gap-2 cursor-pointer pt-1">
+                  <input
+                    type="checkbox"
+                    checked={smsConsent}
+                    onChange={(e) => setSmsConsent(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-neutral-500 bg-neutral-800 accent-amber-500 shrink-0"
+                  />
+                  <span className="text-white/60 text-[10px] leading-relaxed select-none">
+                    I agree to receive recurring automated SMS session reminder messages from C24 Club at the phone number provided. Consent is not a condition of purchase.
+                  </span>
+                </label>
+              )}
+
+              {phone && phone.replace(/\D/g, "").length >= 10 && (
+                <p className="text-white/30 text-[10px] text-center leading-relaxed">
+                  By providing your phone number, you agree to receive SMS session reminders from C24 Club. Message frequency may vary. Standard Message and Data Rates may apply. Reply STOP to opt out. Reply HELP for help. We will not share mobile information with third parties for promotional or marketing purposes. View our{" "}
+                  <a href="/privacy-policy" className="underline text-amber-400/60 hover:text-amber-400">Privacy Policy</a>{" "}and{" "}
+                  <a href="/terms" className="underline text-amber-400/60 hover:text-amber-400">Terms of Service</a>.
+                </p>
+              )}
+
+              <Button
+                size="sm"
+                onClick={handleOptin}
+                disabled={submitting || mySignups.length === 0}
+                className="w-full h-10 text-sm bg-amber-600 hover:bg-amber-500 gap-1.5 font-bold"
+              >
+                <Bell className="w-4 h-4" />
+                Remind Me
+              </Button>
             </div>
           )}
         </div>
