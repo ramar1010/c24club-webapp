@@ -250,25 +250,44 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
   const [smsConsent, setSmsConsent] = useState(false);
 
   const handleOptin = async () => {
-    if (!phone || phone.replace(/\D/g, "").length < 10) {
-      toast.error("Please enter a valid phone number");
-      return;
-    }
     if (mySignups.length === 0) {
       toast.error("Pick at least one slot you'll attend first!");
       return;
     }
-    if (!smsConsent) {
+    const hasPhone = phone && phone.replace(/\D/g, "").length >= 10;
+    const hasEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!hasPhone && !hasEmail) {
+      toast.error("Please enter your email or phone number");
+      return;
+    }
+    if (hasPhone && !smsConsent) {
       toast.error("Please check the SMS consent box to continue");
       return;
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("send-sms-reminder", {
-        body: { action: "optin", phone_number: phone },
-      });
-      if (error) throw error;
-      toast.success("You'll get a text before your selected sessions!");
+      // Save email to members table for power hour notifications
+      if (hasEmail) {
+        const { error: emailErr } = await supabase
+          .from("members")
+          .update({ email })
+          .eq("id", userId);
+        if (emailErr) throw emailErr;
+      }
+      // If phone provided, also opt in for SMS
+      if (hasPhone) {
+        const { error } = await supabase.functions.invoke("send-sms-reminder", {
+          body: { action: "optin", phone_number: phone },
+        });
+        if (error) throw error;
+      }
+      toast.success(
+        hasEmail && hasPhone
+          ? "You'll get email & text reminders for your selected sessions!"
+          : hasEmail
+          ? "You'll get email reminders for your selected sessions!"
+          : "You'll get a text before your selected sessions!"
+      );
       refetchOptin();
     } catch {
       toast.error("Failed to opt in. Try again.");
