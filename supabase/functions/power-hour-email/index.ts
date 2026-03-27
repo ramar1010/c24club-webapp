@@ -34,15 +34,12 @@ Deno.serve(async (req) => {
     const now = new Date();
     const todayStr = now.toISOString().split("T")[0];
 
-    // Parse power_hour_start (HH:MM or HH:MM:SS format) into today's date
     const [phHour, phMin] = settings.power_hour_start.split(":").map(Number);
     const powerHourDate = new Date(now);
     powerHourDate.setUTCHours(phHour, phMin, 0, 0);
 
     const minutesUntil = (powerHourDate.getTime() - now.getTime()) / 60_000;
 
-    // Determine reminder type based on how far away power hour is
-    // Allow a 5-minute window for cron timing flexibility
     let reminderType: "1hour" | "10min" | null = null;
     if (minutesUntil > 55 && minutesUntil <= 65) {
       reminderType = "1hour";
@@ -50,14 +47,19 @@ Deno.serve(async (req) => {
       reminderType = "10min";
     }
 
-    // Also allow manual override via request body
+    // Allow manual override via request body
+    let forceTestEmail: string | null = null;
+    let reqBody: any = null;
     try {
-      const body = await req.json();
-      if (body?.reminder_type === "1hour" || body?.reminder_type === "10min") {
-        reminderType = body.reminder_type;
-      }
+      reqBody = await req.json();
     } catch {
-      // No body or not JSON — use auto-detected timing
+      // No body or not JSON
+    }
+    if (reqBody?.reminder_type === "1hour" || reqBody?.reminder_type === "10min") {
+      reminderType = reqBody.reminder_type;
+    }
+    if (reqBody?.test_email) {
+      forceTestEmail = reqBody.test_email;
     }
 
     if (!reminderType) {
@@ -67,66 +69,61 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Check if we already sent this reminder today
+    // 3. Check if we already sent this reminder today (skip for test emails)
     const dedupeKey = `power_hour_${reminderType}_${todayStr}`;
-    const { data: alreadySent } = await supabase
-      .from("email_send_log")
-      .select("id")
-      .eq("message_id", dedupeKey)
-      .limit(1);
+    if (!forceTestEmail) {
+      const { data: alreadySent } = await supabase
+        .from("email_send_log")
+        .select("id")
+        .eq("message_id", dedupeKey)
+        .limit(1);
 
-    if (alreadySent && alreadySent.length > 0) {
-      console.log(`Already sent ${reminderType} reminder today.`);
-      return new Response(JSON.stringify({ skipped: true, reason: "already_sent", reminderType }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (alreadySent && alreadySent.length > 0) {
+        console.log(`Already sent ${reminderType} reminder today.`);
+        return new Response(JSON.stringify({ skipped: true, reason: "already_sent", reminderType }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    // 4. Fetch the right template
-    const templateKey = reminderType === "1hour" ? "power_hour_1h" : "power_hour_10m";
-    const fallbackKey = "power_hour_reminder";
-
-    let template: any = null;
-    const { data: specificTpl } = await supabase
-      .from("email_templates")
-      .select("*")
-      .eq("template_key", templateKey)
-      .eq("is_active", true)
-      .single();
-
-    if (specificTpl) {
-      template = specificTpl;
-    } else {
-      // Fall back to the general template
-      const { data: fallbackTpl } = await supabase
-        .from("email_templates")
-        .select("*")
-        .eq("template_key", fallbackKey)
-        .eq("is_active", true)
-        .single();
-      template = fallbackTpl;
-    }
-
-    if (!template) {
-      console.log("No active template found, skipping.");
-      return new Response(JSON.stringify({ skipped: true, reason: "template_inactive" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 5. Get ALL members with emails (not just females)
-    const { data: members, error: memErr } = await supabase
+    // 4. Get ALL members with emails AND gender
+    // If test_email is set, only fetch that one member
+    let membersQuery = supabase
       .from("members")
-      .select("id, name, email")
+      .select("id, name, email, gender")
       .not("email", "is", null);
+
+    if (forceTestEmail) {
+      membersQuery = membersQuery.ilike("email", forceTestEmail);
+    }
+
+    const { data: members, error: memErr } = await membersQuery.limit(2000);
 
     if (memErr) throw memErr;
     if (!members || members.length === 0) {
+      console.log("No matching members found.", forceTestEmail ? `Test email: ${forceTestEmail}` : "");
       console.log("No members with emails found.");
       return new Response(JSON.stringify({ sent: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // 5. Count members by gender for social proof numbers
+    // When testing a single email, we need real counts from all members
+    let maleCount = 0;
+    let femaleCount = 0;
+    if (forceTestEmail) {
+      const { count: mc } = await supabase.from("members").select("*", { count: "exact", head: true }).eq("gender", "male");
+      const { count: fc } = await supabase.from("members").select("*", { count: "exact", head: true }).eq("gender", "female");
+      maleCount = mc || 0;
+      femaleCount = fc || 0;
+    } else {
+      maleCount = members.filter(m => m.gender === "male").length;
+      femaleCount = members.filter(m => m.gender === "female").length;
+    }
+    const randomBoost = () => Math.floor(Math.random() * 6) + 3;
+    const femalesForMales = Math.min(femaleCount + randomBoost(), 25);
+    const malesForFemales = Math.min(maleCount + randomBoost(), 30);
 
     // 6. Check suppressed emails
     const { data: suppressed } = await supabase
@@ -135,21 +132,26 @@ Deno.serve(async (req) => {
 
     const suppressedSet = new Set((suppressed || []).map((s: { email: string }) => s.email.toLowerCase()));
 
-    // Format the power hour time for display in emails
+    // Format the power hour time for display
     const displayHour = phHour > 12 ? phHour - 12 : phHour === 0 ? 12 : phHour;
     const amPm = phHour >= 12 ? "PM" : "AM";
     const powerHourDisplay = `${displayHour}:${String(phMin).padStart(2, "0")} ${amPm} UTC`;
+    const timeLabel = reminderType === "1hour" ? "1 hour" : "5 mins";
 
     let enqueued = 0;
 
-    // Log the dedup marker first
-    await supabase.from("email_send_log").insert({
-      template_name: `power_hour_${reminderType}`,
-      recipient_email: "system@dedup",
-      status: "sent",
-      message_id: dedupeKey,
-      metadata: { type: "dedup_marker" },
-    });
+    // Log the dedup marker first (skip for test emails)
+    if (!forceTestEmail) {
+      await supabase.from("email_send_log").insert({
+        template_name: `power_hour_${reminderType}`,
+        recipient_email: "system@dedup",
+        status: "sent",
+        message_id: dedupeKey,
+        metadata: { type: "dedup_marker" },
+      });
+    }
+
+    const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
 
     for (const member of members) {
       if (!member.email || suppressedSet.has(member.email.toLowerCase())) {
@@ -157,17 +159,38 @@ Deno.serve(async (req) => {
       }
 
       const userName = member.name || "there";
-      const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
-      const subject = template.subject
-        .replace(/\{\{user_name\}\}/g, userName)
-        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay)
-        .replace(/\{\{join_link\}\}/g, joinLink);
-      const body = template.body
-        .replace(/\{\{user_name\}\}/g, userName)
-        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay)
-        .replace(/\{\{join_link\}\}/g, joinLink);
+      const isFemale = member.gender === "female";
 
-      const messageId = `power_hour_${reminderType}_${member.id}_${todayStr}`;
+      // Gender-specific subject & body
+      let subject: string;
+      let body: string;
+
+      if (isFemale) {
+        subject = reminderType === "1hour"
+          ? `⚡ ${malesForFemales} guys are joining Power Hour in ${timeLabel}!`
+          : `🔥 ${malesForFemales} guys are logging on NOW — Power Hour in ${timeLabel}!`;
+        body = `Hey ${userName}! 👋\n\n` +
+          `Ready to chat & earn! 💰\n\n` +
+          `${malesForFemales} male users have opted to come to your upcoming video call scheduled session in ${timeLabel}!\n\n` +
+          `Chat & meet new guys and get rewards for every minute you chat — or get gifted by them! 🎁\n\n` +
+          `The more you chat, the more you earn. This is the busiest session of the day!\n\n` +
+          `👉 Join now: ${joinLink}\n\n` +
+          `See you there!\n— C24 Club`;
+      } else {
+        subject = reminderType === "1hour"
+          ? `⚡ ${femalesForMales} girls opted in for Power Hour in ${timeLabel}!`
+          : `🔥 ${femalesForMales} girls are joining Power Hour in ${timeLabel}!`;
+        body = `Hey ${userName}! 👋\n\n` +
+          `${femalesForMales} female users opted to come to your upcoming random video call scheduled session in ${timeLabel}! 👀\n\n` +
+          `Will they show up? Only time will tell — log in and wait!\n\n` +
+          `Power Hour is the busiest time on C24 Club — the best chance to meet new people and have great conversations.\n\n` +
+          `👉 Join now: ${joinLink}\n\n` +
+          `Don't miss out!\n— C24 Club`;
+      }
+
+      const messageId = forceTestEmail
+        ? `power_hour_test_${member.id}_${Date.now()}`
+        : `power_hour_${reminderType}_${member.id}_${todayStr}`;
 
       const htmlContent = body.replace(/\n/g, "<br>");
       const emailPayload = {
@@ -199,7 +222,7 @@ Deno.serve(async (req) => {
         recipient_email: member.email,
         status: "pending",
         message_id: messageId,
-        metadata: { user_id: member.id },
+        metadata: { user_id: member.id, gender: member.gender || "unknown" },
       });
 
       enqueued++;
