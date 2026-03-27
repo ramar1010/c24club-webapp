@@ -36,8 +36,20 @@ const PinnedSocialsDisplay = ({ pinnedSocials }: PinnedSocialsDisplayProps) => {
 
   return (
     <div className="flex gap-2 flex-wrap">
-      {parsed.map((s) => {
-        // Strip leading @, $, / from username for URL
+    {parsed.map((s) => {
+        if (!s.urlPrefix) {
+          // Non-linkable platform (e.g. Discord) — show icon + handle
+          return (
+            <div
+              key={s.platform}
+              className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full pl-0.5 pr-2.5 py-0.5 border border-white/20"
+              title={s.username}
+            >
+              <img src={s.icon} alt={s.platform} className="w-7 h-7 rounded-full object-cover" />
+              <span className="text-white text-[11px] font-semibold truncate max-w-[100px]">{s.username}</span>
+            </div>
+          );
+        }
         const cleanUser = s.username.replace(/^[@$/]/, "");
         const url = s.urlPrefix + cleanUser;
         return (
