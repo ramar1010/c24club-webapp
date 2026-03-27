@@ -1218,6 +1218,7 @@ export type Database = {
       lucky_spin_settings: {
         Row: {
           daily_cap_cents: number
+          hide_carousel: boolean
           id: string
           is_enabled: boolean
           spin_interval_ms: number
@@ -1225,6 +1226,7 @@ export type Database = {
         }
         Insert: {
           daily_cap_cents?: number
+          hide_carousel?: boolean
           id?: string
           is_enabled?: boolean
           spin_interval_ms?: number
@@ -1232,6 +1234,7 @@ export type Database = {
         }
         Update: {
           daily_cap_cents?: number
+          hide_carousel?: boolean
           id?: string
           is_enabled?: boolean
           spin_interval_ms?: number

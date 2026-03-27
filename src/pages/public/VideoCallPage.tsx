@@ -419,6 +419,14 @@ const VideoCallPage = () => {
     }
   }, []);
 
+  const { data: hideCarousel } = useQuery({
+    queryKey: ["lucky-spin-carousel-setting"],
+    queryFn: async () => {
+      const { data } = await supabase.from("lucky_spin_settings").select("hide_carousel").limit(1).single();
+      return data?.hide_carousel ?? false;
+    },
+    staleTime: 60000,
+  });
 
   // Default voice mode ON for females on first load (they can toggle it off)
   useEffect(() => {
@@ -1102,12 +1110,14 @@ const VideoCallPage = () => {
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
                 <LuckySpinWidget isWaiting={callState === "waiting"} />
-                <DiscoverTeaser
-                  myGender={memberGender ?? null}
-                  myUserId={memberId}
-                  onOpenDiscover={() => setOverlayPage("discover")}
-                  onOpenStore={() => setOverlayPage("store")}
-                />
+                {!hideCarousel && (
+                  <DiscoverTeaser
+                    myGender={memberGender ?? null}
+                    myUserId={memberId}
+                    onOpenDiscover={() => setOverlayPage("discover")}
+                    onOpenStore={() => setOverlayPage("store")}
+                  />
+                )}
               </div>
             </div>
           }
@@ -1260,12 +1270,14 @@ const VideoCallPage = () => {
                   </p>
                   {callState === "waiting" && <>
                     <LuckySpinWidget isWaiting={callState === "waiting"} />
-                    <DiscoverTeaser
-                      myGender={memberGender ?? null}
-                      myUserId={memberId}
-                      onOpenDiscover={() => setOverlayPage("discover")}
-                      onOpenStore={() => setOverlayPage("store")}
-                    />
+                    {!hideCarousel && (
+                      <DiscoverTeaser
+                        myGender={memberGender ?? null}
+                        myUserId={memberId}
+                        onOpenDiscover={() => setOverlayPage("discover")}
+                        onOpenStore={() => setOverlayPage("store")}
+                      />
+                    )}
                   </>}
                 </div>
               </div>

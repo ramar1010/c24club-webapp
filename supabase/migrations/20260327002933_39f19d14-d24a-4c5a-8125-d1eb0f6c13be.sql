@@ -1,0 +1,1 @@
+ALTER TABLE public.lucky_spin_settings ADD COLUMN hide_carousel boolean NOT NULL DEFAULT false;
