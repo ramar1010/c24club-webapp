@@ -86,13 +86,10 @@ const FemaleEarningPanel = ({
 
   useEffect(() => { fetchLastRequest(); }, [fetchLastRequest]);
 
-  // Realtime updates for cashout status
+  // Poll for cashout status updates
   useEffect(() => {
-    const channel = supabase
-      .channel("female-panel-cashout")
-      .on("postgres_changes", { event: "*", schema: "public", table: "cashout_requests" }, () => fetchLastRequest())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const poll = setInterval(() => fetchLastRequest(), 5000);
+    return () => clearInterval(poll);
   }, [fetchLastRequest]);
 
   // Anti-AFK verification timer

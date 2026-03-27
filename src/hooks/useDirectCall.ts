@@ -46,6 +46,20 @@ interface UseDirectCallOptions {
   isInitiator: boolean;
 }
 
+/** Send a signal via the room_signals DB table */
+async function dbSendSignal(roomId: string, senderChannel: string, signalType: string, payload: Record<string, unknown>) {
+  try {
+    await supabase.from("room_signals").insert({
+      room_id: roomId,
+      sender_channel: senderChannel,
+      signal_type: signalType,
+      payload: payload as any,
+    });
+  } catch (e) {
+    console.warn("[DirectCall] DB signal send failed:", e);
+  }
+}
+
 export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: UseDirectCallOptions) {
   const [callState, setCallState] = useState<DirectCallState>("connecting");
   const [isMuted, setIsMuted] = useState(false);
@@ -56,15 +70,19 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
   const remoteVideoElRef = useRef<HTMLVideoElement | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cleanedUpRef = useRef(false);
 
-  const channelName = `direct-call-${inviteId}`;
+  const roomId = `direct-${inviteId}`;
 
   const cleanup = useCallback(() => {
     if (cleanedUpRef.current) return;
     cleanedUpRef.current = true;
 
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
     if (pcRef.current) {
       pcRef.current.ontrack = null;
       pcRef.current.onicecandidate = null;
@@ -76,25 +94,20 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
       localStreamRef.current.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
     }
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
     if (remoteVideoElRef.current) remoteVideoElRef.current.srcObject = null;
     setRemoteStream(null);
     setCallState("ended");
-  }, []);
+
+    // Cleanup DB signals
+    supabase.from("room_signals").delete().eq("room_id", roomId).then(() => {});
+  }, [roomId]);
 
   const endCall = useCallback(() => {
-    void channelRef.current?.send({
-      type: "broadcast",
-      event: "call-ended",
-      payload: { from: myUserId },
-    });
+    void dbSendSignal(roomId, myUserId, "call-ended", { from: myUserId });
     supabase.from("direct_call_invites").update({ status: "ended" } as any).eq("id", inviteId).then();
     cleanup();
-  }, [cleanup, inviteId, myUserId]);
+  }, [cleanup, inviteId, myUserId, roomId]);
 
   const toggleMute = useCallback(() => {
     const audioTrack = localStreamRef.current?.getAudioTracks()[0];
@@ -156,15 +169,20 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           console.log("[DirectCall] Connection state:", pc.connectionState);
           if (pc.connectionState === "connected") {
             setCallState("connected");
+            // Stop polling once connected
+            if (pollRef.current) {
+              clearInterval(pollRef.current);
+              pollRef.current = null;
+            }
           } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
             cleanup();
           }
         };
 
-        const pendingLocalCandidates: RTCIceCandidateInit[] = [];
         const pendingRemoteCandidates: RTCIceCandidateInit[] = [];
-        let channelReady = false;
         let remoteDescriptionSet = false;
+        let offerSent = false;
+        let lastSignalId: string | null = null;
 
         const flushRemoteCandidates = async () => {
           while (pendingRemoteCandidates.length > 0) {
@@ -178,26 +196,13 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           }
         };
 
-        const channel = supabase.channel(channelName, {
-          config: { broadcast: { self: false } },
-        });
-        channelRef.current = channel;
-
-        const sendSignal = async (event: string, payload: Record<string, unknown>) => {
-          const result = await channel.send({
-            type: "broadcast",
-            event,
-            payload,
+        pc.onicecandidate = (event) => {
+          if (!event.candidate) return;
+          void dbSendSignal(roomId, myUserId, "ice-candidate", {
+            candidate: event.candidate.toJSON(),
+            from: myUserId,
           });
-
-          if (result !== "ok") {
-            console.warn(`[DirectCall] Failed to send ${event}`, result);
-          }
-
-          return result;
         };
-
-        let offerSent = false;
 
         const sendOffer = async () => {
           if (!isInitiator || offerSent || cancelled) return;
@@ -205,91 +210,108 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           console.log("[DirectCall] Creating and sending offer");
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
-          await sendSignal("offer", { sdp: offer, from: myUserId });
+          await dbSendSignal(roomId, myUserId, "offer", { sdp: offer, from: myUserId });
         };
 
-        pc.onicecandidate = (event) => {
-          if (!event.candidate) return;
-          const candidateJson = event.candidate.toJSON();
-          if (channelReady) {
-            void sendSignal("ice-candidate", { candidate: candidateJson, from: myUserId });
-          } else {
-            pendingLocalCandidates.push(candidateJson);
+        // Process signals from DB polling
+        const processSignal = async (signal: { id: string; signal_type: string; payload: any; sender_channel: string }) => {
+          if (signal.sender_channel === myUserId) return;
+
+          switch (signal.signal_type) {
+            case "offer": {
+              if (!signal.payload.sdp) return;
+              console.log("[DirectCall] Received offer");
+              await pc.setRemoteDescription(new RTCSessionDescription(signal.payload.sdp));
+              remoteDescriptionSet = true;
+              await flushRemoteCandidates();
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              await dbSendSignal(roomId, myUserId, "answer", { sdp: answer, from: myUserId });
+              break;
+            }
+            case "answer": {
+              if (!signal.payload.sdp) return;
+              console.log("[DirectCall] Received answer");
+              await pc.setRemoteDescription(new RTCSessionDescription(signal.payload.sdp));
+              remoteDescriptionSet = true;
+              await flushRemoteCandidates();
+              break;
+            }
+            case "ice-candidate": {
+              if (!signal.payload.candidate) return;
+              if (!remoteDescriptionSet || !pc.remoteDescription) {
+                pendingRemoteCandidates.push(signal.payload.candidate);
+                return;
+              }
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(signal.payload.candidate));
+              } catch (e) {
+                console.warn("[DirectCall] Failed to add ICE candidate", e);
+              }
+              break;
+            }
+            case "peer-ready": {
+              console.log("[DirectCall] Peer ready received, isInitiator:", isInitiator);
+              if (isInitiator) {
+                void sendOffer();
+              } else {
+                void dbSendSignal(roomId, myUserId, "peer-ready", { from: myUserId });
+              }
+              break;
+            }
+            case "call-ended": {
+              cleanup();
+              break;
+            }
           }
         };
 
-        channel
-          .on("broadcast", { event: "offer" }, async ({ payload }) => {
-            if (payload.from === myUserId || !payload.sdp) return;
-            console.log("[DirectCall] Received offer");
-            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-            remoteDescriptionSet = true;
-            await flushRemoteCandidates();
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            await sendSignal("answer", { sdp: answer, from: myUserId });
-          })
-          .on("broadcast", { event: "answer" }, async ({ payload }) => {
-            if (payload.from === myUserId || !payload.sdp) return;
-            console.log("[DirectCall] Received answer");
-            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-            remoteDescriptionSet = true;
-            await flushRemoteCandidates();
-          })
-          .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
-            if (payload.from === myUserId || !payload.candidate) return;
-            if (!remoteDescriptionSet || !pc.remoteDescription) {
-              pendingRemoteCandidates.push(payload.candidate);
+        // Start polling for signals
+        const pollSignals = async () => {
+          try {
+            let query = supabase
+              .from("room_signals")
+              .select("id, signal_type, payload, sender_channel, created_at")
+              .eq("room_id", roomId)
+              .neq("sender_channel", myUserId)
+              .order("created_at", { ascending: true });
+
+            if (lastSignalId) {
+              query = query.gt("id", lastSignalId);
+            }
+
+            const { data } = await query;
+            if (data && data.length > 0) {
+              for (const signal of data) {
+                lastSignalId = signal.id;
+                await processSignal(signal as any);
+              }
+            }
+          } catch (e) {
+            console.warn("[DirectCall] Poll error:", e);
+          }
+        };
+
+        // Signal ready and start polling
+        setCallState("ringing");
+        await dbSendSignal(roomId, myUserId, "peer-ready", { from: myUserId });
+
+        pollRef.current = setInterval(pollSignals, 800);
+        // Initial poll
+        await pollSignals();
+
+        // Retry peer-ready for initiator
+        if (isInitiator) {
+          const retryInterval = setInterval(() => {
+            if (offerSent || cancelled || cleanedUpRef.current) {
+              clearInterval(retryInterval);
               return;
             }
-            try {
-              await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-            } catch (e) {
-              console.warn("[DirectCall] Failed to add ICE candidate", e);
-            }
-          })
-          .on("broadcast", { event: "call-ended" }, ({ payload }) => {
-            if (payload.from === myUserId) return;
-            cleanup();
-          })
-          .on("broadcast", { event: "peer-ready" }, ({ payload }) => {
-            if (payload.from === myUserId) return;
-            console.log("[DirectCall] Peer ready received, isInitiator:", isInitiator);
-            if (isInitiator) {
-              void sendOffer();
-            } else {
-              console.log("[DirectCall] Echoing peer-ready back to initiator");
-              void sendSignal("peer-ready", { from: myUserId });
-            }
-          })
-          .subscribe((status) => {
-            console.log("[DirectCall] Channel status:", status);
-            if (status === "SUBSCRIBED") {
-              channelReady = true;
-              setCallState("ringing");
-
-              for (const candidate of pendingLocalCandidates) {
-                void sendSignal("ice-candidate", { candidate, from: myUserId });
-              }
-              pendingLocalCandidates.length = 0;
-
-              console.log("[DirectCall] Sending peer-ready");
-              void sendSignal("peer-ready", { from: myUserId });
-
-              if (isInitiator) {
-                const retryInterval = setInterval(() => {
-                  if (offerSent || cancelled || cleanedUpRef.current) {
-                    clearInterval(retryInterval);
-                    return;
-                  }
-                  console.log("[DirectCall] Retrying peer-ready");
-                  void sendSignal("peer-ready", { from: myUserId });
-                }, 1500);
-
-                setTimeout(() => clearInterval(retryInterval), 30000);
-              }
-            }
-          });
+            console.log("[DirectCall] Retrying peer-ready");
+            void dbSendSignal(roomId, myUserId, "peer-ready", { from: myUserId });
+          }, 1500);
+          setTimeout(() => clearInterval(retryInterval), 30000);
+        }
       } catch (err) {
         console.error("[DirectCall] Error:", err);
         cleanup();

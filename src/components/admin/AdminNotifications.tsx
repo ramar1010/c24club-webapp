@@ -46,21 +46,8 @@ const AdminNotifications = () => {
 
   useEffect(() => {
     fetchNotifications();
-
-    const channel = supabase
-      .channel("admin-notifications")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "admin_notifications" },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev].slice(0, 50));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const poll = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(poll);
   }, []);
 
   const markAsRead = async (id: string) => {

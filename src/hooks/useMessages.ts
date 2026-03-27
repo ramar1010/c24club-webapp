@@ -114,36 +114,13 @@ export function useConversations() {
     },
   });
 
-  // Realtime subscription for new messages – debounced invalidation
+  // Poll for conversation updates
   useEffect(() => {
     if (!user) return;
-
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    const debouncedInvalidate = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-      }, 2000);
-    };
-
-    const channel = supabase
-      .channel("dm-updates")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "dm_messages" },
-        debouncedInvalidate
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        debouncedInvalidate
-      )
-      .subscribe();
-
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
+    const poll = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+    }, 5000);
+    return () => clearInterval(poll);
   }, [user, queryClient]);
 
   return query;
@@ -194,29 +171,13 @@ export function useConversationMessages(conversationId: string | null) {
     }
   }, [conversationId, user, query.data, queryClient]);
 
-  // Realtime for this conversation
+  // Poll for new messages in this conversation
   useEffect(() => {
     if (!conversationId) return;
-
-    const channel = supabase
-      .channel(`dm-${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "dm_messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["dm_messages", conversationId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const poll = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["dm_messages", conversationId] });
+    }, 3000);
+    return () => clearInterval(poll);
   }, [conversationId, queryClient]);
 
   return query;
