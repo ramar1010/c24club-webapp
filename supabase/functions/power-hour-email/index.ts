@@ -109,12 +109,19 @@ Deno.serve(async (req) => {
     }
 
     // 5. Count members by gender for social proof numbers
-    // Use real counts but add a small random boost (3-8) for excitement
-    const maleCount = members.filter(m => m.gender === "male").length;
-    const femaleCount = members.filter(m => m.gender === "female").length;
-    const randomBoost = () => Math.floor(Math.random() * 6) + 3; // 3-8
-
-    // Numbers shown to each gender (opposite gender count, capped for believability)
+    // When testing a single email, we need real counts from all members
+    let maleCount = 0;
+    let femaleCount = 0;
+    if (forceTestEmail) {
+      const { count: mc } = await supabase.from("members").select("*", { count: "exact", head: true }).eq("gender", "male");
+      const { count: fc } = await supabase.from("members").select("*", { count: "exact", head: true }).eq("gender", "female");
+      maleCount = mc || 0;
+      femaleCount = fc || 0;
+    } else {
+      maleCount = members.filter(m => m.gender === "male").length;
+      femaleCount = members.filter(m => m.gender === "female").length;
+    }
+    const randomBoost = () => Math.floor(Math.random() * 6) + 3;
     const femalesForMales = Math.min(femaleCount + randomBoost(), 25);
     const malesForFemales = Math.min(maleCount + randomBoost(), 30);
 
