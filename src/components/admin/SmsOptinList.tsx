@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const SmsOptinList = () => {
   const { data: optins = [], isLoading } = useQuery({
@@ -11,26 +11,27 @@ const SmsOptinList = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sms_reminder_optins")
-        .select("id, phone_number, is_active, created_at, updated_at, user_id")
+        .select("id, is_active, created_at, updated_at, user_id")
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Fetch member names for user_ids
+      // Fetch member names and emails for user_ids
       const userIds = (data || []).map((o: any) => o.user_id);
-      let memberMap: Record<string, string> = {};
+      let memberMap: Record<string, { name: string; email: string }> = {};
       if (userIds.length > 0) {
         const { data: members } = await supabase
           .from("members")
-          .select("id, name")
+          .select("id, name, email")
           .in("id", userIds);
         if (members) {
-          memberMap = Object.fromEntries(members.map((m: any) => [m.id, m.name]));
+          memberMap = Object.fromEntries(members.map((m: any) => [m.id, { name: m.name, email: m.email || "—" }]));
         }
       }
 
       return (data || []).map((o: any) => ({
         ...o,
-        member_name: memberMap[o.user_id] || "Unknown",
+        member_name: memberMap[o.user_id]?.name || "Unknown",
+        member_email: memberMap[o.user_id]?.email || "—",
       }));
     },
   });
