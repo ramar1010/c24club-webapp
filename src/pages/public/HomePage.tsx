@@ -31,8 +31,6 @@ import redbag2 from "@/assets/rewards/redbag-2.jpg";
 import heartbag2 from "@/assets/rewards/heartbag-2.jpg";
 
 const rewards = [
-  { label: "PayPal", minutes: 400, image: paypal2 },
-  { label: "Cash App", minutes: 400, image: cash2 },
   { label: "Bucket Hat", minutes: 80, image: hat2 },
   { label: "Bag", minutes: 150, image: bag3 },
   { label: "Boots", minutes: 200, image: boots2 },
@@ -41,10 +39,12 @@ const rewards = [
   { label: "Phone Cases", minutes: 90, image: phonecase2 },
   { label: "Red Bag", minutes: 120, image: redbag2 },
   { label: "Slippers", minutes: 75, image: slippers },
+  { label: "Designer Bag", minutes: 130, image: bagImg },
+  { label: "Reward Item", minutes: 110, image: reward1 },
 ];
 
-const leftSideRewards = [paypal2, bag3, boots2, shorts2, heartbag2];
-const rightSideRewards = [cash2, hat2, phonecase2, redbag2, slippers];
+const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward1];
+const rightSideRewards = [hat2, phonecase2, redbag2, slippers, bagImg];
 
 const RewardCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
