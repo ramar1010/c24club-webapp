@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { X, Clock, Zap, Users, Heart, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,21 @@ const PowerHourCountdown = ({ onDismiss, isFemale }: PowerHourCountdownProps) =>
       return data;
     },
     staleTime: 60000,
+  });
+
+  // Fetch opposite-gender count for social proof
+  const { data: oppositeCount } = useQuery({
+    queryKey: ["power_hour_opposite_count", isFemale],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("members")
+        .select("*", { count: "exact", head: true })
+        .eq("gender", isFemale ? "male" : "female");
+      // Add a small random boost for excitement
+      const boost = Math.floor(Math.random() * 6) + 3;
+      return Math.min((count || 0) + boost, isFemale ? 30 : 25);
+    },
+    staleTime: 300000,
   });
 
   useEffect(() => {
