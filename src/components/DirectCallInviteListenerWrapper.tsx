@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { useDirectCallInviteListener } from "@/hooks/useDirectCallInviteListener";
+import { useState, useContext } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 
-export function DirectCallInviteListenerWrapper() {
+// Inner component that safely uses hooks requiring AuthProvider
+function DirectCallInviteListenerInner() {
   const { user } = useAuth();
+  // Lazy-import to avoid circular issues during HMR
+  const { useDirectCallInviteListener } = require("@/hooks/useDirectCallInviteListener");
   const { incomingCall, clearCall, declineCall } = useDirectCallInviteListener();
 
   if (!incomingCall || !user) return null;
