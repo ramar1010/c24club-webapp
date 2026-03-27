@@ -1110,6 +1110,14 @@ const VideoCallPage = () => {
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
                 <LuckySpinWidget isWaiting={callState === "waiting"} onOpenMyRewards={() => setOverlayPage("my-rewards")} />
+                {hideCarousel && (
+                  <button
+                    onClick={() => setOverlayPage("discover")}
+                    className="mt-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold rounded-full transition-colors"
+                  >
+                    {memberGender === "Female" ? "View Guys On Discover" : "View Girls On Discover"}
+                  </button>
+                )}
                 {!hideCarousel && (
                   <DiscoverTeaser
                     myGender={memberGender ?? null}
@@ -1270,6 +1278,14 @@ const VideoCallPage = () => {
                   </p>
                   {callState === "waiting" && <>
                     <LuckySpinWidget isWaiting={callState === "waiting"} onOpenMyRewards={() => setOverlayPage("my-rewards")} />
+                    {hideCarousel && (
+                      <button
+                        onClick={() => setOverlayPage("discover")}
+                        className="mt-2 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold rounded-full transition-colors"
+                      >
+                        {memberGender === "Female" ? "View Guys On Discover" : "View Girls On Discover"}
+                      </button>
+                    )}
                     {!hideCarousel && (
                       <DiscoverTeaser
                         myGender={memberGender ?? null}
