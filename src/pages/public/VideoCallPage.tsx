@@ -857,7 +857,9 @@ const VideoCallPage = () => {
   }, [awardAdPoints, elapsedSeconds, flushMinutes, stop, navigate]);
 
   if (!loading && !user) {
-    return <Navigate to="/" replace />;
+    const currentSearch = window.location.search;
+    const returnPath = currentSearch ? `/videocall${currentSearch}` : "/videocall";
+    return <Navigate to={`/?returnTo=${encodeURIComponent(returnPath)}`} replace />;
   }
 
   // Redirect users who haven't completed onboarding (no gender set)
