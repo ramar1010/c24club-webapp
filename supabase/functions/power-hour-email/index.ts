@@ -87,13 +87,21 @@ Deno.serve(async (req) => {
     }
 
     // 4. Get ALL members with emails AND gender
-    const { data: members, error: memErr } = await supabase
+    // If test_email is set, only fetch that one member
+    let membersQuery = supabase
       .from("members")
       .select("id, name, email, gender")
       .not("email", "is", null);
 
+    if (forceTestEmail) {
+      membersQuery = membersQuery.ilike("email", forceTestEmail);
+    }
+
+    const { data: members, error: memErr } = await membersQuery.limit(2000);
+
     if (memErr) throw memErr;
     if (!members || members.length === 0) {
+      console.log("No matching members found.", forceTestEmail ? `Test email: ${forceTestEmail}` : "");
       console.log("No members with emails found.");
       return new Response(JSON.stringify({ sent: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
