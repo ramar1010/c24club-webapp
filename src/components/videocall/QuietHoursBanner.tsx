@@ -124,6 +124,24 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
     },
   });
 
+  // Fetch user's existing email
+  const { data: memberEmail } = useQuery({
+    queryKey: ["member_email", userId],
+    enabled: userId !== "anonymous",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("email")
+        .eq("id", userId)
+        .maybeSingle();
+      return data?.email || "";
+    },
+  });
+
+  useEffect(() => {
+    if (memberEmail) setEmail(memberEmail);
+  }, [memberEmail]);
+
   // Fetch user's slot signups
   const { data: mySignups = [] } = useQuery({
     queryKey: ["slot_signups_mine", userId],
