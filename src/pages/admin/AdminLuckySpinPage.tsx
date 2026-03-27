@@ -74,7 +74,7 @@ const AdminLuckySpinPage = () => {
               <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-1">
                 <p><strong>Spin interval:</strong> Every {(settings?.spin_interval_ms ?? 5000) / 1000}s</p>
                 <p><strong>Daily cap:</strong> ${((settings?.daily_cap_cents ?? 500) / 100).toFixed(2)} per user</p>
-                <p><strong>Prizes:</strong> $0.10 (8%), $0.35 (3%), $0.50 (1%), $5.00 (0.1%)</p>
+                <p><strong>Prizes:</strong> $0.10 (8%), $0.50 (1%), $5 (0.1%), $10 (0.03%), $25 (0.01%), $50 (0.005%)</p>
                 <p><strong>Wait boost:</strong> Odds double after 3 min waiting</p>
               </div>
             </>

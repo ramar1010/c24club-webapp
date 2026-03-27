@@ -7,10 +7,12 @@ const corsHeaders = {
 
 // Prize table: amount in cents, base odds (out of 10000)
 const PRIZES = [
-  { cents: 10, baseOdds: 800 },   // $0.10 — 8%
-  { cents: 35, baseOdds: 300 },   // $0.35 — 3%
-  { cents: 50, baseOdds: 100 },   // $0.50 — 1%
-  { cents: 500, baseOdds: 10 },   // $5.00 — 0.1%
+  { cents: 10, baseOdds: 800 },    // $0.10 — 8%
+  { cents: 50, baseOdds: 100 },    // $0.50 — 1%
+  { cents: 500, baseOdds: 10 },    // $5.00 — 0.1%
+  { cents: 1000, baseOdds: 3 },    // $10.00 — 0.03%
+  { cents: 2500, baseOdds: 1 },    // $25.00 — 0.01%
+  { cents: 5000, baseOdds: 0.5 },  // $50.00 — 0.005%
 ];
 
 // Max boost multiplier: 2x after 3+ min waiting
