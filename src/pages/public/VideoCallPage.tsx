@@ -356,11 +356,13 @@ const VideoCallPage = () => {
           const key = `${req.id}:${req.status}`;
           if (!seenCameraStatuses.has(key)) {
             seenCameraStatuses.add(key);
-            if (req.status === "accepted") {
-              toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
-              setCameraUnlocked(true);
-            } else if (req.status === "declined") {
-              toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
+            if (!firstCameraPoll) {
+              if (req.status === "accepted") {
+                toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
+                setCameraUnlocked(true);
+              } else if (req.status === "declined") {
+                toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
+              }
             }
           }
         }
@@ -380,13 +382,16 @@ const VideoCallPage = () => {
           const key = `${req.id}:${req.status}`;
           if (!seenCameraStatuses.has(key)) {
             seenCameraStatuses.add(key);
-            setCameraUnlockRequest({
-              id: req.id,
-              recipient_cut_cents: req.recipient_cut_cents,
-            });
+            if (!firstCameraPoll) {
+              setCameraUnlockRequest({
+                id: req.id,
+                recipient_cut_cents: req.recipient_cut_cents,
+              });
+            }
           }
         }
       }
+      firstCameraPoll = false;
     };
 
     pollUpdates();
