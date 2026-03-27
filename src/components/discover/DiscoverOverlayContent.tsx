@@ -45,7 +45,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
           </div>
           {/* DMs button */}
           <button
-            onClick={() => setShowMessages(true)}
+            onClick={() => setShowMessages("")}
             className="relative flex items-center gap-1 sm:gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors border border-blue-500/30"
           >
             <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
