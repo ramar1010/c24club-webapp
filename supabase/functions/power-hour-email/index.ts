@@ -151,14 +151,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Filter members for test mode
-    const targetMembers = forceTestEmail
-      ? members.filter(m => m.email?.toLowerCase() === forceTestEmail!.toLowerCase())
-      : members;
-
     const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
 
-    for (const member of targetMembers) {
+    for (const member of members) {
       if (!member.email || suppressedSet.has(member.email.toLowerCase())) {
         continue;
       }
