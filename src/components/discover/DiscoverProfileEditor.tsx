@@ -9,11 +9,13 @@ import instagramIcon from "@/assets/socials/instagram.png";
 import snapchatIcon from "@/assets/socials/snapchat.png";
 import venmoIcon from "@/assets/socials/venmo.png";
 import paypalIcon from "@/assets/socials/paypal.png";
+import discordIcon from "@/assets/socials/discord.png";
 
 const SOCIAL_PLATFORMS = [
   { key: "instagram", label: "Instagram", icon: instagramIcon, placeholder: "@username" },
   { key: "tiktok", label: "TikTok", icon: tiktokIcon, placeholder: "@username" },
   { key: "snapchat", label: "Snapchat", icon: snapchatIcon, placeholder: "/username" },
+  { key: "discord", label: "Discord", icon: discordIcon, placeholder: "username" },
   { key: "cashapp", label: "CashApp", icon: cashappIcon, placeholder: "$cashtag" },
   { key: "venmo", label: "Venmo", icon: venmoIcon, placeholder: "/username" },
   { key: "paypal", label: "PayPal", icon: paypalIcon, placeholder: "@username" },

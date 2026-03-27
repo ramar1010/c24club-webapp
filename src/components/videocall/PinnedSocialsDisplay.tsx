@@ -4,12 +4,14 @@ import instagramIcon from "@/assets/socials/instagram.png";
 import snapchatIcon from "@/assets/socials/snapchat.png";
 import venmoIcon from "@/assets/socials/venmo.png";
 import paypalIcon from "@/assets/socials/paypal.png";
+import discordIcon from "@/assets/socials/discord.png";
 
-const SOCIAL_LINKS: Record<string, { icon: string; urlPrefix: string }> = {
+const SOCIAL_LINKS: Record<string, { icon: string; urlPrefix: string | null }> = {
   cashapp: { icon: cashappIcon, urlPrefix: "https://cash.app/" },
   tiktok: { icon: tiktokIcon, urlPrefix: "https://tiktok.com/@" },
   instagram: { icon: instagramIcon, urlPrefix: "https://instagram.com/" },
   snapchat: { icon: snapchatIcon, urlPrefix: "https://snapchat.com/add/" },
+  discord: { icon: discordIcon, urlPrefix: null },
   venmo: { icon: venmoIcon, urlPrefix: "https://venmo.com/" },
   paypal: { icon: paypalIcon, urlPrefix: "https://paypal.me/" },
 };
