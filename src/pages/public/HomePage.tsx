@@ -11,7 +11,7 @@ import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
-import reward1 from "@/assets/rewards/reward1.jpg";
+
 import reward3 from "@/assets/rewards/reward3.jpg";
 import reward4 from "@/assets/rewards/reward4.jpeg";
 import reward5 from "@/assets/rewards/reward5.jpg";
@@ -39,10 +39,10 @@ const rewards = [
   { label: "Red Bag", minutes: 120, image: redbag2 },
   { label: "Slippers", minutes: 75, image: slippers },
   { label: "Designer Bag", minutes: 130, image: bagImg },
-  { label: "Reward Item", minutes: 110, image: reward1 },
+  { label: "Reward Item", minutes: 110, image: reward3 },
 ];
 
-const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward1];
+const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward3];
 const rightSideRewards = [hat2, phonecase2, redbag2, slippers, bagImg];
 
 const RewardCarousel = () => {
@@ -781,7 +781,7 @@ const HomePage = () => {
               {/* Reward grid visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
                 <div className="grid grid-cols-3 gap-2 h-full">
-                  {[bagImg, bag3, boots2, reward1, hat2, phonecase2].map((img, i) => (
+                  {[bagImg, bag3, boots2, reward3, hat2, phonecase2].map((img, i) => (
                     <div
                       key={i}
                       className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
