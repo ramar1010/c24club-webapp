@@ -198,6 +198,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "lucky-spin",
+    icon: Disc3,
+    title: "Lucky Spin",
+    submenu: [
+      { key: "lucky-spin-settings", label: "Lucky Spin Settings", path: "/admin/lucky-spin" },
+    ],
+  },
+  {
     key: "legendary-cashout",
     icon: Crown,
     title: "Legendary Items CashOut",
