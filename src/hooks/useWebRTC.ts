@@ -33,6 +33,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const signalingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const signalPollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const channelIdRef = useRef<string>(crypto.randomUUID());
   const roomIdRef = useRef<string | null>(null);
 
@@ -75,6 +76,13 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
+  function clearSignalPolling() {
+    if (signalPollIntervalRef.current) {
+      clearInterval(signalPollIntervalRef.current);
+      signalPollIntervalRef.current = null;
+    }
+  }
+
   function clearRemoteVideo() {
     remoteStreamRef.current = null;
     if (remoteVideoRef.current) {
@@ -95,11 +103,80 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   function cleanupSignalingChannel() {
+    clearSignalPolling();
     if (signalingChannelRef.current) {
       supabase.removeChannel(signalingChannelRef.current);
       signalingChannelRef.current = null;
     }
   }
+
+  // --- Database signaling helpers ---
+  async function dbSendSignal(roomId: string, signalType: string, payload: any) {
+    await supabase.from("room_signals").insert({
+      room_id: roomId,
+      sender_channel: channelIdRef.current,
+      signal_type: signalType,
+      payload,
+    } as any);
+  }
+
+  function startSignalPolling(roomId: string) {
+    clearSignalPolling();
+    const processedIds = new Set<string>();
+
+    signalPollIntervalRef.current = setInterval(async () => {
+      const { data: signals } = await supabase
+        .from("room_signals")
+        .select("*")
+        .eq("room_id", roomId)
+        .neq("sender_channel", channelIdRef.current)
+        .order("created_at", { ascending: true }) as any;
+
+      if (!signals) return;
+
+      for (const sig of signals) {
+        if (processedIds.has(sig.id)) continue;
+        processedIds.add(sig.id);
+
+        const pc = peerConnectionRef.current;
+        if (!pc) continue;
+
+        try {
+          if (sig.signal_type === "offer") {
+            console.log("[WebRTC] DB: Received offer");
+            await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            // Send answer via DB
+            await dbSendSignal(roomId, "answer", answer);
+            // Also try broadcast
+            signalingChannelRef.current?.send({
+              type: "broadcast",
+              event: "answer",
+              payload: { from: channelIdRef.current, sdp: answer },
+            }).catch(() => {});
+          } else if (sig.signal_type === "answer") {
+            console.log("[WebRTC] DB: Received answer");
+            if (pc.signalingState === "have-local-offer") {
+              await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+            }
+          } else if (sig.signal_type === "ice-candidate") {
+            await pc.addIceCandidate(new RTCIceCandidate(sig.payload)).catch(() => {});
+          } else if (sig.signal_type === "partner-disconnected") {
+            handlePartnerLeft();
+          }
+        } catch (e) {
+          console.warn("[WebRTC] DB signal processing error:", e);
+        }
+      }
+    }, 1000);
+  }
+
+  async function cleanupRoomSignals(roomId: string) {
+    await supabase.from("room_signals").delete().eq("room_id", roomId).catch(() => {});
+  }
+
+  // --- End database signaling helpers ---
 
   async function getLocalStream() {
     if (localStreamRef.current) {
@@ -122,9 +199,12 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     if (autoReconnectingRef.current) return;
     autoReconnectingRef.current = true;
 
+    const oldRoomId = roomIdRef.current;
     cleanupPeerConnection();
     cleanupSignalingChannel();
     clearPolling();
+
+    if (oldRoomId) cleanupRoomSignals(oldRoomId);
 
     await supabase.functions.invoke("videocall-match", {
       body: { type: "disconnect", memberId: memberIdRef.current },
@@ -193,20 +273,29 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     };
 
     pc.onicecandidate = (event) => {
-      if (!event.candidate || !signalingChannelRef.current) return;
+      if (!event.candidate) return;
+      const candidateJson = event.candidate.toJSON();
+      const rid = roomIdRef.current;
 
-      signalingChannelRef.current.send({
+      // Send via broadcast
+      signalingChannelRef.current?.send({
         type: "broadcast",
         event: "ice-candidate",
         payload: {
           from: channelIdRef.current,
-          candidate: event.candidate.toJSON(),
+          candidate: candidateJson,
         },
-      });
+      }).catch(() => {});
+
+      // Also send via DB fallback
+      if (rid) {
+        dbSendSignal(rid, "ice-candidate", candidateJson).catch(() => {});
+      }
     };
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "connected") {
+        clearSignalPolling(); // Stop polling once connected
         attachStreamToVideo(remoteVideoRef.current, remoteStreamRef.current);
         setCallState("connected");
       }
@@ -223,6 +312,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   async function setupSignaling(roomId: string) {
     cleanupSignalingChannel();
 
+    // Start DB signal polling as fallback
+    startSignalPolling(roomId);
+
     return new Promise<void>((resolve) => {
       const channel = supabase.channel(`room:${roomId}`, {
         config: { broadcast: { self: false } },
@@ -235,6 +327,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
           const pc = peerConnectionRef.current;
           if (!pc) return;
 
+          console.log("[WebRTC] Broadcast: Received offer");
           await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
@@ -243,7 +336,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
             type: "broadcast",
             event: "answer",
             payload: { from: channelIdRef.current, sdp: answer },
-          });
+          }).catch(() => {});
+
+          // Also send answer via DB
+          dbSendSignal(roomId, "answer", answer).catch(() => {});
         })
         .on("broadcast", { event: "answer" }, async ({ payload }) => {
           if (payload.from === channelIdRef.current) return;
@@ -251,7 +347,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
           const pc = peerConnectionRef.current;
           if (!pc) return;
 
-          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          console.log("[WebRTC] Broadcast: Received answer");
+          if (pc.signalingState === "have-local-offer") {
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          }
         })
         .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
           if (payload.from === channelIdRef.current) return;
@@ -275,6 +374,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         });
 
       signalingChannelRef.current = channel;
+
+      // Resolve after timeout if WebSocket subscription doesn't complete
+      setTimeout(() => resolve(), 3000);
     });
   }
 
@@ -312,20 +414,31 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       await pc.setLocalDescription(offer);
 
       console.log("[WebRTC] Sending offer from poller");
-      await signalingChannelRef.current?.send({
+      // Send via broadcast
+      signalingChannelRef.current?.send({
         type: "broadcast",
         event: "offer",
         payload: { from: channelIdRef.current, sdp: offer },
-      });
+      }).catch(() => {});
+
+      // Also send via DB fallback
+      dbSendSignal(room.id, "offer", offer).catch(() => {});
     }, 2000);
   }
 
   async function disconnect() {
+    const rid = roomIdRef.current;
+
     signalingChannelRef.current?.send({
       type: "broadcast",
       event: "partner-disconnected",
       payload: { from: channelIdRef.current },
-    });
+    }).catch(() => {});
+
+    // Also signal disconnect via DB
+    if (rid) {
+      dbSendSignal(rid, "partner-disconnected", {}).catch(() => {});
+    }
 
     cleanupPeerConnection();
     cleanupSignalingChannel();
@@ -335,6 +448,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       body: { type: "disconnect", memberId: memberIdRef.current },
     });
 
+    if (rid) cleanupRoomSignals(rid);
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
@@ -400,11 +514,17 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   async function next() {
+    const rid = roomIdRef.current;
+
     signalingChannelRef.current?.send({
       type: "broadcast",
       event: "partner-disconnected",
       payload: { from: channelIdRef.current },
-    });
+    }).catch(() => {});
+
+    if (rid) {
+      dbSendSignal(rid, "partner-disconnected", {}).catch(() => {});
+    }
 
     cleanupPeerConnection();
     cleanupSignalingChannel();
@@ -414,6 +534,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       body: { type: "disconnect", memberId: memberIdRef.current },
     });
 
+    if (rid) cleanupRoomSignals(rid);
     roomIdRef.current = null;
     setCurrentPartnerId(null);
     setPartnerVoiceMode(false);
@@ -442,6 +563,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   useEffect(() => {
     return () => {
       clearPolling();
+      clearSignalPolling();
       cleanupSignalingChannel();
       cleanupPeerConnection();
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -498,41 +620,35 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
           event: "offer",
           payload: {
             from: channelIdRef.current,
-            sdp: pc.localDescription?.sdp,
+            sdp: offer,
           },
-        });
+        }).catch(() => {});
       }
 
-      voiceModeRef.current = false;
+      // Also send via DB
+      if (roomIdRef.current) {
+        dbSendSignal(roomIdRef.current, "offer", offer).catch(() => {});
+      }
     } catch (err) {
-      console.error("[WebRTC] Failed to enable camera:", err);
-    }
-  }
-
-  // Acquire camera for preview without starting matchmaking
-  async function startPreview() {
-    try {
-      await getLocalStream();
-    } catch (err) {
-      console.warn("[WebRTC] Preview camera failed:", err);
+      console.error("[WebRTC] enableCamera error:", err);
     }
   }
 
   return {
+    localVideoRef,
+    remoteVideoRef,
     callState,
-    hasStartedMatchmaking,
     error,
     currentPartnerId,
     partnerVoiceMode,
     partnerGender,
-    localVideoRef,
-    remoteVideoRef,
-    localStreamRef,
+    hasStartedMatchmaking,
     startCall,
     next,
     stop,
     disconnect,
     enableCamera,
-    startPreview,
+    localStreamRef,
+    remoteStreamRef,
   };
 }
