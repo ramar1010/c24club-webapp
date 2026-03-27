@@ -355,48 +355,72 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
                 : "instant matches with girls"}
             </span>. Pick the sessions you can make it to and we'll text you 5 min before.</p>
 
-          {/* Slot picker */}
+          {/* Slot picker — only show next 3 upcoming windows */}
           {windows.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-white/80 text-xs font-semibold">📅 Choose your sessions:</p>
-              <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
-                {windows.map((w) => {
-                  const isSignedUp = mySignups.includes(w.id);
-                  const realCount = signupCounts[w.id] || 0;
-                  // Generate a stable fake base from window id chars so it doesn't change on re-render
-                  const fakeBase = (w.id.charCodeAt(0) + w.id.charCodeAt(1)) % 20 + 12;
-                  const displayCount = realCount + fakeBase;
-                  return (
-                    <button
-                      key={w.id}
-                      onClick={() => toggleSlotMutation.mutate({ windowId: w.id, isSignedUp })}
-                      disabled={toggleSlotMutation.isPending}
-                      className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all ${
-                        isSignedUp
-                          ? "bg-green-900/40 border border-green-600/50"
-                          : "bg-neutral-800/60 border border-neutral-700/40 hover:border-amber-600/40"
-                      }`}
-                    >
-                      <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
-                        isSignedUp ? "bg-green-500" : "bg-neutral-700"
-                      }`}>
-                        {isSignedUp && <Check className="w-3.5 h-3.5 text-white" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white text-xs font-medium truncate">
-                          {FULL_DAY_NAMES[w.day_of_week]} · {formatTime12(w.start_time)} – {formatTime12(w.end_time)}
-                        </p>
-                        {w.label && (
-                          <p className="text-amber-400/70 text-[10px] truncate">{w.label}</p>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-green-400/70 shrink-0 flex items-center gap-1 font-medium">
-                        <Users className="w-3 h-3" />
-                        {displayCount} joined
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="space-y-1.5">
+                {(() => {
+                  // Sort windows by how soon they occur from now, take top 3
+                  const now = new Date();
+                  const currentDay = now.getDay();
+                  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                  const sorted = [...windows]
+                    .map((w) => {
+                      const startMin = timeToMinutes(w.start_time);
+                      const endMin = timeToMinutes(w.end_time);
+                      let dayDiff = w.day_of_week - currentDay;
+                      if (dayDiff < 0) dayDiff += 7;
+                      let minutesUntil: number;
+                      if (dayDiff === 0) {
+                        if (currentMinutes < endMin) minutesUntil = Math.max(0, startMin - currentMinutes);
+                        else minutesUntil = 7 * 24 * 60 - currentMinutes + startMin;
+                      } else {
+                        minutesUntil = dayDiff * 24 * 60 - currentMinutes + startMin;
+                      }
+                      return { ...w, minutesUntil };
+                    })
+                    .sort((a, b) => a.minutesUntil - b.minutesUntil)
+                    .slice(0, 3);
+
+                  return sorted.map((w) => {
+                    const isSignedUp = mySignups.includes(w.id);
+                    const realCount = signupCounts[w.id] || 0;
+                    const fakeBase = (w.id.charCodeAt(0) + w.id.charCodeAt(1)) % 20 + 12;
+                    const displayCount = realCount + fakeBase;
+                    return (
+                      <button
+                        key={w.id}
+                        onClick={() => toggleSlotMutation.mutate({ windowId: w.id, isSignedUp })}
+                        disabled={toggleSlotMutation.isPending}
+                        className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all ${
+                          isSignedUp
+                            ? "bg-green-900/40 border border-green-600/50"
+                            : "bg-neutral-800/60 border border-neutral-700/40 hover:border-amber-600/40"
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                          isSignedUp ? "bg-green-500" : "bg-neutral-700"
+                        }`}>
+                          {isSignedUp && <Check className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-xs font-medium truncate">
+                            {FULL_DAY_NAMES[w.day_of_week]} · {formatTime12(w.start_time)} – {formatTime12(w.end_time)}
+                          </p>
+                          {w.label && (
+                            <p className="text-amber-400/70 text-[10px] truncate">{w.label}</p>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-green-400/70 shrink-0 flex items-center gap-1 font-medium">
+                          <Users className="w-3 h-3" />
+                          {displayCount} joined
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
