@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
+    const joinLink = "https://c24club.com/videocall?from=power_hour";
 
     const buildHtml = (userName: string, headline: string, bodyText: string, ctaText: string) => `
 <!DOCTYPE html>
