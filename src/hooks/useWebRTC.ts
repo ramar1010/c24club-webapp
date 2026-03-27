@@ -173,7 +173,9 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   }
 
   async function cleanupRoomSignals(roomId: string) {
-    await supabase.from("room_signals").delete().eq("room_id", roomId).catch(() => {});
+    try {
+      await supabase.from("room_signals").delete().eq("room_id", roomId);
+    } catch {}
   }
 
   // --- End database signaling helpers ---
@@ -634,6 +636,14 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
+  async function startPreview() {
+    try {
+      await getLocalStream();
+    } catch (err) {
+      console.warn("[WebRTC] startPreview error:", err);
+    }
+  }
+
   return {
     localVideoRef,
     remoteVideoRef,
@@ -648,6 +658,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     stop,
     disconnect,
     enableCamera,
+    startPreview,
     localStreamRef,
     remoteStreamRef,
   };
