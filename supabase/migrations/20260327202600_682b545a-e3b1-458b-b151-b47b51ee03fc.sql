@@ -1,0 +1,1 @@
+UPDATE public.members SET image_status = 'pending' WHERE image_status = 'approved' AND is_discoverable = false AND image_url IS NOT NULL;
