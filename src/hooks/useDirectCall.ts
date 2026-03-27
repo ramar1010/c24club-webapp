@@ -182,7 +182,7 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
         const pendingRemoteCandidates: RTCIceCandidateInit[] = [];
         let remoteDescriptionSet = false;
         let offerSent = false;
-        let lastSignalId: string | null = null;
+        const processedSignalIds = new Set<string>();
 
         const flushRemoteCandidates = async () => {
           while (pendingRemoteCandidates.length > 0) {
@@ -216,6 +216,8 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
         // Process signals from DB polling
         const processSignal = async (signal: { id: string; signal_type: string; payload: any; sender_channel: string }) => {
           if (signal.sender_channel === myUserId) return;
+          if (processedSignalIds.has(signal.id)) return;
+          processedSignalIds.add(signal.id);
 
           switch (signal.signal_type) {
             case "offer": {
@@ -266,24 +268,21 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           }
         };
 
+        // Clean up any stale signals from previous attempts for this room
+        await supabase.from("room_signals").delete().eq("room_id", roomId);
+
         // Start polling for signals
         const pollSignals = async () => {
           try {
-            let query = supabase
+            const { data } = await supabase
               .from("room_signals")
               .select("id, signal_type, payload, sender_channel, created_at")
               .eq("room_id", roomId)
               .neq("sender_channel", myUserId)
               .order("created_at", { ascending: true });
 
-            if (lastSignalId) {
-              query = query.gt("id", lastSignalId);
-            }
-
-            const { data } = await query;
             if (data && data.length > 0) {
               for (const signal of data) {
-                lastSignalId = signal.id;
                 await processSignal(signal as any);
               }
             }
@@ -296,9 +295,9 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
         setCallState("ringing");
         await dbSendSignal(roomId, myUserId, "peer-ready", { from: myUserId });
 
-        pollRef.current = setInterval(pollSignals, 800);
-        // Initial poll
-        await pollSignals();
+        pollRef.current = setInterval(pollSignals, 500);
+        // Initial poll after a short delay to let partner's signal land
+        setTimeout(() => pollSignals(), 300);
 
         // Retry peer-ready for initiator
         if (isInitiator) {
