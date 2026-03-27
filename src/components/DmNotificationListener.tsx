@@ -14,6 +14,7 @@ const DmNotificationListener = () => {
     if (!user) return;
 
     const seenMessageIds = new Set<string>();
+    let firstPoll = true;
 
     const checkNewMessages = async () => {
       const { data: convos } = await supabase
