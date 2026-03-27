@@ -14,6 +14,7 @@ interface IncomingInterestsProps {
   myInterests: Map<string, string | null>;
   onInterestBack: (userId: string) => void;
   sendingInterest: string | null;
+  onOpenDm?: () => void;
 }
 
 const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest }: IncomingInterestsProps) => {
