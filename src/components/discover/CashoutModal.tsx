@@ -26,6 +26,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
   const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<CashoutRequest[]>([]);
+  const [luckySpinTotal, setLuckySpinTotal] = useState(0);
   const [settings, setSettings] = useState<{
     rate_per_minute: number;
     min_cashout_minutes: number;
