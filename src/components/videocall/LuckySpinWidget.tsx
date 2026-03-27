@@ -5,6 +5,7 @@ import { DollarSign, EyeOff } from "lucide-react";
 
 interface LuckySpinWidgetProps {
   isWaiting: boolean;
+  onOpenMyRewards?: () => void;
 }
 
 const SYMBOLS = ["💰", "🎁", "⭐", "🍀", "💎", "🔥", "🎯", "✨"];
