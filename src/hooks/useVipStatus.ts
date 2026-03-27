@@ -75,10 +75,10 @@ export function useVipStatus(userId: string | null) {
     checkSubscription();
   }, [checkSubscription]);
 
-  // Auto-refresh every 60 seconds
+  // Auto-refresh every 5 minutes (matches cache TTL)
   useEffect(() => {
     if (!userId) return;
-    const interval = setInterval(checkSubscription, 60_000);
+    const interval = setInterval(checkSubscription, 5 * 60_000);
     return () => clearInterval(interval);
   }, [userId, checkSubscription]);
 
