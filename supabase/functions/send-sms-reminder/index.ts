@@ -201,7 +201,47 @@ serve(async (req) => {
             });
 
             const joinLink = "https://c24club.lovable.app/videocall?from=window_reminder";
-            const windowLabel = win.label || "Video Chat";
+
+            // Gender counts for social proof
+            const maleCount = (members || []).filter((m: any) => m.gender === "male").length;
+            const femaleCount = (members || []).filter((m: any) => m.gender === "female").length;
+            const randomBoost = () => Math.floor(Math.random() * 6) + 3;
+            const femalesForMales = Math.min(femaleCount + randomBoost(), 25);
+            const malesForFemales = Math.min(maleCount + randomBoost(), 30);
+
+            // Format display time
+            const [startH, startM] = win.start_time.split(":").map(Number);
+            const displayHour = startH > 12 ? startH - 12 : startH === 0 ? 12 : startH;
+            const amPm = startH >= 12 ? "PM" : "AM";
+            const displayTime = `${displayHour}:${String(startM).padStart(2, "0")} ${amPm} UTC`;
+
+            const buildHtml = (userName: string, headline: string, bodyText: string, ctaText: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr><td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;text-align:center;">
+          <h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">${headline}</h1>
+        </td></tr>
+        <tr><td style="padding:32px 28px;">
+          <p style="margin:0 0 16px;font-size:15px;color:#1a1a2e;line-height:1.6;">Hey ${userName}! 👋</p>
+          <p style="margin:0 0 24px;font-size:14px;color:#4a4a68;line-height:1.7;">${bodyText}</p>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 24px;">
+            <a href="${joinLink}" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 40px;border-radius:8px;">${ctaText}</a>
+          </td></tr></table>
+          <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">Session starts at ${displayTime}</p>
+        </td></tr>
+        <tr><td style="background-color:#f9fafb;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f5;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;">— C24 Club</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
             for (const member of (members || [])) {
               if (!member.email || suppressedSet.has(member.email.toLowerCase())) continue;
@@ -209,14 +249,25 @@ serve(async (req) => {
               const userName = member.name || "there";
               const isFemale = member.gender === "female";
 
-              const subject = isFemale
-                ? `🎥 "${windowLabel}" session starting soon — chat & earn!`
-                : `🎥 "${windowLabel}" session starting at ${win.start_time}!`;
+              let subject: string;
+              let headline: string;
+              let bodyText: string;
+              let ctaText: string;
 
-              const body = isFemale
-                ? `Hey ${userName}! 👋\n\nYour scheduled "${windowLabel}" session starts at ${win.start_time} UTC!\n\nHop on now to chat & earn rewards for every minute you're on. 🎁\n\n👉 Join: ${joinLink}\n\n— C24 Club`
-                : `Hey ${userName}! 👋\n\nYour scheduled "${windowLabel}" session starts at ${win.start_time} UTC!\n\nThis is your best chance to meet new people — join now for instant matches.\n\n👉 Join: ${joinLink}\n\n— C24 Club`;
+              if (isFemale) {
+                subject = `⚡ ${malesForFemales} guys are logging in soon — chat & earn!`;
+                headline = `⚡ Your session starts soon!`;
+                bodyText = `<strong>${malesForFemales} male users</strong> have opted to join your upcoming video call session!<br><br>Chat &amp; meet new guys and get rewards for every minute you chat — or get gifted by them! 🎁<br><br>The more you chat, the more you earn. This is the busiest session of the day!`;
+                ctaText = "Join & Start Earning 💰";
+              } else {
+                subject = `⚡ ${femalesForMales} girls are joining your scheduled video call soon!`;
+                headline = `🔥 Your session starts soon!`;
+                bodyText = `<strong>${femalesForMales} girls</strong> are joining your upcoming video call session! 👀<br><br>Will they show up? Only time will tell — log in and wait!<br><br>This is the busiest time on C24 Club — the best chance to meet new people and have great conversations.`;
+                ctaText = "Join Now 🚀";
+              }
 
+              const htmlContent = buildHtml(userName, headline, bodyText, ctaText);
+              const plainText = `Hey ${userName}! Session starts soon at ${displayTime}. Join now: ${joinLink}`;
               const messageId = `window_remind_${win.id}_${member.id}_${todayStr}`;
 
               const { error: enqErr } = await supabase.rpc("enqueue_email", {
@@ -226,8 +277,8 @@ serve(async (req) => {
                   to: member.email,
                   from: "C24Club <support@c24club.com>",
                   subject,
-                  html: body.replace(/\n/g, "<br>"),
-                  text: body,
+                  html: htmlContent,
+                  text: plainText,
                   purpose: "transactional",
                   label: "window_reminder",
                   sender_domain: "c24club.com",
@@ -244,7 +295,7 @@ serve(async (req) => {
                   message_id: messageId,
                   metadata: { user_id: member.id, gender: member.gender || "unknown", window_id: win.id },
                 });
-                emailResults.push({ email: member.email, window: windowLabel });
+                emailResults.push({ email: member.email, window: win.label });
               } else {
                 console.error(`Email enqueue failed for ${member.email}:`, enqErr.message);
               }
