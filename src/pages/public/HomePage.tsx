@@ -781,7 +781,7 @@ const HomePage = () => {
               {/* Reward grid visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
                 <div className="grid grid-cols-3 gap-2 h-full">
-                  {[paypal2, bag3, boots2, cash2, hat2, phonecase2].map((img, i) => (
+                  {[bagImg, bag3, boots2, reward1, hat2, phonecase2].map((img, i) => (
                     <div
                       key={i}
                       className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
