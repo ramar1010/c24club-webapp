@@ -111,8 +111,8 @@ const PowerHourCountdown = ({ onDismiss, isFemale }: PowerHourCountdownProps) =>
 
               <p className="text-green-400 font-bold text-sm mb-3">
                 {isFemale
-                  ? "Maximum earning potential right now!"
-                  : "Girls are online now — start chatting!"}
+                  ? `${oppositeCount || "Several"} guys are online right now — chat & earn!`
+                  : `${oppositeCount || "Several"} girls showed up — start chatting!`}
               </p>
 
               <div className="bg-green-900/30 border border-green-600/30 rounded-xl p-3 mb-4">
@@ -120,20 +120,20 @@ const PowerHourCountdown = ({ onDismiss, isFemale }: PowerHourCountdownProps) =>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 justify-center">
                       <Trophy className="w-4 h-4 text-yellow-400" />
-                      <span className="text-white text-sm font-bold">Peak earning time — more guys online!</span>
+                      <span className="text-white text-sm font-bold">Chat & get rewarded! 💰</span>
                     </div>
                     <p className="text-green-300/80 text-xs">
-                      You'll earn minutes faster during Power Hour. Start chatting now to maximize your rewards!
+                      {oppositeCount || "Several"} male users are here for Power Hour. Meet new guys and earn rewards for every chat — or get gifted by them! 🎁
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 justify-center">
                       <Heart className="w-4 h-4 text-pink-400" />
-                      <span className="text-white text-sm font-bold">More girls are online right now!</span>
+                      <span className="text-white text-sm font-bold">{oppositeCount || "Several"} girls are online! 👀</span>
                     </div>
                     <p className="text-green-300/80 text-xs">
-                      Power Hour brings the most active users together. Hit Start to find your next match instantly!
+                      They showed up — hit Start to find your next match instantly!
                     </p>
                   </div>
                 )}
