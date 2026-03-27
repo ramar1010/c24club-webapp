@@ -49,16 +49,17 @@ Deno.serve(async (req) => {
 
     // Allow manual override via request body
     let forceTestEmail: string | null = null;
+    let reqBody: any = null;
     try {
-      const body = await req.json();
-      if (body?.reminder_type === "1hour" || body?.reminder_type === "10min") {
-        reminderType = body.reminder_type;
-      }
-      if (body?.test_email) {
-        forceTestEmail = body.test_email;
-      }
+      reqBody = await req.json();
     } catch {
       // No body or not JSON
+    }
+    if (reqBody?.reminder_type === "1hour" || reqBody?.reminder_type === "10min") {
+      reminderType = reqBody.reminder_type;
+    }
+    if (reqBody?.test_email) {
+      forceTestEmail = reqBody.test_email;
     }
 
     if (!reminderType) {
