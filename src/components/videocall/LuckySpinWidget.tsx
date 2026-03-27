@@ -140,7 +140,7 @@ const LuckySpinWidget = ({ isWaiting }: LuckySpinWidgetProps) => {
           <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">
             Lucky Spin
           </span>
-          <span className="text-[9px] text-yellow-400 ml-auto mr-4 font-bold animate-pulse drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]">
+          <span className="text-[9px] text-green-400 ml-auto mr-4 font-bold animate-pulse drop-shadow-[0_0_6px_rgba(74,222,128,0.8)]">
             Earn cash waiting!
           </span>
         </div>
