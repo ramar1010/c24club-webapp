@@ -14,7 +14,7 @@ interface IncomingInterestsProps {
   myInterests: Map<string, string | null>;
   onInterestBack: (userId: string) => void;
   sendingInterest: string | null;
-  onOpenDm?: () => void;
+  onOpenDm?: (userId: string) => void;
 }
 
 const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest, onOpenDm }: IncomingInterestsProps) => {
@@ -149,7 +149,7 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
                   <div className="shrink-0 flex items-center gap-1.5">
                     {onOpenDm && (
                       <button
-                        onClick={() => onOpenDm()}
+                        onClick={() => onOpenDm(interest.user_id)}
                         className="flex items-center gap-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
                       >
                         <MessageCircle className="w-3.5 h-3.5" />
