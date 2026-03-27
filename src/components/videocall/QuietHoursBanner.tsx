@@ -417,7 +417,7 @@ const QuietHoursBanner = ({ userId, isSearching, userGender }: Props) => {
           {/* Benefit callout */}
           <div className="flex items-start gap-2 text-[11px] text-white/50">
             <TrendingUp className="w-3.5 h-3.5 text-green-400 mt-0.5 shrink-0" />
-            <span>Get a text <span className="text-white/80 font-semibold">5 min before</span> your selected slots so you're first in line.</span>
+            <span>Get an <span className="text-white/80 font-semibold">email reminder</span> before your selected slots so you're first in line.</span>
           </div>
 
           {/* CTA */}
