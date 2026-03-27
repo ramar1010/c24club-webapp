@@ -1215,6 +1215,30 @@ export type Database = {
           },
         ]
       }
+      lucky_spin_settings: {
+        Row: {
+          daily_cap_cents: number
+          id: string
+          is_enabled: boolean
+          spin_interval_ms: number
+          updated_at: string
+        }
+        Insert: {
+          daily_cap_cents?: number
+          id?: string
+          is_enabled?: boolean
+          spin_interval_ms?: number
+          updated_at?: string
+        }
+        Update: {
+          daily_cap_cents?: number
+          id?: string
+          is_enabled?: boolean
+          spin_interval_ms?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       member_interests: {
         Row: {
           created_at: string
@@ -2624,6 +2648,30 @@ export type Database = {
           member_gender?: string | null
           member_id?: string
           voice_mode?: boolean
+        }
+        Relationships: []
+      }
+      waiting_spin_earnings: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          spin_date: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          spin_date?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          spin_date?: string
+          user_id?: string
         }
         Relationships: []
       }
