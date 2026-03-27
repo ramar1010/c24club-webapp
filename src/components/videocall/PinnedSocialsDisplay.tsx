@@ -30,7 +30,7 @@ const PinnedSocialsDisplay = ({ pinnedSocials }: PinnedSocialsDisplayProps) => {
       if (!username || !SOCIAL_LINKS[platform]) return null;
       return { platform, username, ...SOCIAL_LINKS[platform] };
     })
-    .filter(Boolean) as { platform: string; username: string; icon: string; urlPrefix: string }[];
+    .filter(Boolean) as { platform: string; username: string; icon: string; urlPrefix: string | null }[];
 
   if (parsed.length === 0) return null;
 
