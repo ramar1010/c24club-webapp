@@ -182,29 +182,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       checkBan(user.id);
     }, 100);
 
-    // Realtime: auto-show ban screen when a ban is inserted for this user
-    const channel = supabase
-      .channel(`ban-watch-${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "user_bans",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const row = payload.new as any;
-          if (row.is_active) {
-            setBanInfo({ reason: row.reason, ban_type: row.ban_type, created_at: row.created_at });
-          }
-        }
-      )
-      .subscribe();
+    const banPoll = setInterval(() => {
+      checkBan(user.id);
+    }, 15000);
 
     return () => {
       clearTimeout(timeout);
-      supabase.removeChannel(channel);
+      clearInterval(banPoll);
     };
   }, [user, checkAdmin, checkBan]);
 
