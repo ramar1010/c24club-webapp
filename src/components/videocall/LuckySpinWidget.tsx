@@ -180,7 +180,7 @@ const LuckySpinWidget = ({ isWaiting }: LuckySpinWidgetProps) => {
         {/* Cash out info */}
         <p className="text-[9px] text-neutral-500 text-center mt-1">
           Winnings go to your balance · Cash out anytime via{" "}
-          <span className="text-yellow-500/80">Reward Store → Cash Out</span>
+          <span className="text-yellow-500/80">My Rewards → Cash Out</span>
         </p>
       </div>
     </div>
