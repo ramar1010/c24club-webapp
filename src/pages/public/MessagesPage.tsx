@@ -41,7 +41,7 @@ const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
   );
 };
 
-const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
+const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; initialPartnerId?: string }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -59,7 +59,7 @@ const MessagesPage = ({ onClose }: { onClose?: () => void }) => {
   const [visibleCount, setVisibleCount] = useState(CONVOS_PER_PAGE);
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const toUserId = searchParams.get("to");
+  const toUserId = initialPartnerId || searchParams.get("to");
   const [profileCard, setProfileCard] = useState<Conversation["other_user"] | null>(null);
 
   // Direct call state
