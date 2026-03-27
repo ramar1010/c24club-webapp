@@ -419,6 +419,14 @@ const VideoCallPage = () => {
     }
   }, []);
 
+  const { data: hideCarousel } = useQuery({
+    queryKey: ["lucky-spin-carousel-setting"],
+    queryFn: async () => {
+      const { data } = await supabase.from("lucky_spin_settings").select("hide_carousel").limit(1).single();
+      return data?.hide_carousel ?? false;
+    },
+    staleTime: 60000,
+  });
 
   // Default voice mode ON for females on first load (they can toggle it off)
   useEffect(() => {
