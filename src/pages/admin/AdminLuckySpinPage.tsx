@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import AdminLayout from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -37,7 +36,8 @@ const AdminLuckySpinPage = () => {
   });
 
   return (
-    <AdminLayout title="Lucky Spin Settings">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Lucky Spin Settings</h1>
       <Card>
         <CardHeader>
           <CardTitle>Lucky Spin — Waiting Room</CardTitle>
@@ -69,7 +69,7 @@ const AdminLuckySpinPage = () => {
           )}
         </CardContent>
       </Card>
-    </AdminLayout>
+    </div>
   );
 };
 
