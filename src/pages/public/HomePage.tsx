@@ -19,7 +19,6 @@ import reward6 from "@/assets/rewards/reward6.jpg";
 import reward7 from "@/assets/rewards/reward7.jpg";
 import bagImg from "@/assets/rewards/bag.png";
 import cashImg from "@/assets/rewards/cash.png";
-import paypal2 from "@/assets/rewards/paypal-2.png";
 import phonecase2 from "@/assets/rewards/phonecase-2.png";
 import bag3 from "@/assets/rewards/bag-3.png";
 import boots2 from "@/assets/rewards/boots-2.png";
