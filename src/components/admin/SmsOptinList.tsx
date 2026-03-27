@@ -42,8 +42,8 @@ const SmsOptinList = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Phone className="h-5 w-5" />
-          Opted-In Phone Numbers ({activeCount} active)
+          <Mail className="h-5 w-5" />
+          Opted-In Members ({activeCount} active)
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -56,9 +56,9 @@ const SmsOptinList = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Status</TableHead>
+                   <TableHead>Member</TableHead>
+                   <TableHead>Email</TableHead>
+                   <TableHead>Status</TableHead>
                   <TableHead>Opted In</TableHead>
                 </TableRow>
               </TableHeader>
@@ -66,7 +66,7 @@ const SmsOptinList = () => {
                 {optins.map((o: any) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-medium">{o.member_name}</TableCell>
-                    <TableCell className="font-mono text-xs">{o.phone_number}</TableCell>
+                    <TableCell className="text-xs">{o.member_email}</TableCell>
                     <TableCell>
                       <Badge variant={o.is_active ? "default" : "secondary"}>
                         {o.is_active ? "Active" : "Inactive"}
