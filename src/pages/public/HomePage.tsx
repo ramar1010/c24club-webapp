@@ -11,7 +11,7 @@ import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
-import reward1 from "@/assets/rewards/reward1.jpg";
+
 import reward3 from "@/assets/rewards/reward3.jpg";
 import reward4 from "@/assets/rewards/reward4.jpeg";
 import reward5 from "@/assets/rewards/reward5.jpg";
