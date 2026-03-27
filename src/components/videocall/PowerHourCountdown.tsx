@@ -160,8 +160,8 @@ const PowerHourCountdown = ({ onDismiss, isFemale }: PowerHourCountdownProps) =>
 
               <p className="text-amber-300 text-sm mb-3">
                 {isFemale
-                  ? "Get ready to earn — the busiest session is about to begin!"
-                  : "Get ready — the best time to meet new people is almost here!"}
+                  ? `${oppositeCount || "Several"} male users have opted to join this session — chat & earn rewards!`
+                  : `${oppositeCount || "Several"} female users opted to join this session! Will they show up? Only time will tell 👀`}
               </p>
 
               {/* Countdown */}
