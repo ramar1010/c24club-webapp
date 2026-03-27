@@ -17,7 +17,7 @@ interface IncomingInterestsProps {
   onOpenDm?: () => void;
 }
 
-const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest }: IncomingInterestsProps) => {
+const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest, onOpenDm }: IncomingInterestsProps) => {
   const [expanded, setExpanded] = useState(true);
   const { user } = useAuth();
   const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
