@@ -180,15 +180,15 @@ const PowerHourCountdown = ({ onDismiss, isFemale }: PowerHourCountdownProps) =>
                 </p>
                 {isFemale ? (
                   <>
-                    <p className="text-white/50 text-[11px] pl-5">✅ Make sure your profile is updated for more gifts</p>
-                    <p className="text-white/50 text-[11px] pl-5">✅ Check the Reward Store for new items</p>
-                    <p className="text-white/50 text-[11px] pl-5">✅ You can start chatting now — Power Hour just boosts activity!</p>
+                    <p className="text-white/50 text-[11px] pl-5">✅ {oppositeCount || "Several"} guys are waiting — more rewards for you!</p>
+                    <p className="text-white/50 text-[11px] pl-5">✅ Chat & earn minutes or get gifted by them 🎁</p>
+                    <p className="text-white/50 text-[11px] pl-5">✅ You can start chatting now — Power Hour boosts activity!</p>
                   </>
                 ) : (
                   <>
+                    <p className="text-white/50 text-[11px] pl-5">✅ {oppositeCount || "Several"} girls opted in — log in and wait!</p>
                     <p className="text-white/50 text-[11px] pl-5">✅ You can start chatting now — don't have to wait!</p>
-                    <p className="text-white/50 text-[11px] pl-5">✅ Check out the Discover page to find people to call</p>
-                    <p className="text-white/50 text-[11px] pl-5">✅ Power Hour just means more active users — the party gets bigger!</p>
+                    <p className="text-white/50 text-[11px] pl-5">✅ Check the Discover page to find people to call</p>
                   </>
                 )}
               </div>
