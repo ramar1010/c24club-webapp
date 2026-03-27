@@ -1266,7 +1266,6 @@ const VideoCallPage = () => {
                       onOpenDiscover={() => setOverlayPage("discover")}
                       onOpenStore={() => setOverlayPage("store")}
                     />
-                  </>}
                   }
                 </div>
               </div>
