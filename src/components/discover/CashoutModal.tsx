@@ -168,6 +168,12 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
             <span className="text-white/50 text-xs">💵 Each Minute is Worth</span>
             <span className="text-white font-bold text-sm">${settings.rate_per_minute}</span>
           </div>
+          {luckySpinTotal > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-xs">🎰 Lucky Spin Earnings</span>
+              <span className="text-yellow-400 font-bold text-sm">${(luckySpinTotal / 100).toFixed(2)}</span>
+            </div>
+          )}
           <div className="border-t border-white/10 pt-1.5 flex justify-between items-center">
             <span className="text-white/50 text-xs">💰 Full Balance Value</span>
             <span className="text-emerald-400 font-bold text-sm">${(giftedMinutes * settings.rate_per_minute).toFixed(2)}</span>
