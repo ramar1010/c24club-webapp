@@ -196,17 +196,17 @@ Deno.serve(async (req) => {
 
       if (isFemale) {
         subject = reminderType === "1hour"
-          ? `⚡ ${malesForFemales} guys are joining Power Hour in ${timeLabel}!`
-          : `🔥 ${malesForFemales} guys are logging on NOW — Power Hour in ${timeLabel}!`;
-        headline = `⚡ Power Hour in ${timeLabel}!`;
+          ? `⚡ ${malesForFemales} guys are logging in soon — chat & earn in ${timeLabel}!`
+          : `🔥 ${malesForFemales} guys are logging in NOW — chat & earn in ${timeLabel}!`;
+        headline = `⚡ Your session starts in ${timeLabel}!`;
         bodyText = `<strong>${malesForFemales} male users</strong> have opted to join your upcoming video call session in ${timeLabel}!<br><br>Chat &amp; meet new guys and get rewards for every minute you chat — or get gifted by them! 🎁<br><br>The more you chat, the more you earn. This is the busiest session of the day!`;
         ctaText = "Join & Start Earning 💰";
       } else {
         subject = reminderType === "1hour"
-          ? `⚡ ${femalesForMales} girls opted in for Power Hour in ${timeLabel}!`
-          : `🔥 ${femalesForMales} girls are joining Power Hour in ${timeLabel}!`;
-        headline = `🔥 Power Hour in ${timeLabel}!`;
-        bodyText = `<strong>${femalesForMales} female users</strong> opted to join your upcoming video call session in ${timeLabel}! 👀<br><br>Will they show up? Only time will tell — log in and wait!<br><br>Power Hour is the busiest time on C24 Club — the best chance to meet new people and have great conversations.`;
+          ? `⚡ ${femalesForMales} girls are joining your scheduled video call in ${timeLabel}!`
+          : `🔥 ${femalesForMales} girls are joining your scheduled video call in ${timeLabel}!`;
+        headline = `🔥 Your session starts in ${timeLabel}!`;
+        bodyText = `<strong>${femalesForMales} girls</strong> are joining your upcoming video call session in ${timeLabel}! 👀<br><br>Will they show up? Only time will tell — log in and wait!<br><br>This is the busiest time on C24 Club — the best chance to meet new people and have great conversations.`;
         ctaText = "Join Now 🚀";
       }
 
