@@ -10,7 +10,7 @@ interface LuckySpinWidgetProps {
 
 const SYMBOLS = ["💰", "🎁", "⭐", "🍀", "💎", "🔥", "🎯", "✨"];
 
-const LuckySpinWidget = ({ isWaiting }: LuckySpinWidgetProps) => {
+const LuckySpinWidget = ({ isWaiting, onOpenMyRewards }: LuckySpinWidgetProps) => {
   const [hidden, setHidden] = useState(() => localStorage.getItem("lucky-spin-hidden") === "true");
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<{ won: boolean; amount_display?: string } | null>(null);
@@ -193,7 +193,9 @@ const LuckySpinWidget = ({ isWaiting }: LuckySpinWidgetProps) => {
         {/* Cash out info */}
         <p className="text-[9px] text-neutral-500 text-center mt-1">
           Winnings go to your balance · Cash out anytime via{" "}
-          <span className="text-yellow-500/80">My Rewards → Cash Out</span>
+          <button onClick={onOpenMyRewards} className="text-yellow-500/80 underline hover:text-yellow-400 transition-colors">
+            My Rewards → Cash Out
+          </button>
         </p>
       </div>
     </div>
