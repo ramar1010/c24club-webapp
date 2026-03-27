@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 // Slide 1 - Video Chat
 import boySelfie from "@/assets/quickstart/boy-selfie.jpg";
 import girlSelfie from "@/assets/quickstart/girl-selfie.jpg";
-import moneyBag from "@/assets/quickstart/money-bag.png";
+// moneyBag removed for compliance
 import topicBubble from "@/assets/quickstart/topic-bubble.png";
 import giftEmoji from "@/assets/quickstart/gift-emoji.png";
 import shoppingBags2 from "@/assets/quickstart/shopping-bags2.png";
@@ -22,12 +22,11 @@ import rewardPhonecase from "@/assets/quickstart/reward-phonecase.png";
 import rewardRedbag from "@/assets/quickstart/reward-redbag.jpg";
 import rewardHeartbag from "@/assets/quickstart/reward-heartbag.jpg";
 import rewardShorts from "@/assets/quickstart/reward-shorts.jpg";
-import paypalLogo from "@/assets/quickstart/paypal-logo.png";
+// paypalLogo removed for compliance
 
 // Slide 4 - Challenges
 import trophyIcon from "@/assets/quickstart/trophy-icon.png";
-import cashIcon from "@/assets/quickstart/cash-icon.png";
-
+// cashIcon removed for compliance
 // Slide 5 - Beware
 import noFrame1 from "@/assets/quickstart/no-frame1.jpg";
 import noFrame2 from "@/assets/quickstart/no-frame2.png";
