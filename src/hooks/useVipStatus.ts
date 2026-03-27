@@ -23,9 +23,10 @@ export function useVipStatus(userId: string | null) {
       return;
     }
 
-    // Use sessionStorage cache to avoid repeated edge function calls (5-min TTL)
-    const cacheKey = `vip_status_${userId}`;
-    const cached = sessionStorage.getItem(cacheKey);
+    // Check session-init cache first (set by useAuth on page load)
+    const sessionInitCache = sessionStorage.getItem("vip_status_session_init");
+    const userCache = sessionStorage.getItem(`vip_status_${userId}`);
+    const cached = userCache || sessionInitCache;
     if (cached) {
       try {
         const { data: cachedData, ts } = JSON.parse(cached);
@@ -45,7 +46,7 @@ export function useVipStatus(userId: string | null) {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
 
-      sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
+      sessionStorage.setItem(`vip_status_${userId}`, JSON.stringify({ data, ts: Date.now() }));
 
       setStatus({
         subscribed: data?.subscribed ?? false,
