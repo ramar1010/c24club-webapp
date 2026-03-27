@@ -14,6 +14,7 @@ const DmNotificationListener = () => {
     if (!user) return;
 
     const seenMessageIds = new Set<string>();
+    let firstPoll = true;
 
     const checkNewMessages = async () => {
       const { data: convos } = await supabase
@@ -33,6 +34,13 @@ const DmNotificationListener = () => {
         .neq("sender_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10);
+
+      // On first poll, seed all existing message IDs without toasting
+      if (firstPoll) {
+        messages?.forEach((item) => seenMessageIds.add(item.id));
+        firstPoll = false;
+        return;
+      }
 
       const msg = messages?.find((item) => !seenMessageIds.has(item.id));
       if (!msg) return;
