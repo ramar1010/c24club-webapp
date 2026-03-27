@@ -1536,6 +1536,14 @@ const VideoCallPage = () => {
 
       }
 
+      {/* Power Hour Countdown Popup */}
+      {showPowerHourCountdown && (
+        <PowerHourCountdown
+          onDismiss={() => setShowPowerHourCountdown(false)}
+          isFemale={isFemale}
+        />
+      )}
+
       {/* Send Gift Overlay */}
       {showGiftOverlay && currentPartnerId &&
       <SendGiftOverlay
