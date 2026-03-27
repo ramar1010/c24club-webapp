@@ -410,6 +410,16 @@ const VideoCallPage = () => {
     }
   }, []);
 
+  // Show power hour countdown when arriving from email link
+  const [showPowerHourCountdown, setShowPowerHourCountdown] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") === "power_hour") {
+      setShowPowerHourCountdown(true);
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, []);
+
   const { data: hideCarousel } = useQuery({
     queryKey: ["lucky-spin-carousel-setting"],
     queryFn: async () => {
