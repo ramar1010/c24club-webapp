@@ -192,14 +192,13 @@ const VideoCallPage = () => {
     prevUserIdRef.current = memberId;
   }, [memberId, stop]);
 
-  // Capture user's IP on load and store it in their member record
+  // Capture user's IP on load and store it in their member record (uses cached IP from check-ip-ban)
   useEffect(() => {
     if (!user) return;
-    supabase.functions.invoke("get-client-ip").then(({ data }) => {
-      if (data?.ip) {
-        supabase.from("members").update({ last_ip: data.ip } as any).eq("id", user.id).then(() => {});
-      }
-    }).catch(() => {});
+    const cachedIp = sessionStorage.getItem("client_ip");
+    if (cachedIp) {
+      supabase.from("members").update({ last_ip: cachedIp } as any).eq("id", user.id).then(() => {});
+    }
   }, [user]);
 
   const { partnerBlackScreen } = useBlackScreenDetection({

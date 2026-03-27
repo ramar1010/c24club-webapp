@@ -151,6 +151,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             created_at: data.created_at || new Date().toISOString(),
           });
         }
+        // Store IP from combined response so VideoCallPage doesn't need a separate call
+        if (data?.ip) {
+          sessionStorage.setItem("client_ip", data.ip);
+        }
       })
       .catch((err) => console.warn("IP ban check failed:", err));
   }, []);
