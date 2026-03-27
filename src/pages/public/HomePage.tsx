@@ -19,11 +19,10 @@ import reward6 from "@/assets/rewards/reward6.jpg";
 import reward7 from "@/assets/rewards/reward7.jpg";
 import bagImg from "@/assets/rewards/bag.png";
 import cashImg from "@/assets/rewards/cash.png";
-import paypal2 from "@/assets/rewards/paypal-2.png";
 import phonecase2 from "@/assets/rewards/phonecase-2.png";
 import bag3 from "@/assets/rewards/bag-3.png";
 import boots2 from "@/assets/rewards/boots-2.png";
-import cash2 from "@/assets/rewards/cash-2.png";
+
 import slippers from "@/assets/rewards/slippers.png";
 import shorts2 from "@/assets/rewards/shorts-2.jpg";
 import hat2 from "@/assets/rewards/hat-2.jpg";
@@ -31,8 +30,6 @@ import redbag2 from "@/assets/rewards/redbag-2.jpg";
 import heartbag2 from "@/assets/rewards/heartbag-2.jpg";
 
 const rewards = [
-  { label: "PayPal", minutes: 400, image: paypal2 },
-  { label: "Cash App", minutes: 400, image: cash2 },
   { label: "Bucket Hat", minutes: 80, image: hat2 },
   { label: "Bag", minutes: 150, image: bag3 },
   { label: "Boots", minutes: 200, image: boots2 },
@@ -41,10 +38,12 @@ const rewards = [
   { label: "Phone Cases", minutes: 90, image: phonecase2 },
   { label: "Red Bag", minutes: 120, image: redbag2 },
   { label: "Slippers", minutes: 75, image: slippers },
+  { label: "Designer Bag", minutes: 130, image: bagImg },
+  { label: "Reward Item", minutes: 110, image: reward1 },
 ];
 
-const leftSideRewards = [paypal2, bag3, boots2, shorts2, heartbag2];
-const rightSideRewards = [cash2, hat2, phonecase2, redbag2, slippers];
+const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward1];
+const rightSideRewards = [hat2, phonecase2, redbag2, slippers, bagImg];
 
 const RewardCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -782,7 +781,7 @@ const HomePage = () => {
               {/* Reward grid visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
                 <div className="grid grid-cols-3 gap-2 h-full">
-                  {[paypal2, bag3, boots2, cash2, hat2, phonecase2].map((img, i) => (
+                  {[bagImg, bag3, boots2, reward1, hat2, phonecase2].map((img, i) => (
                     <div
                       key={i}
                       className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
