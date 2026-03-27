@@ -46,7 +46,7 @@ export function useVipStatus(userId: string | null) {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
 
-      sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
+      sessionStorage.setItem(`vip_status_${userId}`, JSON.stringify({ data, ts: Date.now() }));
 
       setStatus({
         subscribed: data?.subscribed ?? false,
