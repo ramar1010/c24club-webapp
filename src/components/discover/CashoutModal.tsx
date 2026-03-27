@@ -56,6 +56,19 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
   useEffect(() => {
     fetchHistory();
+    // Fetch lucky spin total earnings
+    if (user) {
+      supabase
+        .from("waiting_spin_earnings")
+        .select("amount_cents")
+        .eq("user_id", user.id)
+        .then(({ data }) => {
+          if (data) {
+            const totalCents = data.reduce((sum, r) => sum + (r.amount_cents ?? 0), 0);
+            setLuckySpinTotal(totalCents);
+          }
+        });
+    }
   }, [user]);
 
   useEffect(() => {
