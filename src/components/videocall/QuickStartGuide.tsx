@@ -60,12 +60,6 @@ const Slide1Visual = () => (
         </div>
       </div>
     </div>
-    {/* Floating money bag */}
-    <img
-      src={moneyBag}
-      alt="Earn"
-      className="absolute -bottom-1 right-1 w-11 h-11 animate-[bounce_2s_ease-in-out_infinite]"
-    />
     {/* Connection line */}
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-emerald-400/20 animate-[ping_2s_ease-in-out_infinite]" />
   </div>
@@ -137,13 +131,6 @@ const Slide3Visual = () => (
         </div>
       );
     })}
-    {/* PayPal logo */}
-    <img
-      src={paypalLogo}
-      alt="PayPal"
-      className="absolute -bottom-1 -right-1 w-9 h-9 z-20 rounded-md object-contain bg-white p-0.5"
-      style={{ animation: `sparkle 2s ease-in-out 0.5s infinite` }}
-    />
     {/* Sparkles */}
     {["top-0 right-4", "bottom-0 left-2", "top-6 left-0"].map((pos, i) => (
       <span
@@ -159,10 +146,10 @@ const Slide3Visual = () => (
 
 const Slide4Visual = () => {
   const challengeItems = [
-    { label: "Bestie Challenge", reward: "$50" },
-    { label: "Boyfriend Challenge", reward: "$35" },
-    { label: "Marathon Talk", reward: "$20" },
-    { label: "Blue Eyes Hunt", reward: "$10" },
+    { label: "Bestie Challenge", reward: "🏆" },
+    { label: "Boyfriend Challenge", reward: "🎁" },
+    { label: "Marathon Talk", reward: "⭐" },
+    { label: "Blue Eyes Hunt", reward: "💎" },
   ];
 
   return (
@@ -192,17 +179,10 @@ const Slide4Visual = () => {
             <span className="bg-neutral-800 border border-neutral-600 text-white text-[8px] font-bold px-2 py-1 rounded-md whitespace-nowrap shadow-md">
               {c.label}
             </span>
-            <span className="text-emerald-400 text-[10px] font-black">{c.reward}</span>
+            <span className="text-yellow-400 text-sm">{c.reward}</span>
           </div>
         );
       })}
-      {/* Cash icon */}
-      <img
-        src={cashIcon}
-        alt="Cash"
-        className="absolute -bottom-1 -left-1 w-10 h-10 z-20"
-        style={{ animation: "sparkle 2s ease-in-out 0.5s infinite" }}
-      />
       {/* Sparkles */}
       {["top-0 left-6", "bottom-2 right-2", "top-4 right-0"].map((pos, i) => (
         <span
