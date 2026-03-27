@@ -36,8 +36,9 @@ const DmNotificationListener = () => {
         .limit(10);
 
       const msg = messages?.find((item) => !seenMessageIds.has(item.id));
-      if (!msg) return;
+      if (!msg) { firstPoll = false; return; }
       seenMessageIds.add(msg.id);
+      if (firstPoll) { firstPoll = false; return; }
 
       let senderName = senderCacheRef.current.get(msg.sender_id);
       if (!senderName) {
