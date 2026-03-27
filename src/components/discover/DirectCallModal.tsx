@@ -86,12 +86,7 @@ const DirectCallModal = ({
             );
           }
         }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      );
   }, [myUserId, navigate]);
 
   const handleEnd = () => {
