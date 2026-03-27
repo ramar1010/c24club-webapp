@@ -313,6 +313,7 @@ const VideoCallPage = () => {
     const seenGiftIds = new Set<string>();
     const seenCameraStatuses = new Set<string>();
     let firstPoll = true;
+    let firstCameraPoll = true;
 
     const pollUpdates = async () => {
       const { data: gifts } = await supabase
