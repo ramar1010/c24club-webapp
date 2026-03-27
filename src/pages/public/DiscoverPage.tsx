@@ -24,7 +24,7 @@ const DiscoverPage = () => {
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
-  const [showMessages, setShowMessages] = useState(false);
+  const [showMessages, setShowMessages] = useState<string | null>(null);
   const [showCashout, setShowCashout] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { startCheckout } = useVipStatus(user?.id ?? null);
@@ -65,8 +65,8 @@ const DiscoverPage = () => {
     return () => observer.disconnect();
   }, [hasMore, loading, loadMore]);
 
-  if (showMessages) {
-    return <MessagesPage onClose={() => setShowMessages(false)} />;
+  if (showMessages !== null) {
+    return <MessagesPage onClose={() => setShowMessages(null)} initialPartnerId={showMessages || undefined} />;
   }
 
   return (
@@ -93,7 +93,7 @@ const DiscoverPage = () => {
           )}
           {/* DMs button */}
           <button
-            onClick={() => setShowMessages(true)}
+            onClick={() => setShowMessages("")}
             className="relative flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
           >
             <MessageSquare className="w-4 h-4" />
@@ -186,7 +186,7 @@ const DiscoverPage = () => {
         myInterests={myInterests}
         onInterestBack={(id) => handleInterest(id)}
         sendingInterest={sendingInterest}
-        onOpenDm={() => setShowMessages(true)}
+        onOpenDm={(userId) => setShowMessages(userId)}
       />
 
       {/* Members grid */}

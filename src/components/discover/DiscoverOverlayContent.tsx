@@ -22,15 +22,15 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
-  const [showMessages, setShowMessages] = useState(false);
+  const [showMessages, setShowMessages] = useState<string | null>(null);
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
     setIsDiscoverable(true);
   };
 
-  if (showMessages) {
-    return <MessagesPage onClose={() => setShowMessages(false)} />;
+  if (showMessages !== null) {
+    return <MessagesPage onClose={() => setShowMessages(null)} initialPartnerId={showMessages || undefined} />;
   }
 
   return (
@@ -125,7 +125,7 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
         myInterests={myInterests}
         onInterestBack={(id) => handleInterest(id)}
         sendingInterest={sendingInterest}
-        onOpenDm={() => setShowMessages(true)}
+        onOpenDm={(userId) => setShowMessages(userId)}
       />
 
       {/* Members grid */}
