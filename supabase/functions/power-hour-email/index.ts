@@ -153,6 +153,34 @@ Deno.serve(async (req) => {
 
     const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
 
+    const buildHtml = (userName: string, headline: string, bodyText: string, ctaText: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f7f9fb;font-family:Inter,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f9fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr><td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;text-align:center;">
+          <h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">${headline}</h1>
+        </td></tr>
+        <tr><td style="padding:32px 28px;">
+          <p style="margin:0 0 16px;font-size:15px;color:#1a1a2e;line-height:1.6;">Hey ${userName}! 👋</p>
+          <p style="margin:0 0 24px;font-size:14px;color:#4a4a68;line-height:1.7;">${bodyText}</p>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 24px;">
+            <a href="${joinLink}" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 40px;border-radius:8px;">${ctaText}</a>
+          </td></tr></table>
+          <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">Power Hour starts at ${powerHourDisplay}</p>
+        </td></tr>
+        <tr><td style="background-color:#f9fafb;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f5;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;">— C24 Club</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
     for (const member of members) {
       if (!member.email || suppressedSet.has(member.email.toLowerCase())) {
         continue;
@@ -161,45 +189,41 @@ Deno.serve(async (req) => {
       const userName = member.name || "there";
       const isFemale = member.gender === "female";
 
-      // Gender-specific subject & body
       let subject: string;
-      let body: string;
+      let headline: string;
+      let bodyText: string;
+      let ctaText: string;
 
       if (isFemale) {
         subject = reminderType === "1hour"
           ? `⚡ ${malesForFemales} guys are joining Power Hour in ${timeLabel}!`
           : `🔥 ${malesForFemales} guys are logging on NOW — Power Hour in ${timeLabel}!`;
-        body = `Hey ${userName}! 👋\n\n` +
-          `Ready to chat & earn! 💰\n\n` +
-          `${malesForFemales} male users have opted to come to your upcoming video call scheduled session in ${timeLabel}!\n\n` +
-          `Chat & meet new guys and get rewards for every minute you chat — or get gifted by them! 🎁\n\n` +
-          `The more you chat, the more you earn. This is the busiest session of the day!\n\n` +
-          `👉 Join now: ${joinLink}\n\n` +
-          `See you there!\n— C24 Club`;
+        headline = `⚡ Power Hour in ${timeLabel}!`;
+        bodyText = `<strong>${malesForFemales} male users</strong> have opted to join your upcoming video call session in ${timeLabel}!<br><br>Chat &amp; meet new guys and get rewards for every minute you chat — or get gifted by them! 🎁<br><br>The more you chat, the more you earn. This is the busiest session of the day!`;
+        ctaText = "Join & Start Earning 💰";
       } else {
         subject = reminderType === "1hour"
           ? `⚡ ${femalesForMales} girls opted in for Power Hour in ${timeLabel}!`
           : `🔥 ${femalesForMales} girls are joining Power Hour in ${timeLabel}!`;
-        body = `Hey ${userName}! 👋\n\n` +
-          `${femalesForMales} female users opted to come to your upcoming random video call scheduled session in ${timeLabel}! 👀\n\n` +
-          `Will they show up? Only time will tell — log in and wait!\n\n` +
-          `Power Hour is the busiest time on C24 Club — the best chance to meet new people and have great conversations.\n\n` +
-          `👉 Join now: ${joinLink}\n\n` +
-          `Don't miss out!\n— C24 Club`;
+        headline = `🔥 Power Hour in ${timeLabel}!`;
+        bodyText = `<strong>${femalesForMales} female users</strong> opted to join your upcoming video call session in ${timeLabel}! 👀<br><br>Will they show up? Only time will tell — log in and wait!<br><br>Power Hour is the busiest time on C24 Club — the best chance to meet new people and have great conversations.`;
+        ctaText = "Join Now 🚀";
       }
 
       const messageId = forceTestEmail
         ? `power_hour_test_${member.id}_${Date.now()}`
         : `power_hour_${reminderType}_${member.id}_${todayStr}`;
 
-      const htmlContent = body.replace(/\n/g, "<br>");
+      const htmlContent = buildHtml(userName, headline, bodyText, ctaText);
+      const plainText = `Hey ${userName}! Power Hour starts in ${timeLabel}. Join now: ${joinLink}`;
+
       const emailPayload = {
         run_id: crypto.randomUUID(),
         to: member.email,
         from: `C24Club <support@c24club.com>`,
         subject,
         html: htmlContent,
-        text: body.replace(/<[^>]*>/g, ""),
+        text: plainText,
         purpose: "transactional",
         label: `power_hour_${reminderType}`,
         sender_domain: "c24club.com",
