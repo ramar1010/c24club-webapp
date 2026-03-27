@@ -21,17 +21,17 @@ const AdminLuckySpinPage = () => {
     },
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: async (enabled: boolean) => {
+  const updateMutation = useMutation({
+    mutationFn: async (updates: Record<string, unknown>) => {
       const { error } = await supabase
         .from("lucky_spin_settings")
-        .update({ is_enabled: enabled, updated_at: new Date().toISOString() })
+        .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", settings!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-lucky-spin-settings"] });
-      toast.success("Lucky Spin settings updated");
+      toast.success("Settings updated");
     },
   });
 
@@ -56,7 +56,19 @@ const AdminLuckySpinPage = () => {
                 </div>
                 <Switch
                   checked={settings?.is_enabled ?? false}
-                  onCheckedChange={(v) => toggleMutation.mutate(v)}
+                  onCheckedChange={(v) => updateMutation.mutate({ is_enabled: v })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-base font-semibold">Hide Waiting Carousel</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Hide the Discover & Reward teaser carousel on the waiting screen.
+                  </p>
+                </div>
+                <Switch
+                  checked={settings?.hide_carousel ?? false}
+                  onCheckedChange={(v) => updateMutation.mutate({ hide_carousel: v })}
                 />
               </div>
               <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-1">
