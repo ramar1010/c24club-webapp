@@ -57,6 +57,7 @@ import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
+import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -405,6 +406,16 @@ const VideoCallPage = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("camera_unlock") === "success") {
       toast.success("Payment verified! Waiting for partner to accept...", { duration: 5000 });
+      window.history.replaceState({}, "", "/videocall");
+    }
+  }, []);
+
+  // Show power hour countdown when arriving from email link
+  const [showPowerHourCountdown, setShowPowerHourCountdown] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") === "power_hour") {
+      setShowPowerHourCountdown(true);
       window.history.replaceState({}, "", "/videocall");
     }
   }, []);
@@ -1524,6 +1535,14 @@ const VideoCallPage = () => {
         isFemale={isFemale} />
 
       }
+
+      {/* Power Hour Countdown Popup */}
+      {showPowerHourCountdown && (
+        <PowerHourCountdown
+          onDismiss={() => setShowPowerHourCountdown(false)}
+          isFemale={isFemale}
+        />
+      )}
 
       {/* Send Gift Overlay */}
       {showGiftOverlay && currentPartnerId &&

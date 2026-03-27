@@ -157,12 +157,15 @@ Deno.serve(async (req) => {
       }
 
       const userName = member.name || "there";
+      const joinLink = "https://c24club.lovable.app/videocall?from=power_hour";
       const subject = template.subject
         .replace(/\{\{user_name\}\}/g, userName)
-        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay);
+        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay)
+        .replace(/\{\{join_link\}\}/g, joinLink);
       const body = template.body
         .replace(/\{\{user_name\}\}/g, userName)
-        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay);
+        .replace(/\{\{power_hour_time\}\}/g, powerHourDisplay)
+        .replace(/\{\{join_link\}\}/g, joinLink);
 
       const messageId = `power_hour_${reminderType}_${member.id}_${todayStr}`;
 
