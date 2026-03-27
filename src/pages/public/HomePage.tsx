@@ -39,10 +39,10 @@ const rewards = [
   { label: "Red Bag", minutes: 120, image: redbag2 },
   { label: "Slippers", minutes: 75, image: slippers },
   { label: "Designer Bag", minutes: 130, image: bagImg },
-  { label: "Reward Item", minutes: 110, image: reward1 },
+  { label: "Reward Item", minutes: 110, image: reward3 },
 ];
 
-const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward1];
+const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward3];
 const rightSideRewards = [hat2, phonecase2, redbag2, slippers, bagImg];
 
 const RewardCarousel = () => {
