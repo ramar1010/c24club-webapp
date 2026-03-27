@@ -1110,12 +1110,14 @@ const VideoCallPage = () => {
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
                 <LuckySpinWidget isWaiting={callState === "waiting"} />
-                <DiscoverTeaser
-                  myGender={memberGender ?? null}
-                  myUserId={memberId}
-                  onOpenDiscover={() => setOverlayPage("discover")}
-                  onOpenStore={() => setOverlayPage("store")}
-                />
+                {!hideCarousel && (
+                  <DiscoverTeaser
+                    myGender={memberGender ?? null}
+                    myUserId={memberId}
+                    onOpenDiscover={() => setOverlayPage("discover")}
+                    onOpenStore={() => setOverlayPage("store")}
+                  />
+                )}
               </div>
             </div>
           }
@@ -1268,12 +1270,14 @@ const VideoCallPage = () => {
                   </p>
                   {callState === "waiting" && <>
                     <LuckySpinWidget isWaiting={callState === "waiting"} />
-                    <DiscoverTeaser
-                      myGender={memberGender ?? null}
-                      myUserId={memberId}
-                      onOpenDiscover={() => setOverlayPage("discover")}
-                      onOpenStore={() => setOverlayPage("store")}
-                    />
+                    {!hideCarousel && (
+                      <DiscoverTeaser
+                        myGender={memberGender ?? null}
+                        myUserId={memberId}
+                        onOpenDiscover={() => setOverlayPage("discover")}
+                        onOpenStore={() => setOverlayPage("store")}
+                      />
+                    )}
                   </>}
                 </div>
               </div>
