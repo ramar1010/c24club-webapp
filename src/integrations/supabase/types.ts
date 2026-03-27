@@ -2064,6 +2064,33 @@ export type Database = {
           },
         ]
       }
+      room_signals: {
+        Row: {
+          created_at: string | null
+          id: string
+          payload: Json
+          room_id: string
+          sender_channel: string
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          payload: Json
+          room_id: string
+          sender_channel: string
+          signal_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          payload?: Json
+          room_id?: string
+          sender_channel?: string
+          signal_type?: string
+        }
+        Relationships: []
+      }
       rooms: {
         Row: {
           channel1: string
