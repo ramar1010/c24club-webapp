@@ -56,6 +56,7 @@ import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
+import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -1100,6 +1101,7 @@ const VideoCallPage = () => {
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 <p className="text-sm text-neutral-300">Finding a partner...</p>
+                <LuckySpinWidget isWaiting={callState === "waiting"} />
                 <DiscoverTeaser
                   myGender={memberGender ?? null}
                   myUserId={memberId}
@@ -1256,14 +1258,15 @@ const VideoCallPage = () => {
                   <p className="text-neutral-400 text-sm">
                     {callState === "waiting" ? "Finding a partner..." : callState === "connecting" ? "Connecting..." : "Waiting to start..."}
                   </p>
-                  {callState === "waiting" &&
+                  {callState === "waiting" && <>
+                    <LuckySpinWidget isWaiting={callState === "waiting"} />
                     <DiscoverTeaser
                       myGender={memberGender ?? null}
                       myUserId={memberId}
                       onOpenDiscover={() => setOverlayPage("discover")}
                       onOpenStore={() => setOverlayPage("store")}
                     />
-                  }
+                  </>}
                 </div>
               </div>
           }

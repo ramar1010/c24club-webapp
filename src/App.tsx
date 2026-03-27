@@ -36,6 +36,7 @@ const AdminChallengeIssuesPage = lazy(() => import("@/pages/admin/AdminChallenge
 const AdminSpinPrizesPage = lazy(() => import("@/pages/admin/AdminSpinPrizesPage"));
 const AdminSpinWinnersPage = lazy(() => import("@/pages/admin/AdminSpinWinnersPage"));
 const LegendaryCashoutPage = lazy(() => import("@/pages/admin/LegendaryCashoutPage"));
+const AdminLuckySpinPage = lazy(() => import("@/pages/admin/AdminLuckySpinPage"));
 const AdminEmailTemplatesPage = lazy(() => import("@/pages/admin/AdminEmailTemplatesPage"));
 const AdminEmailDashboardPage = lazy(() => import("@/pages/admin/AdminEmailDashboardPage"));
 const AdminGiftCardsPage = lazy(() => import("@/pages/admin/AdminGiftCardsPage"));
@@ -164,6 +165,7 @@ const App = () => (
                 <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
                 <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
                 <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
+                <Route path="lucky-spin" element={<AdminLuckySpinPage />} />
                 <Route path="jackpot-payouts" element={<AdminJackpotPayoutsPage />} />
                 <Route path="wager-settings" element={<AdminWagerSettingsPage />} />
                 <Route path="gift-cards" element={<AdminGiftCardsPage />} />
