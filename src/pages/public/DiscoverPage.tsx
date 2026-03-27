@@ -186,6 +186,7 @@ const DiscoverPage = () => {
         myInterests={myInterests}
         onInterestBack={(id) => handleInterest(id)}
         sendingInterest={sendingInterest}
+        onOpenDm={() => setShowMessages(true)}
       />
 
       {/* Members grid */}
