@@ -143,7 +143,10 @@ serve(async (req) => {
         );
       }
 
-      const allResults = [];
+      // Collect opted-in user IDs across all windows
+      const allResults: any[] = [];
+      const emailResults: any[] = [];
+
       for (const win of upcomingWindows) {
         const { data: signups } = await supabase
           .from("slot_signups")
@@ -152,12 +155,10 @@ serve(async (req) => {
 
         const signedUpUserIds = (signups || []).map((s: any) => s.user_id);
 
-        let optinsQuery = supabase
+        const { data: optins } = await supabase
           .from("sms_reminder_optins")
           .select("phone_number, user_id")
           .eq("is_active", true);
-
-        const { data: optins } = await optinsQuery;
 
         const filteredOptins = signedUpUserIds.length > 0
           ? (optins || []).filter((o: any) => signedUpUserIds.includes(o.user_id))
@@ -165,6 +166,93 @@ serve(async (req) => {
 
         const message = `🎥 C24 Club: "${win.label || "Video Chat"}" session starts at ${win.start_time}! Hop on now for instant matches → https://c24club.com/videocall Reply STOP to unsubscribe.`;
 
+        // --- Email reminders for opted-in users ---
+        const userIds = filteredOptins.map((o: any) => o.user_id).filter(Boolean);
+        if (userIds.length > 0) {
+          const { data: members } = await supabase
+            .from("members")
+            .select("id, name, email, gender")
+            .in("id", userIds)
+            .not("email", "is", null);
+
+          const { data: suppressed } = await supabase
+            .from("suppressed_emails")
+            .select("email");
+          const suppressedSet = new Set((suppressed || []).map((s: any) => s.email.toLowerCase()));
+
+          const todayStr = new Date().toISOString().split("T")[0];
+          const dedupeKey = `window_remind_${win.id}_${todayStr}`;
+
+          // Check dedup
+          const { data: alreadySent } = await supabase
+            .from("email_send_log")
+            .select("id")
+            .eq("message_id", dedupeKey)
+            .limit(1);
+
+          if (!alreadySent || alreadySent.length === 0) {
+            // Mark dedup
+            await supabase.from("email_send_log").insert({
+              template_name: "window_reminder",
+              recipient_email: "system@dedup",
+              status: "sent",
+              message_id: dedupeKey,
+              metadata: { type: "dedup_marker", window_id: win.id },
+            });
+
+            const joinLink = "https://c24club.lovable.app/videocall?from=window_reminder";
+            const windowLabel = win.label || "Video Chat";
+
+            for (const member of (members || [])) {
+              if (!member.email || suppressedSet.has(member.email.toLowerCase())) continue;
+
+              const userName = member.name || "there";
+              const isFemale = member.gender === "female";
+
+              const subject = isFemale
+                ? `🎥 "${windowLabel}" session starting soon — chat & earn!`
+                : `🎥 "${windowLabel}" session starting at ${win.start_time}!`;
+
+              const body = isFemale
+                ? `Hey ${userName}! 👋\n\nYour scheduled "${windowLabel}" session starts at ${win.start_time} UTC!\n\nHop on now to chat & earn rewards for every minute you're on. 🎁\n\n👉 Join: ${joinLink}\n\n— C24 Club`
+                : `Hey ${userName}! 👋\n\nYour scheduled "${windowLabel}" session starts at ${win.start_time} UTC!\n\nThis is your best chance to meet new people — join now for instant matches.\n\n👉 Join: ${joinLink}\n\n— C24 Club`;
+
+              const messageId = `window_remind_${win.id}_${member.id}_${todayStr}`;
+
+              const { error: enqErr } = await supabase.rpc("enqueue_email", {
+                queue_name: "transactional_emails",
+                payload: {
+                  run_id: crypto.randomUUID(),
+                  to: member.email,
+                  from: "C24Club <support@c24club.com>",
+                  subject,
+                  html: body.replace(/\n/g, "<br>"),
+                  text: body,
+                  purpose: "transactional",
+                  label: "window_reminder",
+                  sender_domain: "c24club.com",
+                  message_id: messageId,
+                  queued_at: new Date().toISOString(),
+                },
+              });
+
+              if (!enqErr) {
+                await supabase.from("email_send_log").insert({
+                  template_name: "window_reminder",
+                  recipient_email: member.email,
+                  status: "pending",
+                  message_id: messageId,
+                  metadata: { user_id: member.id, gender: member.gender || "unknown", window_id: win.id },
+                });
+                emailResults.push({ email: member.email, window: windowLabel });
+              } else {
+                console.error(`Email enqueue failed for ${member.email}:`, enqErr.message);
+              }
+            }
+          }
+        }
+
+        // --- SMS reminders (kept for when SMS is ready) ---
         for (const optin of filteredOptins) {
           const result = await sendSmsAndLog(supabase, {
             ...smsArgs,
@@ -177,7 +265,7 @@ serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ success: true, windows: upcomingWindows.length, sent: allResults.length, results: allResults }),
+        JSON.stringify({ success: true, windows: upcomingWindows.length, smsSent: allResults.length, emailsSent: emailResults.length, smsResults: allResults, emailResults }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
