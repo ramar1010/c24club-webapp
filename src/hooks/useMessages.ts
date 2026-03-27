@@ -114,36 +114,13 @@ export function useConversations() {
     },
   });
 
-  // Realtime subscription for new messages – debounced invalidation
+  // Poll for conversation updates
   useEffect(() => {
     if (!user) return;
-
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    const debouncedInvalidate = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-      }, 2000);
-    };
-
-    const channel = supabase
-      .channel("dm-updates")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "dm_messages" },
-        debouncedInvalidate
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        debouncedInvalidate
-      )
-      .subscribe();
-
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
+    const poll = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+    }, 5000);
+    return () => clearInterval(poll);
   }, [user, queryClient]);
 
   return query;

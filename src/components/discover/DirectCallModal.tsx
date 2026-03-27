@@ -56,37 +56,36 @@ const DirectCallModal = ({
     }
   }, [callState, myUserId, partnerId]);
 
-  // Realtime listener for incoming gift notifications
+  // Poll for incoming gift notifications
   useEffect(() => {
-    const channel = supabase
-      .channel("direct-call-gift-" + myUserId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "gift_transactions",
-          filter: `recipient_id=eq.${myUserId}`,
-        },
-        (payload) => {
-          const gift = payload.new as any;
-          if (gift.status === "completed") {
-            const minutes = gift.minutes_amount || 0;
-            const cashValue = (minutes * 0.01).toFixed(2);
-            toast.success(
-              `🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`,
-              {
-                description: "Cash out via PayPal now!",
-                action: {
-                  label: "Cash Out",
-                  onClick: () => navigate("/my-rewards"),
-                },
-                duration: 10000,
-              }
-            );
+    let lastChecked = new Date().toISOString();
+    const poll = setInterval(async () => {
+      const { data } = await supabase
+        .from("gift_transactions")
+        .select("minutes_amount, status")
+        .eq("recipient_id", myUserId)
+        .eq("status", "completed")
+        .gt("updated_at", lastChecked)
+        .limit(1);
+      lastChecked = new Date().toISOString();
+      if (data && data.length > 0) {
+        const gift = data[0];
+        const minutes = gift.minutes_amount || 0;
+        const cashValue = (minutes * 0.01).toFixed(2);
+        toast.success(
+          `🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`,
+          {
+            description: "Cash out via PayPal now!",
+            action: {
+              label: "Cash Out",
+              onClick: () => navigate("/my-rewards"),
+            },
+            duration: 10000,
           }
-        }
-      );
+        );
+      }
+    }, 5000);
+    return () => clearInterval(poll);
   }, [myUserId, navigate]);
 
   const handleEnd = () => {
