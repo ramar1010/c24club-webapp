@@ -312,6 +312,7 @@ const VideoCallPage = () => {
 
     const seenGiftIds = new Set<string>();
     const seenCameraStatuses = new Set<string>();
+    let firstPoll = true;
 
     const pollUpdates = async () => {
       const { data: gifts } = await supabase
@@ -325,6 +326,8 @@ const VideoCallPage = () => {
       gifts?.forEach((gift: any) => {
         if (seenGiftIds.has(gift.id)) return;
         seenGiftIds.add(gift.id);
+        // Skip toasts on first poll — those are old gifts
+        if (firstPoll) return;
         const minutes = gift.minutes_amount || 0;
         const cashValue = (minutes * 0.01).toFixed(2);
         toast.success(`🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`, {
@@ -336,6 +339,7 @@ const VideoCallPage = () => {
           duration: 10000,
         });
       });
+      firstPoll = false;
 
       if (!isFemale) {
         const { data: requesterRows } = await supabase
