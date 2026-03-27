@@ -35,58 +35,59 @@ export function useDirectCallInviteListener() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel("direct-call-invites")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "direct_call_invites",
-          filter: `invitee_id=eq.${user.id}`,
-        },
-        async (payload) => {
-          const invite = payload.new as any;
-          if (invite.status !== "pending") return;
+    const seenInviteIds = new Set<string>();
 
-          // Fetch inviter name
-          const { data: inviter } = await supabase
-            .from("members")
-            .select("name")
-            .eq("id", invite.inviter_id)
-            .maybeSingle();
+    const checkIncomingInvites = async () => {
+      const { data: invites } = await supabase
+        .from("direct_call_invites")
+        .select("id, inviter_id, status, created_at")
+        .eq("invitee_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-          const name = inviter?.name || "Someone";
+      const invite = invites?.[0];
+      if (!invite || seenInviteIds.has(invite.id)) return;
 
-          setIncomingCall({
-            inviteId: invite.id,
-            inviterId: invite.inviter_id,
-            inviterName: name,
-          });
+      seenInviteIds.add(invite.id);
 
-          toast(`📹 ${name} wants to video chat!`, {
-            description: "Accept or decline the call.",
-            duration: 30000,
-          });
+      const { data: inviter } = await supabase
+        .from("members")
+        .select("name")
+        .eq("id", invite.inviter_id)
+        .maybeSingle();
 
-          // Auto-expire: if not answered in 60s, send missed call email
-          setTimeout(async () => {
-            const { data: currentInvite } = await supabase
-              .from("direct_call_invites")
-              .select("status")
-              .eq("id", invite.id)
-              .maybeSingle();
+      const name = inviter?.name || "Someone";
 
-            if (currentInvite && currentInvite.status === "pending") {
-              sendMissedCallEmail(invite.inviter_id, user.id);
-            }
-          }, 60000);
+      setIncomingCall({
+        inviteId: invite.id,
+        inviterId: invite.inviter_id,
+        inviterName: name,
+      });
+
+      toast(`📹 ${name} wants to video chat!`, {
+        description: "Accept or decline the call.",
+        duration: 30000,
+      });
+
+      setTimeout(async () => {
+        const { data: currentInvite } = await supabase
+          .from("direct_call_invites")
+          .select("status")
+          .eq("id", invite.id)
+          .maybeSingle();
+
+        if (currentInvite && currentInvite.status === "pending") {
+          sendMissedCallEmail(invite.inviter_id, user.id);
         }
-      )
-      .subscribe();
+      }, 60000);
+    };
+
+    checkIncomingInvites();
+    const poll = setInterval(checkIncomingInvites, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(poll);
     };
   }, [user]);
 

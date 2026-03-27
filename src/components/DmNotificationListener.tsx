@@ -13,82 +13,66 @@ const DmNotificationListener = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel("dm-toast-notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "dm_messages",
-        },
-        async (payload) => {
-          const msg = payload.new as {
-            id: string;
-            conversation_id: string;
-            sender_id: string;
-            content: string;
-            created_at: string;
-          };
+    const seenMessageIds = new Set<string>();
 
-          // Don't notify for own messages
-          if (msg.sender_id === user.id) return;
+    const checkNewMessages = async () => {
+      const { data: convos } = await supabase
+        .from("conversations")
+        .select("id, participant_1, participant_2")
+        .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+        .order("last_message_at", { ascending: false })
+        .limit(20);
 
-          // Check if this conversation belongs to the current user
-          let isMyConvo = conversationCacheRef.current.has(msg.conversation_id);
+      const conversationIds = (convos || []).map((c) => c.id);
+      if (conversationIds.length === 0) return;
 
-          if (!isMyConvo) {
-            const { data: convo } = await supabase
-              .from("conversations")
-              .select("participant_1, participant_2")
-              .eq("id", msg.conversation_id)
-              .single();
+      const { data: messages } = await supabase
+        .from("dm_messages")
+        .select("id, conversation_id, sender_id, content, created_at")
+        .in("conversation_id", conversationIds)
+        .neq("sender_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
 
-            if (convo && (convo.participant_1 === user.id || convo.participant_2 === user.id)) {
-              conversationCacheRef.current.set(msg.conversation_id, "yes");
-              isMyConvo = true;
+      const msg = messages?.find((item) => !seenMessageIds.has(item.id));
+      if (!msg) return;
+      seenMessageIds.add(msg.id);
+
+      let senderName = senderCacheRef.current.get(msg.sender_id);
+      if (!senderName) {
+        const { data: member } = await supabase
+          .from("members")
+          .select("name")
+          .eq("id", msg.sender_id)
+          .single();
+        senderName = member?.name || "Someone";
+        senderCacheRef.current.set(msg.sender_id, senderName);
+      }
+
+      const preview = msg.content.length > 60 ? msg.content.slice(0, 60) + "…" : msg.content;
+
+      toast(`💬 ${senderName}`, {
+        description: preview,
+        duration: 6000,
+        action: {
+          label: "View",
+          onClick: () => {
+            const notCancelled = window.dispatchEvent(
+              new CustomEvent("open-dm-overlay", { cancelable: true })
+            );
+            if (notCancelled) {
+              navigate("/messages");
             }
-          }
+          },
+        },
+      });
+    };
 
-          if (!isMyConvo) return;
-
-          // Get sender name
-          let senderName = senderCacheRef.current.get(msg.sender_id);
-          if (!senderName) {
-            const { data: member } = await supabase
-              .from("members")
-              .select("name")
-              .eq("id", msg.sender_id)
-              .single();
-            senderName = member?.name || "Someone";
-            senderCacheRef.current.set(msg.sender_id, senderName);
-          }
-
-          const preview = msg.content.length > 60 ? msg.content.slice(0, 60) + "…" : msg.content;
-
-          toast(`💬 ${senderName}`, {
-            description: preview,
-            duration: 6000,
-            action: {
-              label: "View",
-              onClick: () => {
-                // Dispatch custom event so VideoCallPage can open DMs overlay
-                const notCancelled = window.dispatchEvent(
-                  new CustomEvent("open-dm-overlay", { cancelable: true })
-                );
-                // If no listener cancelled it (not on video call page), navigate normally
-                if (notCancelled) {
-                  navigate("/messages");
-                }
-              },
-            },
-          });
-        }
-      )
-      .subscribe();
+    checkNewMessages();
+    const poll = setInterval(checkNewMessages, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(poll);
     };
   }, [user, navigate]);
 

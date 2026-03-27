@@ -306,109 +306,89 @@ const VideoCallPage = () => {
 
   const { vipTier, subscribed, startCheckout, openPortal, checkSubscription } = useVipStatus(user?.id ?? null);
 
-  // Real-time listener for incoming gift notifications
+  // Poll for gift/camera unlock updates without Realtime sockets
   useEffect(() => {
     if (memberId === "anonymous") return;
 
-    const channel = supabase
-      .channel("gift-received-" + memberId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "gift_transactions",
-          filter: `recipient_id=eq.${memberId}`,
-        },
-        (payload) => {
-          const gift = payload.new as any;
-          if (gift.status === "completed") {
-            const minutes = gift.minutes_amount || 0;
-            const cashValue = (minutes * 0.01).toFixed(2);
-            toast.success(
-              `🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`,
-              {
-                description: "Cash out via PayPal now!",
-                action: {
-                  label: "Cash Out",
-                  onClick: () => setOverlayPage("my-rewards"),
-                },
-                duration: 10000,
-              }
-            );
+    const seenGiftIds = new Set<string>();
+    const seenCameraStatuses = new Set<string>();
+
+    const pollUpdates = async () => {
+      const { data: gifts } = await supabase
+        .from("gift_transactions")
+        .select("id, status, minutes_amount")
+        .eq("recipient_id", memberId)
+        .eq("status", "completed")
+        .order("updated_at", { ascending: false })
+        .limit(3);
+
+      gifts?.forEach((gift: any) => {
+        if (seenGiftIds.has(gift.id)) return;
+        seenGiftIds.add(gift.id);
+        const minutes = gift.minutes_amount || 0;
+        const cashValue = (minutes * 0.01).toFixed(2);
+        toast.success(`🎁 Someone gifted you ${minutes} minutes = $${cashValue}!`, {
+          description: "Cash out via PayPal now!",
+          action: {
+            label: "Cash Out",
+            onClick: () => setOverlayPage("my-rewards"),
+          },
+          duration: 10000,
+        });
+      });
+
+      if (!isFemale) {
+        const { data: requesterRows } = await supabase
+          .from("camera_unlock_requests")
+          .select("id, status")
+          .eq("requester_id", memberId)
+          .in("status", ["accepted", "declined"])
+          .order("updated_at", { ascending: false })
+          .limit(1);
+
+        const req = requesterRows?.[0] as any;
+        if (req) {
+          const key = `${req.id}:${req.status}`;
+          if (!seenCameraStatuses.has(key)) {
+            seenCameraStatuses.add(key);
+            if (req.status === "accepted") {
+              toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
+              setCameraUnlocked(true);
+            } else if (req.status === "declined") {
+              toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
+            }
           }
         }
-      )
-      .subscribe();
+      }
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [memberId]);
+      if (isFemale && currentPartnerId) {
+        const { data: recipientRows } = await supabase
+          .from("camera_unlock_requests")
+          .select("id, status, recipient_cut_cents, requester_id")
+          .eq("recipient_id", memberId)
+          .eq("status", "paid")
+          .order("updated_at", { ascending: false })
+          .limit(1);
 
-  // Reset camera unlock state when partner changes
-  useEffect(() => {
-    setCameraUnlockRequest(null);
-    setCameraUnlocked(false);
-  }, [currentPartnerId]);
-
-  // Listen for incoming camera unlock requests (for females receiving requests)
-  useEffect(() => {
-    if (memberId === "anonymous" || !isFemale) return;
-
-    const channel = supabase
-      .channel("camera-unlock-" + memberId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "camera_unlock_requests",
-          filter: `recipient_id=eq.${memberId}`,
-        },
-        (payload) => {
-          const req = payload.new as any;
-          if (req.status === "paid" && currentPartnerId === req.requester_id) {
+        const req = recipientRows?.[0] as any;
+        if (req && req.requester_id === currentPartnerId) {
+          const key = `${req.id}:${req.status}`;
+          if (!seenCameraStatuses.has(key)) {
+            seenCameraStatuses.add(key);
             setCameraUnlockRequest({
               id: req.id,
               recipient_cut_cents: req.recipient_cut_cents,
             });
           }
         }
-      )
-      .subscribe();
+      }
+    };
 
-    return () => { supabase.removeChannel(channel); };
+    pollUpdates();
+    const poll = setInterval(pollUpdates, 5000);
+
+    return () => clearInterval(poll);
   }, [memberId, isFemale, currentPartnerId]);
-
-  // Listen for camera unlock acceptance (for males who sent request)
-  useEffect(() => {
-    if (memberId === "anonymous" || isFemale) return;
-
-    const channel = supabase
-      .channel("camera-unlock-response-" + memberId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "camera_unlock_requests",
-          filter: `requester_id=eq.${memberId}`,
-        },
-        (payload) => {
-          const req = payload.new as any;
-          if (req.status === "accepted") {
-            toast.success("📹 Camera unlocked! Your partner accepted.", { duration: 5000 });
-            setCameraUnlocked(true);
-          } else if (req.status === "declined") {
-            toast("Partner declined the camera request. You'll be refunded.", { duration: 5000 });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [memberId, isFemale]);
 
   // Handle camera unlock verification from success page redirect
   useEffect(() => {
