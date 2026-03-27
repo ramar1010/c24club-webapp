@@ -145,6 +145,18 @@ const LuckySpinWidget = ({ isWaiting }: LuckySpinWidgetProps) => {
           </span>
         </div>
 
+        {/* Prize amounts */}
+        <div className="flex items-center justify-center gap-1.5 mb-2 flex-wrap">
+          {["$0.10", "$0.50", "$5", "$10", "$25", "$50"].map((prize) => (
+            <span
+              key={prize}
+              className="text-[9px] bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 px-1.5 py-0.5 rounded-full font-bold"
+            >
+              {prize}
+            </span>
+          ))}
+        </div>
+
         {/* Slot reels */}
         <div className="flex items-center justify-center gap-2 mb-2">
           {reelSymbols.map((symbol, i) => (
