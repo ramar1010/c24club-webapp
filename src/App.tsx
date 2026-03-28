@@ -84,6 +84,7 @@ const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
 const TopOmegleAlternativesPage = lazy(() => import("@/pages/public/TopOmegleAlternativesPage"));
+const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
