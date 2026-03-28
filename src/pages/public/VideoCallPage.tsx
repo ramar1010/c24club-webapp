@@ -118,6 +118,7 @@ const VideoCallPage = () => {
 
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | "challenges" | null>(null);
+  const [dmTargetId, setDmTargetId] = useState<string | undefined>(undefined);
   const memberId = user?.id ?? "anonymous";
   const prevUserIdRef = useRef(memberId);
 
@@ -1127,6 +1128,7 @@ const VideoCallPage = () => {
                     onOpenDiscover={() => setOverlayPage("discover")}
                     onOpenStore={() => setOverlayPage("store")}
                     onOpenMessages={() => setOverlayPage("messages")}
+                    onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                   />
                 )}
               </div>
@@ -1296,6 +1298,7 @@ const VideoCallPage = () => {
                         onOpenDiscover={() => setOverlayPage("discover")}
                         onOpenStore={() => setOverlayPage("store")}
                         onOpenMessages={() => setOverlayPage("messages")}
+                        onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                       />
                     )}
                   </>}
@@ -1490,8 +1493,8 @@ const VideoCallPage = () => {
         </FullScreenOverlay>
       }
       {overlayPage === "messages" &&
-      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
-          <MessagesPage onClose={() => setOverlayPage(null)} />
+      <FullScreenOverlay onClose={() => { setDmTargetId(undefined); setOverlayPage(null); }}>
+          <MessagesPage onClose={() => { setDmTargetId(undefined); setOverlayPage(null); }} initialPartnerId={dmTargetId} />
         </FullScreenOverlay>
       }
       {overlayPage === "challenges" &&
