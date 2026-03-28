@@ -1446,6 +1446,7 @@ export type Database = {
         Row: {
           bio: string | null
           birthdate: string | null
+          call_slug: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -1474,6 +1475,7 @@ export type Database = {
         Insert: {
           bio?: string | null
           birthdate?: string | null
+          call_slug?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -1502,6 +1504,7 @@ export type Database = {
         Update: {
           bio?: string | null
           birthdate?: string | null
+          call_slug?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
