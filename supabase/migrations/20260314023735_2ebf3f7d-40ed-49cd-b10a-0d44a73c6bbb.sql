@@ -1,1 +1,0 @@
-ALTER TABLE public.user_bans ADD COLUMN ip_address text;

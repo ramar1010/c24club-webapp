@@ -1,1 +1,0 @@
-ALTER TABLE public.call_minutes_log ALTER COLUMN session_date TYPE text USING session_date::text;

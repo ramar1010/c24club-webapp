@@ -1,1 +1,0 @@
-ALTER TABLE public.member_minutes ADD COLUMN purchased_spins integer NOT NULL DEFAULT 0;

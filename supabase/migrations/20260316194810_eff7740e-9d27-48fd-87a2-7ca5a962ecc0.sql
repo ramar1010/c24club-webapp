@@ -1,1 +1,0 @@
-ALTER TABLE public.notification_cooldowns ADD COLUMN IF NOT EXISTS email_notify_counter integer NOT NULL DEFAULT 0;

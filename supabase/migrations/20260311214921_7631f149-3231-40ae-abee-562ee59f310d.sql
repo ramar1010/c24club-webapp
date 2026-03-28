@@ -1,2 +1,0 @@
-
-ALTER TABLE public.rewards ADD COLUMN shipping_fee NUMERIC NOT NULL DEFAULT 0;

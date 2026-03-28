@@ -1,1 +1,0 @@
-ALTER TABLE public.member_minutes ADD COLUMN gifted_minutes integer NOT NULL DEFAULT 0;

@@ -1,1 +1,0 @@
-UPDATE members SET image_url = 'https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/member-photos/654c348f-a9c3-44ab-99ec-7a34ea6d63f5/selfie.webp', image_status = 'approved', updated_at = now() WHERE id = '654c348f-a9c3-44ab-99ec-7a34ea6d63f5';

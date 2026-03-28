@@ -1,1 +1,0 @@
-UPDATE cashout_settings SET rate_per_minute = 0.01, min_cashout_minutes = 100, max_cashout_minutes = 5000, updated_at = now();

@@ -1,1 +1,0 @@
-ALTER TABLE public.rewards ADD COLUMN cashout_value numeric NOT NULL DEFAULT 0;

@@ -1,1 +1,0 @@
-DELETE FROM public.waiting_queue; DELETE FROM public.rooms WHERE member1 LIKE 'test-%';

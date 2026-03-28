@@ -1,1 +1,0 @@
-ALTER TABLE public.member_minutes ADD COLUMN IF NOT EXISTS nsfw_strikes integer NOT NULL DEFAULT 0;

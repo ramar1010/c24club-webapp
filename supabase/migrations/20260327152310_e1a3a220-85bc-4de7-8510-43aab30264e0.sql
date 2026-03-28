@@ -1,3 +1,0 @@
-UPDATE email_templates SET body = E'Hey {{user_name}}! 👋\n\n⚡ Power Hour starts in about 1 HOUR at {{power_hour_time}}!\n\nThis is when the most people are online — the best time to chat and earn rewards.\n\n👉 Join now: {{join_link}}\n\nSee you there!\n— C24 Club' WHERE template_key = 'power_hour_1h';
-
-UPDATE email_templates SET body = E'Hey {{user_name}}! 🔥\n\n⚡ Power Hour starts in 10 MINUTES at {{power_hour_time}}!\n\nPeople are logging on NOW — don''t miss the busiest session of the day!\n\n👉 Join now: {{join_link}}\n\nHurry up!\n— C24 Club' WHERE template_key = 'power_hour_10m';

@@ -1,1 +1,0 @@
-ALTER TABLE public.members ADD COLUMN last_ip text;

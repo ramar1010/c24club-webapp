@@ -1,1 +1,0 @@
-ALTER TABLE public.anchor_sessions ADD COLUMN IF NOT EXISTS last_verified_at timestamptz DEFAULT now();
