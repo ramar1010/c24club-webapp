@@ -126,6 +126,7 @@ const App = () => (
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/gift-success" element={<GiftSuccessPage />} />
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
+              <Route path="/call/:slug" element={<CallMePage />} />
 
               {/* Admin login */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
