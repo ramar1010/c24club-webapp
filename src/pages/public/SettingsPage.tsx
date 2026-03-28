@@ -22,8 +22,9 @@ const SettingsPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("members").select("bio").eq("id", user.id).single().then(({ data }) => {
+    supabase.from("members").select("bio, call_slug").eq("id", user.id).single().then(({ data }) => {
       setBio((data as any)?.bio || "");
+      setCallSlug((data as any)?.call_slug || "");
       setBioLoaded(true);
     });
   }, [user]);
