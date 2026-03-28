@@ -74,10 +74,23 @@ export default function CallMePage() {
       return;
     }
 
-    // Send push notification
+    // Send push notification + SMS alert (fire and forget)
     supabase.functions
       .invoke("notify-direct-call", {
         body: { inviterId: user.id, inviteeId: profile.id },
+      })
+      .catch(() => {});
+
+    // Get caller's name for the SMS
+    const { data: callerData } = await supabase
+      .from("members")
+      .select("name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    supabase.functions
+      .invoke("callme-sms", {
+        body: { inviteeId: profile.id, callerName: callerData?.name || "Someone" },
       })
       .catch(() => {});
 

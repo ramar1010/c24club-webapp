@@ -1464,6 +1464,7 @@ export type Database = {
           membership: string | null
           name: string
           notify_enabled: boolean
+          phone_number: string | null
           profession: string | null
           push_token: string | null
           state: string | null
@@ -1493,6 +1494,7 @@ export type Database = {
           membership?: string | null
           name: string
           notify_enabled?: boolean
+          phone_number?: string | null
           profession?: string | null
           push_token?: string | null
           state?: string | null
@@ -1522,6 +1524,7 @@ export type Database = {
           membership?: string | null
           name?: string
           notify_enabled?: boolean
+          phone_number?: string | null
           profession?: string | null
           push_token?: string | null
           state?: string | null
