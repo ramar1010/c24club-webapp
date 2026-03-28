@@ -130,9 +130,33 @@ const SettingsPage = () => {
           </div>
         </div>
       )}
-
-
-
+      {/* Call Me Link */}
+      {callSlug && (
+        <div className="w-full max-w-sm mb-6">
+          <h3 className="text-sm font-black tracking-wide mb-2 text-center flex items-center justify-center gap-1.5">
+            <Link2 className="w-4 h-4" />
+            YOUR CALL ME LINK
+          </h3>
+          <div className="flex items-center gap-2 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2.5">
+            <span className="text-sm text-neutral-300 truncate flex-1">
+              c24club.com/call/{callSlug}
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`https://c24club.com/call/${callSlug}`);
+                setLinkCopied(true);
+                toast.success("Call Me link copied! 🔗");
+                setTimeout(() => setLinkCopied(false), 2000);
+              }}
+              className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shrink-0"
+            >
+              {linkCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {linkCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <p className="text-neutral-500 text-xs text-center mt-1.5">Share this link so others can call you directly</p>
+        </div>
+      )}
 
       {/* Referrals & Get Help */}
       <div className="flex gap-4 mb-6">
