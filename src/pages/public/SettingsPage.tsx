@@ -41,6 +41,20 @@ const SettingsPage = () => {
     setBioSaving(false);
   };
 
+  const handleSavePhone = async () => {
+    if (!user) return;
+    const cleaned = phoneNumber.replace(/[^+\d]/g, "");
+    if (cleaned && !/^\+?\d{10,15}$/.test(cleaned)) {
+      toast.error("Please enter a valid phone number (e.g. +15551234567)");
+      return;
+    }
+    setPhoneSaving(true);
+    const { error } = await supabase.from("members").update({ phone_number: cleaned || null } as any).eq("id", user.id);
+    if (error) toast.error("Failed to save phone number");
+    else toast.success(cleaned ? "Phone number saved! You'll get SMS alerts when someone wants to call 📱" : "Phone number removed");
+    setPhoneSaving(false);
+  };
+
   const handleResetPassword = async () => {
     if (!user?.email) {
       toast.error("No email found on your account.");
