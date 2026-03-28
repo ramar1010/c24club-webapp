@@ -413,6 +413,26 @@ const TermsPage = () => {
           </ul>
         </section>
 
+        {/* SMS Text Messaging Terms */}
+        <div className="border-t border-white/10 pt-8">
+          <h2 className="text-xl font-black text-white mb-4">SMS Text Messaging Terms</h2>
+        </div>
+
+        <section>
+          <h3 className="text-lg font-bold text-orange-400 mb-2">40. SMS Text Messaging Program</h3>
+          <ul className="list-disc list-inside space-y-2">
+            <li><strong className="text-white">Program Name:</strong> C24 Club Video Chat Alerts</li>
+            <li><strong className="text-white">Program Description:</strong> C24 Club offers an optional SMS notification service that alerts opted-in users when another user wants to initiate a live video chat. Messages contain a time-limited link to join the call.</li>
+            <li><strong className="text-white">Message Frequency:</strong> Message frequency varies. You may receive up to 10 text messages per day.</li>
+            <li><strong className="text-white">Message & Data Rates:</strong> Message and data rates may apply. Please contact your wireless carrier for details about your text plan or data plan. You are solely responsible for all charges related to SMS/text messages, including charges from your wireless provider.</li>
+            <li><strong className="text-white">Opt-In:</strong> By providing your phone number and checking the consent box in the app, you expressly consent to receive automated SMS messages from C24 Club. Consent is not required to use the platform.</li>
+            <li><strong className="text-white">Opt-Out:</strong> You can opt out at any time by replying <strong className="text-white">STOP</strong> to any message or by toggling off SMS notifications in your account Settings. Upon opting out, you will receive one final confirmation message and no further texts will be sent.</li>
+            <li><strong className="text-white">Help:</strong> For support, reply <strong className="text-white">HELP</strong> to any message or contact us at <strong className="text-white">business@c24club.com</strong>.</li>
+            <li><strong className="text-white">Supported Carriers:</strong> Supported carriers may include, but are not limited to, AT&T, Verizon, T-Mobile, Sprint, and other major US carriers. C24 Club is not liable for delayed or undelivered messages.</li>
+            <li><strong className="text-white">Privacy:</strong> Your phone number will not be sold, rented, or shared with third parties for marketing purposes. See our <a href="/privacy-policy" className="text-orange-400 underline hover:text-orange-300">Privacy Policy</a> for details.</li>
+          </ul>
+        </section>
+
         {/* Contact */}
         <div className="border-t border-white/10 pt-8">
           <section>
