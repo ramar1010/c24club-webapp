@@ -1128,6 +1128,7 @@ const VideoCallPage = () => {
                     onOpenDiscover={() => setOverlayPage("discover")}
                     onOpenStore={() => setOverlayPage("store")}
                     onOpenMessages={() => setOverlayPage("messages")}
+                    onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                   />
                 )}
               </div>
@@ -1297,6 +1298,7 @@ const VideoCallPage = () => {
                         onOpenDiscover={() => setOverlayPage("discover")}
                         onOpenStore={() => setOverlayPage("store")}
                         onOpenMessages={() => setOverlayPage("messages")}
+                        onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                       />
                     )}
                   </>}
