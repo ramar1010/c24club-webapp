@@ -175,6 +175,35 @@ const SettingsPage = () => {
         </div>
       )}
 
+      {/* Phone Number for Call Me SMS alerts */}
+      <div className="w-full max-w-sm mb-6">
+        <h3 className="text-sm font-black tracking-wide mb-2 text-center flex items-center justify-center gap-1.5">
+          📱 SMS CALL ALERTS
+        </h3>
+        <p className="text-neutral-500 text-xs text-center mb-2">
+          Add your phone number to get a text when someone wants to video chat with you
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="+1 555 123 4567"
+            className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+          <button
+            onClick={handleSavePhone}
+            disabled={phoneSaving}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+          >
+            {phoneSaving ? "Saving..." : "Save"}
+          </button>
+        </div>
+        <p className="text-neutral-600 text-[10px] text-center mt-1.5">
+          By saving, you agree to receive SMS notifications. Msg & data rates may apply. Reply STOP to opt out.
+        </p>
+      </div>
+
       {/* Referrals & Get Help */}
       <div className="flex gap-4 mb-6">
         <button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-black text-base py-2.5 px-6 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide border border-red-400/40">
