@@ -1493,8 +1493,8 @@ const VideoCallPage = () => {
         </FullScreenOverlay>
       }
       {overlayPage === "messages" &&
-      <FullScreenOverlay onClose={() => setOverlayPage(null)}>
-          <MessagesPage onClose={() => setOverlayPage(null)} />
+      <FullScreenOverlay onClose={() => { setDmTargetId(undefined); setOverlayPage(null); }}>
+          <MessagesPage onClose={() => { setDmTargetId(undefined); setOverlayPage(null); }} initialPartnerId={dmTargetId} />
         </FullScreenOverlay>
       }
       {overlayPage === "challenges" &&
