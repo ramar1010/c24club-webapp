@@ -111,15 +111,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         void ensureMemberRow(nextSession.user);
       }
 
-      // Fire welcome email on first signup
+      // Fire welcome email on first signup (deduplicated per user)
       if (event === "SIGNED_IN" && nextSession?.user) {
-        const createdAt = new Date(nextSession.user.created_at).getTime();
-        const now = Date.now();
-        // Only trigger if account was created in the last 30 seconds (fresh signup)
-        if (now - createdAt < 30_000) {
-          supabase.functions.invoke("welcome-email", {
-            body: { userId: nextSession.user.id },
-          }).catch((err) => console.warn("Welcome email failed:", err));
+        const uid = nextSession.user.id;
+        const welcomeKey = `welcome_email_sent_${uid}`;
+        const alreadySent = sessionStorage.getItem(welcomeKey);
+        if (!alreadySent) {
+          const createdAt = new Date(nextSession.user.created_at).getTime();
+          const now = Date.now();
+          // Only trigger if account was created in the last 30 seconds (fresh signup)
+          if (now - createdAt < 30_000) {
+            sessionStorage.setItem(welcomeKey, "1");
+            supabase.functions.invoke("welcome-email", {
+              body: { userId: uid },
+            }).catch((err) => console.warn("Welcome email failed:", err));
+          }
         }
       }
     });
