@@ -16,6 +16,7 @@ interface DiscoverTeaserProps {
   onOpenDiscover: () => void;
   onOpenStore?: () => void;
   onOpenMessages?: () => void;
+  onDmUser?: (memberId: string) => void;
 }
 
 const MemberCard = ({
@@ -55,7 +56,7 @@ const MemberCard = ({
   </div>
 );
 
-const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover, onOpenStore, onOpenMessages }: DiscoverTeaserProps) => {
+const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover, onOpenStore, onOpenMessages, onDmUser }: DiscoverTeaserProps) => {
   const oppositeGender = myGender?.toLowerCase() === "female" ? "male" : "female";
   const [showRewards, setShowRewards] = useState(false);
 
@@ -93,9 +94,11 @@ const DiscoverTeaser = ({ myGender, myUserId, onOpenDiscover, onOpenStore, onOpe
 
   const handleDm = (memberId: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Store the target partner ID for the messages overlay to pick up
-    window.dispatchEvent(new CustomEvent("open-dm-to-user", { detail: { partnerId: memberId } }));
-    onOpenMessages?.();
+    if (onDmUser) {
+      onDmUser(memberId);
+    } else {
+      onOpenMessages?.();
+    }
   };
 
   // If showing rewards phase and we have an onOpenStore handler
