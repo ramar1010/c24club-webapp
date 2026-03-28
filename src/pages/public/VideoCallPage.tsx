@@ -1126,6 +1126,7 @@ const VideoCallPage = () => {
                     myUserId={memberId}
                     onOpenDiscover={() => setOverlayPage("discover")}
                     onOpenStore={() => setOverlayPage("store")}
+                    onOpenMessages={() => setOverlayPage("messages")}
                   />
                 )}
               </div>
@@ -1294,6 +1295,7 @@ const VideoCallPage = () => {
                         myUserId={memberId}
                         onOpenDiscover={() => setOverlayPage("discover")}
                         onOpenStore={() => setOverlayPage("store")}
+                        onOpenMessages={() => setOverlayPage("messages")}
                       />
                     )}
                   </>}
