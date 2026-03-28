@@ -19,12 +19,15 @@ const SettingsPage = () => {
   const [bioLoaded, setBioLoaded] = useState(false);
   const [callSlug, setCallSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneSaving, setPhoneSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("members").select("bio, call_slug").eq("id", user.id).single().then(({ data }) => {
+    supabase.from("members").select("bio, call_slug, phone_number").eq("id", user.id).single().then(({ data }) => {
       setBio((data as any)?.bio || "");
       setCallSlug((data as any)?.call_slug || "");
+      setPhoneNumber((data as any)?.phone_number || "");
       setBioLoaded(true);
     });
   }, [user]);
