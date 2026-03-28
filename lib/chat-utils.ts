@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-// Use the atomic RPC function to safely increment minutes
+// Safely increment minutes using the atomic RPC function
 export async function earnMinutes(userId: string, minutesToAdd: number) {
   try {
     const { data, error } = await supabase.rpc('atomic_increment_minutes', {
@@ -8,16 +8,16 @@ export async function earnMinutes(userId: string, minutesToAdd: number) {
       p_user_id: userId,
     });
     if (error) console.error('[chat-utils] earnMinutes error:', error);
-    return data; // returns new total
+    return data as number;
   } catch (err) {
     console.error('[chat-utils] earnMinutes error:', err);
   }
 }
 
-// Add to waiting queue for matchmaking
+// Add current user to the waiting queue for matchmaking
 export async function joinWaitingQueue(
   memberId: string,
-  gender?: string,
+  gender?: string | null,
   genderPreference?: string,
 ) {
   const channelId = `ch_${memberId}_${Date.now()}`;
@@ -35,12 +35,12 @@ export async function joinWaitingQueue(
   return { data, error, channelId };
 }
 
-// Remove from waiting queue
+// Remove current user from the waiting queue
 export async function leaveWaitingQueue(memberId: string) {
   await supabase.from('waiting_queue').delete().eq('member_id', memberId);
 }
 
-// Find a match from waiting queue (someone else waiting)
+// Find someone else in the waiting queue
 export async function findMatchInQueue(memberId: string) {
   const { data } = await supabase
     .from('waiting_queue')
@@ -52,12 +52,14 @@ export async function findMatchInQueue(memberId: string) {
   return data;
 }
 
-// Create a room when matched
+// Create a room when two users are matched
 export async function createRoom(
   member1Id: string,
   member1Channel: string,
   member2Id: string,
   member2Channel: string,
+  member1Gender?: string | null,
+  member2Gender?: string | null,
 ) {
   const { data, error } = await supabase
     .from('rooms')
@@ -66,6 +68,8 @@ export async function createRoom(
       member2: member2Id,
       channel1: member1Channel,
       channel2: member2Channel,
+      member1_gender: member1Gender ?? null,
+      member2_gender: member2Gender ?? null,
       status: 'connected',
       connected_at: new Date().toISOString(),
     })
@@ -74,11 +78,14 @@ export async function createRoom(
   return { data, error };
 }
 
-// End a room
+// End a room session
 export async function endRoom(roomId: string) {
   await supabase
     .from('rooms')
-    .update({ status: 'disconnected', disconnected_at: new Date().toISOString() })
+    .update({
+      status: 'disconnected',
+      disconnected_at: new Date().toISOString(),
+    })
     .eq('id', roomId);
 }
 
