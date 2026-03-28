@@ -17,6 +17,8 @@ const SettingsPage = () => {
   const [bio, setBio] = useState("");
   const [bioSaving, setBioSaving] = useState(false);
   const [bioLoaded, setBioLoaded] = useState(false);
+  const [callSlug, setCallSlug] = useState("");
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     if (!user) return;
