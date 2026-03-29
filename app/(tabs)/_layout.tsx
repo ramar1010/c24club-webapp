@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Gift, Home, Star, User, Video } from "lucide-react-native";
+import { Compass, Gift, Home, User, Video } from "lucide-react-native";
 import React from "react";
 
 export default function TabLayout() {
@@ -48,11 +48,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="promos"
+        name="discover"
         options={{
-          title: "Promos",
+          title: "Discover",
           tabBarIcon: ({ color, size }) => (
-            <Star size={size} color={color} />
+            <Compass size={size} color={color} />
           ),
         }}
       />
