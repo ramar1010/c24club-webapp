@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@font-face {
+  font-family: 'Antigone';
+  src: url('/fonts/antigone_compact_pro-regular-webfont.woff2') format('woff2'),
+       url('/fonts/antigone_compact_pro-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Calming blue-teal admin palette */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 205 65% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 20% 94%;
+    --secondary-foreground: 215 25% 20%;
+
+    --muted: 210 15% 95%;
+    --muted-foreground: 215 12% 50%;
+
+    --accent: 170 45% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 18% 89%;
+    --input: 210 18% 89%;
+    --ring: 205 65% 45%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-background: 215 28% 17%;
+    --sidebar-foreground: 210 15% 80%;
+    --sidebar-primary: 205 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 22%;
+    --sidebar-accent-foreground: 210 15% 90%;
+    --sidebar-border: 215 20% 22%;
+    --sidebar-ring: 205 65% 55%;
+    --sidebar-muted: 215 15% 40%;
+
+    /* Admin-specific tokens */
+    --topbar-background: 0 0% 100%;
+    --topbar-foreground: 215 25% 15%;
+    --topbar-border: 210 18% 89%;
+    --success: 160 50% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 0 0% 100%;
+    --info: 205 65% 55%;
+    --info-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 0 0% 96%;
+
+    --card: 220 18% 13%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 220 18% 13%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 205 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 92%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 210 10% 72%;
+
+    --accent: 170 45% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 205 65% 55%;
+
+    --sidebar-background: 220 22% 8%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: 205 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 14%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 14%;
+    --sidebar-ring: 205 65% 55%;
+    --sidebar-muted: 210 10% 65%;
+
+    --topbar-background: 220 18% 13%;
+    --topbar-foreground: 0 0% 96%;
+    --topbar-border: 220 15% 20%;
+    --success: 160 50% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 0 0% 100%;
+    --info: 205 65% 55%;
+    --info-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Tap Me button animations */
+@keyframes float-coin {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-12px) scale(1.2); opacity: 1; }
+}
+
+@keyframes shimmer-bg {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes tapme-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(236, 72, 153, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.6), 0 0 40px rgba(236, 72, 153, 0.2); }
+}
+
+@keyframes emoji-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes scale-pulse {
+  0%, 100% { transform: scale(1) rotate(5deg); opacity: 0.85; }
+  50% { transform: scale(1.12) rotate(5deg); opacity: 1; }
+}
+
+@keyframes yap-rise {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  15% { opacity: 1; }
+  70% { opacity: 0.6; }
+  100% { transform: translateY(-50px) scale(1.1) rotate(-8deg); opacity: 0; }
+}

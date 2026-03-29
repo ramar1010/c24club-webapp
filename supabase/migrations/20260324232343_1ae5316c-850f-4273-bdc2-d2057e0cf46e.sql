@@ -1,0 +1,1 @@
+UPDATE email_templates SET body = replace(body, 'https://c24club.lovable.app', 'https://c24club.com'), updated_at = now() WHERE template_key = 'missed_video_call';
