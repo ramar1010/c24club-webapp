@@ -1,8 +1,12 @@
 import { Tabs } from "expo-router";
-import { Compass, Gift, Home, User, Video } from "lucide-react-native";
+import { Compass, Gift, Home, MessageCircle, User, Video } from "lucide-react-native";
 import React from "react";
+import { useUnreadCount } from "@/hooks/useMessages";
 
-export default function TabLayout() {
+function TabLayoutInner() {
+  const { data: unreadCount } = useUnreadCount();
+  const badge = unreadCount && unreadCount > 0 ? unreadCount : undefined;
+
   return (
     <Tabs
       screenOptions={{
@@ -57,6 +61,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Messages",
+          tabBarBadge: badge,
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
@@ -67,4 +81,8 @@ export default function TabLayout() {
       />
     </Tabs>
   );
+}
+
+export default function TabLayout() {
+  return <TabLayoutInner />;
 }

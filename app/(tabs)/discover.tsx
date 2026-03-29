@@ -621,7 +621,7 @@ export default function DiscoverScreen() {
               <Text style={styles.giftedButtonText}>$</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.dmsButton} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.dmsButton} activeOpacity={0.8} onPress={() => router.push("/(tabs)/messages")}>
             <MessageSquare size={14} color="#3B82F6" />
             <Text style={styles.dmsButtonText}>DMs</Text>
           </TouchableOpacity>
@@ -708,6 +708,7 @@ const MemberCard = React.memo(function MemberCard({
   onView,
 }: MemberCardProps) {
   const viewTracked = useRef(false);
+  const router = useRouter();
   const online = isEffectivelyOnline(member.id, member.gender, member.last_active_at);
   const isFemale = member.gender?.toLowerCase() === "female";
 
@@ -816,7 +817,7 @@ const MemberCard = React.memo(function MemberCard({
           <TouchableOpacity style={styles.actionBtnGreen} activeOpacity={0.8}>
             <Video size={12} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtnBlue} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.actionBtnBlue} activeOpacity={0.8} onPress={() => router.push({ pathname: "/messages/[id]", params: { id: "new", partnerId: member.id, partnerName: member.name, partnerImage: member.image_url ?? "" } })}>
             <MessageCircle size={12} color="#FFFFFF" />
           </TouchableOpacity>
           {pinnedSocials && pinnedSocials.length > 0 && (
