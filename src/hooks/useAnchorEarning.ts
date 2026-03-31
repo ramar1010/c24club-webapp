@@ -23,6 +23,9 @@ export type EarningMode = "active" | "idle";
 
 const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder", "blossom", "cascade", "eclipse", "harbor", "lantern", "orchid", "phoenix", "radiance", "sapphire", "velvet"];
 
+// Feature disabled — set to true to re-enable anchor earning
+const ANCHOR_DISABLED = true;
+
 export function useAnchorEarning({
   userId,
   isOnCall,
@@ -34,6 +37,26 @@ export function useAnchorEarning({
   isStarted?: boolean;
   partnerGender?: string | null;
 }) {
+  // Short-circuit: return inert defaults, no intervals, no edge function calls
+  if (ANCHOR_DISABLED) {
+    return {
+      status: "not_eligible" as AnchorStatus,
+      earningMode: "idle" as EarningMode,
+      settingsLoaded: true,
+      cashBalance: 0,
+      queuePosition: 0,
+      settings: null,
+      cashEarned: 0,
+      verificationRequired: false,
+      verificationWord: "",
+      payouts: [] as AnchorPayout[],
+      systemDisabled: true,
+      startEarning: async () => {},
+      stopEarning: async () => {},
+      cashout: async () => ({ success: false }),
+      submitVerification: async () => false,
+    };
+  }
   const [status, setStatus] = useState<AnchorStatus>("loading");
   const [earningMode, setEarningMode] = useState<EarningMode>("idle");
   const [settingsLoaded, setSettingsLoaded] = useState(false);

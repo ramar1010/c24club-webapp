@@ -129,7 +129,7 @@ const AnchorSettingsPage = () => {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 5000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const { data: cashoutRequests } = useQuery({
@@ -142,7 +142,7 @@ const AnchorSettingsPage = () => {
         .limit(20);
       return data ?? [];
     },
-    refetchInterval: 15000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const { data: anchorPayouts } = useQuery({
@@ -155,7 +155,7 @@ const AnchorSettingsPage = () => {
         .limit(50);
       return data ?? [];
     },
-    refetchInterval: 15000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const updateAnchorPayoutMutation = useMutation({
