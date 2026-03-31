@@ -129,7 +129,7 @@ const AnchorSettingsPage = () => {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 5000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const { data: cashoutRequests } = useQuery({
