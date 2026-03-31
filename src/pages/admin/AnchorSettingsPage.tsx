@@ -155,7 +155,7 @@ const AnchorSettingsPage = () => {
         .limit(50);
       return data ?? [];
     },
-    refetchInterval: 15000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const updateAnchorPayoutMutation = useMutation({
