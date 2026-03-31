@@ -142,7 +142,7 @@ const AnchorSettingsPage = () => {
         .limit(20);
       return data ?? [];
     },
-    refetchInterval: 15000,
+    refetchInterval: false, // Anchor feature disabled
   });
 
   const { data: anchorPayouts } = useQuery({
