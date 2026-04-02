@@ -128,13 +128,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (msgError) {
-      console.error("Error fetching unread messages:", msgError);
-      throw msgError;
-    }
     if (!unreadMessages || unreadMessages.length === 0) {
       return new Response(
         JSON.stringify({ message: "No unread messages" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
