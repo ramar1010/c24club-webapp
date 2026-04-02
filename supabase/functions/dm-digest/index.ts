@@ -134,9 +134,6 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     console.log(`Found ${unreadMessages.length} unread messages across conversations`);
 
