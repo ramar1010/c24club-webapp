@@ -81,12 +81,12 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Get all conversations (limited batch to avoid huge queries)
+    // Get recent conversations (limited to avoid URL-too-long errors)
     const { data: allConvos, error: convoError } = await supabase
       .from("conversations")
       .select("id, participant_1, participant_2")
       .order("last_message_at", { ascending: false })
-      .limit(500);
+      .limit(200);
 
     if (convoError) {
       console.error("Error fetching conversations:", convoError);
@@ -99,16 +99,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    const convoIds = allConvos.map((c: any) => c.id);
+    // Batch conversation IDs to avoid URL-too-long errors with .in()
+    const BATCH_SIZE = 50;
+    const allUnread: any[] = [];
+    for (let i = 0; i < allConvos.length; i += BATCH_SIZE) {
+      const batch = allConvos.slice(i, i + BATCH_SIZE).map((c: any) => c.id);
+      const { data: batchMessages, error: batchErr } = await supabase
+        .from("dm_messages")
+        .select("id, conversation_id, sender_id, content, created_at")
+        .in("conversation_id", batch)
+        .is("read_at", null)
+        .order("created_at", { ascending: false })
+        .limit(500);
 
-    // Find unread messages in those conversations
-    const { data: unreadMessages, error: msgError } = await supabase
-      .from("dm_messages")
-      .select("id, conversation_id, sender_id, content, created_at")
-      .in("conversation_id", convoIds)
-      .is("read_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1000);
+      if (batchErr) {
+        console.error("Error fetching batch:", batchErr);
+        continue;
+      }
+      if (batchMessages) allUnread.push(...batchMessages);
+    }
+
+    const unreadMessages = allUnread;
+
+    if (unreadMessages.length === 0) {
+      return new Response(
+        JSON.stringify({ message: "No unread messages" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (msgError) {
       console.error("Error fetching unread messages:", msgError);
