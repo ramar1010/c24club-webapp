@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
                 run_id: crypto.randomUUID(),
                 to: target.email,
                 from: `C24Club <support@c24club.com>`,
-                sender_domain: "c24club.com",
+                sender_domain: "notify.c24club.com",
                 subject: emailSubject,
                 html: emailBody,
                 text: emailBody.replace(/<[^>]*>/g, ""),
