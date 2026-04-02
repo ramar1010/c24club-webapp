@@ -6,7 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "c24club.com";
+const SENDER_DOMAIN = "notify.c24club.com";
+const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildDigestHtml(
@@ -80,14 +81,39 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find all unread messages grouped by recipient
+    // Get all conversations (limited batch to avoid huge queries)
+    const { data: allConvos, error: convoError } = await supabase
+      .from("conversations")
+      .select("id, participant_1, participant_2")
+      .order("last_message_at", { ascending: false })
+      .limit(500);
+
+    if (convoError) {
+      console.error("Error fetching conversations:", convoError);
+      throw convoError;
+    }
+    if (!allConvos || allConvos.length === 0) {
+      return new Response(
+        JSON.stringify({ message: "No conversations found" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const convoIds = allConvos.map((c: any) => c.id);
+
+    // Find unread messages in those conversations
     const { data: unreadMessages, error: msgError } = await supabase
       .from("dm_messages")
       .select("id, conversation_id, sender_id, content, created_at")
+      .in("conversation_id", convoIds)
       .is("read_at", null)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(1000);
 
-    if (msgError) throw msgError;
+    if (msgError) {
+      console.error("Error fetching unread messages:", msgError);
+      throw msgError;
+    }
     if (!unreadMessages || unreadMessages.length === 0) {
       return new Response(
         JSON.stringify({ message: "No unread messages" }),
@@ -95,20 +121,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Group by conversation to find recipients
-    const convoIds = [...new Set(unreadMessages.map((m: any) => m.conversation_id))];
-
-    const { data: convos } = await supabase
-      .from("conversations")
-      .select("id, participant_1, participant_2")
-      .in("id", convoIds);
-
-    if (!convos) {
-      return new Response(
-        JSON.stringify({ message: "No conversations found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    console.log(`Found ${unreadMessages.length} unread messages across conversations`);
 
     // Build recipient -> unread info map with message snippets
     const recipientUnread: Record<
@@ -121,7 +134,7 @@ Deno.serve(async (req) => {
     > = {};
 
     for (const msg of unreadMessages) {
-      const convo = convos.find((c: any) => c.id === msg.conversation_id);
+      const convo = allConvos.find((c: any) => c.id === msg.conversation_id);
       if (!convo) continue;
 
       const recipientId =
@@ -150,12 +163,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log(`${recipientIds.length} recipients have unread messages`);
+
     // Get member emails
-    const { data: members } = await supabase
+    const { data: members, error: membersError } = await supabase
       .from("members")
       .select("id, email, name")
       .in("id", recipientIds)
       .not("email", "is", null);
+
+    if (membersError) {
+      console.error("Error fetching members:", membersError);
+      throw membersError;
+    }
 
     if (!members || members.length === 0) {
       return new Response(
@@ -186,6 +206,7 @@ Deno.serve(async (req) => {
     const suppressedSet = new Set((suppressedList || []).map((s: any) => s.email));
 
     let emailsSent = 0;
+    const today = new Date().toISOString().slice(0, 10);
 
     for (const member of members) {
       if (suppressedSet.has(member.email)) continue;
@@ -217,7 +238,7 @@ Deno.serve(async (req) => {
 
       // Enqueue email via pgmq
       try {
-        const dmMessageId = `dm-digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
+        const dmMessageId = `dm-digest-${member.id}-${today}`;
 
         // Skip if already sent today
         const { data: alreadySent } = await supabase
@@ -227,7 +248,6 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (alreadySent) {
-          console.log(`Skipping dm-digest for ${member.id} — already sent today`);
           continue;
         }
 
@@ -244,7 +264,7 @@ Deno.serve(async (req) => {
             run_id: crypto.randomUUID(),
             message_id: dmMessageId,
             to: member.email,
-            from: `C24Club <support@${SENDER_DOMAIN}>`,
+            from: `C24Club <support@${FROM_DOMAIN}>`,
             sender_domain: SENDER_DOMAIN,
             subject,
             html,
@@ -260,6 +280,8 @@ Deno.serve(async (req) => {
         console.error(`Failed to enqueue email for ${member.id}:`, e);
       }
     }
+
+    console.log(`Digest emails enqueued for ${emailsSent} users`);
 
     return new Response(
       JSON.stringify({
