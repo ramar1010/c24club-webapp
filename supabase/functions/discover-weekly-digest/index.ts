@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const SENDER_DOMAIN = "c24club.com";
+const SENDER_DOMAIN = "notify.c24club.com";
+const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number; profileViews: number }): string {
