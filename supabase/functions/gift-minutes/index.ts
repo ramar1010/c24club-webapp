@@ -286,7 +286,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
               message_id: messageId,
               to: recipientMember.email,
               from: "C24Club <support@c24club.com>",
-              sender_domain: "c24club.com",
+              sender_domain: "notify.c24club.com",
               subject,
               html: body,
               text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! You can cash out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
