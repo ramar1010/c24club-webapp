@@ -281,7 +281,7 @@ serve(async (req) => {
                   text: plainText,
                   purpose: "transactional",
                   label: "window_reminder",
-                  sender_domain: "c24club.com",
+                  sender_domain: "notify.c24club.com",
                   message_id: messageId,
                   queued_at: new Date().toISOString(),
                 },

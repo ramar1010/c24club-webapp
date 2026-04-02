@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
           text: plainText,
           purpose: "transactional",
           label: `power_hour_${reminder.reminderType}`,
-          sender_domain: "c24club.com",
+          sender_domain: "notify.c24club.com",
           message_id: messageId,
           queued_at: new Date().toISOString(),
         };

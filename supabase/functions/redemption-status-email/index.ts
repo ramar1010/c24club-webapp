@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       text: body.replace(/<[^>]*>/g, ""),
       purpose: "transactional",
       label: templateKey,
-      sender_domain: "c24club.com",
+      sender_domain: "notify.c24club.com",
       message_id: messageId,
       queued_at: new Date().toISOString(),
     };
