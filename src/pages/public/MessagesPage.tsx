@@ -168,6 +168,19 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     },
   });
 
+  // Fetch socials when profile card opens
+  useEffect(() => {
+    if (!profileCard?.id) { setProfileSocials([]); return; }
+    supabase
+      .from("vip_settings")
+      .select("pinned_socials")
+      .eq("user_id", profileCard.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setProfileSocials(data?.pinned_socials || []);
+      });
+  }, [profileCard?.id]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
