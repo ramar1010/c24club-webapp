@@ -18,6 +18,7 @@ import CashoutModal from "@/components/discover/CashoutModal";
 import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
 import { toast } from "sonner";
 
 /* ─── Role badge component matching Discover style ─── */
@@ -61,6 +62,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = initialPartnerId || searchParams.get("to");
   const [profileCard, setProfileCard] = useState<Conversation["other_user"] | null>(null);
+  const [profileSocials, setProfileSocials] = useState<string[]>([]);
 
   // Direct call state
   const [activeCall, setActiveCall] = useState<{
@@ -165,6 +167,19 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       return data.reduce((sum, row) => sum + (row.minutes_amount || 0), 0);
     },
   });
+
+  // Fetch socials when profile card opens
+  useEffect(() => {
+    if (!profileCard?.id) { setProfileSocials([]); return; }
+    supabase
+      .from("vip_settings")
+      .select("pinned_socials")
+      .eq("user_id", profileCard.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setProfileSocials(data?.pinned_socials || []);
+      });
+  }, [profileCard?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -832,6 +847,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   )}
                 </p>
               </div>
+
+              {/* Socials */}
+              {profileSocials.length > 0 && (
+                <PinnedSocialsDisplay pinnedSocials={profileSocials} />
+              )}
 
               {/* Action buttons */}
               <div className="flex gap-2">
