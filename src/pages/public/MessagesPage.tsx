@@ -848,6 +848,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 </p>
               </div>
 
+              {/* Socials */}
+              {profileSocials.length > 0 && (
+                <PinnedSocialsDisplay pinnedSocials={profileSocials} />
+              )}
+
               {/* Action buttons */}
               <div className="flex gap-2">
                 <button
