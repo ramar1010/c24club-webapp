@@ -18,6 +18,7 @@ import CashoutModal from "@/components/discover/CashoutModal";
 import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
 import { toast } from "sonner";
 
 /* ─── Role badge component matching Discover style ─── */
