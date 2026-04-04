@@ -64,7 +64,14 @@ const AdminResetPasswordPage = () => {
           <p className="text-sm text-muted-foreground">Enter your new password</p>
         </CardHeader>
         <CardContent>
-          {!ready ? (
+          {error ? (
+            <div className="text-center space-y-3">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/admin/login")}>
+                Back to Login
+              </Button>
+            </div>
+          ) : !ready ? (
             <p className="text-center text-sm text-muted-foreground">Verifying reset link…</p>
           ) : (
             <form onSubmit={handleReset} className="space-y-4">
