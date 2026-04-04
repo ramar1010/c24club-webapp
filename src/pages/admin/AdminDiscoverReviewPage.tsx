@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -160,6 +162,16 @@ const AdminDiscoverReviewPage = () => {
           ) : null}
         </p>
       </div>
+
+      <Alert className="border-blue-500/30 bg-blue-500/10">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertTitle className="text-blue-300 font-semibold">Moderation Guidelines</AlertTitle>
+        <AlertDescription className="text-muted-foreground text-sm mt-1 space-y-1">
+          <p><span className="text-green-400 font-medium">✅ Approve:</span> Clear face selfies with good lighting.</p>
+          <p><span className="text-red-400 font-medium">❌ Deny:</span> Nudity, suspected underage users, ceiling/random pics, or anything inappropriate for the Discover page.</p>
+        </AlertDescription>
+      </Alert>
+
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ImageStatus)}>
         <TabsList>
