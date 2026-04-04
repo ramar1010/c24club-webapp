@@ -17,12 +17,9 @@ Deno.serve(async (req) => {
   try {
     const { type, memberId, channelId, genderPreference, memberGender, partnerId, voiceMode } = await req.json();
 
-    // JOIN: Try to find a match or add to queue
     if (type === "join") {
-      // First remove any stale entries for this member
       await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
-      // Check for pending direct call invites first
       const { data: directInvites } = await supabase
         .from("direct_call_invites")
         .select("*")
@@ -36,7 +33,6 @@ Deno.serve(async (req) => {
         const invite = directInvites[0];
         const directPartnerId = invite.inviter_id === memberId ? invite.invitee_id : invite.inviter_id;
 
-        // Check if partner is already in the waiting queue
         const { data: partnerInQueue } = await supabase
           .from("waiting_queue")
           .select("*")
@@ -45,14 +41,9 @@ Deno.serve(async (req) => {
 
         if (partnerInQueue && partnerInQueue.length > 0) {
           const partner = partnerInQueue[0];
-
-          // Remove partner from queue
           await supabase.from("waiting_queue").delete().eq("id", partner.id);
-
-          // Mark invite as matched
           await supabase.from("direct_call_invites").update({ status: "matched" }).eq("id", invite.id);
 
-          // Create a room
           const roomId = crypto.randomUUID();
           await supabase.from("rooms").insert({
             id: roomId,
@@ -81,10 +72,8 @@ Deno.serve(async (req) => {
             { headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
-        // Partner not in queue yet — fall through to add to queue, they'll be matched when partner joins
       }
 
-      // Try to find a match based on gender preference
       let query = supabase
         .from("waiting_queue")
         .select("*")
@@ -92,14 +81,12 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: true })
         .limit(1);
 
-      // Apply gender filter
       if (genderPreference === "Male" || genderPreference === "Female") {
         query = query.eq("member_gender", genderPreference);
       }
 
       let { data: matches } = await query;
 
-      // If no gender-specific match, try any
       if ((!matches || matches.length === 0) && genderPreference !== "Both") {
         const { data: anyMatches } = await supabase
           .from("waiting_queue")
@@ -112,11 +99,8 @@ Deno.serve(async (req) => {
 
       if (matches && matches.length > 0) {
         const partner = matches[0];
-
-        // Remove partner from queue
         await supabase.from("waiting_queue").delete().eq("id", partner.id);
 
-        // Create a room
         const roomId = crypto.randomUUID();
         await supabase.from("rooms").insert({
           id: roomId,
@@ -155,7 +139,7 @@ Deno.serve(async (req) => {
         voice_mode: voiceMode ?? false,
       });
 
-      // 🔔 If female joined queue, notify eligible male users
+      // 🔔 Female joined — notify eligible male users
       if (memberGender?.toLowerCase() === "female") {
         const { data: maleUsers } = await supabase
           .from("members")
@@ -183,7 +167,58 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Fire match-notify in background (don't await — non-blocking)
+      // 🔔 Male joined — notify eligible female users
+      if (memberGender?.toLowerCase() === "male") {
+        const { data: activeRooms } = await supabase.from("rooms").select("member1, member2").eq("status", "active");
+
+        const activeIds = new Set<string>();
+        if (activeRooms) {
+          for (const r of activeRooms) {
+            if (r.member1) activeIds.add(r.member1);
+            if (r.member2) activeIds.add(r.member2);
+          }
+        }
+
+        const { data: femaleUsers } = await supabase
+          .from("members")
+          .select("id, male_search_notify_mode, push_token")
+          .eq("gender", "female")
+          .eq("notify_enabled", true)
+          .neq("male_search_notify_mode", "off");
+
+        if (femaleUsers && femaleUsers.length > 0) {
+          const everyUsers = femaleUsers.filter(
+            (f) => f.male_search_notify_mode === "every" && !activeIds.has(f.id) && f.push_token,
+          );
+          const batchedUsers = femaleUsers.filter(
+            (f) => f.male_search_notify_mode === "batched" && !activeIds.has(f.id),
+          );
+
+          if (everyUsers.length > 0) {
+            Promise.all(
+              everyUsers.map((user) =>
+                supabase.functions.invoke("send-push-notification", {
+                  body: {
+                    user_id: user.id,
+                    title: "💬 A guy is looking for a video chat!",
+                    body: "Tap to join and start chatting now!",
+                    data: { deepLink: "/(tabs)/chat" },
+                    notification_type: "male_search_every",
+                    cooldown_minutes: 5,
+                  },
+                }),
+              ),
+            ).catch(console.error);
+          }
+
+          if (batchedUsers.length > 0) {
+            Promise.all(
+              batchedUsers.map((user) => supabase.rpc("increment_male_search_count", { p_female_id: user.id })),
+            ).catch(console.error);
+          }
+        }
+      }
+
       fetch(`${supabaseUrl}/functions/v1/match-notify`, {
         method: "POST",
         headers: {
@@ -193,39 +228,25 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ memberId, memberGender }),
       }).catch((err) => console.warn("match-notify fire failed:", err));
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "added_to_queue",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ success: true, message: "added_to_queue" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // DISCONNECT: End a call
     if (type === "disconnect") {
       await supabase
         .from("rooms")
-        .update({
-          status: "disconnected",
-          disconnected_at: new Date().toISOString(),
-        })
+        .update({ status: "disconnected", disconnected_at: new Date().toISOString() })
         .or(`and(member1.eq.${memberId}),and(member2.eq.${memberId})`)
         .eq("status", "connected");
 
-      // Also remove from queue
       await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "disconnected",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ success: true, message: "disconnected" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // POLL: Check if a room was created for this member
     if (type === "poll") {
       const [{ data: r1 }, { data: r2 }] = await Promise.all([
         supabase
@@ -250,10 +271,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // LEAVE_QUEUE: Remove from queue without disconnecting a call
     if (type === "leave_queue") {
       await supabase.from("waiting_queue").delete().eq("member_id", memberId);
-
       return new Response(JSON.stringify({ success: true, message: "removed_from_queue" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
