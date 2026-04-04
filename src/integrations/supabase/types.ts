@@ -1862,6 +1862,35 @@ export type Database = {
           },
         ]
       }
+      push_notification_log: {
+        Row: {
+          id: string
+          last_sent_at: string
+          notification_type: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_sent_at?: string
+          notification_type: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_sent_at?: string
+          notification_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_notification_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_codes: {
         Row: {
           code: string
