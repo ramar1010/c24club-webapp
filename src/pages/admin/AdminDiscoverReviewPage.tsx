@@ -169,6 +169,7 @@ const AdminDiscoverReviewPage = () => {
         <AlertDescription className="text-muted-foreground text-sm mt-1 space-y-1">
           <p><span className="text-green-400 font-medium">✅ Approve:</span> Clear face selfies with good lighting.</p>
           <p><span className="text-red-400 font-medium">❌ Deny:</span> Nudity, suspected underage users, ceiling/random pics, or anything inappropriate for the Discover page.</p>
+          <p><span className="text-yellow-400 font-medium">⚠️ After denying:</span> Go to the <strong>Denied</strong> tab and <strong>ban the user</strong> to prevent re-uploads.</p>
         </AlertDescription>
       </Alert>
 
