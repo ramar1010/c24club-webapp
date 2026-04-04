@@ -168,11 +168,7 @@ const AdminDiscoverReviewPage = () => {
           <p><span className="text-red-400 font-medium">❌ Deny:</span> Nudity, suspected underage users, ceiling/random pics, or anything inappropriate for the Discover page.</p>
         </AlertDescription>
       </Alert>
-          {pendingCount.data ? (
-            <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
-          ) : null}
-        </p>
-      </div>
+
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ImageStatus)}>
         <TabsList>
