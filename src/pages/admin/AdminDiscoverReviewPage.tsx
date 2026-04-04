@@ -157,6 +157,9 @@ const AdminDiscoverReviewPage = () => {
         <h1 className="text-2xl font-bold">Discover Image Review</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Review and approve selfies before they appear in Discover.
+          {pendingCount.data ? (
+            <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
+          ) : null}
         </p>
       </div>
 
