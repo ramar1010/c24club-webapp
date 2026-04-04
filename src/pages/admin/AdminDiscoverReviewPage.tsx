@@ -157,6 +157,17 @@ const AdminDiscoverReviewPage = () => {
         <h1 className="text-2xl font-bold">Discover Image Review</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Review and approve selfies before they appear in Discover.
+        </p>
+      </div>
+
+      <Alert className="border-blue-500/30 bg-blue-500/10">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertTitle className="text-blue-300 font-semibold">Moderation Guidelines</AlertTitle>
+        <AlertDescription className="text-muted-foreground text-sm mt-1 space-y-1">
+          <p><span className="text-green-400 font-medium">✅ Approve:</span> Clear face selfies with good lighting.</p>
+          <p><span className="text-red-400 font-medium">❌ Deny:</span> Nudity, suspected underage users, ceiling/random pics, or anything inappropriate for the Discover page.</p>
+        </AlertDescription>
+      </Alert>
           {pendingCount.data ? (
             <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
           ) : null}
