@@ -13,13 +13,32 @@ const AdminResetPasswordPage = () => {
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
+    // Check URL hash for errors (e.g. expired OTP)
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const errorDesc = params.get("error_description");
+    const errorCode = params.get("error_code");
+
+    if (errorDesc || errorCode) {
+      setError(errorDesc?.replace(/\+/g, " ") || "Reset link is invalid or has expired. Please request a new one.");
+      return;
+    }
+
     // Listen for the PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setReady(true);
       }
     });
+
+    // Also check if user already has a session (event may have fired before mount)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
