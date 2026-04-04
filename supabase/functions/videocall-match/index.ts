@@ -20,10 +20,7 @@ Deno.serve(async (req) => {
     // JOIN: Try to find a match or add to queue
     if (type === "join") {
       // First remove any stale entries for this member
-      await supabase
-        .from("waiting_queue")
-        .delete()
-        .eq("member_id", memberId);
+      await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
       // Check for pending direct call invites first
       const { data: directInvites } = await supabase
@@ -81,7 +78,7 @@ Deno.serve(async (req) => {
               partnerVoiceMode: partner.voice_mode ?? false,
               partnerGender: partner.member_gender ?? null,
             }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
         // Partner not in queue yet — fall through to add to queue, they'll be matched when partner joins
@@ -117,10 +114,7 @@ Deno.serve(async (req) => {
         const partner = matches[0];
 
         // Remove partner from queue
-        await supabase
-          .from("waiting_queue")
-          .delete()
-          .eq("id", partner.id);
+        await supabase.from("waiting_queue").delete().eq("id", partner.id);
 
         // Create a room
         const roomId = crypto.randomUUID();
@@ -148,7 +142,7 @@ Deno.serve(async (req) => {
             partnerVoiceMode: partner.voice_mode ?? false,
             partnerGender: partner.member_gender ?? null,
           }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -160,6 +154,34 @@ Deno.serve(async (req) => {
         member_gender: memberGender,
         voice_mode: voiceMode ?? false,
       });
+
+      // 🔔 If female joined queue, notify eligible male users
+      if (memberGender?.toLowerCase() === "female") {
+        const { data: maleUsers } = await supabase
+          .from("members")
+          .select("id")
+          .eq("gender", "male")
+          .eq("notify_enabled", true)
+          .gt("last_active_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .limit(100);
+
+        if (maleUsers && maleUsers.length > 0) {
+          Promise.all(
+            maleUsers.map((user) =>
+              supabase.functions.invoke("send-push-notification", {
+                body: {
+                  user_id: user.id,
+                  title: "🔥 A girl is looking for a video chat!",
+                  body: "Hurry before she leaves — tap to join now!",
+                  data: { deepLink: "/(tabs)/chat" },
+                  notification_type: "female_searching",
+                  cooldown_minutes: 60,
+                },
+              }),
+            ),
+          ).catch(console.error);
+        }
+      }
 
       // Fire match-notify in background (don't await — non-blocking)
       fetch(`${supabaseUrl}/functions/v1/match-notify`, {
@@ -176,7 +198,7 @@ Deno.serve(async (req) => {
           success: true,
           message: "added_to_queue",
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -192,17 +214,14 @@ Deno.serve(async (req) => {
         .eq("status", "connected");
 
       // Also remove from queue
-      await supabase
-        .from("waiting_queue")
-        .delete()
-        .eq("member_id", memberId);
+      await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
       return new Response(
         JSON.stringify({
           success: true,
           message: "disconnected",
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -226,33 +245,28 @@ Deno.serve(async (req) => {
       ]);
 
       const room = r1?.[0] || r2?.[0];
-      return new Response(
-        JSON.stringify({ success: true, room: room || null }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, room: room || null }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // LEAVE_QUEUE: Remove from queue without disconnecting a call
     if (type === "leave_queue") {
-      await supabase
-        .from("waiting_queue")
-        .delete()
-        .eq("member_id", memberId);
+      await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
-      return new Response(
-        JSON.stringify({ success: true, message: "removed_from_queue" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, message: "removed_from_queue" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ success: false, message: "Unknown type" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: false, message: "Unknown type" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ success: false, message: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: false, message: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
