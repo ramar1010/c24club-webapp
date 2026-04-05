@@ -1242,6 +1242,35 @@ export type Database = {
         }
         Relationships: []
       }
+      male_search_batch_log: {
+        Row: {
+          female_user_id: string | null
+          id: string
+          join_count: number
+          last_reset_at: string
+        }
+        Insert: {
+          female_user_id?: string | null
+          id?: string
+          join_count?: number
+          last_reset_at?: string
+        }
+        Update: {
+          female_user_id?: string | null
+          id?: string
+          join_count?: number
+          last_reset_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "male_search_batch_log_female_user_id_fkey"
+            columns: ["female_user_id"]
+            isOneToOne: true
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_interests: {
         Row: {
           created_at: string
@@ -1461,6 +1490,7 @@ export type Database = {
           is_test_account: boolean
           last_active_at: string | null
           last_ip: string | null
+          male_search_notify_mode: string
           membership: string | null
           name: string
           notify_enabled: boolean
@@ -1491,6 +1521,7 @@ export type Database = {
           is_test_account?: boolean
           last_active_at?: string | null
           last_ip?: string | null
+          male_search_notify_mode?: string
           membership?: string | null
           name: string
           notify_enabled?: boolean
@@ -1521,6 +1552,7 @@ export type Database = {
           is_test_account?: boolean
           last_active_at?: string | null
           last_ip?: string | null
+          male_search_notify_mode?: string
           membership?: string | null
           name?: string
           notify_enabled?: boolean
@@ -2890,6 +2922,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_male_search_count: {
+        Args: { p_female_id: string }
+        Returns: undefined
+      }
       is_user_vip: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
@@ -2899,6 +2935,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      process_male_search_batch_notifications: {
+        Args: never
+        Returns: undefined
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
