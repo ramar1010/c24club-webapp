@@ -44,6 +44,7 @@ const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
 const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
 const AdminAnchorChallengesPage = lazy(() => import("@/pages/admin/AdminAnchorChallengesPage"));
 const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
+const NotificationHealthPage = lazy(() => import("@/pages/admin/NotificationHealthPage"));
 const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
 const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPage"));
 const UserAnalyticsPage = lazy(() => import("@/pages/admin/UserAnalyticsPage"));
@@ -183,6 +184,7 @@ const App = () => (
                 <Route path="manage-minutes" element={<ManageMinutesPage />} />
                 <Route path="freeze-settings" element={<FreezeSettingsPage />} />
                 <Route path="system-health" element={<SystemHealthPage />} />
+                <Route path="notification-health" element={<NotificationHealthPage />} />
                 <Route path="revenue" element={<RevenuePage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />

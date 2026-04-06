@@ -272,6 +272,7 @@ export const adminMenu: MenuItem[] = [
     title: "System Health",
     submenu: [
       { key: "system-health", label: "Health Dashboard", path: "/admin/system-health" },
+      { key: "notification-health", label: "Notification Health", path: "/admin/notification-health" },
     ],
   },
   {
