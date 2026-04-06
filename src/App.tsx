@@ -184,6 +184,7 @@ const App = () => (
                 <Route path="manage-minutes" element={<ManageMinutesPage />} />
                 <Route path="freeze-settings" element={<FreezeSettingsPage />} />
                 <Route path="system-health" element={<SystemHealthPage />} />
+                <Route path="notification-health" element={<NotificationHealthPage />} />
                 <Route path="revenue" element={<RevenuePage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />
