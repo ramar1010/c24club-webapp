@@ -139,31 +139,16 @@ Deno.serve(async (req) => {
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
     const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
 
-    // FCM v1 push
+    // Push via central dispatcher (supports Expo + FCM tokens)
     let pushSent = 0;
     let pushFailed = 0;
     let pushError: string | null = null;
 
-    const serviceAccountJson = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
-    if (serviceAccountJson && targets && targets.length > 0) {
-      const tokens = targets.map((t) => t.push_token).filter((t): t is string => !!t);
-
-      if (tokens.length > 0) {
-        try {
-          const serviceAccount = JSON.parse(serviceAccountJson);
-          const accessToken = await getAccessToken(serviceAccount);
-          const projectId = serviceAccount.project_id;
-
-          const result = await sendFcmV1Notifications(accessToken, projectId, tokens, normalizedGender);
-          pushSent = result.sent;
-          pushFailed = result.failed;
-          pushError = result.error;
-        } catch (err) {
-          pushError = err instanceof Error ? err.message : String(err);
-          pushFailed = tokens.length;
-          console.error("FCM v1 auth/send error:", pushError);
-        }
-      }
+    if (targets && targets.length > 0) {
+      const result = await sendPushNotifications(supabaseUrl, serviceRoleKey, targets, normalizedGender);
+      pushSent = result.sent;
+      pushFailed = result.failed;
+      pushError = result.error;
     }
 
     // Update cooldown and increment email counter
@@ -292,11 +277,11 @@ async function sendDiscordNotification(
   }
 }
 
-// --- FCM HTTP v1 ---
-async function sendFcmV1Notifications(
-  accessToken: string,
-  projectId: string,
-  tokens: string[],
+// --- Push dispatcher ---
+async function sendPushNotifications(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  targets: { id: string; push_token: string | null }[],
   searchingGender: string,
 ): Promise<{ sent: number; failed: number; error: string | null }> {
   const title =
@@ -309,36 +294,38 @@ async function sendFcmV1Notifications(
   let failed = 0;
   let lastError: string | null = null;
 
-  const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+  const notificationType = searchingGender === "male" ? "male_online_notify" : "female_online_notify";
 
-  // FCM v1 sends one message per token
-  const promises = tokens.map(async (token) => {
+  const promises = targets.filter((target) => !!target.push_token).map(async (target) => {
     try {
-      const res = await fetch(url, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${serviceRoleKey}`,
         },
         body: JSON.stringify({
-          message: {
-            token,
-            notification: { title, body },
-            webpush: {
-              fcm_options: { link: "https://c24club.com/videocall" },
-              notification: { icon: "/favicon-96x96.png" },
-            },
+          user_id: target.id,
+          title,
+          body,
+          data: {
+            deepLink: "/videocall",
+            screen: "videocall",
+            channelId: "default",
           },
+          notification_type: notificationType,
+          cooldown_minutes: 5,
         }),
       });
 
       const raw = await res.text();
-      if (res.ok) {
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (res.ok && parsed?.success !== false) {
         sent++;
       } else {
         failed++;
-        lastError = `FCM v1 ${res.status}: ${raw}`;
-        console.error("FCM v1 send failed for token:", lastError);
+        lastError = parsed?.reason || raw || `Push send failed (${res.status})`;
+        console.error("Push send failed:", lastError);
       }
     } catch (err) {
       failed++;
