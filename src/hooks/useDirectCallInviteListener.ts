@@ -106,3 +106,13 @@ function sendMissedCallEmail(inviterId?: string, inviteeId?: string) {
     })
     .catch((err) => console.error("Failed to send missed call email:", err));
 }
+
+/** Fire-and-forget missed call push notification */
+function sendMissedCallPush(inviterId?: string, inviteeId?: string) {
+  if (!inviterId || !inviteeId) return;
+  supabase.functions
+    .invoke("notify-direct-call", {
+      body: { inviterId, inviteeId, action: "missed" },
+    })
+    .catch((err) => console.error("Failed to send missed call push:", err));
+}
