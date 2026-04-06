@@ -21,7 +21,12 @@ async function invokePushNotification(
   });
 
   const raw = await response.text();
-  const parsed = raw ? JSON.parse(raw) : null;
+  let parsed = null
+  try {
+    parsed = raw ? JSON.parse(raw) : null
+  } catch {
+    parsed = null
+  }
 
   return {
     ok: response.ok && parsed?.success !== false,

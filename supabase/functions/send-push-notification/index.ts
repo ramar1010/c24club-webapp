@@ -105,7 +105,12 @@ async function sendExpoPush(
   });
 
   const raw = await resp.text();
-  const parsed = raw ? JSON.parse(raw) : null;
+  let parsed = null
+  try {
+    parsed = raw ? JSON.parse(raw) : null
+  } catch {
+    parsed = null
+  }
   const ticket = Array.isArray(parsed?.data) ? parsed.data[0] : parsed?.data;
 
   if (resp.ok && ticket?.status === "ok") {
