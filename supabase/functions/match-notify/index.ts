@@ -319,12 +319,12 @@ async function sendPushNotifications(
       });
 
       const raw = await res.text();
-      let parsed = null
-  try {
-    parsed = raw ? JSON.parse(raw) : null
-  } catch {
-    parsed = null
-  }
+      let parsed = null;
+      try {
+        parsed = raw ? JSON.parse(raw) : null;
+      } catch {
+        parsed = null;
+      }
       if (res.ok && parsed?.success !== false) {
         sent++;
       } else {

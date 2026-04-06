@@ -176,7 +176,12 @@ async function sendFcmPush(
   });
 
   const raw = await fcmResp.text();
-  const fcmBody = raw ? JSON.parse(raw) : null;
+  let fcmBody = null;
+  try {
+    fcmBody = raw ? JSON.parse(raw) : null;
+  } catch {
+    fcmBody = null;
+  }
 
   if (fcmResp.ok) {
     return { ok: true, provider: "fcm" };
