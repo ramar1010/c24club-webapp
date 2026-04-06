@@ -21,11 +21,11 @@ async function invokePushNotification(
   });
 
   const raw = await response.text();
-  let parsed = null
+  let parsed = null;
   try {
-    parsed = raw ? JSON.parse(raw) : null
+    parsed = raw ? JSON.parse(raw) : null;
   } catch {
-    parsed = null
+    parsed = null;
   }
 
   return {
