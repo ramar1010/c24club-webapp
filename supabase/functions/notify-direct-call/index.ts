@@ -62,6 +62,35 @@ async function getAccessToken(serviceAccount: {
   return tokenData.access_token;
 }
 
+async function sendFcmPush(
+  accessToken: string,
+  projectId: string,
+  token: string,
+  notification: { title: string; body: string },
+  webpushLink: string
+) {
+  const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      message: {
+        token,
+        notification,
+        webpush: {
+          fcm_options: { link: webpushLink },
+          notification: { icon: "/favicon-96x96.png" },
+        },
+      },
+    }),
+  });
+  const raw = await res.text();
+  return { ok: res.ok, raw };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -72,26 +101,13 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { inviterId, inviteeId } = await req.json();
+    const body = await req.json();
+    const { inviterId, inviteeId, action } = body;
+
     if (!inviterId || !inviteeId) {
       return new Response(
         JSON.stringify({ success: false, message: "inviterId and inviteeId required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get inviter name and invitee push token
-    const [{ data: inviter }, { data: invitee }] = await Promise.all([
-      supabase.from("members").select("name").eq("id", inviterId).maybeSingle(),
-      supabase.from("members").select("push_token, notify_enabled").eq("id", inviteeId).maybeSingle(),
-    ]);
-
-    const inviterName = inviter?.name || "Someone";
-
-    if (!invitee?.push_token || !invitee?.notify_enabled) {
-      return new Response(
-        JSON.stringify({ success: true, message: "no_push_token_or_disabled" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -106,33 +122,99 @@ Deno.serve(async (req) => {
     const serviceAccount = JSON.parse(serviceAccountJson);
     const accessToken = await getAccessToken(serviceAccount);
     const projectId = serviceAccount.project_id;
-    const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        message: {
-          token: invitee.push_token,
-          notification: {
-            title: `📹 ${inviterName} wants to video chat!`,
-            body: "Your Discover match is waiting for you. Join now!",
-          },
-          webpush: {
-            fcm_options: { link: "https://c24club.com/videocall" },
-            notification: { icon: "/favicon-96x96.png" },
-          },
+    // ── MISSED CALL ──
+    // Notify the CALLER (inviter) that the invitee declined or the call expired
+    if (action === "missed") {
+      const [{ data: invitee }, { data: inviter }] = await Promise.all([
+        supabase.from("members").select("name").eq("id", inviteeId).maybeSingle(),
+        supabase.from("members").select("push_token, notify_enabled").eq("id", inviterId).maybeSingle(),
+      ]);
+
+      const inviteeName = invitee?.name || "Someone";
+
+      if (!inviter?.push_token || !inviter?.notify_enabled) {
+        return new Response(
+          JSON.stringify({ success: true, message: "no_push_token_or_disabled" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Rate limit: max 3 missed call notifications per callee per hour (20-min cooldown)
+      const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+      const { data: recentLogs } = await supabase
+        .from("push_notification_log")
+        .select("id")
+        .eq("user_id", inviterId)
+        .eq("notification_type", `missed_direct_call_${inviteeId}`)
+        .gt("last_sent_at", twentyMinAgo)
+        .limit(1);
+
+      if (recentLogs && recentLogs.length > 0) {
+        return new Response(
+          JSON.stringify({ success: true, message: "cooldown_active" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const result = await sendFcmPush(
+        accessToken,
+        projectId,
+        inviter.push_token,
+        {
+          title: `📞 Missed call from ${inviteeName}`,
+          body: `${inviteeName} tried to video call you — tap to call back!`,
         },
-      }),
-    });
+        "https://c24club.com/discover"
+      );
 
-    const raw = await res.text();
+      // Log to push_notification_log for cooldown tracking
+      if (result.ok) {
+        await supabase.from("push_notification_log").upsert(
+          {
+            user_id: inviterId,
+            notification_type: `missed_direct_call_${inviteeId}`,
+            last_sent_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,notification_type" }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: result.ok, message: result.ok ? "missed_push_sent" : result.raw }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── INCOMING CALL (default) ──
+    // Notify the INVITEE that they have an incoming call
+    const [{ data: inviter }, { data: invitee }] = await Promise.all([
+      supabase.from("members").select("name").eq("id", inviterId).maybeSingle(),
+      supabase.from("members").select("push_token, notify_enabled").eq("id", inviteeId).maybeSingle(),
+    ]);
+
+    const inviterName = inviter?.name || "Someone";
+
+    if (!invitee?.push_token || !invitee?.notify_enabled) {
+      return new Response(
+        JSON.stringify({ success: true, message: "no_push_token_or_disabled" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const result = await sendFcmPush(
+      accessToken,
+      projectId,
+      invitee.push_token,
+      {
+        title: `📹 ${inviterName} wants to video chat!`,
+        body: "Your Discover match is waiting for you. Join now!",
+      },
+      "https://c24club.com/videocall"
+    );
 
     return new Response(
-      JSON.stringify({ success: res.ok, message: res.ok ? "push_sent" : raw }),
+      JSON.stringify({ success: result.ok, message: result.ok ? "push_sent" : result.raw }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

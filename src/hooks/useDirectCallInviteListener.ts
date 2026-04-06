@@ -24,8 +24,10 @@ export function useDirectCallInviteListener() {
   const declineCall = () => {
     if (incomingCall) {
       supabase.from("direct_call_invites").update({ status: "declined" } as any).eq("id", incomingCall.inviteId).then();
-      // Send missed call email to the invitee (this user declined)
+      // Send missed call email to the inviter (this user declined)
       sendMissedCallEmail(incomingCall.inviterId, user?.id);
+      // Send missed call push notification to the inviter
+      sendMissedCallPush(incomingCall.inviterId, user?.id);
     }
     setIncomingCall(null);
   };
@@ -79,6 +81,7 @@ export function useDirectCallInviteListener() {
 
         if (currentInvite && currentInvite.status === "pending") {
           sendMissedCallEmail(invite.inviter_id, user.id);
+          sendMissedCallPush(invite.inviter_id, user.id);
         }
       }, 60000);
     };
@@ -102,4 +105,14 @@ function sendMissedCallEmail(inviterId?: string, inviteeId?: string) {
       body: { inviterId, inviteeId },
     })
     .catch((err) => console.error("Failed to send missed call email:", err));
+}
+
+/** Fire-and-forget missed call push notification */
+function sendMissedCallPush(inviterId?: string, inviteeId?: string) {
+  if (!inviterId || !inviteeId) return;
+  supabase.functions
+    .invoke("notify-direct-call", {
+      body: { inviterId, inviteeId, action: "missed" },
+    })
+    .catch((err) => console.error("Failed to send missed call push:", err));
 }
