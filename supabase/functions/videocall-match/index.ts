@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
         const { data: femaleUsers } = await supabase
           .from("members")
           .select("id, male_search_notify_mode, push_token")
-          .eq("gender", "female")
+          .ilike("gender", "female")
           .eq("notify_enabled", true)
           .neq("male_search_notify_mode", "off");
 
