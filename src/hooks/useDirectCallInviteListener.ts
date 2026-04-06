@@ -81,6 +81,7 @@ export function useDirectCallInviteListener() {
 
         if (currentInvite && currentInvite.status === "pending") {
           sendMissedCallEmail(invite.inviter_id, user.id);
+          sendMissedCallPush(invite.inviter_id, user.id);
         }
       }, 60000);
     };
