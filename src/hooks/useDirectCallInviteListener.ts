@@ -24,8 +24,10 @@ export function useDirectCallInviteListener() {
   const declineCall = () => {
     if (incomingCall) {
       supabase.from("direct_call_invites").update({ status: "declined" } as any).eq("id", incomingCall.inviteId).then();
-      // Send missed call email to the invitee (this user declined)
+      // Send missed call email to the inviter (this user declined)
       sendMissedCallEmail(incomingCall.inviterId, user?.id);
+      // Send missed call push notification to the inviter
+      sendMissedCallPush(incomingCall.inviterId, user?.id);
     }
     setIncomingCall(null);
   };
