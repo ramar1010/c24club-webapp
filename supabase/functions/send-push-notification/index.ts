@@ -63,6 +63,139 @@ async function getAccessToken(serviceAccount: Record<string, string>): Promise<s
   return access_token as string;
 }
 
+function isExpoPushToken(token: string): boolean {
+  return /^(ExponentPushToken|ExpoPushToken)\[.+\]$/.test(token);
+}
+
+function getWebLink(data: Record<string, unknown>): string {
+  const rawLink = typeof data.deepLink === "string" ? data.deepLink : typeof data.screen === "string" ? data.screen : "/";
+  if (rawLink.startsWith("http://") || rawLink.startsWith("https://")) return rawLink;
+  return `https://c24club.com${rawLink.startsWith("/") ? rawLink : `/${rawLink}`}`;
+}
+
+type PushResult = {
+  ok: boolean;
+  provider: "expo" | "fcm";
+  reason?: string;
+  clearToken?: boolean;
+};
+
+async function sendExpoPush(
+  token: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown>,
+): Promise<PushResult> {
+  const channelId = typeof data.channelId === "string" ? data.channelId : "default";
+  const resp = await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      to: token,
+      title,
+      body,
+      data,
+      sound: "default",
+      priority: "high",
+      channelId,
+    }),
+  });
+
+  const raw = await resp.text();
+  let parsed = null
+  try {
+    parsed = raw ? JSON.parse(raw) : null
+  } catch {
+    parsed = null
+  }
+  const ticket = Array.isArray(parsed?.data) ? parsed.data[0] : parsed?.data;
+
+  if (resp.ok && ticket?.status === "ok") {
+    return { ok: true, provider: "expo" };
+  }
+
+  const expoError =
+    ticket?.details?.error ||
+    parsed?.errors?.[0]?.code ||
+    parsed?.errors?.[0]?.message ||
+    ticket?.message ||
+    raw ||
+    "Expo push send failed";
+
+  return {
+    ok: false,
+    provider: "expo",
+    reason: expoError,
+    clearToken: expoError === "DeviceNotRegistered",
+  };
+}
+
+async function sendFcmPush(
+  token: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown>,
+): Promise<PushResult> {
+  const serviceAccount = JSON.parse(Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!);
+  const accessToken = await getAccessToken(serviceAccount);
+  const projectId = serviceAccount.project_id;
+  const channelId = typeof data.channelId === "string" ? data.channelId : "default";
+  const webLink = getWebLink(data);
+
+  const fcmResp = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: {
+        token,
+        notification: { title, body },
+        data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
+        android: {
+          priority: "high",
+          notification: { channel_id: channelId, sound: "default" },
+        },
+        apns: {
+          payload: {
+            aps: {
+              alert: { title, body },
+              sound: "default",
+              badge: 0,
+              "content-available": 1,
+              "mutable-content": 1,
+            },
+          },
+        },
+        webpush: {
+          fcm_options: { link: webLink },
+        },
+      },
+    }),
+  });
+
+  const raw = await fcmResp.text();
+  let fcmBody = null;
+  try {
+    fcmBody = raw ? JSON.parse(raw) : null;
+  } catch {
+    fcmBody = null;
+  }
+
+  if (fcmResp.ok) {
+    return { ok: true, provider: "fcm" };
+  }
+
+  const errorCode = fcmBody?.error?.status;
+  return {
+    ok: false,
+    provider: "fcm",
+    reason: fcmBody?.error?.message || raw || "FCM push send failed",
+    clearToken: errorCode === "UNREGISTERED" || errorCode === "NOT_FOUND",
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -105,6 +238,20 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    const normalizedData = typeof data === "object" && data !== null ? data as Record<string, unknown> : {};
+    const result = isExpoPushToken(member.push_token)
+      ? await sendExpoPush(member.push_token, title, body, normalizedData)
+      : await sendFcmPush(member.push_token, title, body, normalizedData);
+
+    if (!result.ok) {
+      if (result.clearToken) {
+        await supabaseAdmin.from("members").update({ push_token: null }).eq("id", user_id);
+      }
+      return new Response(JSON.stringify({ success: false, reason: result.reason, provider: result.provider }), {
+        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (notification_type) {
       await supabaseAdmin.from("push_notification_log").upsert(
         { user_id, notification_type, last_sent_at: new Date().toISOString() },
@@ -112,37 +259,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const serviceAccount = JSON.parse(Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!);
-    const accessToken = await getAccessToken(serviceAccount);
-    const projectId = serviceAccount.project_id;
-
-    const fcmResp = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: {
-          token: member.push_token,
-          notification: { title, body },
-          data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
-          android: { priority: "high", notification: { channel_id: "default" } },
-          apns: { payload: { aps: { alert: { title, body }, sound: "default", badge: 0 } } },
-        },
-      }),
-    });
-
-    const fcmBody = await fcmResp.json();
-
-    if (!fcmResp.ok) {
-      const errorCode = fcmBody?.error?.status;
-      if (errorCode === "UNREGISTERED" || errorCode === "NOT_FOUND") {
-        await supabaseAdmin.from("members").update({ push_token: null }).eq("id", user_id);
-      }
-      return new Response(JSON.stringify({ success: false, reason: fcmBody?.error?.message }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, provider: result.provider }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: unknown) {
     return new Response(JSON.stringify({ success: false, reason: String(err) }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
