@@ -44,6 +44,7 @@ const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
 const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
 const AdminAnchorChallengesPage = lazy(() => import("@/pages/admin/AdminAnchorChallengesPage"));
 const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
+const NotificationHealthPage = lazy(() => import("@/pages/admin/NotificationHealthPage"));
 const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
 const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPage"));
 const UserAnalyticsPage = lazy(() => import("@/pages/admin/UserAnalyticsPage"));
