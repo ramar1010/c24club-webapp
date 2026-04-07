@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, ScanSearch } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2, ShieldX } from "lucide-react";
+import { scanImageUrlForNsfw } from "@/lib/nsfwScan";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,7 +37,45 @@ const AdminDiscoverReviewPage = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
+  const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
+  const [scanResults, setScanResults] = useState<Record<string, { isNsfw: boolean; score: number }>>({});
   const { user } = useAuth();
+
+  const handleNsfwScan = async (member: MemberImage) => {
+    if (!member.image_url) return;
+    setScanningIds(prev => new Set(prev).add(member.id));
+    try {
+      const result = await scanImageUrlForNsfw(member.image_url, 0.60);
+      setScanResults(prev => ({ ...prev, [member.id]: { isNsfw: result.isNsfw, score: result.nudityScore } }));
+      if (result.isNsfw) {
+        toast({
+          title: `⚠️ NSFW Detected — ${(result.nudityScore * 100).toFixed(0)}%`,
+          description: `${member.name}'s image flagged. Use Ban button to take action.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: `✅ Image Clean — ${(result.nudityScore * 100).toFixed(0)}%`,
+          description: `${member.name}'s image appears safe.`,
+        });
+      }
+    } catch (err) {
+      toast({ title: "Scan Failed", description: "Could not analyze this image.", variant: "destructive" });
+    } finally {
+      setScanningIds(prev => {
+        const next = new Set(prev);
+        next.delete(member.id);
+        return next;
+      });
+    }
+  };
+
+  const handleScanAllPending = async () => {
+    const pending = members.filter(m => m.image_url && !scanResults[m.id]);
+    for (const member of pending) {
+      await handleNsfwScan(member);
+    }
+  };
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
@@ -153,14 +192,28 @@ const AdminDiscoverReviewPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Discover Image Review</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Review and approve selfies before they appear in Discover.
-          {pendingCount.data ? (
-            <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
-          ) : null}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Discover Image Review</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Review and approve selfies before they appear in Discover.
+            {pendingCount.data ? (
+              <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
+            ) : null}
+          </p>
+        </div>
+        {activeTab === "pending" && members.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScanAllPending}
+            disabled={scanningIds.size > 0}
+            className="gap-1.5"
+          >
+            <ScanSearch className="w-4 h-4" />
+            {scanningIds.size > 0 ? "Scanning..." : "NSFW Scan All"}
+          </Button>
+        )}
       </div>
 
       <Alert className="border-blue-500/30 bg-blue-500/10">
@@ -242,7 +295,27 @@ const AdminDiscoverReviewPage = () => {
                       <p className="text-xs text-muted-foreground truncate">
                         {member.gender || "Unknown"} · {member.country || "N/A"}
                       </p>
+                      {scanResults[member.id] && (
+                        <Badge
+                          variant={scanResults[member.id].isNsfw ? "destructive" : "secondary"}
+                          className="mt-1 text-[10px]"
+                        >
+                          {scanResults[member.id].isNsfw ? "⚠️ NSFW" : "✅ Safe"} — {(scanResults[member.id].score * 100).toFixed(0)}%
+                        </Badge>
+                      )}
                     </div>
+
+                    {/* NSFW Scan button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs gap-1"
+                      onClick={() => handleNsfwScan(member)}
+                      disabled={scanningIds.has(member.id)}
+                    >
+                      <ScanSearch className="w-3.5 h-3.5" />
+                      {scanningIds.has(member.id) ? "Scanning..." : "NSFW Scan"}
+                    </Button>
 
                     {/* Actions */}
                     {activeTab === "pending" && (

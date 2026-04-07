@@ -1,8 +1,9 @@
 import { useRef, useState, useCallback } from "react";
-import { Camera, RotateCcw, Check, X, ChevronRight } from "lucide-react";
+import { Camera, RotateCcw, Check, X, ChevronRight, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { scanImageForNsfw } from "@/lib/nsfwScan";
 import cashappIcon from "@/assets/socials/cashapp.png";
 import tiktokIcon from "@/assets/socials/tiktok.png";
 import instagramIcon from "@/assets/socials/instagram.png";
@@ -132,6 +133,41 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
   const confirmAndUpload = useCallback(async () => {
     if (!capturedBlob || !user) return;
     setStep("uploading");
+
+    // --- NSFW Auto-Scan ---
+    try {
+      const scanCanvas = document.createElement("canvas");
+      scanCanvas.width = 224;
+      scanCanvas.height = 224;
+      const scanCtx = scanCanvas.getContext("2d")!;
+      const bitmap = await createImageBitmap(capturedBlob);
+      scanCtx.drawImage(bitmap, 0, 0, 224, 224);
+      bitmap.close();
+
+      const result = await scanImageForNsfw(scanCanvas, 0.60);
+      if (result.isNsfw) {
+        console.warn("[NSFW] Selfie upload blocked — score:", result.nudityScore);
+        // Auto-ban via edge function
+        try {
+          await supabase.functions.invoke("nsfw-ban", {
+            body: { targetUserId: user.id },
+          });
+        } catch (banErr) {
+          console.error("[NSFW] Auto-ban failed:", banErr);
+        }
+        toast({
+          title: "Upload Blocked 🚫",
+          description: "Your photo was flagged as inappropriate. Your account has been suspended.",
+          variant: "destructive",
+        });
+        setStep("camera");
+        onClose();
+        return;
+      }
+    } catch (scanErr) {
+      console.warn("[NSFW] Scan failed, proceeding with upload:", scanErr);
+      // If scan fails, still allow upload — admin will review manually
+    }
 
     const filePath = `${user.id}/selfie.jpg`;
     const { error } = await supabase.storage
