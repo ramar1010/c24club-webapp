@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, ScanSearch } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, Eye, Clock, CheckCircle2, XCircle, Trash2, ShieldX } from "lucide-react";
+import { scanImageUrlForNsfw } from "@/lib/nsfwScan";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,7 +37,45 @@ const AdminDiscoverReviewPage = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
+  const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
+  const [scanResults, setScanResults] = useState<Record<string, { isNsfw: boolean; score: number }>>({});
   const { user } = useAuth();
+
+  const handleNsfwScan = async (member: MemberImage) => {
+    if (!member.image_url) return;
+    setScanningIds(prev => new Set(prev).add(member.id));
+    try {
+      const result = await scanImageUrlForNsfw(member.image_url, 0.60);
+      setScanResults(prev => ({ ...prev, [member.id]: { isNsfw: result.isNsfw, score: result.nudityScore } }));
+      if (result.isNsfw) {
+        toast({
+          title: `⚠️ NSFW Detected — ${(result.nudityScore * 100).toFixed(0)}%`,
+          description: `${member.name}'s image flagged. Use Ban button to take action.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: `✅ Image Clean — ${(result.nudityScore * 100).toFixed(0)}%`,
+          description: `${member.name}'s image appears safe.`,
+        });
+      }
+    } catch (err) {
+      toast({ title: "Scan Failed", description: "Could not analyze this image.", variant: "destructive" });
+    } finally {
+      setScanningIds(prev => {
+        const next = new Set(prev);
+        next.delete(member.id);
+        return next;
+      });
+    }
+  };
+
+  const handleScanAllPending = async () => {
+    const pending = members.filter(m => m.image_url && !scanResults[m.id]);
+    for (const member of pending) {
+      await handleNsfwScan(member);
+    }
+  };
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
