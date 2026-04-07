@@ -147,14 +147,27 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
       const result = await scanImageForNsfw(scanCanvas, 0.35);
       if (result.isNsfw) {
         console.warn("[NSFW] Selfie upload blocked — score:", result.nudityScore);
-        // Auto-ban via edge function
-        try {
-          await supabase.functions.invoke("nsfw-ban", {
-            body: { targetUserId: user.id },
+        const { data, error } = await supabase.functions.invoke("nsfw-ban", {
+          body: { targetUserId: user.id, allowSelfBan: true },
+        });
+
+        if (error || !data?.success) {
+          console.error("[NSFW] Auto-ban failed:", error ?? data);
+          toast({
+            title: "Upload Blocked 🚫",
+            description: "Your photo was flagged as inappropriate, but the suspension did not complete. The upload was still blocked.",
+            variant: "destructive",
           });
-        } catch (banErr) {
-          console.error("[NSFW] Auto-ban failed:", banErr);
+          setStep("camera");
+          onClose();
+          return;
         }
+
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) {
+          console.error("[NSFW] Sign-out after ban failed:", signOutError);
+        }
+
         toast({
           title: "Upload Blocked 🚫",
           description: "Your photo was flagged as inappropriate. Your account has been suspended.",
@@ -165,8 +178,14 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
         return;
       }
     } catch (scanErr) {
-      console.warn("[NSFW] Scan failed, proceeding with upload:", scanErr);
-      // If scan fails, still allow upload — admin will review manually
+      console.error("[NSFW] Scan failed, blocking upload:", scanErr);
+      toast({
+        title: "Upload Blocked 🚫",
+        description: "We couldn't verify your photo safely. Please retake it and try again.",
+        variant: "destructive",
+      });
+      setStep("socials");
+      return;
     }
 
     const filePath = `${user.id}/selfie.jpg`;
