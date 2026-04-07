@@ -144,7 +144,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
       scanCtx.drawImage(bitmap, 0, 0, 224, 224);
       bitmap.close();
 
-      const result = await scanImageForNsfw(scanCanvas, 0.60);
+      const result = await scanImageForNsfw(scanCanvas, 0.35);
       if (result.isNsfw) {
         console.warn("[NSFW] Selfie upload blocked — score:", result.nudityScore);
         // Auto-ban via edge function

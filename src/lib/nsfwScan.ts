@@ -34,7 +34,7 @@ export interface NsfwScanResult {
  */
 export async function scanImageForNsfw(
   source: HTMLImageElement | HTMLCanvasElement,
-  threshold = 0.60
+  threshold = 0.35
 ): Promise<NsfwScanResult> {
   const model = await getModel();
 
@@ -60,7 +60,7 @@ export async function scanImageForNsfw(
   const neutral = getScore("Neutral");
   const drawing = getScore("Drawing");
 
-  const nudityScore = Math.max(porn, hentai, sexy * 0.7);
+  const nudityScore = Math.max(porn, hentai, sexy * 0.9);
 
   return {
     isNsfw: nudityScore >= threshold,
