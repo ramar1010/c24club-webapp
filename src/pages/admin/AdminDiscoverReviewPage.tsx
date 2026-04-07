@@ -295,7 +295,27 @@ const AdminDiscoverReviewPage = () => {
                       <p className="text-xs text-muted-foreground truncate">
                         {member.gender || "Unknown"} · {member.country || "N/A"}
                       </p>
+                      {scanResults[member.id] && (
+                        <Badge
+                          variant={scanResults[member.id].isNsfw ? "destructive" : "secondary"}
+                          className="mt-1 text-[10px]"
+                        >
+                          {scanResults[member.id].isNsfw ? "⚠️ NSFW" : "✅ Safe"} — {(scanResults[member.id].score * 100).toFixed(0)}%
+                        </Badge>
+                      )}
                     </div>
+
+                    {/* NSFW Scan button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-8 text-xs gap-1"
+                      onClick={() => handleNsfwScan(member)}
+                      disabled={scanningIds.has(member.id)}
+                    >
+                      <ScanSearch className="w-3.5 h-3.5" />
+                      {scanningIds.has(member.id) ? "Scanning..." : "NSFW Scan"}
+                    </Button>
 
                     {/* Actions */}
                     {activeTab === "pending" && (
