@@ -74,7 +74,7 @@ export async function scanImageForNsfw(
  */
 export async function scanImageUrlForNsfw(
   imageUrl: string,
-  threshold = 0.60
+  threshold = 0.35
 ): Promise<NsfwScanResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();
