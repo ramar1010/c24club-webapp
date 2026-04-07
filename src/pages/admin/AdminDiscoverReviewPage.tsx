@@ -192,14 +192,28 @@ const AdminDiscoverReviewPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Discover Image Review</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Review and approve selfies before they appear in Discover.
-          {pendingCount.data ? (
-            <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
-          ) : null}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Discover Image Review</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Review and approve selfies before they appear in Discover.
+            {pendingCount.data ? (
+              <Badge variant="destructive" className="ml-2">{pendingCount.data} pending</Badge>
+            ) : null}
+          </p>
+        </div>
+        {activeTab === "pending" && members.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScanAllPending}
+            disabled={scanningIds.size > 0}
+            className="gap-1.5"
+          >
+            <ScanSearch className="w-4 h-4" />
+            {scanningIds.size > 0 ? "Scanning..." : "NSFW Scan All"}
+          </Button>
+        )}
       </div>
 
       <Alert className="border-blue-500/30 bg-blue-500/10">
