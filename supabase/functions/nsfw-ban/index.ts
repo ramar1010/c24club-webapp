@@ -22,13 +22,16 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { targetUserId } = await req.json();
+    const { targetUserId, allowSelfBan = false } = await req.json();
     if (!targetUserId || typeof targetUserId !== "string") {
       throw new Error("Missing targetUserId");
     }
+    if (typeof allowSelfBan !== "boolean") {
+      throw new Error("Invalid allowSelfBan flag");
+    }
 
     // Prevent banning yourself
-    if (targetUserId === user.id) {
+    if (targetUserId === user.id && !allowSelfBan) {
       throw new Error("Cannot ban yourself");
     }
 
