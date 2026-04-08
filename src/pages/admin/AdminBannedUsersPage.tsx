@@ -113,6 +113,7 @@ const AdminBannedUsersPage = () => {
         return <span className={`text-xs font-medium ${src.color}`}>{src.label}</span>;
       },
     },
+    {
       key: "ip_address",
       header: "IP",
       render: (row) => (
