@@ -146,21 +146,32 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
 
       const result = await scanImageForNsfw(scanCanvas, 0.35);
       if (result.isNsfw) {
-        console.warn("[NSFW] Selfie upload blocked — score:", result.nudityScore);
+        console.warn("[NSFW] Selfie flagged — score:", result.nudityScore);
+
+        // Still upload the image so admins can review it in the Denied tab
+        const flaggedPath = `${user.id}/selfie.jpg`;
+        await supabase.storage
+          .from("member-photos")
+          .upload(flaggedPath, capturedBlob, { upsert: true, contentType: "image/jpeg" });
+
+        const { data: flaggedUrlData } = supabase.storage.from("member-photos").getPublicUrl(flaggedPath);
+        const flaggedImageUrl = `${flaggedUrlData.publicUrl}?t=${Date.now()}`;
+
+        // Mark the member image as denied so it shows in admin Denied tab
+        await supabase.from("members").update({
+          image_url: flaggedImageUrl,
+          image_thumb_url: flaggedImageUrl,
+          image_status: "denied",
+          is_discoverable: false,
+        } as any).eq("id", user.id);
+
+        // Now ban the user
         const { data, error } = await supabase.functions.invoke("nsfw-ban", {
           body: { targetUserId: user.id, allowSelfBan: true },
         });
 
         if (error || !data?.success) {
           console.error("[NSFW] Auto-ban failed:", error ?? data);
-          toast({
-            title: "Upload Blocked 🚫",
-            description: "Your photo was flagged as inappropriate, but the suspension did not complete. The upload was still blocked.",
-            variant: "destructive",
-          });
-          setStep("camera");
-          onClose();
-          return;
         }
 
         const { error: signOutError } = await supabase.auth.signOut();
