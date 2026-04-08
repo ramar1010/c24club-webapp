@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { targetUserId, allowSelfBan = false } = await req.json();
+    const { targetUserId, allowSelfBan = false, banSource = "videocall" } = await req.json();
     if (!targetUserId || typeof targetUserId !== "string") {
       throw new Error("Missing targetUserId");
     }
