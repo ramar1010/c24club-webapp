@@ -1,9 +1,8 @@
 import { useRef, useState, useCallback } from "react";
-import { Camera, RotateCcw, Check, X, ChevronRight, ShieldAlert } from "lucide-react";
+import { Camera, RotateCcw, Check, X, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { scanImageForNsfw } from "@/lib/nsfwScan";
 import cashappIcon from "@/assets/socials/cashapp.png";
 import tiktokIcon from "@/assets/socials/tiktok.png";
 import instagramIcon from "@/assets/socials/instagram.png";
@@ -134,70 +133,6 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     if (!capturedBlob || !user) return;
     setStep("uploading");
 
-    // --- NSFW Auto-Scan ---
-    try {
-      const scanCanvas = document.createElement("canvas");
-      scanCanvas.width = 224;
-      scanCanvas.height = 224;
-      const scanCtx = scanCanvas.getContext("2d")!;
-      const bitmap = await createImageBitmap(capturedBlob);
-      scanCtx.drawImage(bitmap, 0, 0, 224, 224);
-      bitmap.close();
-
-      const result = await scanImageForNsfw(scanCanvas, 0.55);
-      if (result.isNsfw) {
-        console.warn("[NSFW] Selfie flagged — score:", result.nudityScore);
-
-        // Still upload the image so admins can review it in the Denied tab
-        const flaggedPath = `${user.id}/selfie.jpg`;
-        await supabase.storage
-          .from("member-photos")
-          .upload(flaggedPath, capturedBlob, { upsert: true, contentType: "image/jpeg" });
-
-        const { data: flaggedUrlData } = supabase.storage.from("member-photos").getPublicUrl(flaggedPath);
-        const flaggedImageUrl = `${flaggedUrlData.publicUrl}?t=${Date.now()}`;
-
-        // Mark the member image as denied so it shows in admin Denied tab
-        await supabase.from("members").update({
-          image_url: flaggedImageUrl,
-          image_thumb_url: flaggedImageUrl,
-          image_status: "denied",
-          is_discoverable: false,
-        } as any).eq("id", user.id);
-
-        // Now ban the user
-        const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId: user.id, allowSelfBan: true, banSource: "selfie" },
-        });
-
-        if (error || !data?.success) {
-          console.error("[NSFW] Auto-ban failed:", error ?? data);
-        }
-
-        const { error: signOutError } = await supabase.auth.signOut();
-        if (signOutError) {
-          console.error("[NSFW] Sign-out after ban failed:", signOutError);
-        }
-
-        toast({
-          title: "Upload Blocked 🚫",
-          description: "Your photo was flagged as inappropriate. Your account has been suspended.",
-          variant: "destructive",
-        });
-        setStep("camera");
-        onClose();
-        return;
-      }
-    } catch (scanErr) {
-      console.error("[NSFW] Scan failed, blocking upload:", scanErr);
-      toast({
-        title: "Upload Blocked 🚫",
-        description: "We couldn't verify your photo safely. Please retake it and try again.",
-        variant: "destructive",
-      });
-      setStep("socials");
-      return;
-    }
 
     const filePath = `${user.id}/selfie.jpg`;
     const { error } = await supabase.storage
