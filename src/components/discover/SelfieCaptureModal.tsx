@@ -167,7 +167,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
 
         // Now ban the user
         const { data, error } = await supabase.functions.invoke("nsfw-ban", {
-          body: { targetUserId: user.id, allowSelfBan: true },
+          body: { targetUserId: user.id, allowSelfBan: true, banSource: "selfie" },
         });
 
         if (error || !data?.success) {
