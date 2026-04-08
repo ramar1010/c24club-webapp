@@ -13,6 +13,7 @@ type BanRow = {
   user_id: string;
   reason: string;
   ban_type: string;
+  ban_source: string;
   is_active: boolean;
   ip_address: string | null;
   created_at: string;
