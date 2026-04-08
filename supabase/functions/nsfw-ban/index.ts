@@ -61,10 +61,11 @@ Deno.serve(async (req) => {
 
     const { error: banError } = await adminClient.from("user_bans").insert({
       user_id: targetUserId,
-      reason: "Nudity detected on camera (automated)",
+      reason: banSource === "selfie" ? "Inappropriate selfie upload (automated)" : "Nudity detected on camera (automated)",
       ban_type: "standard",
       is_active: true,
       ip_address: targetIp,
+      ban_source: banSource,
     });
 
     if (banError) throw banError;
