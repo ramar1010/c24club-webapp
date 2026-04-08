@@ -4,7 +4,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const GIFT_TIERS = {
@@ -43,14 +44,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
+  const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
 
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
   );
 
   try {
@@ -71,7 +69,10 @@ serve(async (req) => {
       if (!recipient_id) throw new Error("No recipient specified");
       if (recipient_id === user.id) throw new Error("Cannot gift yourself");
 
-      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      const isTestMode = Deno.env.get("STRIPE_TEST_MODE") === "true";
+      const stripeKey = isTestMode ? Deno.env.get("STRIPE_SECRET_KEY_TEST")! : Deno.env.get("STRIPE_SECRET_KEY")!;
+
+      const stripe = new Stripe(stripeKey, {
         apiVersion: "2025-08-27.basil",
       });
 
@@ -115,10 +116,7 @@ serve(async (req) => {
       });
 
       // Store session ID
-      await supabaseAdmin
-        .from("gift_transactions")
-        .update({ stripe_session_id: session.id })
-        .eq("id", gift.id);
+      await supabaseAdmin.from("gift_transactions").update({ stripe_session_id: session.id }).eq("id", gift.id);
 
       return new Response(JSON.stringify({ url: session.url }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -128,7 +126,10 @@ serve(async (req) => {
     if (action === "verify") {
       if (!session_id) throw new Error("No session ID");
 
-      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      const isTestMode = Deno.env.get("STRIPE_TEST_MODE") === "true";
+      const stripeKey = isTestMode ? Deno.env.get("STRIPE_SECRET_KEY_TEST")! : Deno.env.get("STRIPE_SECRET_KEY")!;
+
+      const stripe = new Stripe(stripeKey, {
         apiVersion: "2025-08-27.basil",
       });
 
@@ -143,11 +144,7 @@ serve(async (req) => {
       if (!giftId) throw new Error("No gift ID in session");
 
       // Check if already processed
-      const { data: gift } = await supabaseAdmin
-        .from("gift_transactions")
-        .select("*")
-        .eq("id", giftId)
-        .single();
+      const { data: gift } = await supabaseAdmin.from("gift_transactions").select("*").eq("id", giftId).single();
 
       if (!gift) throw new Error("Gift not found");
       if (gift.status === "completed") {
@@ -301,9 +298,19 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
         console.error("Gift notification email error:", emailErr);
       }
 
-      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesAmount, cashable_minutes: cashableGiftedMinutes, cash_value: totalCashValue, sender_bonus: senderBonus, direct_call_bonus: directCallBonus }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          minutes_gifted: minutesAmount,
+          cashable_minutes: cashableGiftedMinutes,
+          cash_value: totalCashValue,
+          sender_bonus: senderBonus,
+          direct_call_bonus: directCallBonus,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (action === "gift-from-balance") {
@@ -365,11 +372,7 @@ p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}
           .eq("id", recipient_id)
           .single();
 
-        const { data: senderMember } = await supabaseAdmin
-          .from("members")
-          .select("name")
-          .eq("id", user.id)
-          .single();
+        const { data: senderMember } = await supabaseAdmin.from("members").select("name").eq("id", user.id).single();
 
         if (recipientMember?.email) {
           const senderName = senderMember?.name || "Someone";
