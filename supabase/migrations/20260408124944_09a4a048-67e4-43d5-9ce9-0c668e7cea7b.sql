@@ -1,0 +1,1 @@
+ALTER TABLE public.user_bans ADD COLUMN ban_source text NOT NULL DEFAULT 'manual';

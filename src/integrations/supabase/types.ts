@@ -2555,6 +2555,7 @@ export type Database = {
       }
       user_bans: {
         Row: {
+          ban_source: string
           ban_type: string
           banned_by: string | null
           created_at: string
@@ -2568,6 +2569,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ban_source?: string
           ban_type?: string
           banned_by?: string | null
           created_at?: string
@@ -2581,6 +2583,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ban_source?: string
           ban_type?: string
           banned_by?: string | null
           created_at?: string

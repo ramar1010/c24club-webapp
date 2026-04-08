@@ -269,7 +269,7 @@ export function useNsfwDetection({
     console.log("[NSFW] Banning user:", targetUserId);
 
     try {
-      const { data, error } = await supabase.functions.invoke("nsfw-ban", { body: { targetUserId } });
+      const { data, error } = await supabase.functions.invoke("nsfw-ban", { body: { targetUserId, banSource: "videocall" } });
       if (error) throw error;
 
       console.log("[NSFW] Ban request sent successfully", data);
