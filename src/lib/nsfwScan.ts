@@ -34,7 +34,7 @@ export interface NsfwScanResult {
  */
 export async function scanImageForNsfw(
   source: HTMLImageElement | HTMLCanvasElement,
-  threshold = 0.35
+  threshold = 0.55
 ): Promise<NsfwScanResult> {
   const model = await getModel();
 
@@ -60,7 +60,8 @@ export async function scanImageForNsfw(
   const neutral = getScore("Neutral");
   const drawing = getScore("Drawing");
 
-  const nudityScore = Math.max(porn, hentai, sexy * 0.9);
+  // Only Porn and Hentai trigger auto-ban; Sexy alone causes too many false positives
+  const nudityScore = Math.max(porn, hentai);
 
   return {
     isNsfw: nudityScore >= threshold,
@@ -74,7 +75,7 @@ export async function scanImageForNsfw(
  */
 export async function scanImageUrlForNsfw(
   imageUrl: string,
-  threshold = 0.35
+  threshold = 0.55
 ): Promise<NsfwScanResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();

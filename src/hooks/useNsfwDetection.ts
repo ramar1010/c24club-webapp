@@ -19,7 +19,7 @@ export function useNsfwDetection({
   userId,
   viewerUserId,
   checkIntervalMs = 3000,
-  nudityThreshold = 0.60,
+  nudityThreshold = 0.75,
   maxStrikes = 3,
   strikeCooldownMs = 10000,
   persistAcrossPartners = true,
@@ -205,7 +205,8 @@ export function useNsfwDetection({
         const pornScore = predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
         const hentaiScore = predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
         const sexyScore = predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
-        const nudityScore = Math.max(pornScore, hentaiScore, sexyScore * 0.7);
+        // Only Porn and Hentai trigger bans; Sexy alone has too many false positives
+        const nudityScore = Math.max(pornScore, hentaiScore);
 
         if (nudityScore >= nudityThreshold) {
           setIsNsfwBlurred(true);
