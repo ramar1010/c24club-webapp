@@ -80,6 +80,7 @@ const AdminDiscoverReviewPage = () => {
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["admin-discover-images", activeTab],
     queryFn: async () => {
+      // Base query: members matching image_status
       const { data, error } = await supabase
         .from("members")
         .select("id, name, email, image_url, gender, country, created_at, is_discoverable")
@@ -87,7 +88,32 @@ const AdminDiscoverReviewPage = () => {
         .filter("image_status", "eq", activeTab)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []) as unknown as MemberImage[];
+      let results = (data || []) as unknown as MemberImage[];
+
+      // For the denied tab, also include banned users with images who aren't already in the list
+      if (activeTab === "denied") {
+        const { data: bans } = await supabase
+          .from("user_bans")
+          .select("user_id")
+          .eq("is_active", true);
+        if (bans && bans.length > 0) {
+          const existingIds = new Set(results.map(m => m.id));
+          const bannedIds = bans.map(b => b.user_id).filter(id => !existingIds.has(id));
+          if (bannedIds.length > 0) {
+            const { data: bannedMembers } = await supabase
+              .from("members")
+              .select("id, name, email, image_url, gender, country, created_at, is_discoverable")
+              .in("id", bannedIds)
+              .not("image_url", "is", null)
+              .order("created_at", { ascending: false });
+            if (bannedMembers) {
+              results = [...results, ...(bannedMembers as unknown as MemberImage[])];
+            }
+          }
+        }
+      }
+
+      return results;
     },
   });
 
