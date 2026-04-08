@@ -100,6 +100,19 @@ const AdminBannedUsersPage = () => {
       ),
     },
     {
+      key: "ban_source" as any,
+      header: "Source",
+      render: (row) => {
+        const sourceMap: Record<string, { label: string; color: string }> = {
+          selfie: { label: "📸 Selfie", color: "text-pink-400" },
+          videocall: { label: "📹 Video Call", color: "text-blue-400" },
+          manual: { label: "🛡️ Manual", color: "text-muted-foreground" },
+          report: { label: "🚩 Report", color: "text-orange-400" },
+        };
+        const src = sourceMap[row.ban_source] || { label: row.ban_source || "Unknown", color: "text-muted-foreground" };
+        return <span className={`text-xs font-medium ${src.color}`}>{src.label}</span>;
+      },
+    },
       key: "ip_address",
       header: "IP",
       render: (row) => (
