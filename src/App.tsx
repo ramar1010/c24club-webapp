@@ -85,6 +85,7 @@ const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
 const TopOmegleAlternativesPage = lazy(() => import("@/pages/public/TopOmegleAlternativesPage"));
+const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -113,6 +114,7 @@ const App = () => (
                 <Route path="blog/:slug" element={<BlogPostPage />} />
                 <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
                 <Route path="top-omegle-alternatives" element={<TopOmegleAlternativesPage />} />
+                <Route path="csae-policy" element={<CSAEPolicyPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
