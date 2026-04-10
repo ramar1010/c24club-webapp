@@ -107,9 +107,8 @@ serve(async (req) => {
           ? new Date(now.setMonth(now.getMonth() + 1)).toISOString()
           : new Date(now.setDate(now.getDate() + 7)).toISOString();
       const { error: updateError } = await supabaseAdmin
-        .from("members")
-        .update({ is_vip: true, vip_tier: tier, vip_expires_at: expiresAt })
-        .eq("id", user.id);
+        .from("member_minutes")
+        .upsert({ user_id: user.id, is_vip: true, vip_tier: tier, subscription_end: expiresAt }, { onConflict: "user_id" });
       if (updateError) throw updateError;
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
