@@ -3,7 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -11,14 +12,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
+  const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
 
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
   );
 
   try {
@@ -26,100 +24,82 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user) throw new Error("Not authenticated");
+    if (!user?.id) throw new Error("Not authenticated");
 
-    const { action, minutes_amount, paypal_email, request_id } = await req.json();
+    const { action, minutes_amount, paypal_email } = await req.json();
 
     if (action === "request-cashout") {
-      if (!minutes_amount || !paypal_email) throw new Error("Missing required fields");
-      if (typeof paypal_email !== "string" || !paypal_email.includes("@")) throw new Error("Invalid PayPal email");
+      if (!minutes_amount || minutes_amount <= 0) throw new Error("Invalid minutes amount");
+      if (!paypal_email) throw new Error("PayPal email is required");
 
-      // Get cashout settings
       const { data: settings } = await supabaseAdmin
         .from("cashout_settings")
-        .select("*")
+        .select("min_cashout_minutes, max_cashout_minutes, rate_per_minute")
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (!settings) throw new Error("Cashout not available");
+      const minCashout = settings?.min_cashout_minutes ?? 100;
+      const maxCashout = settings?.max_cashout_minutes ?? 5000;
+      const ratePerMinute = settings?.rate_per_minute ?? 0.02;
 
-      if (minutes_amount < settings.min_cashout_minutes) {
-        throw new Error(`Minimum cashout is ${settings.min_cashout_minutes} minutes`);
-      }
-      if (minutes_amount > settings.max_cashout_minutes) {
-        throw new Error(`Maximum cashout is ${settings.max_cashout_minutes} minutes`);
-      }
+      if (minutes_amount < minCashout) throw new Error(`Minimum cashout is ${minCashout} gifted minutes`);
+      if (minutes_amount > maxCashout) throw new Error(`Maximum cashout is ${maxCashout} gifted minutes`);
 
-      // Check user gifted minutes balance (only gifted minutes can be cashed out)
-      const { data: userMinutes } = await supabaseAdmin
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!userMinutes || (userMinutes as any).gifted_minutes < minutes_amount) {
-        throw new Error("Insufficient gifted minutes balance. You can only cash out minutes received as gifts.");
-      }
-
-      // Check for pending cashout
-      const { data: pending } = await supabaseAdmin
+      const { data: pendingRequest } = await supabaseAdmin
         .from("cashout_requests")
         .select("id")
         .eq("user_id", user.id)
         .eq("status", "pending")
-        .limit(1);
+        .maybeSingle();
 
-      if (pending && pending.length > 0) {
-        throw new Error("You already have a pending cashout request");
+      if (pendingRequest) throw new Error("You already have a pending cashout request");
+
+      const { data: memberMinutes, error: fetchError } = await supabaseAdmin
+        .from("member_minutes")
+        .select("gifted_minutes, minutes")
+        .eq("user_id", user.id)
+        .single();
+
+      if (fetchError || !memberMinutes) throw new Error("Could not fetch your balance");
+
+      const giftedBalance = memberMinutes.gifted_minutes ?? 0;
+
+      if (giftedBalance < minutes_amount) {
+        throw new Error(`Insufficient gifted minutes. You have ${giftedBalance} gifted minutes available.`);
       }
 
-      const cashAmount = Number((minutes_amount * settings.rate_per_minute).toFixed(2));
-
-      // Deduct from both total and gifted minutes
-      await supabaseAdmin
+      // Deduct ONLY from gifted_minutes — never touch the `minutes` (earned chatting) column
+      const { error: updateError } = await supabaseAdmin
         .from("member_minutes")
-        .update({
-          total_minutes: userMinutes.total_minutes - minutes_amount,
-          gifted_minutes: (userMinutes as any).gifted_minutes - minutes_amount,
-        })
+        .update({ gifted_minutes: giftedBalance - minutes_amount })
         .eq("user_id", user.id);
 
-      // Create cashout request
-      await supabaseAdmin.from("cashout_requests").insert({
+      if (updateError) throw new Error("Failed to deduct gifted minutes: " + updateError.message);
+
+      const cashAmount = minutes_amount * ratePerMinute;
+
+      const { error: insertError } = await supabaseAdmin.from("cashout_requests").insert({
         user_id: user.id,
         minutes_amount,
-        cash_amount: cashAmount,
         paypal_email,
+        cashout_amount: cashAmount,
         status: "pending",
       });
 
-      // Admin notification
-      await supabaseAdmin.from("admin_notifications").insert({
-        type: "cashout_request",
-        title: "Cashout Request",
-        message: `User requested $${cashAmount} cashout (${minutes_amount} min)`,
-        reference_id: user.id,
-      });
+      if (insertError) {
+        // Rollback if insert fails
+        await supabaseAdmin.from("member_minutes").update({ gifted_minutes: giftedBalance }).eq("user_id", user.id);
+        throw new Error("Failed to create cashout request: " + insertError.message);
+      }
 
-      return new Response(JSON.stringify({ success: true, cash_amount: cashAmount }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (action === "get-settings") {
-      const { data: settings } = await supabaseAdmin
-        .from("cashout_settings")
-        .select("*")
-        .limit(1)
-        .single();
-
-      return new Response(JSON.stringify({ settings }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ success: true, minutes_cashed_out: minutes_amount, cash_amount: cashAmount, paypal_email }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     throw new Error("Invalid action");
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
