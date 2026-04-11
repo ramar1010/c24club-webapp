@@ -180,7 +180,7 @@ serve(async (req) => {
       // Credit recipient: full calling minutes + only cashable gifted minutes
       const { data: recipientMinutes } = await supabaseAdmin
         .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
+        .select("minutes, gifted_minutes")
         .eq("user_id", recipientId)
         .single();
 
