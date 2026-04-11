@@ -188,7 +188,7 @@ serve(async (req) => {
         await supabaseAdmin
           .from("member_minutes")
           .update({
-            total_minutes: recipientMinutes.total_minutes + totalMinutesForRecipient,
+            minutes: (recipientMinutes.minutes || 0) + totalMinutesForRecipient,
             gifted_minutes: ((recipientMinutes as any).gifted_minutes || 0) + cashableGiftedMinutes,
           })
           .eq("user_id", recipientId);
