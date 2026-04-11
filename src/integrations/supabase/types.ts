@@ -389,6 +389,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_name: string | null
@@ -2929,6 +2950,7 @@ export type Database = {
         Args: { p_female_id: string }
         Returns: undefined
       }
+      is_blocked_by: { Args: { partner_id: string }; Returns: boolean }
       is_user_vip: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
@@ -2950,6 +2972,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      request_cashout: {
+        Args: { p_minutes_amount: number; p_paypal_email: string }
+        Returns: Json
       }
     }
     Enums: {
