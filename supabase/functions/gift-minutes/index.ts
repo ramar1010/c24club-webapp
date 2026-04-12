@@ -163,7 +163,7 @@ serve(async (req) => {
       // Credit recipient — minutes for chatting, gifted_minutes for cashout
       const { data: recipientMinutes } = await supabaseAdmin
         .from("member_minutes")
-        .select("minutes, gifted_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", recipientId)
         .single();
 
@@ -171,7 +171,7 @@ serve(async (req) => {
         await supabaseAdmin
           .from("member_minutes")
           .update({
-            minutes: (recipientMinutes.minutes || 0) + totalMinutesForRecipient,
+            total_minutes: (recipientMinutes.total_minutes || 0) + totalMinutesForRecipient,
             gifted_minutes: (recipientMinutes.gifted_minutes || 0) + cashableGiftedMinutes,
           })
           .eq("user_id", recipientId);
