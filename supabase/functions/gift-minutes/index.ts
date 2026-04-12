@@ -269,34 +269,34 @@ serve(async (req) => {
       // Check sender balance using actual columns
       const { data: senderMinutes } = await supabaseAdmin
         .from("member_minutes")
-        .select("minutes, gifted_minutes")
+        .select("total_minutes, gifted_minutes")
         .eq("user_id", user.id)
         .single();
 
-      if (!senderMinutes || (senderMinutes.minutes || 0) < giftMinutes) {
+      if (!senderMinutes || (senderMinutes.total_minutes || 0) < giftMinutes) {
         throw new Error("Insufficient minutes balance");
       }
 
-      // Deduct from sender's minutes, reduce gifted_minutes proportionally
+      // Deduct from sender's total_minutes, reduce gifted_minutes proportionally
       const senderGifted = senderMinutes.gifted_minutes ?? 0;
-      const newSenderMinutes = (senderMinutes.minutes || 0) - giftMinutes;
+      const newSenderMinutes = (senderMinutes.total_minutes || 0) - giftMinutes;
       const newSenderGifted = Math.min(Math.max(0, senderGifted - giftMinutes), newSenderMinutes);
       await supabaseAdmin
         .from("member_minutes")
-        .update({ minutes: newSenderMinutes, gifted_minutes: newSenderGifted })
+        .update({ total_minutes: newSenderMinutes, gifted_minutes: newSenderGifted })
         .eq("user_id", user.id);
 
-      // Credit recipient's minutes
+      // Credit recipient's total_minutes
       const { data: recipientMins } = await supabaseAdmin
         .from("member_minutes")
-        .select("minutes")
+        .select("total_minutes")
         .eq("user_id", recipient_id)
         .single();
 
       if (recipientMins) {
         await supabaseAdmin
           .from("member_minutes")
-          .update({ minutes: (recipientMins.minutes || 0) + giftMinutes })
+          .update({ total_minutes: (recipientMins.total_minutes || 0) + giftMinutes })
           .eq("user_id", recipient_id);
       }
 
