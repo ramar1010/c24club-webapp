@@ -58,10 +58,17 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  define: {
+    global: "globalThis",
+  },
   plugins: [react(), sitemapProxy(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      buffer: "buffer/",
     },
+  },
+  optimizeDeps: {
+    include: ["buffer"],
   },
 }));
