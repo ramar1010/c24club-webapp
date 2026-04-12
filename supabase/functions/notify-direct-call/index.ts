@@ -83,6 +83,9 @@ Deno.serve(async (req) => {
     // ── INCOMING CALL (default) ──
     // Notify the INVITEE that they have an incoming call
     const { data: inviter } = await supabase.from("members").select("name").eq("id", inviterId).maybeSingle();
+    const { data: invitee } = await supabase.from("members").select("push_token, notify_enabled").eq("id", inviteeId).maybeSingle();
+
+    console.log(`[notify-direct-call] incoming: inviterId=${inviterId}, inviteeId=${inviteeId}, invitee_push_token=${invitee?.push_token ? "SET" : "NULL"}, notify_enabled=${invitee?.notify_enabled}`);
 
     const inviterName = inviter?.name || "Someone";
     const result = await invokePushNotification(supabaseUrl, serviceRoleKey, {
@@ -96,6 +99,8 @@ Deno.serve(async (req) => {
       },
       notification_type: `incoming_direct_call_${inviterId}`,
     });
+
+    console.log(`[notify-direct-call] push result: ok=${result.ok}, raw=${result.raw}`);
 
     return new Response(
       JSON.stringify({ success: result.ok, message: result.ok ? "push_sent" : result.parsed?.reason || result.raw }),
