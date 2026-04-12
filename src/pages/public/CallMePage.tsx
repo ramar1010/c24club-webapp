@@ -74,13 +74,6 @@ export default function CallMePage() {
       return;
     }
 
-    // Send push notification + SMS alert (fire and forget)
-    supabase.functions
-      .invoke("notify-direct-call", {
-        body: { inviterId: user.id, inviteeId: profile.id },
-      })
-      .catch(() => {});
-
     // Get caller's name for the SMS
     const { data: callerData } = await supabase
       .from("members")

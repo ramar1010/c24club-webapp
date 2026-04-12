@@ -88,10 +88,6 @@ const DiscoverMemberCard = ({
 
       if (error) throw error;
 
-      supabase.functions.invoke("notify-direct-call", {
-        body: { inviterId: user.id, inviteeId: member.id },
-      }).catch(() => {});
-
       setDirectCall({ inviteId: data.id });
       toast({ title: "📹 Starting video chat", description: `Calling ${member.name}...` });
     } catch (err: any) {

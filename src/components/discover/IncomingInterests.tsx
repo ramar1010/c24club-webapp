@@ -47,10 +47,6 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
 
       if (error) throw error;
 
-      supabase.functions.invoke("notify-direct-call", {
-        body: { inviterId: user.id, inviteeId: targetId },
-      }).catch(() => {});
-
       setDirectCall({ inviteId: data.id, partnerId: targetId, partnerName: targetName });
       toast({ title: "📹 Starting video chat", description: `Calling ${targetName}...` });
     } catch (err: any) {
