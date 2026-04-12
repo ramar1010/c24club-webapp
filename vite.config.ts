@@ -1,6 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { Buffer } from "buffer";
 import { componentTagger } from "lovable-tagger";
 
 const SITEMAP_URL = "https://ncpbiymnafxdfsvpxirb.supabase.co/functions/v1/sitemap";
@@ -57,10 +58,17 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  define: {
+    global: "globalThis",
+  },
   plugins: [react(), sitemapProxy(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      buffer: "buffer/",
     },
+  },
+  optimizeDeps: {
+    include: ["buffer"],
   },
 }));
