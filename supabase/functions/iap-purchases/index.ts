@@ -165,7 +165,7 @@ serve(async (req) => {
 
       const { error: giftTxError } = await supabaseAdmin
         .from("gift_transactions")
-        .insert({ sender_id: user.id, recipient_id, minutes_amount: minutesToGift, price_cents: Math.round(cashValue * 100) });
+        .insert({ sender_id: user.id, recipient_id, minutes_amount: minutesToGift, price_cents: Math.round(cashValue * 100), status: "completed" });
       if (giftTxError) console.warn("[verify-gift] gift_transactions insert error:", giftTxError.message);
 
       if (senderBonus > 0) {
