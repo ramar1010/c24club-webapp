@@ -181,13 +181,13 @@ serve(async (req) => {
       if (senderBonus > 0) {
         const { data: senderMinutes } = await supabaseAdmin
           .from("member_minutes")
-          .select("minutes")
+          .select("total_minutes")
           .eq("user_id", gift.sender_id)
           .single();
         if (senderMinutes) {
           await supabaseAdmin
             .from("member_minutes")
-            .update({ minutes: (senderMinutes.minutes || 0) + senderBonus })
+            .update({ total_minutes: (senderMinutes.total_minutes || 0) + senderBonus })
             .eq("user_id", gift.sender_id);
         }
       }
