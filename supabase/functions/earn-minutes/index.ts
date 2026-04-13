@@ -80,7 +80,7 @@ async function checkFreezeStatus(supabase: any, userId: string) {
         .update({ is_frozen: false, freeze_free_until: freezeFreeUntil.toISOString() })
         .eq("user_id", userId);
 
-      return { isFrozen: false, earnRate: 10 };
+      return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
     }
   }
 
