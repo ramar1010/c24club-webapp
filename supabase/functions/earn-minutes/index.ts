@@ -42,9 +42,14 @@ async function checkFreezeStatus(supabase: any, userId: string) {
   const threshold = settings?.minute_threshold ?? 400;
   const frozenRate = settings?.frozen_earn_rate ?? 2;
 
+  // VIP users are never frozen
+  if (mm.is_vip) {
+    return { isFrozen: false, earnRate: 30 };
+  }
+
   // If below threshold, never frozen
   if (mm.total_minutes < threshold) {
-    return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+    return { isFrozen: false, earnRate: 10 };
   }
 
   // If freeze_free_until is in the future, not frozen
