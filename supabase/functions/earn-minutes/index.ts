@@ -54,7 +54,7 @@ async function checkFreezeStatus(supabase: any, userId: string) {
 
   // If freeze_free_until is in the future, not frozen
   if (mm.freeze_free_until && new Date(mm.freeze_free_until) > new Date()) {
-    return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+    return { isFrozen: false, earnRate: 10 };
   }
 
   // Check if user completed a challenge in the last 7 days
@@ -85,7 +85,7 @@ async function checkFreezeStatus(supabase: any, userId: string) {
         .update({ is_frozen: false, freeze_free_until: freezeFreeUntil.toISOString() })
         .eq("user_id", userId);
 
-      return { isFrozen: false, earnRate: mm.is_vip ? 30 : 10 };
+      return { isFrozen: false, earnRate: 10 };
     }
   }
 
