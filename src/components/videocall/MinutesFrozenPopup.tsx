@@ -95,14 +95,6 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
           Save Your Rewards Now!
         </p>
 
-        {isFemale && (
-          <div className="bg-pink-500/10 border border-pink-500/30 rounded-xl p-3 mb-3">
-            <p className="text-pink-300 text-xs font-bold mb-1">💰 Female Earning Bonus Note</p>
-            <p className="text-pink-200/80 text-[11px] leading-relaxed">
-              Your minute earning rate has dropped because your account is frozen. This also affects how fast your Female Earning Bonus balance grows — unfreezing restores your full earning speed!
-            </p>
-          </div>
-        )}
 
         <h3 className="text-white font-black text-lg mb-3">How To Unfreeze?</h3>
 
