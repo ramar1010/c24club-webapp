@@ -311,8 +311,8 @@ async function sendPushNotifications(
           title,
           body,
           data: {
-            deepLink: "/videocall",
-            screen: "videocall",
+            deepLink: "/chat",
+            screen: "/chat",
             channelId: "default",
           },
           notification_type: notificationType,
