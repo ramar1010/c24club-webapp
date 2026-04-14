@@ -199,6 +199,9 @@ const EditMemberRewardPage = () => {
           {status !== prevStatus && EMAIL_TRIGGERING_STATUSES.includes(status) && (
             <p className="text-xs text-blue-500">📧 An email will be sent to the member when you save.</p>
           )}
+          {status !== prevStatus && status === "Item Out of stock" && (
+            <p className="text-xs text-orange-500">💰 {redemption.minutes_cost} minutes will be refunded to the member.</p>
+          )}
         </div>
 
         <div className="space-y-2">
