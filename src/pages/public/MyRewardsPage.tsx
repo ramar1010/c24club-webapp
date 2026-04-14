@@ -38,7 +38,7 @@ const STATUS_LABELS: Record<string, { text: string; color: string }> = {
   "pending_payment": { text: "💳 Awaiting shipping payment", color: "text-orange-400" },
   "Order placed": { text: "✅ Order has been placed — please wait!", color: "text-cyan-400" },
   "Order shipped": { text: "🚚 Your order has been shipped!", color: "text-green-400" },
-  "Item Out of stock": { text: "❌ Item is currently out of stock", color: "text-red-400" },
+  "Item Out of stock": { text: "❌ Out of stock — minutes refunded to your balance!", color: "text-red-400" },
   "Gift Card Form Filled by user": { text: "📝 Gift card form received — processing!", color: "text-indigo-400" },
   "Gift Card Sent on Email": { text: "✉️ Gift card sent to your email!", color: "text-emerald-400" },
   "Redeemed Milestone Reward": { text: "🏆 Milestone reward redeemed!", color: "text-purple-400" },
