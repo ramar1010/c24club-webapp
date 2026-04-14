@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
     const data: Record<string, string> = {
       type: "redemption_status",
       status,
-      screen: "/(tabs)/profile",
+      screen: "/rewards",
     };
 
     if (status === "Order shipped" && shipping_tracking_url) {

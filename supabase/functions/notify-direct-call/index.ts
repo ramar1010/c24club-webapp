@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
         body: `${inviteeName} tried to video call you — tap to call back!`,
         data: {
           deepLink: "/discover",
-          screen: "discover",
+          screen: "/discover",
           channelId: "default",
         },
         notification_type: `missed_direct_call_${inviteeId}`,
@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
       title: `📹 ${inviterName} wants to video chat!`,
       body: "Your Discover match is waiting for you. Join now!",
       data: {
-        deepLink: "/videocall",
-        screen: "videocall",
+        deepLink: "/chat",
+        screen: "/chat",
         channelId: "incoming_calls",
       },
       notification_type: `incoming_direct_call_${inviterId}`,
