@@ -140,17 +140,12 @@ Deno.serve(async (req) => {
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
     const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
 
-    // Push via central dispatcher (supports Expo + FCM tokens)
-    let pushSent = 0;
-    let pushFailed = 0;
-    let pushError: string | null = null;
-
-    if (targets && targets.length > 0) {
-      const result = await sendPushNotifications(supabaseUrl, serviceRoleKey, targets, normalizedGender);
-      pushSent = result.sent;
-      pushFailed = result.failed;
-      pushError = result.error;
-    }
+    // Queue-join push notifications are sent by videocall-match.
+    // This function keeps the secondary notification channels only,
+    // so users do not receive duplicate pushes for the same join event.
+    const pushSent = 0;
+    const pushFailed = 0;
+    const pushError: string | null = null;
 
     // Update cooldown and increment email counter
     const { data: updatedCooldown } = await supabase
@@ -279,67 +274,6 @@ async function sendDiscordNotification(
   }
 }
 
-// --- Push dispatcher ---
-async function sendPushNotifications(
-  supabaseUrl: string,
-  serviceRoleKey: string,
-  targets: { id: string; push_token: string | null }[],
-  searchingGender: string,
-): Promise<{ sent: number; failed: number; error: string | null }> {
-  const title =
-    searchingGender === "male"
-      ? "Earn CASH NOW! A Male User Is Online Wanting To Chat! - C24Club Video Chat"
-      : "A girl is looking to video chat. Join now before she leaves! - C24Club Video Chat";
-  const body = "";
-
-  let sent = 0;
-  let failed = 0;
-  let lastError: string | null = null;
-
-  const notificationType = searchingGender === "male" ? "male_online_notify" : "female_online_notify";
-
-  const promises = targets.filter((target) => !!target.push_token).map(async (target) => {
-    try {
-      const res = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({
-          user_id: target.id,
-          title,
-          body,
-          data: {
-            deepLink: "/chat",
-            screen: "/chat",
-            channelId: "default",
-          },
-          notification_type: notificationType,
-          cooldown_minutes: 2,
-        }),
-      });
-
-      const raw = await res.text();
-      let parsed = null;
-      try {
-        parsed = raw ? JSON.parse(raw) : null;
-      } catch {
-        parsed = null;
-      }
-      if (res.ok && parsed?.success !== false) {
-        sent++;
-      } else {
-        failed++;
-        lastError = parsed?.reason || raw || `Push send failed (${res.status})`;
-        console.error("Push send failed:", lastError);
-      }
-    } catch (err) {
-      failed++;
-      lastError = err instanceof Error ? err.message : String(err);
-    }
-  });
-
-  await Promise.all(promises);
-  return { sent, failed, error: lastError };
-}
+// Push sending is intentionally disabled here.
+// Real-time queue join push alerts are sent from videocall-match,
+// while this function handles cooldown/email/Discord side effects only.
