@@ -1,0 +1,1 @@
+UPDATE notification_cooldowns SET last_notified_at = '2026-04-14 22:00:00+00' WHERE gender_segment = 'female_searching';
