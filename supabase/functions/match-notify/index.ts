@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
         .from("members")
         .select("id, email, name, gender")
         .eq("notify_enabled", true)
-        .ilike("gender", targetGender === "male" ? "female" : "male")
+        .ilike("gender", targetGender)
         .eq("is_test_account", false)
         .neq("id", memberId)
         .not("email", "is", null)
