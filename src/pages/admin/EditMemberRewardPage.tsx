@@ -73,19 +73,32 @@ const EditMemberRewardPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      const statusChanged = status !== prevStatus;
+      const isOutOfStock = statusChanged && status === "Item Out of stock";
+
+      // If marking as out of stock, refund the minutes
+      if (isOutOfStock && redemption) {
+        const { error: refundErr } = await supabase.rpc("atomic_increment_minutes", {
+          p_user_id: redemption.user_id,
+          p_amount: redemption.minutes_cost,
+        });
+        if (refundErr) throw new Error(`Refund failed: ${refundErr.message}`);
+      }
+
       const { error } = await supabase
         .from("member_redemptions")
         .update({
           status,
           shipping_tracking_url: trackingUrl || null,
           address_exists: addressExists,
-          notes,
+          notes: isOutOfStock
+            ? `${notes ? notes + "\n" : ""}[${new Date().toISOString()}] Refunded ${redemption.minutes_cost} minutes (out of stock)`
+            : notes,
         } as any)
         .eq("id", id!);
       if (error) throw error;
 
       // Send email if status changed to an email-triggering status
-      const statusChanged = status !== prevStatus;
       const shouldSendEmail = statusChanged && EMAIL_TRIGGERING_STATUSES.includes(status);
       const shouldSendAddressEmail = addressExists === "no" && (redemption as any)?.address_exists !== "no";
 
@@ -185,6 +198,9 @@ const EditMemberRewardPage = () => {
           </Select>
           {status !== prevStatus && EMAIL_TRIGGERING_STATUSES.includes(status) && (
             <p className="text-xs text-blue-500">📧 An email will be sent to the member when you save.</p>
+          )}
+          {status !== prevStatus && status === "Item Out of stock" && (
+            <p className="text-xs text-orange-500">💰 {redemption.minutes_cost} minutes will be refunded to the member.</p>
           )}
         </div>
 
