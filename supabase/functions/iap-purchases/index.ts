@@ -189,9 +189,18 @@ serve(async (req) => {
 
     if (action === "verify-unfreeze") {
       await verifyReceipt();
+      const freezeFreeUntil = new Date();
+      freezeFreeUntil.setDate(freezeFreeUntil.getDate() + 7);
+
       const { error: updateError } = await supabaseAdmin
         .from("member_minutes")
-        .update({ is_frozen: false, frozen_at: null })
+        .update({
+          is_frozen: false,
+          frozen_at: null,
+          freeze_free_until: freezeFreeUntil.toISOString(),
+          frozen_cap_popup_shown: false,
+          updated_at: new Date().toISOString(),
+        })
         .eq("user_id", user.id);
       if (updateError) throw updateError;
       return new Response(JSON.stringify({ success: true }), {
