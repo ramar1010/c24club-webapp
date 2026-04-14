@@ -15,10 +15,11 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // 1. Check if anyone is in the waiting queue
+    // 1. Get the most recent queue entry to determine who just joined
     const { data: queueRows, error: queueErr } = await supabaseAdmin
       .from("waiting_queue")
-      .select("member_id")
+      .select("member_id, member_gender, gender_preference")
+      .order("created_at", { ascending: false })
       .limit(1);
 
     if (queueErr) {
@@ -33,12 +34,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 2. Find eligible users (inactive 30min–24h, notifications on)
+    const joiner = queueRows[0];
+    const joinerGender = (joiner.member_gender || "").toLowerCase();
+
+    // Determine which gender to notify (opposite of the joiner)
+    // If a male joins → notify females; if a female joins → notify males
+    let targetGender: string | null = null;
+    if (joinerGender === "male") {
+      targetGender = "female";
+    } else if (joinerGender === "female") {
+      targetGender = "male";
+    }
+
+    // 2. Find eligible users (inactive 30min–24h, notifications on, opposite gender)
     const now = new Date();
     const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000).toISOString();
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
-    // Get users currently in active rooms
+    // Get users currently in active rooms to exclude
     const { data: activeRoomMembers } = await supabaseAdmin
       .from("rooms")
       .select("member1, member2")
@@ -52,13 +65,20 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const { data: candidates, error: candidateErr } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("members")
-      .select("id")
+      .select("id, gender")
       .eq("notify_enabled", true)
       .lt("last_active_at", thirtyMinAgo)
       .gt("last_active_at", twentyFourHoursAgo)
-      .limit(50);
+      .not("push_token", "is", null);
+
+    // Apply gender filter — only notify the opposite gender
+    if (targetGender) {
+      query = query.ilike("gender", targetGender);
+    }
+
+    const { data: candidates, error: candidateErr } = await query.limit(100);
 
     if (candidateErr) {
       return new Response(JSON.stringify({ success: false, reason: candidateErr.message }), {
@@ -67,7 +87,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!candidates || candidates.length === 0) {
-      return new Response(JSON.stringify({ success: true, notified: 0, reason: "No eligible users" }), {
+      return new Response(JSON.stringify({ success: true, notified: 0, reason: "No eligible users", targetGender }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -81,10 +101,19 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 4. Send push notification via send-push-notification function
+    // 4. Send gender-appropriate push notifications
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     let notified = 0;
+
+    // Tailor message based on who's searching
+    const notifTitle = joinerGender === "male"
+      ? "🟢 A guy is looking to chat!"
+      : joinerGender === "female"
+        ? "🟢 A girl is looking to chat!"
+        : "🟢 Someone is searching for a chat!";
+
+    const notifBody = "Join now and get matched instantly.";
 
     for (const user of eligibleUsers) {
       try {
@@ -96,8 +125,8 @@ Deno.serve(async (req: Request) => {
           },
           body: JSON.stringify({
             user_id: user.id,
-            title: "🟢 Someone is searching for a chat!",
-            body: "Join now and get matched instantly.",
+            title: notifTitle,
+            body: notifBody,
             data: { screen: "videocall" },
             notification_type: "searching_users",
             cooldown_minutes: 60,
@@ -110,7 +139,13 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, notified, total_candidates: eligibleUsers.length }), {
+    return new Response(JSON.stringify({
+      success: true,
+      notified,
+      total_candidates: eligibleUsers.length,
+      joiner_gender: joinerGender,
+      target_gender: targetGender,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: unknown) {
