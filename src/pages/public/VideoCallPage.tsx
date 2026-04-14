@@ -1537,7 +1537,10 @@ const VideoCallPage = () => {
           setOverlayPage("profile");
         }}
         isVip={subscribed}
-        onPurchaseVip={() => startCheckout("")}
+        onPurchaseVip={async () => {
+          const { VIP_TIERS } = await import("@/config/vip-tiers");
+          void startCheckout(VIP_TIERS.basic.price_id);
+        }}
         isFemale={isFemale} />
 
       }
