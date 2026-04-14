@@ -101,43 +101,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 4. Send gender-appropriate push notifications
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    let notified = 0;
-
-    // Tailor message based on who's searching
-    const notifTitle = joinerGender === "male"
-      ? "🟢 A guy is looking to chat!"
-      : joinerGender === "female"
-        ? "🟢 A girl is looking to chat!"
-        : "🟢 Someone is searching for a chat!";
-
-    const notifBody = "Join now and get matched instantly.";
-
-    for (const user of eligibleUsers) {
-      try {
-        const resp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${serviceRoleKey}`,
-          },
-          body: JSON.stringify({
-            user_id: user.id,
-            title: notifTitle,
-            body: notifBody,
-            data: { screen: "videocall" },
-            notification_type: "searching_users",
-            cooldown_minutes: 2,
-          }),
-        });
-        const result = await resp.json();
-        if (result.success) notified++;
-      } catch (e) {
-        console.error(`Failed to notify ${user.id}:`, e);
-      }
-    }
+    // Push notifications are handled by match-notify to avoid duplicates.
+    // This function now only serves as the queue-join detection layer.
+    const notified = 0;
 
     return new Response(JSON.stringify({
       success: true,
