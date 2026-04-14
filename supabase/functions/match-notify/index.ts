@@ -126,8 +126,7 @@ Deno.serve(async (req) => {
 
     // Targets: opposite gender, notify_enabled, with push_token
     const targetGender = normalizedGender === "female" ? "male" : "female";
-    console.log("[match-notify] Looking for targets with gender:", targetGender, "excluding:", memberId);
-    const { data: targets, error: targetErr } = await supabase
+    const { data: targets } = await supabase
       .from("members")
       .select("id, push_token")
       .eq("notify_enabled", true)
@@ -136,7 +135,6 @@ Deno.serve(async (req) => {
       .not("push_token", "is", null)
       .neq("id", memberId)
       .limit(100);
-    console.log("[match-notify] Target query result:", targets?.length, "error:", targetErr?.message);
 
     // Discord
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
