@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
     if (cooldown) {
       const elapsed = Date.now() - new Date(cooldown.last_notified_at).getTime();
-      if (elapsed < 5 * 60 * 1000) {
+      if (elapsed < 2 * 60 * 1000) {
         return new Response(
           JSON.stringify({ success: true, message: "cooldown_active" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -133,6 +133,7 @@ Deno.serve(async (req) => {
       .eq("notify_enabled", true)
       .ilike("gender", targetGender)
       .eq("is_test_account", false)
+      .not("push_token", "is", null)
       .neq("id", memberId)
       .limit(100);
     console.log("[match-notify] Target query result:", targets?.length, "error:", targetErr?.message);
