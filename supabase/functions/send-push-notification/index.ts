@@ -202,7 +202,7 @@ Deno.serve(async (req: Request) => {
   try {
     const { user_id, title, body, data = {}, notification_type, cooldown_minutes } = await req.json();
 
-    if (!user_id || !title || !body) {
+    if (!user_id || !title) {
       return new Response(JSON.stringify({ success: false, reason: "Missing required fields" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
