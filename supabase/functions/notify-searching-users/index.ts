@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
             body: notifBody,
             data: { screen: "videocall" },
             notification_type: "searching_users",
-            cooldown_minutes: 60,
+            cooldown_minutes: 2,
           }),
         });
         const result = await resp.json();

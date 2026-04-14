@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
           channelId: "default",
         },
         notification_type: `missed_direct_call_${inviteeId}`,
-        cooldown_minutes: 20,
+        cooldown_minutes: 2,
       });
 
       return new Response(

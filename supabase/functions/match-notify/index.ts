@@ -315,7 +315,7 @@ async function sendPushNotifications(
             channelId: "default",
           },
           notification_type: notificationType,
-          cooldown_minutes: 5,
+          cooldown_minutes: 2,
         }),
       });
 
