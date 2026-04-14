@@ -25,11 +25,8 @@ serve(async (req) => {
     const { priceId } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
 
-    // 1. Determine if we are in Test Mode (Forcing true for now)
-    const isTestMode = true;
-
-    // 2. Select the correct key
-    const stripeKey = isTestMode ? Deno.env.get("STRIPE_SECRET_KEY_TEST")! : Deno.env.get("STRIPE_SECRET_KEY")!;
+    // Use live key since price IDs are in live mode
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")!;
 
     // 3. Initialize Stripe with the chosen key
     const stripe = new Stripe(stripeKey, {
