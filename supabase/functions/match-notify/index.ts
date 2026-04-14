@@ -140,17 +140,12 @@ Deno.serve(async (req) => {
     const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
     const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
 
-    // Push via central dispatcher (supports Expo + FCM tokens)
-    let pushSent = 0;
-    let pushFailed = 0;
-    let pushError: string | null = null;
-
-    if (targets && targets.length > 0) {
-      const result = await sendPushNotifications(supabaseUrl, serviceRoleKey, targets, normalizedGender);
-      pushSent = result.sent;
-      pushFailed = result.failed;
-      pushError = result.error;
-    }
+    // Queue-join push notifications are sent by videocall-match.
+    // This function keeps the secondary notification channels only,
+    // so users do not receive duplicate pushes for the same join event.
+    const pushSent = 0;
+    const pushFailed = 0;
+    const pushError: string | null = null;
 
     // Update cooldown and increment email counter
     const { data: updatedCooldown } = await supabase
