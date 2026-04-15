@@ -361,12 +361,40 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
 
   const dmBlocked = isMaleToFemale && !hasBasicVip && globalMaleDmCount >= DM_FREE_LIMIT;
   const freeLeft = Math.max(0, DM_FREE_LIMIT - globalMaleDmCount);
+  const iBlockedThem = blockedState.iBlockedThem;
+  const theyBlockedMe = blockedState.theyBlockedMe;
+  const threadBlocked = iBlockedThem || theyBlockedMe;
 
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  const handleBlockUser = async () => {
+    if (!user || !selectedConvo?.other_user?.id || isBlockingUser) return;
+
+    try {
+      setIsBlockingUser(true);
+      const { error } = await supabase
+        .from("blocked_users")
+        .insert({
+          blocker_id: user.id,
+          blocked_id: selectedConvo.other_user.id,
+        } as any);
+
+      if (error) throw error;
+
+      setShowBlockDialog(false);
+      setMessageText("");
+      await queryClient.invalidateQueries({ queryKey: ["dm-block-state"] });
+      toast.success(`${selectedConvo.other_user.name} has been blocked`);
+    } catch (err: any) {
+      toast.error("Couldn't block user", { description: err.message });
+    } finally {
+      setIsBlockingUser(false);
+    }
+  };
+
   const handleSend = () => {
-    if (!messageText.trim() || !selectedConvo) return;
+    if (!messageText.trim() || !selectedConvo || threadBlocked) return;
     const otherId = selectedConvo.other_user?.id;
     if (!otherId) return;
 
@@ -390,6 +418,15 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           if (!selectedConvo.id && convoId) {
             setSelectedConvo((prev) => prev ? { ...prev, id: convoId } : prev);
           }
+        },
+        onError: (err: any) => {
+          const message = String(err?.message || "").toLowerCase();
+          if (message.includes("blocked")) {
+            queryClient.invalidateQueries({ queryKey: ["dm-block-state"] });
+            toast.error("Message not sent", { description: "This chat is blocked." });
+            return;
+          }
+          toast.error("Message not sent", { description: err?.message || "Please try again." });
         },
       }
     );
