@@ -26,6 +26,8 @@ const DiscoverPage = () => {
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState<string | null>(null);
   const [showCashout, setShowCashout] = useState(false);
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [isShuffling, setIsShuffling] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { startCheckout } = useVipStatus(user?.id ?? null);
 
@@ -47,6 +49,27 @@ const DiscoverPage = () => {
     setShowSelfie(false);
     setIsDiscoverable(true);
   };
+
+  const shuffledMembers = useMemo(() => {
+    if (shuffleSeed === 0) return members;
+    const arr = [...members];
+    let seed = shuffleSeed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      seed = (seed * 16807) % 2147483647;
+      const j = seed % (i + 1);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [members, shuffleSeed]);
+
+  const handleShuffle = useCallback(() => {
+    setIsShuffling(true);
+    setTimeout(() => {
+      setShuffleSeed(Date.now());
+      setIsShuffling(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 400);
+  }, []);
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
