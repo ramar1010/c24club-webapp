@@ -228,8 +228,8 @@ const DiscoverPage = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {members.map((member) => (
+            <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-all duration-300 ${isShuffling ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+              {shuffledMembers.map((member) => (
                 <DiscoverMemberCard
                   key={member.id}
                   member={member}
@@ -262,6 +262,21 @@ const DiscoverPage = () => {
           </>
         )}
       </div>
+
+      {/* Floating Shuffle Button */}
+      {members.length > 1 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <button
+            onClick={handleShuffle}
+            disabled={isShuffling}
+            className="group relative flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-70"
+          >
+            <Shuffle className={`w-4 h-4 transition-transform duration-500 ${isShuffling ? 'animate-spin' : 'group-hover:rotate-180'}`} />
+            Shuffle
+            <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+      )}
 
       <SelfieCaptureModal open={showSelfie} onClose={() => setShowSelfie(false)} onComplete={handleSelfieComplete} />
 
