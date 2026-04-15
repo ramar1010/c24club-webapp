@@ -852,11 +852,19 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             </div>
 
             {iBlockedThem && (
-              <div className="mx-4 mt-2 mb-1 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
-                <Lock className="w-4 h-4 text-red-400 shrink-0" />
-                <span className="text-xs text-red-300/90">
-                  You blocked {selectedConvo?.other_user?.name}. They can’t send you messages, and this chat is locked.
-                </span>
+              <div className="mx-4 mt-2 mb-1 flex items-center justify-between bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-red-400 shrink-0" />
+                  <span className="text-xs text-red-300/90">
+                    You blocked {selectedConvo?.other_user?.name}.
+                  </span>
+                </div>
+                <button
+                  onClick={handleUnblockUser}
+                  className="text-xs font-semibold text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors"
+                >
+                  Unblock
+                </button>
               </div>
             )}
 
