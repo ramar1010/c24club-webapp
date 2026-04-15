@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -280,9 +281,6 @@ const DiscoverMemberCard = ({
         </div>
       </div>
 
-
-
-
       {/* Direct call modal */}
       {directCall && user && (
         <DirectCallModal
@@ -317,7 +315,7 @@ const DiscoverMemberCard = ({
       )}
 
       {/* Full image viewer */}
-      {showFullImage && member.image_url && (
+      {showFullImage && member.image_url && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={(e) => {
@@ -344,7 +342,8 @@ const DiscoverMemberCard = ({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
