@@ -146,32 +146,17 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         <IconButton src={vipSettingsIcon} label="VIP SETTINGS" onClick={isVip ? () => setShowVipSettings(true) : undefined} disabled={!isVip} />
       </div>
 
-      {/* Feature Cards */}
-      <div className="flex gap-4 w-full max-w-sm mb-8">
-        {/* Weekly Challenges */}
-        <button onClick={() => { setEventsInitialView("challenges"); setShowEvents(true); }} className="flex-1 bg-gradient-to-b from-green-600 to-green-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-green-500/30">
-          <span className="font-black text-sm tracking-wide text-center leading-tight">
-            WEEKLY<br />CHALLENGES
-          </span>
-          <div className="flex gap-2 items-center">
-            <img src={challengesPin} alt="Pin" className="w-10 h-10 object-contain" />
-            <img src={challengesTarget} alt="Target" className="w-10 h-10 object-contain" />
-          </div>
-          <span className="text-xs font-bold text-green-200">Faster Rewards</span>
-        </button>
-
-        {/* Become VIP */}
-        <button 
-          onClick={() => navigate("/videocall")}
-          className="flex-1 bg-gradient-to-b from-blue-600 to-blue-800 rounded-2xl p-4 flex flex-col items-center gap-2 hover:opacity-90 transition-opacity border border-blue-500/30"
-        >
-          <span className="font-black text-sm tracking-wide text-center leading-tight">
-            BECOME VIP
-          </span>
-          <img src={becomeVipIcon} alt="Become VIP" className="w-12 h-12 object-contain" />
-          <span className="text-xs font-bold text-blue-200">More Rewards</span>
-        </button>
-      </div>
+      {/* Become VIP */}
+      <button 
+        onClick={() => navigate("/videocall")}
+        className="w-full max-w-sm mb-8 bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 rounded-2xl p-5 flex items-center gap-4 hover:scale-[1.02] transition-all shadow-lg shadow-purple-500/20 border border-white/10"
+      >
+        <img src={becomeVipIcon} alt="Become VIP" className="w-14 h-14 object-contain drop-shadow-lg" />
+        <div className="flex flex-col items-start">
+          <span className="font-black text-lg tracking-wider">BECOME VIP</span>
+          <span className="text-xs font-bold text-white/80">Unlock exclusive rewards & features ✨</span>
+        </div>
+      </button>
 
       {/* How To Guide */}
       <button
