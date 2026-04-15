@@ -759,20 +759,30 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 {/* Gift button in desktop header */}
                 <button
                   onClick={() => setShowGiftOverlay(true)}
-                  className="w-8 h-8 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
-                  title="Send gift"
+                  disabled={threadBlocked}
+                  className="w-8 h-8 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+                  title={threadBlocked ? "Unavailable in blocked chats" : "Send gift"}
                 >
                   <Gift className="w-4 h-4 text-yellow-400" />
                 </button>
                 {/* Video call button in desktop header */}
                 <button
                   onClick={handleStartCall}
-                  disabled={startingCall}
+                  disabled={startingCall || threadBlocked}
                   className="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
-                  title="Start video call"
+                  title={threadBlocked ? "Unavailable in blocked chats" : "Start video call"}
                 >
                   <Video className="w-4 h-4 text-emerald-400" />
                 </button>
+                {!theyBlockedMe && !iBlockedThem && (
+                  <button
+                    onClick={() => setShowBlockDialog(true)}
+                    className="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-colors"
+                    title="Block user"
+                  >
+                    <Lock className="w-4 h-4 text-red-400" />
+                  </button>
+                )}
               </div>
             )}
 
