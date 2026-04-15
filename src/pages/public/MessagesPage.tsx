@@ -260,13 +260,64 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     }
   };
 
-  // DM paywall: count messages sent by current user to a female partner
+  // DM paywall: GLOBAL limit — 3 total messages to ANY female, then must upgrade
   const DM_FREE_LIMIT = 3;
   const partnerGender = selectedConvo?.other_user?.gender?.toLowerCase() ?? null;
   const isMaleToFemale = myGender === "male" && partnerGender === "female";
   const hasBasicVip = vipTier === "basic" || vipTier === "premium";
-  const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
-  const dmBlocked = isMaleToFemale && !hasBasicVip && mySentCount >= DM_FREE_LIMIT;
+
+  // Global count: all DMs this male user sent to any female partner
+  const { data: globalMaleDmCount = 0 } = useQuery({
+    queryKey: ["global-male-dm-count", user?.id, myGender],
+    enabled: !!user && myGender === "male" && !hasBasicVip,
+    staleTime: 10_000,
+    queryFn: async () => {
+      if (!user) return 0;
+      // Get all conversations where user is a participant
+      const { data: convos } = await supabase
+        .from("conversations")
+        .select("id, participant_1, participant_2")
+        .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`);
+      if (!convos || convos.length === 0) return 0;
+
+      // Find partner IDs
+      const partnerIds = convos.map((c: any) =>
+        c.participant_1 === user.id ? c.participant_2 : c.participant_1
+      );
+
+      // Get female partners
+      const { data: femalePartners } = await supabase
+        .from("members")
+        .select("id")
+        .in("id", partnerIds)
+        .ilike("gender", "female");
+
+      if (!femalePartners || femalePartners.length === 0) return 0;
+
+      // Get conversation IDs with female partners
+      const femaleIds = new Set(femalePartners.map((f: any) => f.id));
+      const femaleConvoIds = convos
+        .filter((c: any) => {
+          const partnerId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+          return femaleIds.has(partnerId);
+        })
+        .map((c: any) => c.id);
+
+      if (femaleConvoIds.length === 0) return 0;
+
+      // Count all messages sent by this user in those conversations
+      const { count } = await supabase
+        .from("dm_messages")
+        .select("id", { count: "exact", head: true })
+        .in("conversation_id", femaleConvoIds)
+        .eq("sender_id", user.id);
+
+      return count || 0;
+    },
+  });
+
+  const dmBlocked = isMaleToFemale && !hasBasicVip && globalMaleDmCount >= DM_FREE_LIMIT;
+  const freeLeft = Math.max(0, DM_FREE_LIMIT - globalMaleDmCount);
 
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
@@ -762,7 +813,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value.slice(0, 500))}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                    placeholder={isMaleToFemale && !hasBasicVip ? `Type a message... (${DM_FREE_LIMIT - mySentCount} free left)` : "Type a message..."}
+                    placeholder={isMaleToFemale && !hasBasicVip ? `Type a message... (${freeLeft} free left)` : "Type a message..."}
                     className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50"
                     maxLength={500}
                   />

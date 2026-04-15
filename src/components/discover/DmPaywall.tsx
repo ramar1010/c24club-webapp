@@ -34,7 +34,7 @@ const DmPaywall = ({ partnerName, onClose, onSubscribe, loading }: DmPaywallProp
           </h2>
 
           <p className="text-white/60 text-sm leading-relaxed">
-            You've sent 3 free messages to <strong className="text-white">{partnerName}</strong>.
+            You've used all 3 free messages across all female members.
             Subscribe to <strong className="text-blue-400">Basic VIP</strong> for unlimited messaging with all female members!
           </p>
 
