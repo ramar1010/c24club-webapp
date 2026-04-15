@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
