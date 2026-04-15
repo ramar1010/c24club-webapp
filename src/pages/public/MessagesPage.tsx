@@ -45,6 +45,7 @@ const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
 const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; initialPartnerId?: string }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Redirect unauthenticated users to home with returnTo param
   useEffect(() => {
