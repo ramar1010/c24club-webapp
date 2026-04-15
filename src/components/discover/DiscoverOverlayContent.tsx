@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Camera, Sparkles, Users, Trash2, MessageSquare } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Camera, Sparkles, Users, Trash2, MessageSquare, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
