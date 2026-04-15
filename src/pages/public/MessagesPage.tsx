@@ -19,6 +19,16 @@ import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate"
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 /* ─── Role badge component matching Discover style ─── */
