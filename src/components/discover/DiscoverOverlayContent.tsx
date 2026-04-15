@@ -166,8 +166,8 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
             <p className="text-white/40 text-sm">Be the first to get listed!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {members.map((member) => (
+          <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-opacity duration-300 ${isShuffling ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+            {shuffledMembers.map((member) => (
               <DiscoverMemberCard
                 key={member.id}
                 member={member}
