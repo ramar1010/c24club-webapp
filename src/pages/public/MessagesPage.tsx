@@ -19,6 +19,16 @@ import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate"
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import PinnedSocialsDisplay from "@/components/videocall/PinnedSocialsDisplay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 /* ─── Role badge component matching Discover style ─── */
@@ -77,6 +87,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const [showCashout, setShowCashout] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
   const [showDmPaywall, setShowDmPaywall] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [isBlockingUser, setIsBlockingUser] = useState(false);
 
   const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
 
@@ -93,7 +105,37 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     },
   });
 
-  // Fetch current user's gender
+  const blockedPartnerId = selectedConvo?.other_user?.id ?? null;
+  const { data: blockedState = { iBlockedThem: false, theyBlockedMe: false } } = useQuery({
+    queryKey: ["dm-block-state", user?.id, blockedPartnerId],
+    enabled: !!user && !!blockedPartnerId,
+    queryFn: async () => {
+      if (!user || !blockedPartnerId) {
+        return { iBlockedThem: false, theyBlockedMe: false };
+      }
+
+      const [{ data: outbound }, { data: inbound }] = await Promise.all([
+        supabase
+          .from("blocked_users")
+          .select("id")
+          .eq("blocker_id", user.id)
+          .eq("blocked_id", blockedPartnerId)
+          .maybeSingle(),
+        supabase
+          .from("blocked_users")
+          .select("id")
+          .eq("blocker_id", blockedPartnerId)
+          .eq("blocked_id", user.id)
+          .maybeSingle(),
+      ]);
+
+      return {
+        iBlockedThem: !!outbound,
+        theyBlockedMe: !!inbound,
+      };
+    },
+  });
+
   const { data: myGender } = useQuery({
     queryKey: ["my-gender-messages", user?.id],
     enabled: !!user,
@@ -319,12 +361,40 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
 
   const dmBlocked = isMaleToFemale && !hasBasicVip && globalMaleDmCount >= DM_FREE_LIMIT;
   const freeLeft = Math.max(0, DM_FREE_LIMIT - globalMaleDmCount);
+  const iBlockedThem = blockedState.iBlockedThem;
+  const theyBlockedMe = blockedState.theyBlockedMe;
+  const threadBlocked = iBlockedThem || theyBlockedMe;
 
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  const handleBlockUser = async () => {
+    if (!user || !selectedConvo?.other_user?.id || isBlockingUser) return;
+
+    try {
+      setIsBlockingUser(true);
+      const { error } = await supabase
+        .from("blocked_users")
+        .insert({
+          blocker_id: user.id,
+          blocked_id: selectedConvo.other_user.id,
+        } as any);
+
+      if (error) throw error;
+
+      setShowBlockDialog(false);
+      setMessageText("");
+      await queryClient.invalidateQueries({ queryKey: ["dm-block-state"] });
+      toast.success(`${selectedConvo.other_user.name} has been blocked`);
+    } catch (err: any) {
+      toast.error("Couldn't block user", { description: err.message });
+    } finally {
+      setIsBlockingUser(false);
+    }
+  };
+
   const handleSend = () => {
-    if (!messageText.trim() || !selectedConvo) return;
+    if (!messageText.trim() || !selectedConvo || threadBlocked) return;
     const otherId = selectedConvo.other_user?.id;
     if (!otherId) return;
 
@@ -348,6 +418,15 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           if (!selectedConvo.id && convoId) {
             setSelectedConvo((prev) => prev ? { ...prev, id: convoId } : prev);
           }
+        },
+        onError: (err: any) => {
+          const message = String(err?.message || "").toLowerCase();
+          if (message.includes("blocked")) {
+            queryClient.invalidateQueries({ queryKey: ["dm-block-state"] });
+            toast.error("Message not sent", { description: "This chat is blocked." });
+            return;
+          }
+          toast.error("Message not sent", { description: err?.message || "Please try again." });
         },
       }
     );
@@ -474,17 +553,29 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             )}
             <button
               onClick={() => setShowGiftOverlay(true)}
-              className="w-9 h-9 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
+              disabled={threadBlocked}
+              className="w-9 h-9 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+              title={threadBlocked ? "Unavailable in blocked chats" : "Send gift"}
             >
               <Gift className="w-4 h-4 text-yellow-400" />
             </button>
             <button
               onClick={handleStartCall}
-              disabled={startingCall}
+              disabled={startingCall || threadBlocked}
               className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+              title={threadBlocked ? "Unavailable in blocked chats" : "Start video call"}
             >
               <Video className="w-4.5 h-4.5 text-emerald-400" />
             </button>
+            {!theyBlockedMe && !iBlockedThem && (
+              <button
+                onClick={() => setShowBlockDialog(true)}
+                className="w-9 h-9 rounded-full bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-colors"
+                title="Block user"
+              >
+                <Lock className="w-4 h-4 text-red-400" />
+              </button>
+            )}
           </>
         )}
       </div>
@@ -668,20 +759,30 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 {/* Gift button in desktop header */}
                 <button
                   onClick={() => setShowGiftOverlay(true)}
-                  className="w-8 h-8 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
-                  title="Send gift"
+                  disabled={threadBlocked}
+                  className="w-8 h-8 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
+                  title={threadBlocked ? "Unavailable in blocked chats" : "Send gift"}
                 >
                   <Gift className="w-4 h-4 text-yellow-400" />
                 </button>
                 {/* Video call button in desktop header */}
                 <button
                   onClick={handleStartCall}
-                  disabled={startingCall}
+                  disabled={startingCall || threadBlocked}
                   className="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors disabled:opacity-40"
-                  title="Start video call"
+                  title={threadBlocked ? "Unavailable in blocked chats" : "Start video call"}
                 >
                   <Video className="w-4 h-4 text-emerald-400" />
                 </button>
+                {!theyBlockedMe && !iBlockedThem && (
+                  <button
+                    onClick={() => setShowBlockDialog(true)}
+                    className="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-colors"
+                    title="Block user"
+                  >
+                    <Lock className="w-4 h-4 text-red-400" />
+                  </button>
+                )}
               </div>
             )}
 
@@ -710,7 +811,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 </span>
                 <button
                   onClick={handleStartCall}
-                  disabled={startingCall}
+                  disabled={startingCall || threadBlocked}
                   className="shrink-0 bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
                 >
                   Call Now
@@ -732,6 +833,24 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 <button onClick={() => navigate("/rules")} className="text-white/60 underline hover:text-white/80">Rules</button>
               </span>
             </div>
+
+            {iBlockedThem && (
+              <div className="mx-4 mt-2 mb-1 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                <Lock className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-xs text-red-300/90">
+                  You blocked {selectedConvo?.other_user?.name}. They can’t send you messages, and this chat is locked.
+                </span>
+              </div>
+            )}
+
+            {theyBlockedMe && (
+              <div className="mx-4 mt-2 mb-1 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                <Lock className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-xs text-red-300/90">
+                  You’re blocked by {selectedConvo?.other_user?.name}. You can’t send any more messages in this chat.
+                </span>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
@@ -778,9 +897,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
               const partnerSentCount = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).length;
               const partnerLastMsg = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).at(-1);
               const myLastMsg = messages.filter((m) => m.sender_id === user?.id).at(-1);
-              // Show notice if partner sent exactly 3 msgs and hasn't replied after our last message
               const partnerStopped = partnerSentCount >= 3 && myLastMsg && (!partnerLastMsg || new Date(partnerLastMsg.created_at) < new Date(myLastMsg.created_at));
-              if (!partnerStopped) return null;
+              if (!partnerStopped || threadBlocked) return null;
               return (
                 <div className="mx-3 mb-1 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5">
                   <Lock className="w-4 h-4 text-amber-400 shrink-0" />
@@ -806,6 +924,20 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   >
                     Upgrade
                   </button>
+                </div>
+              </div>
+            ) : threadBlocked ? (
+              <div className="px-3 py-3 bg-neutral-900 border-t border-white/10 shrink-0">
+                <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                  <Lock className="w-5 h-5 text-red-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-semibold">Messaging unavailable</p>
+                    <p className="text-xs text-white/50">
+                      {iBlockedThem
+                        ? `You blocked ${selectedConvo?.other_user?.name}, so this chat is closed.`
+                        : `${selectedConvo?.other_user?.name} blocked you, so you can’t send messages.`}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -942,7 +1074,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       )}
 
       {/* Send Gift Overlay */}
-      {showGiftOverlay && selectedConvo?.other_user?.id && (
+      {showGiftOverlay && selectedConvo?.other_user?.id && !threadBlocked && (
         <SendGiftOverlay
           recipientId={selectedConvo.other_user.id}
           onClose={() => setShowGiftOverlay(false)}
@@ -970,6 +1102,27 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           }}
         />
       )}
+
+      <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block {selectedConvo?.other_user?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once blocked, they won’t be able to send you any more messages, and this DM thread will be locked.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBlockUser}
+              disabled={isBlockingUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBlockingUser ? "Blocking..." : "Block user"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* DM paywall modal */}
       {showDmPaywall && selectedConvo?.other_user && (
