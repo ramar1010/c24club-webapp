@@ -23,6 +23,29 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState<string | null>(null);
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  const shuffledMembers = useMemo(() => {
+    if (shuffleSeed === 0) return members;
+    const arr = [...members];
+    // Fisher-Yates shuffle with deterministic seed
+    let seed = shuffleSeed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      seed = (seed * 16807 + 0) % 2147483647;
+      const j = seed % (i + 1);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [members, shuffleSeed]);
+
+  const handleShuffle = useCallback(() => {
+    setIsShuffling(true);
+    setTimeout(() => {
+      setShuffleSeed(Date.now());
+      setIsShuffling(false);
+    }, 400);
+  }, []);
 
   const handleSelfieComplete = () => {
     setShowSelfie(false);
