@@ -149,12 +149,19 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       {/* Become VIP */}
       <button 
         onClick={() => navigate("/videocall")}
-        className="w-full max-w-sm mb-8 rounded-2xl p-5 flex items-center gap-4 hover:scale-[1.02] transition-all shadow-lg shadow-yellow-500/30 border border-white/10"
+        className="relative w-full max-w-sm mb-8 rounded-2xl p-5 flex items-center justify-center gap-3 hover:scale-[1.02] transition-all shadow-lg shadow-yellow-500/30 border border-white/10 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6, #3b82f6, #06b6d4)" }}
       >
-        <img src={becomeVipIcon} alt="Become VIP" className="w-14 h-14 object-contain drop-shadow-lg" />
-        <div className="flex flex-col items-start">
-          <span className="font-black text-lg tracking-wider">BECOME VIP</span>
+        {/* Floating emojis */}
+        <span className="absolute text-lg animate-bounce" style={{ top: '8%', left: '8%', animationDelay: '0s', animationDuration: '2s' }}>🎉</span>
+        <span className="absolute text-lg animate-bounce" style={{ top: '12%', right: '10%', animationDelay: '0.5s', animationDuration: '2.5s' }}>⭐</span>
+        <span className="absolute text-sm animate-bounce" style={{ bottom: '10%', left: '15%', animationDelay: '1s', animationDuration: '1.8s' }}>🔥</span>
+        <span className="absolute text-sm animate-bounce" style={{ bottom: '8%', right: '12%', animationDelay: '0.3s', animationDuration: '2.2s' }}>💎</span>
+        <span className="absolute text-xs animate-bounce" style={{ top: '40%', left: '3%', animationDelay: '0.7s', animationDuration: '2.8s' }}>🚀</span>
+        <span className="absolute text-xs animate-bounce" style={{ top: '35%', right: '4%', animationDelay: '1.2s', animationDuration: '2.1s' }}>👑</span>
+
+        <div className="flex flex-col items-center z-10">
+          <span className="font-black text-xl tracking-wider">BECOME VIP</span>
           <span className="text-xs font-bold text-white/80">Unlock exclusive rewards & features ✨</span>
         </div>
       </button>
