@@ -149,7 +149,8 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       {/* Become VIP */}
       <button 
         onClick={() => navigate("/videocall")}
-        className="w-full max-w-sm mb-8 bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 rounded-2xl p-5 flex items-center gap-4 hover:scale-[1.02] transition-all shadow-lg shadow-purple-500/20 border border-white/10"
+        className="w-full max-w-sm mb-8 rounded-2xl p-5 flex items-center gap-4 hover:scale-[1.02] transition-all shadow-lg shadow-yellow-500/30 border border-white/10"
+        style={{ background: "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6, #3b82f6, #06b6d4)" }}
       >
         <img src={becomeVipIcon} alt="Become VIP" className="w-14 h-14 object-contain drop-shadow-lg" />
         <div className="flex flex-col items-start">
