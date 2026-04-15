@@ -114,18 +114,18 @@ export const useDiscover = () => {
     return (data ?? []) as DiscoverableMember[];
   }, []);
 
-  // Sort members: admins first, VIP second, mods third, rest by order
+  // Sort members: admins first, mods second, VIP third, rest by order
   const sortMembers = useCallback((list: DiscoverableMember[], adminIds: Set<string>, vipIds: Set<string>, modIds?: Set<string>) => {
     return [...list].sort((a, b) => {
       const aAdmin = adminIds.has(a.id) ? 0 : 1;
       const bAdmin = adminIds.has(b.id) ? 0 : 1;
       if (aAdmin !== bAdmin) return aAdmin - bAdmin;
-      const aVip = vipIds.has(a.id) ? 0 : 1;
-      const bVip = vipIds.has(b.id) ? 0 : 1;
-      if (aVip !== bVip) return aVip - bVip;
       const amod = modIds?.has(a.id) ? 0 : 1;
       const bmod = modIds?.has(b.id) ? 0 : 1;
       if (amod !== bmod) return amod - bmod;
+      const aVip = vipIds.has(a.id) ? 0 : 1;
+      const bVip = vipIds.has(b.id) ? 0 : 1;
+      if (aVip !== bVip) return aVip - bVip;
       return 0;
     });
   }, []);
