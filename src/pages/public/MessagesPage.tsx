@@ -122,11 +122,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           .eq("blocked_id", blockedPartnerId)
           .maybeSingle(),
         supabase
-          .from("blocked_users")
-          .select("id")
-          .eq("blocker_id", blockedPartnerId)
-          .eq("blocked_id", user.id)
-          .maybeSingle(),
+          .rpc("is_blocked_by", { partner_id: blockedPartnerId }),
       ]);
 
       return {
