@@ -1074,7 +1074,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       )}
 
       {/* Send Gift Overlay */}
-      {showGiftOverlay && selectedConvo?.other_user?.id && (
+      {showGiftOverlay && selectedConvo?.other_user?.id && !threadBlocked && (
         <SendGiftOverlay
           recipientId={selectedConvo.other_user.id}
           onClose={() => setShowGiftOverlay(false)}
@@ -1102,6 +1102,27 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           }}
         />
       )}
+
+      <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block {selectedConvo?.other_user?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once blocked, they won’t be able to send you any more messages, and this DM thread will be locked.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBlockUser}
+              disabled={isBlockingUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBlockingUser ? "Blocking..." : "Block user"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* DM paywall modal */}
       {showDmPaywall && selectedConvo?.other_user && (
