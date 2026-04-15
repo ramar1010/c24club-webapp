@@ -87,6 +87,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const [showCashout, setShowCashout] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
   const [showDmPaywall, setShowDmPaywall] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [isBlockingUser, setIsBlockingUser] = useState(false);
 
   const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
 
@@ -103,7 +105,37 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     },
   });
 
-  // Fetch current user's gender
+  const blockedPartnerId = selectedConvo?.other_user?.id ?? null;
+  const { data: blockedState = { iBlockedThem: false, theyBlockedMe: false } } = useQuery({
+    queryKey: ["dm-block-state", user?.id, blockedPartnerId],
+    enabled: !!user && !!blockedPartnerId,
+    queryFn: async () => {
+      if (!user || !blockedPartnerId) {
+        return { iBlockedThem: false, theyBlockedMe: false };
+      }
+
+      const [{ data: outbound }, { data: inbound }] = await Promise.all([
+        supabase
+          .from("blocked_users")
+          .select("id")
+          .eq("blocker_id", user.id)
+          .eq("blocked_id", blockedPartnerId)
+          .maybeSingle(),
+        supabase
+          .from("blocked_users")
+          .select("id")
+          .eq("blocker_id", blockedPartnerId)
+          .eq("blocked_id", user.id)
+          .maybeSingle(),
+      ]);
+
+      return {
+        iBlockedThem: !!outbound,
+        theyBlockedMe: !!inbound,
+      };
+    },
+  });
+
   const { data: myGender } = useQuery({
     queryKey: ["my-gender-messages", user?.id],
     enabled: !!user,
