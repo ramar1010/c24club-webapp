@@ -811,7 +811,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 </span>
                 <button
                   onClick={handleStartCall}
-                  disabled={startingCall}
+                  disabled={startingCall || threadBlocked}
                   className="shrink-0 bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
                 >
                   Call Now
@@ -833,6 +833,24 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 <button onClick={() => navigate("/rules")} className="text-white/60 underline hover:text-white/80">Rules</button>
               </span>
             </div>
+
+            {iBlockedThem && (
+              <div className="mx-4 mt-2 mb-1 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                <Lock className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-xs text-red-300/90">
+                  You blocked {selectedConvo?.other_user?.name}. They can’t send you messages, and this chat is locked.
+                </span>
+              </div>
+            )}
+
+            {theyBlockedMe && (
+              <div className="mx-4 mt-2 mb-1 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                <Lock className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-xs text-red-300/90">
+                  You’re blocked by {selectedConvo?.other_user?.name}. You can’t send any more messages in this chat.
+                </span>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
@@ -879,9 +897,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
               const partnerSentCount = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).length;
               const partnerLastMsg = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).at(-1);
               const myLastMsg = messages.filter((m) => m.sender_id === user?.id).at(-1);
-              // Show notice if partner sent exactly 3 msgs and hasn't replied after our last message
               const partnerStopped = partnerSentCount >= 3 && myLastMsg && (!partnerLastMsg || new Date(partnerLastMsg.created_at) < new Date(myLastMsg.created_at));
-              if (!partnerStopped) return null;
+              if (!partnerStopped || threadBlocked) return null;
               return (
                 <div className="mx-3 mb-1 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5">
                   <Lock className="w-4 h-4 text-amber-400 shrink-0" />
@@ -907,6 +924,20 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   >
                     Upgrade
                   </button>
+                </div>
+              </div>
+            ) : threadBlocked ? (
+              <div className="px-3 py-3 bg-neutral-900 border-t border-white/10 shrink-0">
+                <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                  <Lock className="w-5 h-5 text-red-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-semibold">Messaging unavailable</p>
+                    <p className="text-xs text-white/50">
+                      {iBlockedThem
+                        ? `You blocked ${selectedConvo?.other_user?.name}, so this chat is closed.`
+                        : `${selectedConvo?.other_user?.name} blocked you, so you can’t send messages.`}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
