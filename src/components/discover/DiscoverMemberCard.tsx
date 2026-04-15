@@ -319,7 +319,7 @@ const DiscoverMemberCard = ({
       {/* Full image viewer */}
       {showFullImage && member.image_url && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowFullImage(false);
           }}
@@ -330,17 +330,19 @@ const DiscoverMemberCard = ({
           >
             <X className="w-6 h-6 text-white" />
           </button>
-          <img
-            src={member.image_url}
-            alt={member.name}
-            className="max-w-full max-h-[75vh] object-contain px-4"
-          />
-          <div className="mt-4 text-center px-6">
-            <p className="text-white font-bold text-lg">{member.name}</p>
-            {member.country && <p className="text-white/50 text-sm">{member.country}</p>}
-            {member.bio && (
-              <p className="text-white/70 text-sm mt-2 italic max-w-sm mx-auto">"{member.bio}"</p>
-            )}
+          <div className="relative max-w-md w-full rounded-2xl overflow-hidden bg-black/80 border border-white/10">
+            <img
+              src={member.image_url}
+              alt={member.name}
+              className="w-full max-h-[70vh] object-contain"
+            />
+            <div className="p-4 text-center">
+              <p className="text-white font-bold text-lg">{member.name}</p>
+              {member.country && <p className="text-white/50 text-sm">{member.country}</p>}
+              {member.bio && (
+                <p className="text-white/70 text-sm mt-1.5 italic">"{member.bio}"</p>
+              )}
+            </div>
           </div>
         </div>
       )}
