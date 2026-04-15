@@ -343,6 +343,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       {
         onSuccess: (convoId) => {
           setMessageText("");
+          // Refresh global DM count for paywall
+          queryClient.invalidateQueries({ queryKey: ["global-male-dm-count"] });
           if (!selectedConvo.id && convoId) {
             setSelectedConvo((prev) => prev ? { ...prev, id: convoId } : prev);
           }
