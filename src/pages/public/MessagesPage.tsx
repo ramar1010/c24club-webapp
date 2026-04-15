@@ -393,6 +393,23 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     }
   };
 
+  const handleUnblockUser = async () => {
+    if (!user || !selectedConvo?.other_user?.id) return;
+    try {
+      const { error } = await supabase
+        .from("blocked_users")
+        .delete()
+        .eq("blocker_id", user.id)
+        .eq("blocked_id", selectedConvo.other_user.id);
+
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["dm-block-state"] });
+      toast.success(`${selectedConvo.other_user.name} has been unblocked`);
+    } catch (err: any) {
+      toast.error("Couldn't unblock user", { description: err.message });
+    }
+  };
+
   const handleSend = () => {
     if (!messageText.trim() || !selectedConvo || threadBlocked) return;
     const otherId = selectedConvo.other_user?.id;
