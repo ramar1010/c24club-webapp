@@ -16,17 +16,26 @@ serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing Authorization header");
-    
+    if (!authHeader) {
+      return new Response(JSON.stringify({ ok: false, error: "Missing Authorization header" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user?.id) throw new Error("User not found or not authenticated");
+    if (authError || !user?.id) {
+      return new Response(JSON.stringify({ ok: false, error: "User not found or not authenticated" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const body = await req.json();
     const { action, purchaseToken } = body;
 
     if (action === "verify-iap") {
-      // Mark the user as unbanned in the user_bans table
       const { data, error: updateError } = await supabaseAdmin
         .from("user_bans")
         .update({
@@ -38,24 +47,32 @@ serve(async (req) => {
         .eq("is_active", true)
         .select();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        return new Response(JSON.stringify({ ok: false, error: updateError.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
 
-      return new Response(JSON.stringify({ 
-        success: true, 
+      return new Response(JSON.stringify({
+        ok: true,
+        success: true,
         unbanned: true,
-        updatedRows: data?.length ?? 0 
+        updatedRows: data?.length ?? 0,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
       });
     }
 
-    throw new Error("Invalid action provided");
-  } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid action provided" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 200,
     });
-  }
-});    });
+  } catch (error) {
+    return new Response(JSON.stringify({ ok: false, error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   }
 });
