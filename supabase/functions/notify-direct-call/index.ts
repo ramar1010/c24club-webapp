@@ -6,11 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function invokePushNotification(
-  supabaseUrl: string,
-  serviceRoleKey: string,
-  payload: Record<string, unknown>,
-) {
+async function invokePushNotification(supabaseUrl: string, serviceRoleKey: string, payload: Record<string, unknown>) {
   const response = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
     method: "POST",
     headers: {
@@ -49,10 +45,10 @@ Deno.serve(async (req) => {
     const { inviterId, inviteeId, action } = body;
 
     if (!inviterId || !inviteeId) {
-      return new Response(
-        JSON.stringify({ success: false, message: "inviterId and inviteeId required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, message: "inviterId and inviteeId required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // ── MISSED CALL ──
@@ -75,23 +71,32 @@ Deno.serve(async (req) => {
       });
 
       return new Response(
-        JSON.stringify({ success: result.ok, message: result.ok ? "missed_push_sent" : result.parsed?.reason || result.raw }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: result.ok,
+          message: result.ok ? "missed_push_sent" : result.parsed?.reason || result.raw,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // ── INCOMING CALL (default) ──
     // Notify the INVITEE that they have an incoming call
     const { data: inviter } = await supabase.from("members").select("name").eq("id", inviterId).maybeSingle();
-    const { data: invitee } = await supabase.from("members").select("push_token, notify_enabled").eq("id", inviteeId).maybeSingle();
+    const { data: invitee } = await supabase
+      .from("members")
+      .select("push_token, notify_enabled")
+      .eq("id", inviteeId)
+      .maybeSingle();
 
-    console.log(`[notify-direct-call] incoming: inviterId=${inviterId}, inviteeId=${inviteeId}, invitee_push_token=${invitee?.push_token ? "SET" : "NULL"}, notify_enabled=${invitee?.notify_enabled}`);
+    console.log(
+      `[notify-direct-call] incoming: inviterId=${inviterId}, inviteeId=${inviteeId}, invitee_push_token=${invitee?.push_token ? "SET" : "NULL"}, notify_enabled=${invitee?.notify_enabled}`,
+    );
 
     const inviterName = inviter?.name || "Someone";
     const result = await invokePushNotification(supabaseUrl, serviceRoleKey, {
       user_id: inviteeId,
       title: `📹 ${inviterName} wants to video chat!`,
-      body: "Your Discover match is waiting for you. Join now!",
+      body: "Earn rewards before they leave! Join now",
       data: {
         deepLink: "/chat",
         screen: "/chat",
@@ -104,14 +109,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: result.ok, message: result.ok ? "push_sent" : result.parsed?.reason || result.raw }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("notify-direct-call error:", error);
-    return new Response(
-      JSON.stringify({ success: false, message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: false, message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
