@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
                   body: "Hurry before she leaves — tap to join now!",
                   data: { deepLink: "/(tabs)/chat" },
                   notification_type: "female_searching",
-                  cooldown_minutes: 5,
+                  cooldown_minutes: 2,
                 },
               }),
             ),
