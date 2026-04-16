@@ -141,17 +141,30 @@ Deno.serve(async (req) => {
 
       // 🔔 Female joined — notify eligible male users
       if (memberGender?.toLowerCase() === "female") {
+        const { data: activeRoomsM } = await supabase.from("rooms").select("member1, member2").eq("status", "active");
+        const activeIdsM = new Set<string>();
+        if (activeRoomsM) {
+          for (const r of activeRoomsM) {
+            if (r.member1) activeIdsM.add(r.member1);
+            if (r.member2) activeIdsM.add(r.member2);
+          }
+        }
+
         const { data: maleUsers } = await supabase
           .from("members")
-          .select("id")
+          .select("id, push_token")
           .ilike("gender", "male")
           .eq("notify_enabled", true)
-          .gt("last_active_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .eq("is_test_account", false)
+          .not("push_token", "is", null)
+          .neq("id", memberId)
           .limit(100);
 
-        if (maleUsers && maleUsers.length > 0) {
+        const eligibleMales = (maleUsers ?? []).filter((u) => !activeIdsM.has(u.id) && u.push_token);
+
+        if (eligibleMales.length > 0) {
           Promise.all(
-            maleUsers.map((user) =>
+            eligibleMales.map((user) =>
               supabase.functions.invoke("send-push-notification", {
                 body: {
                   user_id: user.id,
@@ -159,7 +172,7 @@ Deno.serve(async (req) => {
                   body: "Hurry before she leaves — tap to join now!",
                   data: { deepLink: "/(tabs)/chat" },
                   notification_type: "female_searching",
-                  cooldown_minutes: 60,
+                  cooldown_minutes: 5,
                 },
               }),
             ),
