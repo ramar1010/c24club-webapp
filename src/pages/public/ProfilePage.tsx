@@ -136,7 +136,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Stats */}
       <p className="text-sm font-bold text-neutral-300 mb-8">
-        {balance?.minutes ?? 0} Minutes | {balance?.adPoints ?? 0} Ad Points | {balance?.productPoints ?? 0} Product Points
+        {balance?.minutes ?? 0} Minutes | {balance?.adPoints ?? 0} Ad Points
       </p>
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
