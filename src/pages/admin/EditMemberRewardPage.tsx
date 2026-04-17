@@ -142,6 +142,20 @@ const EditMemberRewardPage = () => {
         <div>
           <Label className="text-xs text-muted-foreground">Reward</Label>
           <p className="font-medium">{redemption.reward_title}</p>
+          {((redemption as any).selected_color || (redemption as any).selected_size) && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {(redemption as any).selected_color && (
+                <span className="inline-flex items-center rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
+                  Color: {(redemption as any).selected_color}
+                </span>
+              )}
+              {(redemption as any).selected_size && (
+                <span className="inline-flex items-center rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
+                  Size: {(redemption as any).selected_size}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div>
           <Label className="text-xs text-muted-foreground">Cost</Label>

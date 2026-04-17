@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { action, rewardId, shipping, paypalEmail, wishlistItemId } = body;
+    const { action, rewardId, shipping, paypalEmail, wishlistItemId, selectedColor, selectedSize } = body;
 
     // ─── Shared helpers ───
     const getReward = async (id: string) => {
@@ -177,6 +177,7 @@ Deno.serve(async (req) => {
         shipping_address: shipping?.address || null, shipping_city: shipping?.city || null,
         shipping_state: shipping?.state || null, shipping_zip: shipping?.zip || null,
         shipping_country: shipping?.country || null, notes: shipping?.notes || null,
+        selected_color: selectedColor || null, selected_size: selectedSize || null,
       }).select().single();
 
       if (insertErr) {
@@ -384,6 +385,8 @@ Deno.serve(async (req) => {
         shipping_zip: shippingData?.zip || null,
         shipping_country: shippingData?.country || null,
         notes: `Wishlist item: ${wishItem.title}${wishItem.source_url ? ` | Source: ${wishItem.source_url}` : ""}`,
+        selected_color: selectedColor || null,
+        selected_size: selectedSize || null,
       }).select().single();
 
       if (insertErr) {
