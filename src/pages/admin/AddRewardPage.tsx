@@ -412,6 +412,56 @@ const AddRewardPage = () => {
               )} />
 
 
+              {/* Bulk URL paste */}
+              <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Link className="w-4 h-4 text-primary" /> BULK IMAGE PASTE
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Paste image URLs (one per line) <em>or</em> the raw HTML of a product page (Ctrl+U → copy). We'll auto-extract every image link.
+                  Use with browser extensions like <strong>AliPrice</strong>, <strong>Fatkun</strong>, or <strong>Image Downloader</strong>.
+                </p>
+                <Textarea
+                  placeholder={"https://cdn.example.com/image1.jpg\nhttps://cdn.example.com/image2.jpg\n...or paste raw HTML here"}
+                  value={bulkUrlText}
+                  onChange={(e) => setBulkUrlText(e.target.value)}
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+                {parsedBulkUrls.length > 0 && (
+                  <>
+                    <p className="text-xs text-primary font-medium">
+                      Detected {parsedBulkUrls.length} image{parsedBulkUrls.length === 1 ? "" : "s"}:
+                    </p>
+                    <div className="flex gap-2 flex-wrap max-h-32 overflow-y-auto">
+                      {parsedBulkUrls.slice(0, 30).map((u, i) => (
+                        <img
+                          key={i}
+                          src={u}
+                          alt={`Preview ${i + 1}`}
+                          className="w-12 h-12 object-cover rounded border"
+                          onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.2")}
+                        />
+                      ))}
+                      {parsedBulkUrls.length > 30 && (
+                        <span className="text-xs text-muted-foreground self-center">+{parsedBulkUrls.length - 30} more</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" onClick={() => addBulkUrls(true)}>
+                        Add All (1st as Main)
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => addBulkUrls(false)}>
+                        Add All as Variations
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setBulkUrlText("")}>
+                        Clear
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* Variation images */}
               <div>
                 <label className="text-sm font-medium">Variation Images</label>
