@@ -605,6 +605,88 @@ const AddRewardPage = () => {
                 Add colors users can choose from. Click any image below to assign it to the selected color slot — no copy/paste needed.
               </p>
 
+              {/* Bulk Color Paste — independent from variations */}
+              <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Link className="w-4 h-4 text-primary" /> BULK COLOR PASTE
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Paste color swatch image URLs (one per line) or raw HTML. Each image becomes its own color slot — independent of variations.
+                </p>
+                <Textarea
+                  placeholder={"https://cdn.example.com/red.jpg\nhttps://cdn.example.com/blue.jpg"}
+                  value={bulkColorText}
+                  onChange={(e) => setBulkColorText(e.target.value)}
+                  rows={3}
+                  className="font-mono text-xs"
+                />
+                {parsedBulkColorUrls.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-primary font-medium">
+                        Detected {parsedBulkColorUrls.length} image{parsedBulkColorUrls.length === 1 ? "" : "s"} · {selectedBulkColorUrls.size} selected
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="text-xs underline text-muted-foreground"
+                          onClick={() => setSelectedBulkColorUrls(new Set(parsedBulkColorUrls))}
+                        >
+                          Select all
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs underline text-muted-foreground"
+                          onClick={() => setSelectedBulkColorUrls(new Set())}
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto">
+                      {parsedBulkColorUrls.slice(0, 60).map((u, i) => {
+                        const checked = selectedBulkColorUrls.has(u);
+                        return (
+                          <button
+                            type="button"
+                            key={i}
+                            onClick={() => toggleBulkColorUrl(u)}
+                            className={`relative rounded border-2 overflow-hidden transition ${
+                              checked ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/50"
+                            }`}
+                            title={u}
+                          >
+                            <img
+                              src={u}
+                              alt={`Color ${i + 1}`}
+                              className="w-full h-16 object-cover"
+                              onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.2")}
+                            />
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-bold ${
+                              checked ? "bg-primary text-primary-foreground" : "bg-background/80 text-muted-foreground border"
+                            }`}>
+                              {checked ? "✓" : ""}
+                            </span>
+                            <span className="absolute bottom-0.5 right-0.5 text-[9px] bg-background/80 px-1 rounded">{i + 1}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-2 flex-wrap pt-1 border-t">
+                      <Button type="button" size="sm" disabled={selectedBulkColorUrls.size === 0} onClick={() => addBulkColors("selected")}>
+                        Add Selected as Colors
+                      </Button>
+                      <Button type="button" size="sm" variant="secondary" onClick={() => addBulkColors("all")}>
+                        Add All as Colors
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => { setBulkColorText(""); setSelectedBulkColorUrls(new Set()); }}>
+                        Clear
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {colorOptions.map((color, i) => {
                 const mainUrl = form.watch("image_url");
                 const allImages = [
