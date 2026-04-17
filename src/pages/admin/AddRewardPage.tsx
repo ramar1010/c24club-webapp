@@ -96,6 +96,30 @@ const AddRewardPage = () => {
   const [variationImages, setVariationImages] = useState<string[]>([]);
   const [newVariationUrl, setNewVariationUrl] = useState("");
 
+  // Bulk URL paste
+  const [bulkUrlText, setBulkUrlText] = useState("");
+  const parsedBulkUrls = (() => {
+    // Extract anything that looks like an http(s) image URL from pasted text/HTML
+    const matches = bulkUrlText.match(/https?:\/\/[^\s"'<>)]+\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s"'<>)]*)?/gi) ?? [];
+    // Also accept plain URLs one-per-line even without image extension (CDNs sometimes omit it)
+    const lineUrls = bulkUrlText
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => /^https?:\/\/\S+$/i.test(l));
+    return Array.from(new Set([...matches, ...lineUrls]));
+  })();
+  const addBulkUrls = (asMain: boolean) => {
+    if (parsedBulkUrls.length === 0) return;
+    let urls = parsedBulkUrls;
+    if (asMain && !form.getValues("image_url")) {
+      form.setValue("image_url", urls[0]);
+      urls = urls.slice(1);
+    }
+    setVariationImages((prev) => Array.from(new Set([...prev, ...urls])));
+    setBulkUrlText("");
+    toast.success(`Added ${parsedBulkUrls.length} image${parsedBulkUrls.length === 1 ? "" : "s"}`);
+  };
+
   // Color options: { name, hex, image_url }
   const [colorOptions, setColorOptions] = useState<{ name: string; hex: string; image_url: string }[]>([]);
 
