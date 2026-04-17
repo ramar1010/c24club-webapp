@@ -503,48 +503,113 @@ const AddRewardPage = () => {
               <CardTitle className="text-base text-primary border-b border-primary pb-2">COLOR OPTIONS</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-xs text-muted-foreground">Add colors users can choose from. Each color can have its own product image.</p>
-              {colorOptions.map((color, i) => (
-                <div key={i} className="flex items-end gap-3 p-3 rounded-lg border bg-muted/30">
-                  <div className="flex-1 space-y-1">
-                    <label className="text-xs font-medium">Color Name</label>
-                    <Input
-                      placeholder="e.g. Midnight Black"
-                      value={color.name}
-                      onChange={(e) => updateColorOption(i, "name", e.target.value)}
-                    />
-                  </div>
-                  <div className="w-20 space-y-1">
-                    <label className="text-xs font-medium">Hex</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={color.hex}
-                        onChange={(e) => updateColorOption(i, "hex", e.target.value)}
-                        className="w-8 h-8 rounded cursor-pointer border-0"
-                      />
-                      <span className="text-xs text-muted-foreground">{color.hex}</span>
+              <p className="text-xs text-muted-foreground">
+                Add colors users can choose from. Each color can have its own product image — paste a URL directly, or paste raw HTML / multiple URLs into the smart field and we'll grab the first image.
+              </p>
+              {colorOptions.map((color, i) => {
+                const extractFirstImage = (text: string) => {
+                  const m = text.match(/https?:\/\/[^\s"'<>)]+\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s"'<>)]*)?/i);
+                  if (m) return m[0];
+                  const line = text.split(/\r?\n/).map((l) => l.trim()).find((l) => /^https?:\/\/\S+$/i.test(l));
+                  return line || text.trim();
+                };
+                return (
+                  <div key={i} className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                    <div className="flex items-end gap-3 flex-wrap">
+                      <div className="flex-1 min-w-[160px] space-y-1">
+                        <label className="text-xs font-medium">Color Name</label>
+                        <Input
+                          placeholder="e.g. Midnight Black"
+                          value={color.name}
+                          onChange={(e) => updateColorOption(i, "name", e.target.value)}
+                        />
+                      </div>
+                      <div className="w-20 space-y-1">
+                        <label className="text-xs font-medium">Hex</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="color"
+                            value={color.hex}
+                            onChange={(e) => updateColorOption(i, "hex", e.target.value)}
+                            className="w-8 h-8 rounded cursor-pointer border-0"
+                          />
+                          <span className="text-xs text-muted-foreground">{color.hex}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-[200px] space-y-1">
+                        <label className="text-xs font-medium">Image URL</label>
+                        <Input
+                          placeholder="https://..."
+                          value={color.image_url}
+                          onChange={(e) => updateColorOption(i, "image_url", e.target.value)}
+                        />
+                      </div>
+                      {color.image_url && (
+                        <img src={color.image_url} alt={color.name} className="w-12 h-12 object-cover rounded border" />
+                      )}
+                      <Button type="button" size="icon" variant="ghost" onClick={() => removeColorOption(i)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+
+                    {/* Smart paste — extract image URL from HTML or multi-line */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-primary">
+                        <Link className="w-3 h-3" /> Smart paste (HTML or URLs)
+                      </label>
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Paste raw HTML, multiple URLs, or right-click → Copy image address"
+                          rows={2}
+                          className="font-mono text-xs"
+                          onPaste={(e) => {
+                            const text = e.clipboardData.getData("text");
+                            const url = extractFirstImage(text);
+                            if (url && /^https?:\/\//i.test(url)) {
+                              e.preventDefault();
+                              updateColorOption(i, "image_url", url);
+                              toast.success(`Image set for ${color.name || "color"}`);
+                              (e.target as HTMLTextAreaElement).value = "";
+                            }
+                          }}
+                        />
+                        {variationImages[i] && !color.image_url && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="shrink-0"
+                            onClick={() => updateColorOption(i, "image_url", variationImages[i])}
+                          >
+                            Use variation #{i + 1}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <label className="text-xs font-medium">Image URL <span className="text-muted-foreground">(optional)</span></label>
-                    <Input
-                      placeholder="https://..."
-                      value={color.image_url}
-                      onChange={(e) => updateColorOption(i, "image_url", e.target.value)}
-                    />
-                  </div>
-                  {color.image_url && (
-                    <img src={color.image_url} alt={color.name} className="w-10 h-10 object-cover rounded border" />
-                  )}
-                  <Button type="button" size="icon" variant="ghost" onClick={() => removeColorOption(i)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                );
+              })}
+
+              <div className="flex gap-2 flex-wrap">
+                <Button type="button" variant="outline" size="sm" onClick={addColorOption} className="gap-1">
+                  <Plus className="w-4 h-4" /> Add Color
+                </Button>
+                {variationImages.length > 0 && colorOptions.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setColorOptions((prev) =>
+                        prev.map((c, i) => (c.image_url || !variationImages[i] ? c : { ...c, image_url: variationImages[i] }))
+                      );
+                      toast.success("Auto-assigned variation images to colors");
+                    }}
+                  >
+                    Auto-assign from variations
                   </Button>
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={addColorOption} className="gap-1">
-                <Plus className="w-4 h-4" /> Add Color
-              </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
