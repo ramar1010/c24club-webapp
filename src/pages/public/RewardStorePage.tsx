@@ -689,9 +689,18 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
 
   // Shipping form view
   if (selectedReward && showShipping) {
+    const colorsForReward: { name: string; hex: string; image_url: string }[] =
+      Array.isArray(selectedReward.color_options) ? selectedReward.color_options : [];
+    const chosenColorName = selectedColor !== null ? colorsForReward[selectedColor]?.name ?? null : null;
+    const rewardWithSelections = {
+      ...selectedReward,
+      ...(isPremiumVip ? { shipping_fee: 0 } : {}),
+      _selectedColor: chosenColorName,
+      _selectedSize: selectedSize,
+    };
     return (
       <ShippingForm
-        reward={isPremiumVip ? { ...selectedReward, shipping_fee: 0 } : selectedReward}
+        reward={rewardWithSelections}
         onBack={() => setShowShipping(false)}
         onSuccess={() => {
           setShowShipping(false);

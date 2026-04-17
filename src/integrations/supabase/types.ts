@@ -1421,6 +1421,8 @@ export type Database = {
           reward_rarity: string
           reward_title: string
           reward_type: string
+          selected_color: string | null
+          selected_size: string | null
           shipping_address: string | null
           shipping_city: string | null
           shipping_country: string | null
@@ -1446,6 +1448,8 @@ export type Database = {
           reward_rarity?: string
           reward_title: string
           reward_type?: string
+          selected_color?: string | null
+          selected_size?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
@@ -1471,6 +1475,8 @@ export type Database = {
           reward_rarity?: string
           reward_title?: string
           reward_type?: string
+          selected_color?: string | null
+          selected_size?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
