@@ -1,0 +1,1 @@
+ALTER TABLE public.member_redemptions ADD COLUMN IF NOT EXISTS selected_color text, ADD COLUMN IF NOT EXISTS selected_size text;
