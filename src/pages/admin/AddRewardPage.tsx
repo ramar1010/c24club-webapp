@@ -504,15 +504,15 @@ const AddRewardPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Add colors users can choose from. Each color can have its own product image — paste a URL directly, or paste raw HTML / multiple URLs into the smart field and we'll grab the first image.
+                Add colors users can choose from. Click any image below to assign it to the selected color slot — no copy/paste needed.
               </p>
+
               {colorOptions.map((color, i) => {
-                const extractFirstImage = (text: string) => {
-                  const m = text.match(/https?:\/\/[^\s"'<>)]+\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s"'<>)]*)?/i);
-                  if (m) return m[0];
-                  const line = text.split(/\r?\n/).map((l) => l.trim()).find((l) => /^https?:\/\/\S+$/i.test(l));
-                  return line || text.trim();
-                };
+                const mainUrl = form.watch("image_url");
+                const allImages = [
+                  ...(mainUrl ? [{ url: mainUrl, label: "Main" }] : []),
+                  ...variationImages.map((u, idx) => ({ url: u, label: `V${idx + 1}` })),
+                ];
                 return (
                   <div key={i} className="p-3 rounded-lg border bg-muted/30 space-y-3">
                     <div className="flex items-end gap-3 flex-wrap">
@@ -544,48 +544,62 @@ const AddRewardPage = () => {
                           onChange={(e) => updateColorOption(i, "image_url", e.target.value)}
                         />
                       </div>
-                      {color.image_url && (
-                        <img src={color.image_url} alt={color.name} className="w-12 h-12 object-cover rounded border" />
+                      {color.image_url ? (
+                        <div className="relative">
+                          <img src={color.image_url} alt={color.name} className="w-12 h-12 object-cover rounded border" />
+                          <button
+                            type="button"
+                            onClick={() => updateColorOption(i, "image_url", "")}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center"
+                            title="Clear image"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded border border-dashed flex items-center justify-center text-[10px] text-muted-foreground">
+                          No img
+                        </div>
                       )}
                       <Button type="button" size="icon" variant="ghost" onClick={() => removeColorOption(i)}>
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
 
-                    {/* Smart paste — extract image URL from HTML or multi-line */}
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium flex items-center gap-1.5 text-primary">
-                        <Link className="w-3 h-3" /> Smart paste (HTML or URLs)
-                      </label>
-                      <div className="flex gap-2">
-                        <Textarea
-                          placeholder="Paste raw HTML, multiple URLs, or right-click → Copy image address"
-                          rows={2}
-                          className="font-mono text-xs"
-                          onPaste={(e) => {
-                            const text = e.clipboardData.getData("text");
-                            const url = extractFirstImage(text);
-                            if (url && /^https?:\/\//i.test(url)) {
-                              e.preventDefault();
-                              updateColorOption(i, "image_url", url);
-                              toast.success(`Image set for ${color.name || "color"}`);
-                              (e.target as HTMLTextAreaElement).value = "";
-                            }
-                          }}
-                        />
-                        {variationImages[i] && !color.image_url && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="shrink-0"
-                            onClick={() => updateColorOption(i, "image_url", variationImages[i])}
-                          >
-                            Use variation #{i + 1}
-                          </Button>
-                        )}
+                    {/* Image picker — pulls from Main + Variations */}
+                    {allImages.length > 0 && (
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Pick from uploaded images ({allImages.length}):
+                        </label>
+                        <div className="flex gap-2 flex-wrap max-h-32 overflow-y-auto p-1">
+                          {allImages.map((img, idx) => {
+                            const selected = color.image_url === img.url;
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => updateColorOption(i, "image_url", img.url)}
+                                className={`relative shrink-0 group rounded-md overflow-hidden border-2 transition-all ${
+                                  selected ? "border-primary ring-2 ring-primary/30" : "border-transparent hover:border-primary/50"
+                                }`}
+                                title={`Assign ${img.label} to ${color.name || "this color"}`}
+                              >
+                                <img src={img.url} alt={img.label} className="w-14 h-14 object-cover" />
+                                <span className="absolute bottom-0 left-0 right-0 bg-background/80 text-[10px] font-bold text-center py-0.5">
+                                  {img.label}
+                                </span>
+                                {selected && (
+                                  <span className="absolute top-0.5 right-0.5 bg-primary text-primary-foreground text-[9px] font-bold px-1 rounded">
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
