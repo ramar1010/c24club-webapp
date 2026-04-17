@@ -441,28 +441,40 @@ const ManageMinutesPage = () => {
           <p className="text-muted-foreground text-sm">No users have earned minutes yet.</p>
         ) : (
           <div className="divide-y divide-border">
-            {allMinutes.map((m: any) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
-                onClick={async () => {
-                  setSearchEmail(m.user_id);
-                  const cashBal = await fetchCashBalance(m.user_id);
-                  setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal });
-                }}
-              >
-                <div>
-                  <p className="font-mono text-sm">{m.user_id}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
-                  </p>
+            {allMinutes.map((m: any) => {
+              const freeze: FreezeInfo = {
+                is_frozen: m.is_frozen ?? false,
+                frozen_at: m.frozen_at ?? null,
+                freeze_free_until: m.freeze_free_until ?? null,
+              };
+              const s = formatFreezeStatus(freeze);
+              return (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
+                  onClick={async () => {
+                    setSearchEmail(m.user_id);
+                    const cashBal = await fetchCashBalance(m.user_id);
+                    setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal, freeze });
+                  }}
+                >
+                  <div>
+                    <p className="font-mono text-sm">{m.user_id}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
+                    </p>
+                    <p className={`text-xs ${s.color}`}>
+                      {s.label}
+                      {s.detail ? ` · ${s.detail}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-bold text-lg">{m.total_minutes} min</span>
+                    <span className="font-bold text-sm text-yellow-500">⭐ {m.ad_points ?? 0}</span>
+                  </div>
                 </div>
-                <div className="flex gap-4 items-center">
-                  <span className="font-bold text-lg">{m.total_minutes} min</span>
-                  <span className="font-bold text-sm text-yellow-500">⭐ {m.ad_points ?? 0}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
