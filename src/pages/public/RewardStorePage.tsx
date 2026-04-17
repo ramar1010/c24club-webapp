@@ -105,6 +105,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
   const [spinResult, setSpinResult] = useState<any[]>([]);
   const [canRespin, setCanRespin] = useState(false);
   const [selectedColor, setSelectedColorState] = useState<number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [spinReelItems, setSpinReelItems] = useState<any[]>([]);
   const [spinWinnerIndex, setSpinWinnerIndex] = useState(0);
