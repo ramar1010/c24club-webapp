@@ -139,6 +139,42 @@ const AddRewardPage = () => {
   // Color options: { name, hex, image_url }
   const [colorOptions, setColorOptions] = useState<{ name: string; hex: string; image_url: string }[]>([]);
 
+  // Bulk COLOR paste (independent from variations)
+  const [bulkColorText, setBulkColorText] = useState("");
+  const [selectedBulkColorUrls, setSelectedBulkColorUrls] = useState<Set<string>>(new Set());
+  const parsedBulkColorUrls = (() => {
+    const matches = bulkColorText.match(/https?:\/\/[^\s"'<>)]+\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s"'<>)]*)?/gi) ?? [];
+    const lineUrls = bulkColorText
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => /^https?:\/\/\S+$/i.test(l));
+    return Array.from(new Set([...matches, ...lineUrls]));
+  })();
+  const toggleBulkColorUrl = (url: string) => {
+    setSelectedBulkColorUrls((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  };
+  const addBulkColors = (mode: "all" | "selected") => {
+    const source = mode === "selected"
+      ? parsedBulkColorUrls.filter((u) => selectedBulkColorUrls.has(u))
+      : parsedBulkColorUrls;
+    if (source.length === 0) {
+      toast.error(mode === "selected" ? "Select at least one image" : "No images detected");
+      return;
+    }
+    setColorOptions((prev) => [
+      ...prev,
+      ...source.map((url) => ({ name: "", hex: "#000000", image_url: url })),
+    ]);
+    if (mode === "all") setBulkColorText("");
+    setSelectedBulkColorUrls(new Set());
+    toast.success(`Added ${source.length} color${source.length === 1 ? "" : "s"}`);
+  };
+
   const form = useForm<RewardForm>({
     resolver: zodResolver(rewardSchema),
     defaultValues: {
