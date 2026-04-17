@@ -50,6 +50,42 @@ const ManageMinutesPage = () => {
     },
   });
 
+  // Fetch member emails so we can search/display by email
+  const { data: memberEmailMap = {} } = useQuery({
+    queryKey: ["admin-member-emails"],
+    queryFn: async () => {
+      const map: Record<string, string> = {};
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("members")
+          .select("id, email")
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        data.forEach((m: any) => { if (m.email) map[m.id] = m.email; });
+        if (data.length < pageSize) break;
+      }
+      return map;
+    },
+  });
+
+  const [tableSearch, setTableSearch] = useState("");
+
+  const resolveUserIdFromInput = async (input: string): Promise<string | null> => {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    // UUID heuristic
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) return trimmed;
+    // Look up by email (case-insensitive)
+    const { data } = await supabase
+      .from("members")
+      .select("id")
+      .ilike("email", trimmed)
+      .maybeSingle();
+    return data?.id ?? null;
+  };
+
   // Fetch cash-type weekly challenges for the dropdown
   const { data: cashChallenges = [] } = useQuery({
     queryKey: ["admin-cash-challenges"],
