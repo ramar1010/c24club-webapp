@@ -115,13 +115,20 @@ const ManageMinutesPage = () => {
     if (!searchEmail.trim()) return;
     setSearching(true);
     try {
+      const userId = await resolveUserIdFromInput(searchEmail);
+      if (!userId) {
+        toast.error("No user found for that email or UUID");
+        setSearching(false);
+        return;
+      }
       const { data } = await supabase
         .from("member_minutes")
         .select("*")
-        .eq("user_id", searchEmail.trim())
+        .eq("user_id", userId)
         .maybeSingle();
 
-      const cashBal = await fetchCashBalance(searchEmail.trim());
+      const cashBal = await fetchCashBalance(userId);
+      const email = memberEmailMap[userId] ?? userId;
 
       const freeze: FreezeInfo = {
         is_frozen: data?.is_frozen ?? false,
@@ -130,9 +137,9 @@ const ManageMinutesPage = () => {
       };
 
       if (data) {
-        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal, freeze });
+        setSelectedUser({ id: userId, email, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal, freeze });
       } else {
-        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal, freeze });
+        setSelectedUser({ id: userId, email, total_minutes: 0, ad_points: 0, cash_balance: cashBal, freeze });
         toast.info("No existing record — values will be created on add.");
       }
     } catch {
