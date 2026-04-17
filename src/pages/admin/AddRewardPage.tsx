@@ -98,26 +98,42 @@ const AddRewardPage = () => {
 
   // Bulk URL paste
   const [bulkUrlText, setBulkUrlText] = useState("");
+  const [selectedBulkUrls, setSelectedBulkUrls] = useState<Set<string>>(new Set());
   const parsedBulkUrls = (() => {
-    // Extract anything that looks like an http(s) image URL from pasted text/HTML
     const matches = bulkUrlText.match(/https?:\/\/[^\s"'<>)]+\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s"'<>)]*)?/gi) ?? [];
-    // Also accept plain URLs one-per-line even without image extension (CDNs sometimes omit it)
     const lineUrls = bulkUrlText
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter((l) => /^https?:\/\/\S+$/i.test(l));
     return Array.from(new Set([...matches, ...lineUrls]));
   })();
-  const addBulkUrls = (asMain: boolean) => {
-    if (parsedBulkUrls.length === 0) return;
-    let urls = parsedBulkUrls;
+  const toggleBulkUrl = (url: string) => {
+    setSelectedBulkUrls((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  };
+  const addBulkUrls = (mode: "all-main" | "all-var" | "selected-main" | "selected-var") => {
+    const useSelected = mode === "selected-main" || mode === "selected-var";
+    const asMain = mode === "all-main" || mode === "selected-main";
+    const source = useSelected
+      ? parsedBulkUrls.filter((u) => selectedBulkUrls.has(u))
+      : parsedBulkUrls;
+    if (source.length === 0) {
+      toast.error(useSelected ? "Select at least one image" : "No images detected");
+      return;
+    }
+    let urls = source;
     if (asMain && !form.getValues("image_url")) {
       form.setValue("image_url", urls[0]);
       urls = urls.slice(1);
     }
     setVariationImages((prev) => Array.from(new Set([...prev, ...urls])));
-    setBulkUrlText("");
-    toast.success(`Added ${parsedBulkUrls.length} image${parsedBulkUrls.length === 1 ? "" : "s"}`);
+    if (!useSelected) setBulkUrlText("");
+    setSelectedBulkUrls(new Set());
+    toast.success(`Added ${source.length} image${source.length === 1 ? "" : "s"}`);
   };
 
   // Color options: { name, hex, image_url }
@@ -430,31 +446,77 @@ const AddRewardPage = () => {
                 />
                 {parsedBulkUrls.length > 0 && (
                   <>
-                    <p className="text-xs text-primary font-medium">
-                      Detected {parsedBulkUrls.length} image{parsedBulkUrls.length === 1 ? "" : "s"}:
-                    </p>
-                    <div className="flex gap-2 flex-wrap max-h-32 overflow-y-auto">
-                      {parsedBulkUrls.slice(0, 30).map((u, i) => (
-                        <img
-                          key={i}
-                          src={u}
-                          alt={`Preview ${i + 1}`}
-                          className="w-12 h-12 object-cover rounded border"
-                          onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.2")}
-                        />
-                      ))}
-                      {parsedBulkUrls.length > 30 && (
-                        <span className="text-xs text-muted-foreground self-center">+{parsedBulkUrls.length - 30} more</span>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-primary font-medium">
+                        Detected {parsedBulkUrls.length} image{parsedBulkUrls.length === 1 ? "" : "s"} · {selectedBulkUrls.size} selected
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="text-xs underline text-muted-foreground"
+                          onClick={() => setSelectedBulkUrls(new Set(parsedBulkUrls))}
+                        >
+                          Select all
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs underline text-muted-foreground"
+                          onClick={() => setSelectedBulkUrls(new Set())}
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto">
+                      {parsedBulkUrls.slice(0, 60).map((u, i) => {
+                        const checked = selectedBulkUrls.has(u);
+                        return (
+                          <button
+                            type="button"
+                            key={i}
+                            onClick={() => toggleBulkUrl(u)}
+                            className={`relative rounded border-2 overflow-hidden transition ${
+                              checked ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/50"
+                            }`}
+                            title={u}
+                          >
+                            <img
+                              src={u}
+                              alt={`Preview ${i + 1}`}
+                              className="w-full h-16 object-cover"
+                              onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.2")}
+                            />
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-bold ${
+                              checked ? "bg-primary text-primary-foreground" : "bg-background/80 text-muted-foreground border"
+                            }`}>
+                              {checked ? "✓" : ""}
+                            </span>
+                            <span className="absolute bottom-0.5 right-0.5 text-[9px] bg-background/80 px-1 rounded">{i + 1}</span>
+                          </button>
+                        );
+                      })}
+                      {parsedBulkUrls.length > 60 && (
+                        <span className="text-xs text-muted-foreground self-center col-span-6">+{parsedBulkUrls.length - 60} more</span>
                       )}
                     </div>
-                    <div className="flex gap-2">
-                      <Button type="button" size="sm" onClick={() => addBulkUrls(true)}>
+                    <div className="flex gap-2 flex-wrap pt-1 border-t">
+                      <p className="text-xs font-medium w-full text-muted-foreground">Selected only:</p>
+                      <Button type="button" size="sm" disabled={selectedBulkUrls.size === 0} onClick={() => addBulkUrls("selected-main")}>
+                        Add Selected (1st as Main)
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" disabled={selectedBulkUrls.size === 0} onClick={() => addBulkUrls("selected-var")}>
+                        Add Selected as Variations
+                      </Button>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <p className="text-xs font-medium w-full text-muted-foreground">All detected:</p>
+                      <Button type="button" size="sm" variant="secondary" onClick={() => addBulkUrls("all-main")}>
                         Add All (1st as Main)
                       </Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => addBulkUrls(false)}>
+                      <Button type="button" size="sm" variant="outline" onClick={() => addBulkUrls("all-var")}>
                         Add All as Variations
                       </Button>
-                      <Button type="button" size="sm" variant="ghost" onClick={() => setBulkUrlText("")}>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => { setBulkUrlText(""); setSelectedBulkUrls(new Set()); }}>
                         Clear
                       </Button>
                     </div>
