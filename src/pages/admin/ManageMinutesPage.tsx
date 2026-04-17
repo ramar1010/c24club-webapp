@@ -342,10 +342,10 @@ const ManageMinutesPage = () => {
       </div>
 
       <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-        <Label className="text-sm font-medium">User ID</Label>
+        <Label className="text-sm font-medium">Email or User ID</Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Paste user UUID here..."
+            placeholder="Search by email (e.g. user@example.com) or paste UUID..."
             value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -360,8 +360,9 @@ const ManageMinutesPage = () => {
           <div className="bg-muted/50 rounded-lg p-4 space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">User ID</p>
-                <p className="font-mono text-sm">{selectedUser.id}</p>
+                <p className="text-sm text-muted-foreground">User</p>
+                <p className="text-sm font-medium">{selectedUser.email}</p>
+                <p className="font-mono text-xs text-muted-foreground">{selectedUser.id}</p>
               </div>
               <div className="flex gap-6 text-right">
                 <div>
