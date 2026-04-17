@@ -823,12 +823,27 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
           <div className="px-4 mb-4">
             <h3 className="text-yellow-400 font-black text-lg mb-2">Sizes</h3>
             <div className="flex gap-2 flex-wrap">
-              {sizes.map((size: string) => (
-                <span key={size} className="bg-green-600 text-white font-black text-sm px-3 py-2 rounded-lg flex items-center justify-center whitespace-nowrap">
-                  {size}
-                </span>
-              ))}
+              {sizes.map((size: string) => {
+                const isSelected = selectedSize === size;
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setSelectedSize(isSelected ? null : size)}
+                    className={`font-black text-sm px-3 py-2 rounded-lg flex items-center justify-center whitespace-nowrap border-2 transition-all ${
+                      isSelected
+                        ? "bg-yellow-500 text-black border-yellow-300"
+                        : "bg-green-600 text-white border-transparent hover:border-yellow-400"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
+            {selectedSize && (
+              <p className="text-xs text-neutral-400 mt-2">Selected size: <span className="text-white font-bold">{selectedSize}</span></p>
+            )}
           </div>
         )}
 
