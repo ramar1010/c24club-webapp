@@ -522,7 +522,7 @@ const ManageMinutesPage = () => {
                   }}
                 >
                   <div>
-                    <p className="text-sm font-medium">{email}</p>
+                    <p className="text-sm font-medium text-foreground">{email}</p>
                     <p className="font-mono text-xs text-muted-foreground">{m.user_id}</p>
                     <p className="text-xs text-muted-foreground">
                       {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
