@@ -740,7 +740,7 @@ const RewardStorePage = ({ onClose }: { onClose?: () => void }) => {
       <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-4">
-          <button onClick={() => { setSelectedReward(null); setSelectedColorState(null); setCurrentImageIndex(0); }} className="flex items-center gap-1 text-white hover:text-neutral-300 transition-colors">
+          <button onClick={() => { setSelectedReward(null); setSelectedColorState(null); setSelectedSize(null); setCurrentImageIndex(0); }} className="flex items-center gap-1 text-white hover:text-neutral-300 transition-colors">
             <ArrowLeft className="w-6 h-6" />
             <span className="font-bold text-sm">BACK</span>
           </button>
