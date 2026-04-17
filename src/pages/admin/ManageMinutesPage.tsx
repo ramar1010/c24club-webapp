@@ -7,9 +7,29 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Coins, DollarSign, Search, Star, Trophy } from "lucide-react";
 
+type FreezeInfo = {
+  is_frozen: boolean;
+  frozen_at: string | null;
+  freeze_free_until: string | null;
+};
+
+const formatFreezeStatus = (f: FreezeInfo) => {
+  if (f.is_frozen) {
+    return { label: "❄️ Frozen", detail: f.frozen_at ? `Since ${new Date(f.frozen_at).toLocaleDateString()}` : "", color: "text-blue-400" };
+  }
+  if (f.freeze_free_until) {
+    const until = new Date(f.freeze_free_until);
+    if (until > new Date()) {
+      return { label: "🛡️ Protected", detail: `Until ${until.toLocaleDateString()} ${until.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`, color: "text-emerald-500" };
+    }
+    return { label: "⚠️ Eligible to refreeze", detail: `Protection ended ${until.toLocaleDateString()}`, color: "text-amber-500" };
+  }
+  return { label: "✓ Active", detail: "Never frozen", color: "text-muted-foreground" };
+};
+
 const ManageMinutesPage = () => {
   const [searchEmail, setSearchEmail] = useState("");
-  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number; cash_balance: number } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number; cash_balance: number; freeze: FreezeInfo } | null>(null);
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [adPointsToAdd, setAdPointsToAdd] = useState("");
   const [cashBalanceToAdd, setCashBalanceToAdd] = useState("");
@@ -67,10 +87,16 @@ const ManageMinutesPage = () => {
 
       const cashBal = await fetchCashBalance(searchEmail.trim());
 
+      const freeze: FreezeInfo = {
+        is_frozen: data?.is_frozen ?? false,
+        frozen_at: data?.frozen_at ?? null,
+        freeze_free_until: data?.freeze_free_until ?? null,
+      };
+
       if (data) {
-        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal });
+        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal, freeze });
       } else {
-        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal });
+        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal, freeze });
         toast.info("No existing record — values will be created on add.");
       }
     } catch {
@@ -310,6 +336,20 @@ const ManageMinutesPage = () => {
               </div>
             </div>
 
+            {/* Freeze status */}
+            {(() => {
+              const s = formatFreezeStatus(selectedUser.freeze);
+              return (
+                <div className="rounded-md border border-border bg-background/40 px-3 py-2 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Freeze Status</p>
+                    <p className={`text-sm font-semibold ${s.color}`}>{s.label}</p>
+                  </div>
+                  {s.detail && <p className="text-xs text-muted-foreground">{s.detail}</p>}
+                </div>
+              );
+            })()}
+
             {/* Minutes controls */}
             <div className="flex gap-2 items-end">
               <div className="flex-1">
@@ -401,28 +441,40 @@ const ManageMinutesPage = () => {
           <p className="text-muted-foreground text-sm">No users have earned minutes yet.</p>
         ) : (
           <div className="divide-y divide-border">
-            {allMinutes.map((m: any) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
-                onClick={async () => {
-                  setSearchEmail(m.user_id);
-                  const cashBal = await fetchCashBalance(m.user_id);
-                  setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal });
-                }}
-              >
-                <div>
-                  <p className="font-mono text-sm">{m.user_id}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
-                  </p>
+            {allMinutes.map((m: any) => {
+              const freeze: FreezeInfo = {
+                is_frozen: m.is_frozen ?? false,
+                frozen_at: m.frozen_at ?? null,
+                freeze_free_until: m.freeze_free_until ?? null,
+              };
+              const s = formatFreezeStatus(freeze);
+              return (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
+                  onClick={async () => {
+                    setSearchEmail(m.user_id);
+                    const cashBal = await fetchCashBalance(m.user_id);
+                    setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal, freeze });
+                  }}
+                >
+                  <div>
+                    <p className="font-mono text-sm">{m.user_id}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
+                    </p>
+                    <p className={`text-xs ${s.color}`}>
+                      {s.label}
+                      {s.detail ? ` · ${s.detail}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-bold text-lg">{m.total_minutes} min</span>
+                    <span className="font-bold text-sm text-yellow-500">⭐ {m.ad_points ?? 0}</span>
+                  </div>
                 </div>
-                <div className="flex gap-4 items-center">
-                  <span className="font-bold text-lg">{m.total_minutes} min</span>
-                  <span className="font-bold text-sm text-yellow-500">⭐ {m.ad_points ?? 0}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
