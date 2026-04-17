@@ -480,30 +480,50 @@ const ManageMinutesPage = () => {
       </div>
 
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="font-semibold mb-4">All Users with Minutes</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h3 className="font-semibold">All Users with Minutes</h3>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Filter by email or UUID..."
+              value={tableSearch}
+              onChange={(e) => setTableSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+        </div>
         {allMinutes.length === 0 ? (
           <p className="text-muted-foreground text-sm">No users have earned minutes yet.</p>
         ) : (
           <div className="divide-y divide-border">
-            {allMinutes.map((m: any) => {
+            {allMinutes
+              .filter((m: any) => {
+                const q = tableSearch.trim().toLowerCase();
+                if (!q) return true;
+                const email = (memberEmailMap[m.user_id] ?? "").toLowerCase();
+                return email.includes(q) || m.user_id.toLowerCase().includes(q);
+              })
+              .map((m: any) => {
               const freeze: FreezeInfo = {
                 is_frozen: m.is_frozen ?? false,
                 frozen_at: m.frozen_at ?? null,
                 freeze_free_until: m.freeze_free_until ?? null,
               };
               const s = formatFreezeStatus(freeze);
+              const email = memberEmailMap[m.user_id] ?? "(no email)";
               return (
                 <div
                   key={m.id}
                   className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/30 px-2 rounded transition-colors"
                   onClick={async () => {
-                    setSearchEmail(m.user_id);
+                    setSearchEmail(email !== "(no email)" ? email : m.user_id);
                     const cashBal = await fetchCashBalance(m.user_id);
-                    setSelectedUser({ id: m.user_id, email: m.user_id, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal, freeze });
+                    setSelectedUser({ id: m.user_id, email, total_minutes: m.total_minutes, ad_points: m.ad_points ?? 0, cash_balance: cashBal, freeze });
                   }}
                 >
                   <div>
-                    <p className="font-mono text-sm">{m.user_id}</p>
+                    <p className="text-sm font-medium">{email}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{m.user_id}</p>
                     <p className="text-xs text-muted-foreground">
                       {m.is_vip ? "⭐ VIP" : "Free"} · Updated {new Date(m.updated_at).toLocaleDateString()}
                     </p>
