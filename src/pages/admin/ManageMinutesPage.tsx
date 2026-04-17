@@ -87,10 +87,16 @@ const ManageMinutesPage = () => {
 
       const cashBal = await fetchCashBalance(searchEmail.trim());
 
+      const freeze: FreezeInfo = {
+        is_frozen: data?.is_frozen ?? false,
+        frozen_at: data?.frozen_at ?? null,
+        freeze_free_until: data?.freeze_free_until ?? null,
+      };
+
       if (data) {
-        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal });
+        setSelectedUser({ id: data.user_id, email: data.user_id, total_minutes: data.total_minutes, ad_points: data.ad_points ?? 0, cash_balance: cashBal, freeze });
       } else {
-        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal });
+        setSelectedUser({ id: searchEmail.trim(), email: searchEmail.trim(), total_minutes: 0, ad_points: 0, cash_balance: cashBal, freeze });
         toast.info("No existing record — values will be created on add.");
       }
     } catch {
