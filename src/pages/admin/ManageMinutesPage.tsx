@@ -336,6 +336,20 @@ const ManageMinutesPage = () => {
               </div>
             </div>
 
+            {/* Freeze status */}
+            {(() => {
+              const s = formatFreezeStatus(selectedUser.freeze);
+              return (
+                <div className="rounded-md border border-border bg-background/40 px-3 py-2 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Freeze Status</p>
+                    <p className={`text-sm font-semibold ${s.color}`}>{s.label}</p>
+                  </div>
+                  {s.detail && <p className="text-xs text-muted-foreground">{s.detail}</p>}
+                </div>
+              );
+            })()}
+
             {/* Minutes controls */}
             <div className="flex gap-2 items-end">
               <div className="flex-1">
