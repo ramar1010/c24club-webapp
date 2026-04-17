@@ -7,9 +7,29 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Coins, DollarSign, Search, Star, Trophy } from "lucide-react";
 
+type FreezeInfo = {
+  is_frozen: boolean;
+  frozen_at: string | null;
+  freeze_free_until: string | null;
+};
+
+const formatFreezeStatus = (f: FreezeInfo) => {
+  if (f.is_frozen) {
+    return { label: "❄️ Frozen", detail: f.frozen_at ? `Since ${new Date(f.frozen_at).toLocaleDateString()}` : "", color: "text-blue-400" };
+  }
+  if (f.freeze_free_until) {
+    const until = new Date(f.freeze_free_until);
+    if (until > new Date()) {
+      return { label: "🛡️ Protected", detail: `Until ${until.toLocaleDateString()} ${until.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`, color: "text-emerald-500" };
+    }
+    return { label: "⚠️ Eligible to refreeze", detail: `Protection ended ${until.toLocaleDateString()}`, color: "text-amber-500" };
+  }
+  return { label: "✓ Active", detail: "Never frozen", color: "text-muted-foreground" };
+};
+
 const ManageMinutesPage = () => {
   const [searchEmail, setSearchEmail] = useState("");
-  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number; cash_balance: number } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; total_minutes: number; ad_points: number; cash_balance: number; freeze: FreezeInfo } | null>(null);
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [adPointsToAdd, setAdPointsToAdd] = useState("");
   const [cashBalanceToAdd, setCashBalanceToAdd] = useState("");
