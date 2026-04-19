@@ -255,7 +255,7 @@ const TopOmegleAlternativesPage = () => {
 
       {/* Hero */}
       <section className="pt-28 pb-12 px-4 text-center">
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">Updated March 2026</p>
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">Updated April 2026</p>
         <h1
           className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
