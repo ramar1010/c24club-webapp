@@ -268,8 +268,11 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
           }
         };
 
-        // Clean up any stale signals from previous attempts for this room
-        await supabase.from("room_signals").delete().eq("room_id", roomId);
+        // Only the initiator clears stale signals (callee must NEVER delete,
+        // or it will wipe the initiator's peer-ready/offer that already arrived).
+        if (isInitiator) {
+          await supabase.from("room_signals").delete().eq("room_id", roomId);
+        }
 
         // Start polling for signals
         const pollSignals = async () => {
