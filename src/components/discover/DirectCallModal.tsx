@@ -1,5 +1,6 @@
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Gift } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -101,7 +102,7 @@ const DirectCallModal = ({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
       {/* Status bar */}
       <div className="absolute top-4 left-0 right-0 text-center z-10">
@@ -199,7 +200,8 @@ const DirectCallModal = ({
           onClose={() => setShowGift(false)}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
