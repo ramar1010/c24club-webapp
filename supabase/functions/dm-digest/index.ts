@@ -220,7 +220,19 @@ Deno.serve(async (req) => {
     const suppressedSet = new Set((suppressedList || []).map((s: any) => s.email));
 
     let emailsSent = 0;
-    const today = new Date().toISOString().slice(0, 10);
+
+    // Build map of recipient -> latest unread message id (for dedup key)
+    const recipientLatestMsgId: Record<string, string> = {};
+    for (const msg of unreadMessages) {
+      const convo = allConvos.find((c: any) => c.id === msg.conversation_id);
+      if (!convo) continue;
+      const recipientId =
+        convo.participant_1 === msg.sender_id ? convo.participant_2 : convo.participant_1;
+      // unreadMessages are ordered DESC by created_at, so first hit is latest
+      if (!recipientLatestMsgId[recipientId]) {
+        recipientLatestMsgId[recipientId] = msg.id;
+      }
+    }
 
     for (const member of members) {
       if (suppressedSet.has(member.email)) continue;
