@@ -102,7 +102,7 @@ const DirectCallModal = ({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
       {/* Status bar */}
       <div className="absolute top-4 left-0 right-0 text-center z-10">
