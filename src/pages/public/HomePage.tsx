@@ -12,22 +12,22 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
 
-import reward3 from "@/assets/rewards/reward3.jpg";
+import reward3 from "@/assets/rewards/optimized/reward3.webp";
 import reward4 from "@/assets/rewards/reward4.jpeg";
 import reward5 from "@/assets/rewards/reward5.jpg";
 import reward6 from "@/assets/rewards/reward6.jpg";
 import reward7 from "@/assets/rewards/reward7.jpg";
-import bagImg from "@/assets/rewards/bag.png";
+import bagImg from "@/assets/rewards/optimized/bag.webp";
 import cashImg from "@/assets/rewards/cash.png";
-import phonecase2 from "@/assets/rewards/phonecase-2.png";
-import bag3 from "@/assets/rewards/bag-3.png";
-import boots2 from "@/assets/rewards/boots-2.png";
+import phonecase2 from "@/assets/rewards/optimized/phonecase-2.webp";
+import bag3 from "@/assets/rewards/optimized/bag-3.webp";
+import boots2 from "@/assets/rewards/optimized/boots-2.webp";
 
-import slippers from "@/assets/rewards/slippers.png";
-import shorts2 from "@/assets/rewards/shorts-2.jpg";
-import hat2 from "@/assets/rewards/hat-2.jpg";
-import redbag2 from "@/assets/rewards/redbag-2.jpg";
-import heartbag2 from "@/assets/rewards/heartbag-2.jpg";
+import slippers from "@/assets/rewards/optimized/slippers.webp";
+import shorts2 from "@/assets/rewards/optimized/shorts-2.webp";
+import hat2 from "@/assets/rewards/optimized/hat-2.webp";
+import redbag2 from "@/assets/rewards/optimized/redbag-2.webp";
+import heartbag2 from "@/assets/rewards/optimized/heartbag-2.webp";
 
 const rewards = [
   { label: "Bucket Hat", minutes: 80, image: hat2 },
