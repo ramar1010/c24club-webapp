@@ -264,16 +264,17 @@ Deno.serve(async (req) => {
 
       // Enqueue email via pgmq
       try {
-        const dmMessageId = `dm-digest-${member.id}-${today}`;
+        const latestMsgId = recipientLatestMsgId[member.id];
+        const dmMessageId = `dm-digest-${member.id}-${latestMsgId}`;
 
-        // Skip if already sent today
+        // Skip if a digest covering this latest unread message was already sent/queued
         const { data: alreadySent } = await supabase
           .from("email_send_log")
           .select("id")
           .eq("message_id", dmMessageId)
-          .maybeSingle();
+          .limit(1);
 
-        if (alreadySent) {
+        if (alreadySent && alreadySent.length > 0) {
           continue;
         }
 
