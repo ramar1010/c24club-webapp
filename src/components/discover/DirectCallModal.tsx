@@ -200,7 +200,8 @@ const DirectCallModal = ({
           onClose={() => setShowGift(false)}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
