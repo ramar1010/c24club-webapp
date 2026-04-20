@@ -136,10 +136,6 @@ Deno.serve(async (req) => {
       .neq("id", memberId)
       .limit(100);
 
-    // Discord
-    const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-    const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
-
     // Queue-join push notifications are sent by videocall-match.
     // This function keeps the secondary notification channels only,
     // so users do not receive duplicate pushes for the same join event.
@@ -225,7 +221,6 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         message: "notifications_sent",
-        discord_sent: discordSent,
         push_sent: pushSent,
         push_failed: pushFailed,
         push_error: pushError,
