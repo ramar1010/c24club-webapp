@@ -228,6 +228,19 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             body: { action: "accept_invite", invite_code: bestieCode, user_id: signUpData.user.id },
           }).catch((err) => console.error("Bestie accept failed:", err));
         }
+        // Auto sign-in immediately so the homepage reflects logged-in state
+        if (!signUpData?.session) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
+          if (signInError) {
+            toast.success("Account created! Please check your email to verify, then sign in.");
+            setLoading(false);
+            onClose();
+            return;
+          }
+        }
         toast.success("Account created!");
         onClose();
       }
