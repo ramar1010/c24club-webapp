@@ -136,10 +136,6 @@ Deno.serve(async (req) => {
       .neq("id", memberId)
       .limit(100);
 
-    // Discord
-    const discordWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-    const discordSent = await sendDiscordNotification(discordWebhookUrl, normalizedGender);
-
     // Queue-join push notifications are sent by videocall-match.
     // This function keeps the secondary notification channels only,
     // so users do not receive duplicate pushes for the same join event.
@@ -225,7 +221,6 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         message: "notifications_sent",
-        discord_sent: discordSent,
         push_sent: pushSent,
         push_failed: pushFailed,
         push_error: pushError,
@@ -245,34 +240,6 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-// --- Discord ---
-async function sendDiscordNotification(
-  webhookUrl: string | undefined,
-  gender: string,
-): Promise<boolean> {
-  if (!webhookUrl) return false;
-
-  const siteUrl = "https://c24club.com";
-  let content: string;
-  if (gender === "male") {
-    content = `EARN CASH NOW! A male user joined which means you can earn just by connecting with him or just by idling on our website! - C24Club video chat\n${siteUrl}/videocall`;
-  } else {
-    content = `Hey guys a female user joined and is looking for someone to video chat. - C24Club video chat\n${siteUrl}/videocall`;
-  }
-
-  try {
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
-    return res.ok;
-  } catch (err) {
-    console.error("Discord webhook error:", err);
-    return false;
-  }
-}
 
 // Push sending is intentionally disabled here.
 // Real-time queue join push alerts are sent from videocall-match,
