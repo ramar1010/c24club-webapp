@@ -188,24 +188,6 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
       }
     }
 
-    // Send Discord webhook for male listings
-    try {
-      const { data: memberData } = await supabase
-        .from("members")
-        .select("gender")
-        .eq("id", user.id)
-        .single();
-
-      if (memberData?.gender === "male") {
-        const discoverUrl = `${window.location.origin}/discover`;
-        await supabase.functions.invoke("discord-discover-alert", {
-          body: { discoverUrl },
-        });
-      }
-    } catch (e) {
-      console.error("Discord alert error:", e);
-    }
-
     onComplete(imageUrl);
     toast({ title: "Selfie submitted! 📸", description: "Your photo is under review — we'll make you discoverable once approved." });
   }, [capturedBlob, user, onComplete, socialInputs, bio]);
