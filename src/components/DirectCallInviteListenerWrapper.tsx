@@ -22,8 +22,25 @@ class SafeBoundary extends Component<{ children: ReactNode }, { hasError: boolea
 function DirectCallInviteListenerInner() {
   const { user } = useAuth();
   const { incomingCall, clearCall, declineCall } = useDirectCallInviteListener();
+  const [accepted, setAccepted] = useState(false);
 
   if (!incomingCall || !user) return null;
+
+  if (accepted) {
+    return (
+      <DirectCallModal
+        myUserId={user.id}
+        partnerId={incomingCall.inviterId}
+        partnerName={incomingCall.inviterName}
+        inviteId={incomingCall.inviteId}
+        isInitiator={false}
+        onClose={() => {
+          setAccepted(false);
+          clearCall();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center">
@@ -41,9 +58,8 @@ function DirectCallInviteListenerInner() {
             Decline
           </button>
           <AcceptButton
-            userId={user.id}
             incomingCall={incomingCall}
-            onClose={clearCall}
+            onAccepted={() => setAccepted(true)}
           />
         </div>
       </div>
@@ -60,15 +76,12 @@ export function DirectCallInviteListenerWrapper() {
 }
 
 function AcceptButton({
-  userId,
   incomingCall,
-  onClose,
+  onAccepted,
 }: {
-  userId: string;
   incomingCall: { inviteId: string; inviterId: string; inviterName: string };
-  onClose: () => void;
+  onAccepted: () => void;
 }) {
-  const [accepted, setAccepted] = useState(false);
   const [accepting, setAccepting] = useState(false);
 
   const handleAccept = async () => {
@@ -88,25 +101,9 @@ function AcceptButton({
       return;
     }
 
-    setAccepted(true);
     setAccepting(false);
+    onAccepted();
   };
-
-  if (accepted) {
-    return (
-      <DirectCallModal
-        myUserId={userId}
-        partnerId={incomingCall.inviterId}
-        partnerName={incomingCall.inviterName}
-        inviteId={incomingCall.inviteId}
-        isInitiator={false}
-        onClose={() => {
-          setAccepted(false);
-          onClose();
-        }}
-      />
-    );
-  }
 
   return (
     <button
