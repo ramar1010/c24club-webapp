@@ -235,7 +235,7 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             password,
           });
           if (signInError) {
-            toast.success("Account created! Please check your email to verify, then sign in.");
+            toast.error("Sign in failed", { description: signInError.message });
             setLoading(false);
             onClose();
             return;
