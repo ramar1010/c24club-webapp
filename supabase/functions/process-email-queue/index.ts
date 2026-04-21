@@ -187,6 +187,24 @@ Deno.serve(async (req) => {
           )
         }
       }
+
+      // Also count rate_limited entries toward the retry budget so
+      // persistently rate-limited messages eventually move to DLQ
+      // instead of clogging the queue forever.
+      const { data: rateLimitedRows } = await supabase
+        .from('email_send_log')
+        .select('message_id')
+        .in('message_id', messageIds)
+        .eq('status', 'rate_limited')
+
+      for (const row of rateLimitedRows ?? []) {
+        const messageId = row?.message_id
+        if (typeof messageId !== 'string' || !messageId) continue
+        failedAttemptsByMessageId.set(
+          messageId,
+          (failedAttemptsByMessageId.get(messageId) ?? 0) + 1
+        )
+      }
     }
 
     for (let i = 0; i < messages.length; i++) {
