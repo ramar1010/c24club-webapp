@@ -227,7 +227,7 @@ serve(async (req) => {
           await supabaseAdmin.rpc("enqueue_email", {
             queue_name: "transactional_emails",
             payload: {
-              run_id: crypto.randomUUID(),
+              idempotency_key: messageId,
               message_id: messageId,
               to: recipientMember.email,
               from: "C24Club <support@c24club.com>",
@@ -334,7 +334,7 @@ serve(async (req) => {
           await supabaseAdmin.rpc("enqueue_email", {
             queue_name: "transactional_emails",
             payload: {
-              run_id: crypto.randomUUID(),
+              idempotency_key: messageId,
               message_id: messageId,
               to: recipientMember.email,
               from: "C24Club <support@c24club.com>",

@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
         const plainText = `Hey ${userName}! Session starts in ${timeLabel}. Join now: ${joinLink}`;
 
         const emailPayload = {
-          run_id: crypto.randomUUID(),
+          idempotency_key: messageId,
           to: member.email,
           from: `C24Club <support@c24club.com>`,
           subject,

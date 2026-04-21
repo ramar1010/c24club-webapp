@@ -273,7 +273,7 @@ serve(async (req) => {
               const { error: enqErr } = await supabase.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
-                  run_id: crypto.randomUUID(),
+                  idempotency_key: messageId,
                   to: member.email,
                   from: "C24Club <support@c24club.com>",
                   subject,
