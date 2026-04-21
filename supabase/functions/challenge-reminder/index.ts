@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -120,42 +121,23 @@ Deno.serve(async (req) => {
 
       const messageId = `challenge-reminder-${submission.id}-${Date.now()}`;
 
-      await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "challenge_pending_reminder",
-        recipient_email: member.email,
-        status: "pending",
-        metadata: { submission_id: submission.id },
-      });
-
-      const { error: enqueueError } = await supabase.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          idempotency_key: messageId,
-          message_id: messageId,
-          to: member.email,
-          from: "C24Club <support@c24club.com>",
-          sender_domain: "notify.c24club.com",
-          subject,
-          html: body,
-          text: body.replace(/<[^>]*>/g, ""),
-          purpose: "transactional",
-          unsubscribe_token: crypto.randomUUID(),
-          label: "challenge_pending_reminder",
-          queued_at: new Date().toISOString(),
-        },
-      });
-
-      if (enqueueError) {
-        console.error(`Failed to enqueue reminder for submission ${submission.id}:`, enqueueError);
+      try {
+        await sendResendEmail({ to: member.email, subject, html: body });
+        await supabase.from("email_send_log").insert({
+          message_id: messageId, template_name: "challenge_pending_reminder",
+          recipient_email: member.email, status: "sent",
+          metadata: { submission_id: submission.id },
+        });
+      } catch (sendErr) {
+        console.error(`Failed to send reminder for submission ${submission.id}:`, sendErr);
         continue;
       }
 
       sentCount++;
-      console.log(`📧 Reminder enqueued for ${member.email} (submission ${submission.id})`);
+      console.log(`📧 Reminder sent for ${member.email} (submission ${submission.id})`);
     }
 
-    console.log(`✅ Challenge reminders complete: ${sentCount} emails enqueued`);
+    console.log(`✅ Challenge reminders complete: ${sentCount} emails sent`);
 
     return new Response(
       JSON.stringify({ success: true, sent: sentCount }),

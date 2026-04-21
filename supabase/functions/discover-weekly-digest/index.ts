@@ -1,7 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
-const SENDER_DOMAIN = "notify.c24club.com";
-const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatches: number; totalDiscoverable: number; profileViews: number }): string {
@@ -167,31 +166,16 @@ Deno.serve(async (req) => {
 
       const messageId = `digest-${member.id}-${new Date().toISOString().slice(0, 10)}`;
 
-      await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "discover_weekly_digest",
-        recipient_email: member.email,
-        status: "pending",
-      });
-
-      await supabase.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          idempotency_key: messageId,
-          message_id: messageId,
-          to: member.email,
-          from: `C24Club <support@${FROM_DOMAIN}>`,
-          sender_domain: SENDER_DOMAIN,
-          subject,
-          html,
-          text: html.replace(/<[^>]*>/g, ""),
-          purpose: "transactional",
-          unsubscribe_token: crypto.randomUUID(),
-          label: "discover_weekly_digest",
-          queued_at: new Date().toISOString(),
-        },
-      });
-      sent++;
+      try {
+        await sendResendEmail({ to: member.email, subject, html });
+        await supabase.from("email_send_log").insert({
+          message_id: messageId, template_name: "discover_weekly_digest",
+          recipient_email: member.email, status: "sent",
+        });
+        sent++;
+      } catch (sendErr) {
+        console.error(`Failed to send digest to ${member.email}:`, sendErr);
+      }
     }
 
     return new Response(JSON.stringify({ success: true, sent }), {

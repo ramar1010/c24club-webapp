@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -103,43 +104,23 @@ Deno.serve(async (req) => {
 
     const messageId = `challenge-approved-${submissionId}-${Date.now()}`;
 
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: "challenge_approved",
-      recipient_email: member.email,
-      status: "pending",
-      metadata: { submission_id: submissionId },
-    });
-
-    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        idempotency_key: messageId,
-        message_id: messageId,
-        to: member.email,
-        from: "C24Club <support@c24club.com>",
-        sender_domain: "notify.c24club.com",
-        subject,
-        html: body,
-        text: body.replace(/<[^>]*>/g, ""),
-        purpose: "transactional",
-        unsubscribe_token: crypto.randomUUID(),
-        label: "challenge_approved",
-        queued_at: new Date().toISOString(),
-      },
-    });
-
-    if (enqueueError) {
-      console.error("Failed to enqueue challenge approved email", enqueueError);
-      return new Response(JSON.stringify({ error: "Failed to enqueue email" }), {
+    try {
+      await sendResendEmail({ to: member.email, subject, html: body });
+      await supabase.from("email_send_log").insert({
+        message_id: messageId, template_name: "challenge_approved",
+        recipient_email: member.email, status: "sent",
+        metadata: { submission_id: submissionId },
+      });
+      console.log(`📧 Challenge approved email sent via Resend for ${member.email}`);
+    } catch (sendErr) {
+      console.error("Failed to send challenge approved email via Resend", sendErr);
+      return new Response(JSON.stringify({ error: "Failed to send email" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log(`📧 Challenge approved email enqueued for ${member.email}`);
-
     return new Response(
-      JSON.stringify({ success: true, message: `Email queued for ${member.email}` }),
+      JSON.stringify({ success: true, message: `Email sent to ${member.email}` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

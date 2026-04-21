@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -108,38 +109,15 @@ Deno.serve(async (req) => {
       .replace(/\{\{tracking_url\}\}/g, redemption.shipping_tracking_url || "#")
       .replace(/\{\{order_date\}\}/g, orderDate);
 
-    // Enqueue email via pgmq
+    // Send email via Resend
     const messageId = `redemption-${redemptionId}-${templateKey}-${Date.now()}`;
-    const emailPayload = {
-      idempotency_key: messageId,
-      to: member.email,
-      from: `C24Club <support@c24club.com>`,
-      subject,
-      html: body,
-      text: body.replace(/<[^>]*>/g, ""),
-      purpose: "transactional",
-      unsubscribe_token: crypto.randomUUID(),
-      label: templateKey,
-      sender_domain: "notify.c24club.com",
-      message_id: messageId,
-      queued_at: new Date().toISOString(),
-    };
 
-    const { data: msgId, error: enqueueError } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: emailPayload,
-    });
+    await sendResendEmail({ to: member.email, subject, html: body });
 
-    if (enqueueError) {
-      console.error("Failed to enqueue email:", enqueueError);
-      throw new Error(`Failed to enqueue email: ${enqueueError.message}`);
-    }
-
-    // Log to email_send_log
     await supabase.from("email_send_log").insert({
       recipient_email: member.email,
       template_name: templateKey,
-      status: "pending",
+      status: "sent",
       message_id: messageId,
       metadata: { redemption_id: redemptionId, email_type: emailType },
     });
@@ -152,10 +130,10 @@ Deno.serve(async (req) => {
       .update({ notes: existingNotes ? `${existingNotes}\n${emailLog}` : emailLog })
       .eq("id", redemptionId);
 
-    console.log(`📧 Email enqueued for ${member.email}: ${templateKey} (msg_id: ${msgId})`);
+    console.log(`📧 Email enqueued for ${member.email}: ${templateKey} (resend)`);
 
     return new Response(
-      JSON.stringify({ success: true, message: `Email queued for ${member.email}` }),
+      JSON.stringify({ success: true, message: `Email sent to ${member.email}` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
