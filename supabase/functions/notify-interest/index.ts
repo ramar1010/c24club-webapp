@@ -183,7 +183,7 @@ serve(async (req) => {
       await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
-          run_id: crypto.randomUUID(),
+          idempotency_key: messageId,
           message_id: messageId,
           to: target.email,
           from: `C24Club <support@${FROM_DOMAIN}>`,
@@ -192,6 +192,7 @@ serve(async (req) => {
           html,
           text: html.replace(/<[^>]*>/g, ""),
           purpose: "transactional",
+          unsubscribe_token: crypto.randomUUID(),
           label: "discover_interest",
           queued_at: new Date().toISOString(),
         },
@@ -223,7 +224,7 @@ serve(async (req) => {
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
-            run_id: crypto.randomUUID(),
+            idempotency_key: messageId,
             message_id: matchIdTarget,
             to: target.email,
             from: `C24Club <support@${FROM_DOMAIN}>`,
@@ -232,6 +233,7 @@ serve(async (req) => {
             html: matchEmailTarget.html,
             text: matchEmailTarget.html.replace(/<[^>]*>/g, ""),
             purpose: "transactional",
+            unsubscribe_token: crypto.randomUUID(),
             label: "discover_mutual_match",
             queued_at: new Date().toISOString(),
           },
@@ -259,7 +261,7 @@ serve(async (req) => {
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
-                run_id: crypto.randomUUID(),
+                idempotency_key: messageId,
                 message_id: matchIdInterested,
                 to: interestedEmail,
                 from: `C24Club <support@${FROM_DOMAIN}>`,
@@ -268,6 +270,7 @@ serve(async (req) => {
                 html: matchEmailInterested.html,
                 text: matchEmailInterested.html.replace(/<[^>]*>/g, ""),
                 purpose: "transactional",
+                unsubscribe_token: crypto.randomUUID(),
                 label: "discover_mutual_match",
                 queued_at: new Date().toISOString(),
               },

@@ -87,6 +87,13 @@ Deno.serve(async (req) => {
 
     const messageId = crypto.randomUUID();
 
+    // Generate unsubscribe token for this recipient
+    const unsubToken = crypto.randomUUID();
+    await supabase.from("email_unsubscribe_tokens").upsert(
+      { email: member.email, token: unsubToken },
+      { onConflict: "email" }
+    );
+
     // Log pending before enqueue
     await supabase.from("email_send_log").insert({
       message_id: messageId,
@@ -99,16 +106,17 @@ Deno.serve(async (req) => {
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
-        run_id: crypto.randomUUID(),
         message_id: messageId,
+        idempotency_key: `welcome-${userId}`,
         to: member.email,
         from: `C24Club <support@c24club.com>`,
-        sender_domain: "notify.c24club.com",
+        sender_domain: "notify.c24club.com", 
         subject,
         html: body,
         text: body.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
         label: "welcome",
+        unsubscribe_token: unsubToken,
         queued_at: new Date().toISOString(),
       },
     });

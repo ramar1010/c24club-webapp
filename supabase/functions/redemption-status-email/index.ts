@@ -111,13 +111,14 @@ Deno.serve(async (req) => {
     // Enqueue email via pgmq
     const messageId = `redemption-${redemptionId}-${templateKey}-${Date.now()}`;
     const emailPayload = {
-      run_id: crypto.randomUUID(),
+      idempotency_key: messageId,
       to: member.email,
       from: `C24Club <support@c24club.com>`,
       subject,
       html: body,
       text: body.replace(/<[^>]*>/g, ""),
       purpose: "transactional",
+      unsubscribe_token: crypto.randomUUID(),
       label: templateKey,
       sender_domain: "notify.c24club.com",
       message_id: messageId,

@@ -227,7 +227,7 @@ serve(async (req) => {
           await supabaseAdmin.rpc("enqueue_email", {
             queue_name: "transactional_emails",
             payload: {
-              run_id: crypto.randomUUID(),
+              idempotency_key: messageId,
               message_id: messageId,
               to: recipientMember.email,
               from: "C24Club <support@c24club.com>",
@@ -236,6 +236,7 @@ serve(async (req) => {
               html: htmlBody,
               text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
               purpose: "transactional",
+              unsubscribe_token: crypto.randomUUID(),
               label: "gift-received",
               queued_at: new Date().toISOString(),
             },
@@ -334,7 +335,7 @@ serve(async (req) => {
           await supabaseAdmin.rpc("enqueue_email", {
             queue_name: "transactional_emails",
             payload: {
-              run_id: crypto.randomUUID(),
+              idempotency_key: messageId,
               message_id: messageId,
               to: recipientMember.email,
               from: "C24Club <support@c24club.com>",
@@ -343,6 +344,7 @@ serve(async (req) => {
               html: htmlBody,
               text: `Hey ${recipientName}! ${senderName} just gifted you ${giftMinutes} minutes on C24Club! Cash them out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
               purpose: "transactional",
+              unsubscribe_token: crypto.randomUUID(),
               label: "gift-received",
               queued_at: new Date().toISOString(),
             },

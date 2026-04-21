@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
-        run_id: crypto.randomUUID(),
+        idempotency_key: messageId,
         message_id: dedupeKey,
         to: invitee.email,
         from: `C24Club <support@${FROM_DOMAIN}>`,
@@ -220,6 +220,7 @@ Deno.serve(async (req) => {
         html,
         text: html.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
+        unsubscribe_token: crypto.randomUUID(),
         label: "missed_video_call",
         queued_at: new Date().toISOString(),
       },

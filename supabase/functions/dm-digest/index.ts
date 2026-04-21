@@ -288,7 +288,7 @@ Deno.serve(async (req) => {
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
-            run_id: crypto.randomUUID(),
+            idempotency_key: messageId,
             message_id: dmMessageId,
             to: member.email,
             from: `C24Club <support@${FROM_DOMAIN}>`,
@@ -297,6 +297,7 @@ Deno.serve(async (req) => {
             html,
             text: `${senderText} sent you a message on C24Club. You have ${info.count} unread message${info.count > 1 ? "s" : ""}. Read them at ${SITE_URL}/messages`,
             purpose: "transactional",
+            unsubscribe_token: crypto.randomUUID(),
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),
             idempotency_key: dmMessageId,

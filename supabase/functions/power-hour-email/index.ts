@@ -266,13 +266,14 @@ Deno.serve(async (req) => {
         const plainText = `Hey ${userName}! Session starts in ${timeLabel}. Join now: ${joinLink}`;
 
         const emailPayload = {
-          run_id: crypto.randomUUID(),
+          idempotency_key: messageId,
           to: member.email,
           from: `C24Club <support@c24club.com>`,
           subject,
           html: htmlContent,
           text: plainText,
           purpose: "transactional",
+          unsubscribe_token: crypto.randomUUID(),
           label: `power_hour_${reminder.reminderType}`,
           sender_domain: "notify.c24club.com",
           message_id: messageId,
