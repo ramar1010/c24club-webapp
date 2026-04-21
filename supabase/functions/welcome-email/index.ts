@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,8 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
-const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 Deno.serve(async (req) => {
@@ -87,58 +86,28 @@ Deno.serve(async (req) => {
 
     const messageId = crypto.randomUUID();
 
-    // Generate unsubscribe token for this recipient
-    const unsubToken = crypto.randomUUID();
-    await supabase.from("email_unsubscribe_tokens").upsert(
-      { email: member.email, token: unsubToken },
-      { onConflict: "email" }
-    );
-
-    // Log pending before enqueue
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: "welcome",
-      recipient_email: member.email,
-      status: "pending",
-    });
-
-    // Enqueue to transactional_emails queue
-    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        message_id: messageId,
-        idempotency_key: `welcome-${userId}`,
-        to: member.email,
-        from: `C24Club <support@c24club.com>`,
-        sender_domain: "notify.c24club.com", 
-        subject,
-        html: body,
-        text: body.replace(/<[^>]*>/g, ""),
-        purpose: "transactional",
-        label: "welcome",
-        unsubscribe_token: unsubToken,
-        queued_at: new Date().toISOString(),
-      },
-    });
-
-    if (enqueueError) {
-      console.error("Failed to enqueue welcome email", { error: enqueueError });
+    // Send via Resend
+    try {
+      const resendResult = await sendResendEmail({ to: member.email, subject, html: body });
       await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "welcome",
-        recipient_email: member.email,
-        status: "failed",
-        error_message: "Failed to enqueue email",
+        message_id: messageId, template_name: "welcome",
+        recipient_email: member.email, status: "sent",
       });
-      return new Response(JSON.stringify({ error: "Failed to enqueue email" }), {
+      console.log(`📧 Welcome email sent via Resend for ${member.email} (id: ${resendResult.id})`);
+    } catch (sendErr) {
+      console.error("Failed to send welcome email via Resend", sendErr);
+      await supabase.from("email_send_log").insert({
+        message_id: messageId, template_name: "welcome",
+        recipient_email: member.email, status: "failed",
+        error_message: sendErr instanceof Error ? sendErr.message : String(sendErr),
+      });
+      return new Response(JSON.stringify({ error: "Failed to send email" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log(`📧 Welcome email enqueued for ${member.email}`);
-
     return new Response(
-      JSON.stringify({ success: true, message: `Welcome email queued for ${member.email}` }),
+      JSON.stringify({ success: true, message: `Welcome email sent to ${member.email}` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
