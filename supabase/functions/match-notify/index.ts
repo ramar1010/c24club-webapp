@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -192,26 +193,10 @@ Deno.serve(async (req) => {
             const emailSubject = emailTemplate.subject;
 
           try {
-            await supabase.rpc("enqueue_email", {
-              queue_name: "transactional_emails",
-              payload: {
-                idempotency_key: messageId,
-                to: target.email,
-                from: `C24Club <support@c24club.com>`,
-                sender_domain: "notify.c24club.com",
-                subject: emailSubject,
-                html: emailBody,
-                text: emailBody.replace(/<[^>]*>/g, ""),
-                purpose: "transactional",
-                unsubscribe_token: crypto.randomUUID(),
-                label: "user_online_notify",
-                message_id: `online-notify-${segment}-${Date.now()}-${target.id}`,
-                queued_at: new Date().toISOString(),
-              },
-            });
+            await sendResendEmail({ to: target.email, subject: emailSubject, html: emailBody });
             emailsSent++;
           } catch (emailErr) {
-            console.error("Failed to enqueue email for", target.email, emailErr);
+            console.error("Failed to send email for", target.email, emailErr);
           }
         }
         } // end emailTemplate check

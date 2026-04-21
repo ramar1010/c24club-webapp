@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { sendResendEmail } from "../_shared/resend.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -6,8 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
-const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildInterestEmailHtml(interested: any, target: any): { subject: string; html: string } {
@@ -173,29 +172,10 @@ serve(async (req) => {
       const { subject, html } = buildInterestEmailHtml(interested, target);
       const messageId = `interest-${interested_user_id}-${target_user_id}`;
 
+      await sendResendEmail({ to: target.email, subject, html });
       await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "discover_interest",
-        recipient_email: target.email,
-        status: "pending",
-      });
-
-      await supabase.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          idempotency_key: messageId,
-          message_id: messageId,
-          to: target.email,
-          from: `C24Club <support@${FROM_DOMAIN}>`,
-          sender_domain: SENDER_DOMAIN,
-          subject,
-          html,
-          text: html.replace(/<[^>]*>/g, ""),
-          purpose: "transactional",
-          unsubscribe_token: crypto.randomUUID(),
-          label: "discover_interest",
-          queued_at: new Date().toISOString(),
-        },
+        message_id: messageId, template_name: "discover_interest",
+        recipient_email: target.email, status: "sent",
       });
       emailsSent.push("interest");
 
@@ -214,29 +194,10 @@ serve(async (req) => {
         const matchEmailTarget = buildMutualMatchEmailHtml(interested, target);
         const matchIdTarget = `match-${interested_user_id}-${target_user_id}`;
 
+        await sendResendEmail({ to: target.email, subject: matchEmailTarget.subject, html: matchEmailTarget.html });
         await supabase.from("email_send_log").insert({
-          message_id: matchIdTarget,
-          template_name: "discover_mutual_match",
-          recipient_email: target.email,
-          status: "pending",
-        });
-
-        await supabase.rpc("enqueue_email", {
-          queue_name: "transactional_emails",
-          payload: {
-            idempotency_key: messageId,
-            message_id: matchIdTarget,
-            to: target.email,
-            from: `C24Club <support@${FROM_DOMAIN}>`,
-            sender_domain: SENDER_DOMAIN,
-            subject: matchEmailTarget.subject,
-            html: matchEmailTarget.html,
-            text: matchEmailTarget.html.replace(/<[^>]*>/g, ""),
-            purpose: "transactional",
-            unsubscribe_token: crypto.randomUUID(),
-            label: "discover_mutual_match",
-            queued_at: new Date().toISOString(),
-          },
+          message_id: matchIdTarget, template_name: "discover_mutual_match",
+          recipient_email: target.email, status: "sent",
         });
 
         // Email to interested user about the match
@@ -251,29 +212,10 @@ serve(async (req) => {
             const matchEmailInterested = buildMutualMatchEmailHtml(target, interested);
             const matchIdInterested = `match-${target_user_id}-${interested_user_id}`;
 
+            await sendResendEmail({ to: interestedEmail, subject: matchEmailInterested.subject, html: matchEmailInterested.html });
             await supabase.from("email_send_log").insert({
-              message_id: matchIdInterested,
-              template_name: "discover_mutual_match",
-              recipient_email: interestedEmail,
-              status: "pending",
-            });
-
-            await supabase.rpc("enqueue_email", {
-              queue_name: "transactional_emails",
-              payload: {
-                idempotency_key: messageId,
-                message_id: matchIdInterested,
-                to: interestedEmail,
-                from: `C24Club <support@${FROM_DOMAIN}>`,
-                sender_domain: SENDER_DOMAIN,
-                subject: matchEmailInterested.subject,
-                html: matchEmailInterested.html,
-                text: matchEmailInterested.html.replace(/<[^>]*>/g, ""),
-                purpose: "transactional",
-                unsubscribe_token: crypto.randomUUID(),
-                label: "discover_mutual_match",
-                queued_at: new Date().toISOString(),
-              },
+              message_id: matchIdInterested, template_name: "discover_mutual_match",
+              recipient_email: interestedEmail, status: "sent",
             });
           }
         }
