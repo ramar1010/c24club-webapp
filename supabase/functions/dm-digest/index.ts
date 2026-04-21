@@ -297,6 +297,7 @@ Deno.serve(async (req) => {
             html,
             text: `${senderText} sent you a message on C24Club. You have ${info.count} unread message${info.count > 1 ? "s" : ""}. Read them at ${SITE_URL}/messages`,
             purpose: "transactional",
+            unsubscribe_token: messageId,
             label: "unread_dm_digest",
             queued_at: new Date().toISOString(),
             idempotency_key: dmMessageId,

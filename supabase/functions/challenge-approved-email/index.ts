@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
         html: body,
         text: body.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
+        unsubscribe_token: messageId,
         label: "challenge_approved",
         queued_at: new Date().toISOString(),
       },

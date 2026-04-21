@@ -280,6 +280,7 @@ serve(async (req) => {
                   html: htmlContent,
                   text: plainText,
                   purpose: "transactional",
+                  unsubscribe_token: messageId,
                   label: "window_reminder",
                   sender_domain: "notify.c24club.com",
                   message_id: messageId,

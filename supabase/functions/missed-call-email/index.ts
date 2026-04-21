@@ -220,6 +220,7 @@ Deno.serve(async (req) => {
         html,
         text: html.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
+        unsubscribe_token: messageId,
         label: "missed_video_call",
         queued_at: new Date().toISOString(),
       },
