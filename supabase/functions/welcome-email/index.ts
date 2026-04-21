@@ -87,6 +87,13 @@ Deno.serve(async (req) => {
 
     const messageId = crypto.randomUUID();
 
+    // Generate unsubscribe token for this recipient
+    const unsubToken = crypto.randomUUID();
+    await supabase.from("email_unsubscribe_tokens").upsert(
+      { email: member.email, token: unsubToken },
+      { onConflict: "email" }
+    );
+
     // Log pending before enqueue
     await supabase.from("email_send_log").insert({
       message_id: messageId,
@@ -109,6 +116,7 @@ Deno.serve(async (req) => {
         text: body.replace(/<[^>]*>/g, ""),
         purpose: "transactional",
         label: "welcome",
+        unsubscribe_token: unsubToken,
         queued_at: new Date().toISOString(),
       },
     });
