@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { sendResendEmail } from "../_shared/resend.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -215,31 +216,11 @@ serve(async (req) => {
           const subject = `🎁 ${senderName} just sent you $${totalCashValue.toFixed(2)} cash!`;
           const htmlBody = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{margin:0;padding:0;font-family:'Inter',Arial,sans-serif;background:#f4f4f5}.wrap{max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;margin-top:24px;margin-bottom:24px}.header{background:#18181b;padding:24px;text-align:center}.header img{height:32px}.content{padding:32px 24px}h1{color:#18181b;font-size:22px;margin:0 0 16px}p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}.highlight{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:20px;text-align:center;margin:20px 0}.highlight .amount{font-size:36px;font-weight:800;color:#059669}.highlight .label{font-size:13px;color:#6b7280;margin-top:4px}.cta{display:inline-block;background:#059669;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:10px;font-weight:700;font-size:15px;margin-top:16px}.footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}</style></head><body><div class="wrap"><div class="header"><img src="https://c24club.com/favicon-96x96.png" alt="C24Club"></div><div class="content"><h1>Hey ${recipientName}! 🎉</h1><p><strong>${senderName}</strong> just sent you a cash gift on C24Club!</p><div class="highlight"><div class="amount">$${totalCashValue.toFixed(2)}</div><div class="label">Cash value (+ ${totalMinutesForRecipient} calling minutes)</div></div><p>You can <strong>cash out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong>.</p><div style="text-align:center"><a href="https://c24club.com/my-rewards" class="cta">Go to My Rewards</a></div></div><div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div></div></body></html>`;
 
+          await sendResendEmail({ to: recipientMember.email, subject, html: htmlBody });
           const messageId = crypto.randomUUID();
-          await supabaseAdmin
-            .from("email_send_log")
-            .insert({
-              message_id: messageId,
-              template_name: "gift-received",
-              recipient_email: recipientMember.email,
-              status: "pending",
-            });
-          await supabaseAdmin.rpc("enqueue_email", {
-            queue_name: "transactional_emails",
-            payload: {
-              idempotency_key: messageId,
-              message_id: messageId,
-              to: recipientMember.email,
-              from: "C24Club <support@c24club.com>",
-              sender_domain: "notify.c24club.com",
-              subject,
-              html: htmlBody,
-              text: `Hey ${recipientName}! ${senderName} just sent you $${totalCashValue.toFixed(2)} cash on C24Club! Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
-              purpose: "transactional",
-              unsubscribe_token: crypto.randomUUID(),
-              label: "gift-received",
-              queued_at: new Date().toISOString(),
-            },
+          await supabaseAdmin.from("email_send_log").insert({
+            message_id: messageId, template_name: "gift-received",
+            recipient_email: recipientMember.email, status: "sent",
           });
         }
       } catch (emailErr) {
@@ -323,31 +304,11 @@ serve(async (req) => {
           const subject = `🎁 ${senderName} just gifted you ${giftMinutes} minutes!`;
           const htmlBody = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{margin:0;padding:0;font-family:'Inter',Arial,sans-serif;background:#f4f4f5}.wrap{max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;margin-top:24px;margin-bottom:24px}.header{background:#18181b;padding:24px;text-align:center}.header img{height:32px}.content{padding:32px 24px}h1{color:#18181b;font-size:22px;margin:0 0 16px}p{color:#52525b;font-size:15px;line-height:1.6;margin:0 0 12px}.highlight{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:20px;text-align:center;margin:20px 0}.highlight .amount{font-size:36px;font-weight:800;color:#059669}.highlight .label{font-size:13px;color:#6b7280;margin-top:4px}.cta{display:inline-block;background:#059669;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:10px;font-weight:700;font-size:15px;margin-top:16px}.footer{padding:20px 24px;text-align:center;color:#a1a1aa;font-size:12px}</style></head><body><div class="wrap"><div class="header"><img src="https://c24club.com/favicon-96x96.png" alt="C24Club"></div><div class="content"><h1>Hey ${recipientName}! 🎉</h1><p><strong>${senderName}</strong> just sent you a gift on C24Club!</p><div class="highlight"><div class="amount">${giftMinutes} min</div><div class="label">Minutes gifted to you</div></div><p>These gifted minutes can be <strong>cashed out for real money</strong> via PayPal! Head to <strong>My Rewards</strong> and tap <strong>Cash Out Minutes</strong>.</p><div style="text-align:center"><a href="https://c24club.com/my-rewards" class="cta">Go to My Rewards</a></div></div><div class="footer">C24Club &bull; You received this because someone gifted you minutes.</div></div></body></html>`;
 
+          await sendResendEmail({ to: recipientMember.email, subject, html: htmlBody });
           const messageId = crypto.randomUUID();
-          await supabaseAdmin
-            .from("email_send_log")
-            .insert({
-              message_id: messageId,
-              template_name: "gift-received",
-              recipient_email: recipientMember.email,
-              status: "pending",
-            });
-          await supabaseAdmin.rpc("enqueue_email", {
-            queue_name: "transactional_emails",
-            payload: {
-              idempotency_key: messageId,
-              message_id: messageId,
-              to: recipientMember.email,
-              from: "C24Club <support@c24club.com>",
-              sender_domain: "notify.c24club.com",
-              subject,
-              html: htmlBody,
-              text: `Hey ${recipientName}! ${senderName} just gifted you ${giftMinutes} minutes on C24Club! Cash them out via PayPal. Go to My Rewards > Cash Out Minutes. https://c24club.com/my-rewards`,
-              purpose: "transactional",
-              unsubscribe_token: crypto.randomUUID(),
-              label: "gift-received",
-              queued_at: new Date().toISOString(),
-            },
+          await supabaseAdmin.from("email_send_log").insert({
+            message_id: messageId, template_name: "gift-received",
+            recipient_email: recipientMember.email, status: "sent",
           });
         }
       } catch (emailErr) {

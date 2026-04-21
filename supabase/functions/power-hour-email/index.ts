@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -229,7 +230,7 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-      let enqueued = 0;
+      let sent = 0;
 
       for (const member of members) {
         if (!member.email || suppressedSet.has(member.email.toLowerCase())) continue;
@@ -265,45 +266,25 @@ Deno.serve(async (req) => {
         const htmlContent = buildHtml(userName, headline, bodyText, ctaText);
         const plainText = `Hey ${userName}! Session starts in ${timeLabel}. Join now: ${joinLink}`;
 
-        const emailPayload = {
-          idempotency_key: messageId,
-          to: member.email,
-          from: `C24Club <support@c24club.com>`,
-          subject,
-          html: htmlContent,
-          text: plainText,
-          purpose: "transactional",
-          unsubscribe_token: crypto.randomUUID(),
-          label: `power_hour_${reminder.reminderType}`,
-          sender_domain: "notify.c24club.com",
-          message_id: messageId,
-          queued_at: new Date().toISOString(),
-        };
-
-        const { error: enqErr } = await supabase.rpc("enqueue_email", {
-          queue_name: "transactional_emails",
-          payload: emailPayload,
-        });
-
-        if (enqErr) {
-          console.error(`Failed to enqueue for ${member.email}:`, enqErr.message);
+        try {
+          await sendResendEmail({ to: member.email, subject, html: htmlContent });
+          await supabase.from("email_send_log").insert({
+            template_name: `power_hour_${reminder.reminderType}`,
+            recipient_email: member.email, status: "sent",
+            message_id: messageId,
+            metadata: { user_id: member.id, gender: member.gender || "unknown", window_id: reminder.windowId },
+          });
+        } catch (enqErr) {
+          console.error(`Failed to send to ${member.email}:`, enqErr);
           continue;
         }
 
-        await supabase.from("email_send_log").insert({
-          template_name: `power_hour_${reminder.reminderType}`,
-          recipient_email: member.email,
-          status: "pending",
-          message_id: messageId,
-          metadata: { user_id: member.id, gender: member.gender || "unknown", window_id: reminder.windowId },
-        });
-
-        enqueued++;
+        sent++;
       }
 
-      console.log(`Power hour ${reminder.reminderType} for window ${reminder.startTime}: ${enqueued} emails enqueued`);
-      totalEnqueued += enqueued;
-      results.push({ window: reminder.startTime, reminderType: reminder.reminderType, sent: enqueued });
+      console.log(`Power hour ${reminder.reminderType} for window ${reminder.startTime}: ${sent} emails sent`);
+      totalEnqueued += sent;
+      results.push({ window: reminder.startTime, reminderType: reminder.reminderType, sent: sent });
     }
 
     return new Response(JSON.stringify({ totalSent: totalEnqueued, results }), {

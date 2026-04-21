@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { sendResendEmail } from "../_shared/resend.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -270,35 +271,17 @@ serve(async (req) => {
               const plainText = `Hey ${userName}! Session starts soon at ${displayTime}. Join now: ${joinLink}`;
               const messageId = `window_remind_${win.id}_${member.id}_${todayStr}`;
 
-              const { error: enqErr } = await supabase.rpc("enqueue_email", {
-                queue_name: "transactional_emails",
-                payload: {
-                  idempotency_key: messageId,
-                  to: member.email,
-                  from: "C24Club <support@c24club.com>",
-                  subject,
-                  html: htmlContent,
-                  text: plainText,
-                  purpose: "transactional",
-                  unsubscribe_token: crypto.randomUUID(),
-                  label: "window_reminder",
-                  sender_domain: "notify.c24club.com",
-                  message_id: messageId,
-                  queued_at: new Date().toISOString(),
-                },
-              });
-
-              if (!enqErr) {
+              try {
+                await sendResendEmail({ to: member.email, subject, html: htmlContent });
                 await supabase.from("email_send_log").insert({
                   template_name: "window_reminder",
-                  recipient_email: member.email,
-                  status: "pending",
+                  recipient_email: member.email, status: "sent",
                   message_id: messageId,
                   metadata: { user_id: member.id, gender: member.gender || "unknown", window_id: win.id },
                 });
                 emailResults.push({ email: member.email, window: win.label });
-              } else {
-                console.error(`Email enqueue failed for ${member.email}:`, enqErr.message);
+              } catch (enqErr) {
+                console.error(`Email send failed for ${member.email}:`, enqErr);
               }
             }
           }

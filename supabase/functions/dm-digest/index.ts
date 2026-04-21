@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,8 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
-const FROM_DOMAIN = "c24club.com";
 const SITE_URL = "https://c24club.com";
 
 function buildDigestHtml(
@@ -262,12 +261,11 @@ Deno.serve(async (req) => {
 
       const html = buildDigestHtml(member, senderNames, info.count, messageSnippets);
 
-      // Enqueue email via pgmq
       try {
         const latestMsgId = recipientLatestMsgId[member.id];
         const dmMessageId = `dm-digest-${member.id}-${latestMsgId}`;
 
-        // Skip if a digest covering this latest unread message was already sent/queued
+        // Skip if already sent
         const { data: alreadySent } = await supabase
           .from("email_send_log")
           .select("id")
@@ -278,42 +276,22 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        await sendResendEmail({ to: member.email, subject, html });
         await supabase.from("email_send_log").insert({
-          message_id: dmMessageId,
-          template_name: "unread_dm_digest",
-          recipient_email: member.email,
-          status: "pending",
-        });
-
-        await supabase.rpc("enqueue_email", {
-          queue_name: "transactional_emails",
-          payload: {
-            idempotency_key: messageId,
-            message_id: dmMessageId,
-            to: member.email,
-            from: `C24Club <support@${FROM_DOMAIN}>`,
-            sender_domain: SENDER_DOMAIN,
-            subject,
-            html,
-            text: `${senderText} sent you a message on C24Club. You have ${info.count} unread message${info.count > 1 ? "s" : ""}. Read them at ${SITE_URL}/messages`,
-            purpose: "transactional",
-            unsubscribe_token: crypto.randomUUID(),
-            label: "unread_dm_digest",
-            queued_at: new Date().toISOString(),
-            idempotency_key: dmMessageId,
-          },
+          message_id: dmMessageId, template_name: "unread_dm_digest",
+          recipient_email: member.email, status: "sent",
         });
         emailsSent++;
       } catch (e) {
-        console.error(`Failed to enqueue email for ${member.id}:`, e);
+        console.error(`Failed to send email for ${member.id}:`, e);
       }
     }
 
-    console.log(`Digest emails enqueued for ${emailsSent} users`);
+    console.log(`Digest emails sent for ${emailsSent} users`);
 
     return new Response(
       JSON.stringify({
-        message: `Digest emails enqueued for ${emailsSent} users`,
+        message: `Digest emails sent for ${emailsSent} users`,
         recipients: emailsSent,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

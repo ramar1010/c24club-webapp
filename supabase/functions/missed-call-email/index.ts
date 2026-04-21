@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendResendEmail } from "../_shared/resend.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,8 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SENDER_DOMAIN = "notify.c24club.com";
-const FROM_DOMAIN = "c24club.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -199,42 +198,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Log pending
-    await supabase.from("email_send_log").insert({
-      message_id: dedupeKey,
-      template_name: "missed_video_call",
-      recipient_email: invitee.email,
-      status: "pending",
-    });
-
-    // Enqueue
-    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        idempotency_key: messageId,
-        message_id: dedupeKey,
-        to: invitee.email,
-        from: `C24Club <support@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text: html.replace(/<[^>]*>/g, ""),
-        purpose: "transactional",
-        unsubscribe_token: crypto.randomUUID(),
-        label: "missed_video_call",
-        queued_at: new Date().toISOString(),
-      },
-    });
-
-    if (enqueueError) {
-      console.error("Failed to enqueue missed call email:", enqueueError);
-      return new Response(JSON.stringify({ error: "Failed to enqueue" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Send via Resend
+    try {
+      await sendResendEmail({ to: invitee.email, subject, html });
+      await supabase.from("email_send_log").insert({
+        message_id: dedupeKey, template_name: "missed_video_call",
+        recipient_email: invitee.email, status: "sent",
+      });
+      console.log(`📹 Missed call email sent via Resend for ${invitee.email} (caller: ${callerName})`);
+    } catch (sendErr) {
+      console.error("Failed to send missed call email:", sendErr);
+      return new Response(JSON.stringify({ error: "Failed to send" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    console.log(`📹 Missed call email enqueued for ${invitee.email} (caller: ${callerName})`);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
