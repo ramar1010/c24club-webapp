@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
                 html: emailBody,
                 text: emailBody.replace(/<[^>]*>/g, ""),
                 purpose: "transactional",
-                unsubscribe_token: messageId,
+                unsubscribe_token: crypto.randomUUID(),
                 label: "user_online_notify",
                 message_id: `online-notify-${segment}-${Date.now()}-${target.id}`,
                 queued_at: new Date().toISOString(),

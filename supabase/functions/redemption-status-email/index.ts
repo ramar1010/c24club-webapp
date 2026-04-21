@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       html: body,
       text: body.replace(/<[^>]*>/g, ""),
       purpose: "transactional",
-      unsubscribe_token: messageId,
+      unsubscribe_token: crypto.randomUUID(),
       label: templateKey,
       sender_domain: "notify.c24club.com",
       message_id: messageId,

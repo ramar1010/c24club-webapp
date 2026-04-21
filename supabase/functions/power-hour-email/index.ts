@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
           html: htmlContent,
           text: plainText,
           purpose: "transactional",
-          unsubscribe_token: messageId,
+          unsubscribe_token: crypto.randomUUID(),
           label: `power_hour_${reminder.reminderType}`,
           sender_domain: "notify.c24club.com",
           message_id: messageId,

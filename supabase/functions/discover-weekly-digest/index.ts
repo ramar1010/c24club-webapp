@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
           html,
           text: html.replace(/<[^>]*>/g, ""),
           purpose: "transactional",
-          unsubscribe_token: messageId,
+          unsubscribe_token: crypto.randomUUID(),
           label: "discover_weekly_digest",
           queued_at: new Date().toISOString(),
         },
