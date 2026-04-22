@@ -58,6 +58,7 @@ import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
+import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -115,6 +116,8 @@ const VideoCallPage = () => {
   const [showMinuteLossToast, setShowMinuteLossToast] = useState(false);
   const skipPenaltyCountRef = useRef(0); // tracks how many times penalty shown
   const connectionStartRef = useRef<number | null>(null); // track when connection started
+  const [showAppDownloadPopup, setShowAppDownloadPopup] = useState(false);
+  const appDownloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | "challenges" | null>(null);
