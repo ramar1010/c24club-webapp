@@ -512,6 +512,27 @@ const VideoCallPage = () => {
     }
   }, [callState, overlayPage]);
 
+  // Show app download popup after 7s of waiting
+  useEffect(() => {
+    if (callState === "waiting") {
+      appDownloadTimerRef.current = setTimeout(() => {
+        if (!sessionStorage.getItem("c24_app_popup_shown")) {
+          setShowAppDownloadPopup(true);
+          sessionStorage.setItem("c24_app_popup_shown", "1");
+        }
+      }, 7000);
+    } else {
+      if (appDownloadTimerRef.current) {
+        clearTimeout(appDownloadTimerRef.current);
+        appDownloadTimerRef.current = null;
+      }
+      setShowAppDownloadPopup(false);
+    }
+    return () => {
+      if (appDownloadTimerRef.current) clearTimeout(appDownloadTimerRef.current);
+    };
+  }, [callState]);
+
   // ─── Bestie Challenge: auto-track call time & screenshot ───
   const { data: activeBestiePair } = useQuery({
     queryKey: ["bestie_active_pair", memberId, currentPartnerId],
