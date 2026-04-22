@@ -58,6 +58,7 @@ import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
+import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -115,6 +116,8 @@ const VideoCallPage = () => {
   const [showMinuteLossToast, setShowMinuteLossToast] = useState(false);
   const skipPenaltyCountRef = useRef(0); // tracks how many times penalty shown
   const connectionStartRef = useRef<number | null>(null); // track when connection started
+  const [showAppDownloadPopup, setShowAppDownloadPopup] = useState(false);
+  const appDownloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | "challenges" | null>(null);
@@ -508,6 +511,27 @@ const VideoCallPage = () => {
       toast("Match found! 🎉", { description: "You've been connected to someone!" });
     }
   }, [callState, overlayPage]);
+
+  // Show app download popup after 7s of waiting
+  useEffect(() => {
+    if (callState === "waiting") {
+      appDownloadTimerRef.current = setTimeout(() => {
+        if (!sessionStorage.getItem("c24_app_popup_shown")) {
+          setShowAppDownloadPopup(true);
+          sessionStorage.setItem("c24_app_popup_shown", "1");
+        }
+      }, 7000);
+    } else {
+      if (appDownloadTimerRef.current) {
+        clearTimeout(appDownloadTimerRef.current);
+        appDownloadTimerRef.current = null;
+      }
+      setShowAppDownloadPopup(false);
+    }
+    return () => {
+      if (appDownloadTimerRef.current) clearTimeout(appDownloadTimerRef.current);
+    };
+  }, [callState]);
 
   // ─── Bestie Challenge: auto-track call time & screenshot ───
   const { data: activeBestiePair } = useQuery({
@@ -1502,6 +1526,9 @@ const VideoCallPage = () => {
           <WeeklyChallengesPage onClose={() => setOverlayPage(null)} />
         </FullScreenOverlay>
       }
+
+      {/* App Download Popup (after 7s waiting) */}
+      {showAppDownloadPopup && <AppDownloadPopup onClose={() => setShowAppDownloadPopup(false)} />}
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
