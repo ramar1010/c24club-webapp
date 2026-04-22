@@ -36,13 +36,18 @@ const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => {
         </div>
 
         {/* App preview image */}
-        <div className="rounded-xl overflow-hidden border border-white/10">
+        <a
+          href={GOOGLE_PLAY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block rounded-xl overflow-hidden border border-white/10"
+        >
           <img
             src={appPreview}
-            alt="C24Club App Preview"
+            alt="C24Club App Preview — Get it on Google Play"
             className="w-full h-auto"
           />
-        </div>
+        </a>
 
         {/* CTA button */}
         <a
