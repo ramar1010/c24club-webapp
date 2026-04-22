@@ -1530,6 +1530,15 @@ const VideoCallPage = () => {
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
       <SkipPenaltyPopup
+@@
+      }
+
+      {/* App Download Popup (after 7s waiting) */}
+      {showAppDownloadPopup && <AppDownloadPopup onClose={() => setShowAppDownloadPopup(false)} />}
+
+      {/* Skip Penalty Popup (first 3 times) */}
+      {showSkipPenaltyPopup &&
+      <SkipPenaltyPopup
         minutesLost={2}
         onDismiss={() => setShowSkipPenaltyPopup(false)}
         onUpgrade={() => {
