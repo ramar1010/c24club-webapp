@@ -1,7 +1,5 @@
 import { X } from "lucide-react";
-import appPreview from "@/assets/app-promo/app-preview.jpeg";
-import appStoreSoon from "@/assets/app-promo/app-store-soon.png";
-import googlePlayBadge from "@/assets/app-promo/google-play-badge.svg";
+import appPreview from "@/assets/app-promo/app-preview-with-badges.jpeg";
 
 interface AppDownloadPopupProps {
   onClose: () => void;
@@ -35,21 +33,6 @@ const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => {
           <p className="text-yellow-400 font-bold text-sm mt-2">
             Get Our App To Get Notified Instantly for FREE! 🔔
           </p>
-        </div>
-
-        {/* Store badges */}
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <a
-            href={GOOGLE_PLAY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-12 transition-transform hover:scale-105"
-          >
-            <img src={googlePlayBadge} alt="Get it on Google Play" className="h-full w-auto" />
-          </a>
-          <div className="h-12 opacity-80">
-            <img src={appStoreSoon} alt="Available on App Store Soon" className="h-full w-auto rounded-lg" />
-          </div>
         </div>
 
         {/* App preview image */}
