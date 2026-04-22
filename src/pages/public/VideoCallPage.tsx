@@ -516,7 +516,11 @@ const VideoCallPage = () => {
   useEffect(() => {
     if (callState === "waiting") {
       appDownloadTimerRef.current = setTimeout(() => {
-        setShowAppDownloadPopup(true);
+        const shown = parseInt(localStorage.getItem("c24_app_popup_count") || "0", 10);
+        if (shown < 5) {
+          setShowAppDownloadPopup(true);
+          localStorage.setItem("c24_app_popup_count", String(shown + 1));
+        }
       }, 7000);
     } else {
       if (appDownloadTimerRef.current) {
