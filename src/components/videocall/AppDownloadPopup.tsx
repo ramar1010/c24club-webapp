@@ -81,7 +81,6 @@ const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
       </a>
     </div>
   </div>
-);
   );
 };
 
