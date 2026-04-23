@@ -1,64 +1,60 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowDown, ArrowUp, MousePointerClick, TrendingUp, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, TrendingUp, Users } from "lucide-react";
 
-interface TapSummary {
+interface ClickSummary {
   user_id: string;
   name: string;
   email: string | null;
   gender: string | null;
-  tap_count: number;
-  first_tap: string;
-  last_tap: string;
+  click_count: number;
+  first_click: string;
+  last_click: string;
 }
 
-type SortKey = "name" | "email" | "gender" | "tap_count" | "first_tap" | "last_tap";
+type SortKey = "name" | "email" | "gender" | "click_count" | "first_click" | "last_click";
 type SortDir = "asc" | "desc";
 
 const TapAnalyticsPage = () => {
-  const [summaries, setSummaries] = useState<TapSummary[]>([]);
-  const [totalTaps, setTotalTaps] = useState(0);
+  const [summaries, setSummaries] = useState<ClickSummary[]>([]);
+  const [totalClicks, setTotalClicks] = useState(0);
   const [uniqueUsers, setUniqueUsers] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("tap_count");
+  const [sortKey, setSortKey] = useState<SortKey>("click_count");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
-      // Fetch all tap events
-      const { data: taps } = await supabase
-        .from("tap_me_events")
+      const { data: clicks } = await supabase
+        .from("app_download_clicks")
         .select("user_id, created_at")
         .order("created_at", { ascending: false });
 
-      if (!taps || taps.length === 0) {
+      if (!clicks || clicks.length === 0) {
         setLoading(false);
         return;
       }
 
-      setTotalTaps(taps.length);
+      setTotalClicks(clicks.length);
 
-      // Group by user
       const grouped = new Map<string, { count: number; first: string; last: string }>();
-      for (const t of taps) {
-        const existing = grouped.get(t.user_id);
+      for (const c of clicks) {
+        const existing = grouped.get(c.user_id);
         if (existing) {
           existing.count++;
-          if (t.created_at < existing.first) existing.first = t.created_at;
-          if (t.created_at > existing.last) existing.last = t.created_at;
+          if (c.created_at < existing.first) existing.first = c.created_at;
+          if (c.created_at > existing.last) existing.last = c.created_at;
         } else {
-          grouped.set(t.user_id, { count: 1, first: t.created_at, last: t.created_at });
+          grouped.set(c.user_id, { count: 1, first: c.created_at, last: c.created_at });
         }
       }
 
       setUniqueUsers(grouped.size);
 
-      // Fetch member info
       const userIds = Array.from(grouped.keys());
       const { data: members } = await supabase
         .from("members")
@@ -67,7 +63,7 @@ const TapAnalyticsPage = () => {
 
       const memberMap = new Map((members || []).map(m => [m.id, m]));
 
-      const results: TapSummary[] = Array.from(grouped.entries())
+      const results: ClickSummary[] = Array.from(grouped.entries())
         .map(([uid, data]) => {
           const member = memberMap.get(uid);
           return {
@@ -75,12 +71,12 @@ const TapAnalyticsPage = () => {
             name: member?.name || "Unknown",
             email: member?.email || null,
             gender: member?.gender || null,
-            tap_count: data.count,
-            first_tap: data.first,
-            last_tap: data.last,
+            click_count: data.count,
+            first_click: data.first,
+            last_click: data.last,
           };
         })
-        .sort((a, b) => b.tap_count - a.tap_count);
+        .sort((a, b) => b.click_count - a.click_count);
 
       setSummaries(results);
       setLoading(false);
@@ -94,7 +90,7 @@ const TapAnalyticsPage = () => {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
-      setSortDir(key === "tap_count" ? "desc" : "asc");
+      setSortDir(key === "click_count" ? "desc" : "asc");
     }
   };
 
@@ -117,22 +113,22 @@ const TapAnalyticsPage = () => {
     return sortDir === "asc" ? <ArrowUp className="inline h-3 w-3 ml-1" /> : <ArrowDown className="inline h-3 w-3 ml-1" />;
   };
 
-  const avgTaps = uniqueUsers > 0 ? (totalTaps / uniqueUsers).toFixed(1) : "0";
+  const avgClicks = uniqueUsers > 0 ? (totalClicks / uniqueUsers).toFixed(1) : "0";
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Tap Me Analytics</h2>
-        <p className="text-muted-foreground mt-1">Track engagement with the "Tap Me" button</p>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">App Download Analytics</h2>
+        <p className="text-muted-foreground mt-1">Track users who tapped to download the native app from the popup.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Taps</CardTitle>
-            <MousePointerClick className="h-5 w-5 text-primary" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Clicks</CardTitle>
+            <Download className="h-5 w-5 text-primary" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{totalTaps}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold">{totalClicks}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -143,22 +139,22 @@ const TapAnalyticsPage = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Taps / User</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Clicks / User</CardTitle>
             <TrendingUp className="h-5 w-5 text-warning" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{avgTaps}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold">{avgClicks}</div></CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Tap Events by User</CardTitle>
+          <CardTitle>Download Clicks by User</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-muted-foreground">Loading...</p>
           ) : sorted.length === 0 ? (
-            <p className="text-muted-foreground">No tap events recorded yet.</p>
+            <p className="text-muted-foreground">No download clicks recorded yet.</p>
           ) : (
             <Table>
               <TableHeader>
@@ -166,9 +162,9 @@ const TapAnalyticsPage = () => {
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("name")}>Name<SortIcon col="name" /></TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("email")}>Email<SortIcon col="email" /></TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("gender")}>Gender<SortIcon col="gender" /></TableHead>
-                  <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("tap_count")}>Tap Count<SortIcon col="tap_count" /></TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("first_tap")}>First Tap<SortIcon col="first_tap" /></TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("last_tap")}>Last Tap<SortIcon col="last_tap" /></TableHead>
+                  <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("click_count")}>Clicks<SortIcon col="click_count" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("first_click")}>First Click<SortIcon col="first_click" /></TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("last_click")}>Last Click<SortIcon col="last_click" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -177,9 +173,9 @@ const TapAnalyticsPage = () => {
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell>{s.email || "—"}</TableCell>
                     <TableCell className="capitalize">{s.gender || "—"}</TableCell>
-                    <TableCell className="text-right font-bold">{s.tap_count}</TableCell>
-                    <TableCell>{new Date(s.first_tap).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(s.last_tap).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right font-bold">{s.click_count}</TableCell>
+                    <TableCell>{new Date(s.first_click).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(s.last_click).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
