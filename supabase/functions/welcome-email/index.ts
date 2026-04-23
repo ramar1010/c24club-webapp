@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
     // Get member info
     const { data: member } = await supabase
-      .from("members").select("name, email").eq("id", userId).single();
+      .from("members").select("name, email, gender").eq("id", userId).single();
 
     if (!member?.email) {
       console.log("Member email not found for welcome email, skipping.");
@@ -59,6 +59,18 @@ Deno.serve(async (req) => {
 
     const rawBody = template.body.replace(/\{\{user_name\}\}/g, member.name);
 
+    // Prepend app download message for male users
+    const isMale = (member.gender || "").toLowerCase() === "male";
+    const maleAppPromo = isMale
+      ? `<div style="background-color:#f0f7ff;border:1px solid #c2dbf4;border-radius:8px;padding:16px;margin-bottom:20px;">
+           <p style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:0 0 8px;">📲 Looking for the opposite gender to connect to instantly?</p>
+           <p style="font-size:14px;color:#55575d;margin:0 0 12px;line-height:1.6;">Download our app on the Google Play Store to get notified instantly when a female or male user is online and searching!</p>
+           <a href="https://play.google.com/store/apps/details?id=com.c24club.app&hl=en_US" style="display:inline-block;padding:12px 20px;background-color:#34a853;color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
+             Download on Google Play
+           </a>
+         </div>`
+      : "";
+
     // Wrap in styled HTML email layout
     const body = `<!DOCTYPE html>
 <html lang="en">
@@ -71,6 +83,7 @@ Deno.serve(async (req) => {
           <img src="https://ncpbiymnafxdfsvpxirb.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="C24 Club" width="120" style="margin-bottom:24px;" />
           <h1 style="font-size:22px;font-weight:bold;color:#1a1a2e;margin:0 0 20px;">Welcome to C24Club! 🎉</h1>
           <div style="font-size:14px;color:#55575d;line-height:1.8;">
+            ${maleAppPromo}
             ${rawBody.includes('<') ? rawBody : rawBody.replace(/\n/g, '<br/>')}
           </div>
           <a href="${SITE_URL}/videocall" style="display:inline-block;margin-top:24px;padding:14px 24px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;">
