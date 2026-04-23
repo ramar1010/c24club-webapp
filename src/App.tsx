@@ -50,6 +50,7 @@ const AdminBannedUsersPage = lazy(() => import("@/pages/admin/AdminBannedUsersPa
 const UserAnalyticsPage = lazy(() => import("@/pages/admin/UserAnalyticsPage"));
 const AdminDiscoverReviewPage = lazy(() => import("@/pages/admin/AdminDiscoverReviewPage"));
 const TapAnalyticsPage = lazy(() => import("@/pages/admin/TapAnalyticsPage"));
+const AdminNativeAppUsersPage = lazy(() => import("@/pages/admin/AdminNativeAppUsersPage"));
 const AdminDmMonitorPage = lazy(() => import("@/pages/admin/AdminDmMonitorPage"));
 const ReportedUsersPage = lazy(() => import("@/pages/admin/ReportedUsersPage"));
 const AdminUserRolesPage = lazy(() => import("@/pages/admin/AdminUserRolesPage"));
@@ -190,6 +191,7 @@ const App = () => (
                 <Route path="revenue" element={<RevenuePage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
                 <Route path="tap-analytics" element={<TapAnalyticsPage />} />
+                <Route path="native-app-users" element={<AdminNativeAppUsersPage />} />
                 <Route path="dm-monitor" element={<AdminDmMonitorPage />} />
                 <Route path="user-roles" element={<AdminUserRolesPage />} />
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
