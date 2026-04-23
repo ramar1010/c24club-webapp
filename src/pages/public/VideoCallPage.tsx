@@ -1412,7 +1412,7 @@ const VideoCallPage = () => {
 
       {/* Female "Pick an Item" button — below video boxes */}
       {/* Mini app download banner for male Android users on idle screen */}
-      {!isActive && !isFemale && (
+      {!isActive && (
         <AppDownloadMiniBanner userId={memberId} gender={memberGender} />
       )}
 
