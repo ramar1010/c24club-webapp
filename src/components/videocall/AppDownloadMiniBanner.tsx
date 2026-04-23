@@ -17,10 +17,12 @@ const AppDownloadMiniBanner = ({ userId, gender }: AppDownloadMiniBannerProps) =
 
   useEffect(() => {
     const isAndroid = /android/i.test(navigator.userAgent);
-    const isMale = gender?.toLowerCase() === "male";
+    // Show for males OR users who haven't set gender yet (new accounts).
+    // Hide only for confirmed female users.
+    const isFemale = gender?.toLowerCase() === "female";
     const shown = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
 
-    if (isAndroid && isMale && shown < MAX_SHOWS) {
+    if (isAndroid && !isFemale && shown < MAX_SHOWS) {
       setVisible(true);
       localStorage.setItem(STORAGE_KEY, String(shown + 1));
     }
