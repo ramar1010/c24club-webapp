@@ -517,7 +517,8 @@ const VideoCallPage = () => {
     if (callState === "waiting") {
       appDownloadTimerRef.current = setTimeout(() => {
         const shown = parseInt(localStorage.getItem("c24_app_popup_count") || "0", 10);
-        if (shown < 5) {
+        const isAndroid = /android/i.test(navigator.userAgent);
+        if (shown < 5 && isAndroid) {
           setShowAppDownloadPopup(true);
           localStorage.setItem("c24_app_popup_count", String(shown + 1));
         }
