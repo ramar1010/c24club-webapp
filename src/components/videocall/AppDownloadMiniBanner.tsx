@@ -17,10 +17,12 @@ const AppDownloadMiniBanner = ({ userId, gender }: AppDownloadMiniBannerProps) =
 
   useEffect(() => {
     const isAndroid = /android/i.test(navigator.userAgent);
-    const isMale = gender?.toLowerCase() === "male";
+    // Show for males OR users who haven't set gender yet (new accounts).
+    // Hide only for confirmed female users.
+    const isFemale = gender?.toLowerCase() === "female";
     const shown = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
 
-    if (isAndroid && isMale && shown < MAX_SHOWS) {
+    if (isAndroid && !isFemale && shown < MAX_SHOWS) {
       setVisible(true);
       localStorage.setItem(STORAGE_KEY, String(shown + 1));
     }
@@ -29,7 +31,7 @@ const AppDownloadMiniBanner = ({ userId, gender }: AppDownloadMiniBannerProps) =
   if (!visible) return null;
 
   return (
-    <div className="mx-3 mb-2 bg-gradient-to-r from-neutral-900 to-neutral-800 border border-yellow-500/30 rounded-xl px-3 py-2.5 flex items-center gap-3 shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-fade-in">
+    <div className="fixed bottom-20 left-0 right-0 z-40 mx-3 bg-gradient-to-r from-neutral-900 to-neutral-800 border border-yellow-500/30 rounded-xl px-3 py-2.5 flex items-center gap-3 shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-fade-in">
       <div className="flex-1 min-w-0">
         <p className="text-white text-xs font-bold leading-tight">
           🔥 Everyone is on our App!
