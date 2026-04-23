@@ -264,6 +264,7 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "user-analytics", label: "Growth & Acquisition", path: "/admin/user-analytics" },
       { key: "tap-analytics", label: "Tap Me Analytics", path: "/admin/tap-analytics" },
+      { key: "native-app-users", label: "Native App Users", path: "/admin/native-app-users" },
     ],
   },
   {
