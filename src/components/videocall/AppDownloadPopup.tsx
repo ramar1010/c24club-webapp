@@ -1,14 +1,23 @@
 import { X, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import appPreview from "@/assets/app-promo/app-preview-with-badges.jpeg";
 
 interface AppDownloadPopupProps {
   onClose: () => void;
+  userId?: string;
 }
 
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.c24club.app&hl=en_US";
 
-const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => (
+const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
+  const handleDownloadClick = () => {
+    if (userId && userId !== "anonymous") {
+      supabase.from("app_download_clicks").insert({ user_id: userId, source: "popup" }).then(() => {});
+    }
+  };
+
+  return (
   <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center px-4">
     <div className="relative bg-neutral-900 border border-white/10 rounded-2xl p-5 max-w-sm w-full text-center shadow-[0_0_40px_rgba(234,179,8,0.25)] max-h-[90vh] overflow-y-auto animate-scale-in">
       {/* Close */}
@@ -50,6 +59,7 @@ const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => (
         href={GOOGLE_PLAY_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleDownloadClick}
         className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] transition-shadow duration-300"
       >
         <img
@@ -64,6 +74,7 @@ const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => (
         href={GOOGLE_PLAY_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleDownloadClick}
         className="mt-4 block w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-sm uppercase tracking-wide transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)] hover:scale-105 duration-300"
       >
         📲 Download Now — It's FREE 🚀
@@ -71,5 +82,7 @@ const AppDownloadPopup = ({ onClose }: AppDownloadPopupProps) => (
     </div>
   </div>
 );
+  );
+};
 
 export default AppDownloadPopup;
