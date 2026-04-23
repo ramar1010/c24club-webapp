@@ -59,6 +59,7 @@ import PickItemModal from "@/components/videocall/PickItemModal";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
 import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
+import AppDownloadMiniBanner from "@/components/videocall/AppDownloadMiniBanner";
 
 import c24Logo from "@/assets/videocall/c24-logo.png";
 import nextBtn from "@/assets/videocall/next-btn.png";
@@ -1410,6 +1411,11 @@ const VideoCallPage = () => {
       }
 
       {/* Female "Pick an Item" button — below video boxes */}
+      {/* Mini app download banner for male Android users on idle screen */}
+      {!isActive && !isFemale && (
+        <AppDownloadMiniBanner userId={memberId} gender={memberGender} />
+      )}
+
       {!showRedeem && isFemale && wishlistCount < 3 && (
         <div className="flex justify-center py-2">
           <button
