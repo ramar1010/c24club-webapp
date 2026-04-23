@@ -29,7 +29,7 @@ const AppDownloadMiniBanner = ({ userId, gender }: AppDownloadMiniBannerProps) =
   if (!visible) return null;
 
   return (
-    <div className="mx-3 mb-2 bg-gradient-to-r from-neutral-900 to-neutral-800 border border-yellow-500/30 rounded-xl px-3 py-2.5 flex items-center gap-3 shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-fade-in">
+    <div className="fixed bottom-20 left-0 right-0 z-40 mx-3 bg-gradient-to-r from-neutral-900 to-neutral-800 border border-yellow-500/30 rounded-xl px-3 py-2.5 flex items-center gap-3 shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-fade-in">
       <div className="flex-1 min-w-0">
         <p className="text-white text-xs font-bold leading-tight">
           🔥 Everyone is on our App!
