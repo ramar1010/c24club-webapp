@@ -71,7 +71,7 @@ export function useRewardCategories() {
   return useQuery({
     queryKey: ["reward_categories"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("reward_categories").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("reward_categories").select("*").order("display_order", { ascending: true }).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -128,6 +128,7 @@ export function usePublicCategories() {
         .from("reward_categories")
         .select("*")
         .eq("status", "active")
+        .order("display_order", { ascending: true })
         .order("name", { ascending: true });
       if (error) throw error;
       return data;
