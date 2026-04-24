@@ -56,6 +56,8 @@ import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
+import GoalItemPicker from "@/components/videocall/GoalItemPicker";
+import GoalProgressTracker from "@/components/videocall/GoalProgressTracker";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
 import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
@@ -107,6 +109,7 @@ const VideoCallPage = () => {
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
   const [showPickItem, setShowPickItem] = useState(false);
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [showRedeemTooltip, setShowRedeemTooltip] = useState(false);
   const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
@@ -165,6 +168,20 @@ const VideoCallPage = () => {
       return count ?? 0;
     },
   });
+
+  // Auto-show Goal Picker for new females (once) — after selfie completed, no goal yet
+  useEffect(() => {
+    if (!isFemale || memberId === "anonymous") return;
+    if (!hasSelfie) return;
+    if (wishlistCount > 0) return;
+    const key = `c24_goal_picker_shown_${memberId}`;
+    if (localStorage.getItem(key)) return;
+    const t = setTimeout(() => {
+      setShowGoalPicker(true);
+      localStorage.setItem(key, "1");
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [isFemale, memberId, hasSelfie, wishlistCount]);
 
   const {
     callState,
@@ -1417,13 +1434,23 @@ const VideoCallPage = () => {
       )}
 
       {!showRedeem && isFemale && wishlistCount < 3 && (
-        <div className="flex justify-center py-2">
-          <button
-            onClick={() => setShowPickItem(true)}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
-          >
-            🎁 Pick an Item to Redeem
-          </button>
+        <div className="px-3 py-2">
+          {wishlistCount === 0 ? (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowGoalPicker(true)}
+                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
+              >
+                💎 Pick Your Dream Reward
+              </button>
+            </div>
+          ) : (
+            <GoalProgressTracker
+              userId={memberId}
+              totalMinutes={totalMinutes}
+              onClick={() => isActive ? setOverlayPage("store") : navigate("/store")}
+            />
+          )}
         </div>
       )}
 
@@ -1693,6 +1720,16 @@ const VideoCallPage = () => {
               setTimeout(() => setShowRedeemTooltip(false), 8000);
             }, 500);
           }
+        }}
+      />
+      {/* Goal Item Picker — auto-shown to new females */}
+      <GoalItemPicker
+        open={showGoalPicker}
+        onClose={() => setShowGoalPicker(false)}
+        userId={memberId}
+        onItemAdded={() => {
+          refetchWishlist();
+          queryClient.invalidateQueries({ queryKey: ["goal_tracker_item", memberId] });
         }}
       />
       {/* NSFW Confirm Overlay */}
