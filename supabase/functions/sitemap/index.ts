@@ -28,6 +28,11 @@ Deno.serve(async () => {
     { loc: "/referral", priority: "0.6", changefreq: "monthly" },
     { loc: "/omegle-alternative", priority: "0.9", changefreq: "weekly" },
     { loc: "/top-omegle-alternatives", priority: "0.9", changefreq: "weekly" },
+    { loc: "/video-chat-with-strangers", priority: "0.9", changefreq: "weekly" },
+    { loc: "/random-video-chat", priority: "0.9", changefreq: "weekly" },
+    { loc: "/talk-to-strangers", priority: "0.9", changefreq: "weekly" },
+    { loc: "/free-video-chat-no-sign-up", priority: "0.9", changefreq: "weekly" },
+    { loc: "/cam-chat", priority: "0.9", changefreq: "weekly" },
   ];
 
   // Fetch published blog posts
