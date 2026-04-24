@@ -1368,6 +1368,7 @@ export type Database = {
           vip_tier: string | null
           vip_unfreezes_reset_at: string | null
           vip_unfreezes_used: number
+          welcome_bonus_calls_count: number
         }
         Insert: {
           ad_points?: number
@@ -1396,6 +1397,7 @@ export type Database = {
           vip_tier?: string | null
           vip_unfreezes_reset_at?: string | null
           vip_unfreezes_used?: number
+          welcome_bonus_calls_count?: number
         }
         Update: {
           ad_points?: number
@@ -1424,6 +1426,7 @@ export type Database = {
           vip_tier?: string | null
           vip_unfreezes_reset_at?: string | null
           vip_unfreezes_used?: number
+          welcome_bonus_calls_count?: number
         }
         Relationships: []
       }
@@ -2976,6 +2979,7 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
       }
+      claim_welcome_bonus: { Args: { p_user_id: string }; Returns: Json }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

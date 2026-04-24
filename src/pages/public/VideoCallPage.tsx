@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useSpeedConnectChallenge } from "@/hooks/useSpeedConnectChallenge";
+import { useWelcomeBonus } from "@/hooks/useWelcomeBonus";
 import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
@@ -271,6 +272,16 @@ const VideoCallPage = () => {
 
   const [showFrozenPopup, setShowFrozenPopup] = useState(false);
   const frozenPopupShownRef = useRef(false);
+
+  // First-call welcome bonus (50/25/10 mins) — fires once per call after 30s connected
+  useWelcomeBonus({
+    userId: memberId,
+    isConnected: callState === "connected",
+    elapsedSeconds,
+    onAwarded: () => {
+      refreshMinutesBalance();
+    },
+  });
 
   // Show frozen popup once when freeze is detected
   useEffect(() => {
