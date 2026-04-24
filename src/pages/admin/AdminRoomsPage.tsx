@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { Video, Wifi, WifiOff, Clock, Trash2, Zap } from "lucide-react";
+import { Video, Wifi, WifiOff, Clock, Trash2, Zap, Bell } from "lucide-react";
 import { toast } from "sonner";
 
 const STALE_HOURS = 24;
@@ -75,6 +75,13 @@ const AdminRoomsPage = () => {
 
   const staleRooms = connectedRooms.filter((r) => isStale(r.connected_at));
 
+  const isFromPush = (r: NonNullable<typeof rooms>[number]) =>
+    Boolean((r as any).member1_from_push || (r as any).member2_from_push);
+
+  const fromPushRooms = (rooms ?? []).filter(isFromPush);
+  const totalRooms = rooms?.length ?? 0;
+  const fromPushPct = totalRooms > 0 ? Math.round((fromPushRooms.length / totalRooms) * 100) : 0;
+
   const formatTime = (ts: string | null) =>
     ts ? format(new Date(ts), "MMM d, yyyy h:mm a") : "—";
 
@@ -130,6 +137,7 @@ const AdminRoomsPage = () => {
 
   const RoomCard = ({ room }: { room: NonNullable<typeof rooms>[number] }) => {
     const stale = room.status === "connected" && isStale(room.connected_at);
+    const fromPush = isFromPush(room);
     return (
       <Card className={`border-border/50 ${stale ? "border-destructive/50" : ""}`}>
         <CardContent className="p-4 space-y-3">
@@ -149,6 +157,12 @@ const AdminRoomsPage = () => {
               {stale && (
                 <Badge variant="destructive" className="text-[10px]">
                   STALE
+                </Badge>
+              )}
+              {fromPush && (
+                <Badge className="bg-purple-600 hover:bg-purple-700 text-[10px]">
+                  <Bell className="h-3 w-3 mr-1" />
+                  FROM PUSH
                 </Badge>
               )}
             </div>
@@ -238,6 +252,17 @@ const AdminRoomsPage = () => {
             <span className="text-sm text-muted-foreground">
               {rooms?.length ?? 0} Total
             </span>
+          </Card>
+          <Card className="px-4 py-2">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-purple-500" />
+              <span className="text-sm font-medium">
+                {fromPushPct}% From Push
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({fromPushRooms.length}/{totalRooms})
+              </span>
+            </div>
           </Card>
         </div>
       </div>

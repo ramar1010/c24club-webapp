@@ -17,6 +17,19 @@ Deno.serve(async (req) => {
   try {
     const { type, memberId, channelId, genderPreference, memberGender, partnerId, voiceMode } = await req.json();
 
+    // Helper: did this user open the app from a push notification in the last 10 minutes?
+    const fromPushFor = async (uid: string | null | undefined): Promise<boolean> => {
+      if (!uid) return false;
+      const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("push_open_events")
+        .select("id")
+        .eq("user_id", uid)
+        .gte("opened_at", since)
+        .limit(1);
+      return !!(data && data.length > 0);
+    };
+
     if (type === "join") {
       await supabase.from("waiting_queue").delete().eq("member_id", memberId);
 
@@ -45,6 +58,10 @@ Deno.serve(async (req) => {
           await supabase.from("direct_call_invites").update({ status: "matched" }).eq("id", invite.id);
 
           const roomId = crypto.randomUUID();
+          const [m1FromPush, m2FromPush] = await Promise.all([
+            fromPushFor(partner.member_id),
+            fromPushFor(memberId),
+          ]);
           await supabase.from("rooms").insert({
             id: roomId,
             member1: partner.member_id,
@@ -57,6 +74,8 @@ Deno.serve(async (req) => {
             member2_voice_mode: voiceMode ?? false,
             status: "connected",
             connected_at: new Date().toISOString(),
+            member1_from_push: m1FromPush,
+            member2_from_push: m2FromPush,
           });
 
           return new Response(
@@ -102,6 +121,10 @@ Deno.serve(async (req) => {
         await supabase.from("waiting_queue").delete().eq("id", partner.id);
 
         const roomId = crypto.randomUUID();
+        const [m1FromPush, m2FromPush] = await Promise.all([
+          fromPushFor(partner.member_id),
+          fromPushFor(memberId),
+        ]);
         await supabase.from("rooms").insert({
           id: roomId,
           member1: partner.member_id,
@@ -114,6 +137,8 @@ Deno.serve(async (req) => {
           member2_voice_mode: voiceMode ?? false,
           status: "connected",
           connected_at: new Date().toISOString(),
+          member1_from_push: m1FromPush,
+          member2_from_push: m2FromPush,
         });
 
         return new Response(
