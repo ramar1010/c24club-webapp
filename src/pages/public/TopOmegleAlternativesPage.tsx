@@ -31,7 +31,6 @@ const alternatives: Alternative[] = [
       "AI-powered NSFW moderation",
       "100+ redeemable prizes",
       "Active community with scheduled sessions",
-      "Female bonus program",
     ],
     cons: ["Requires account signup", "Call windows mean you can't chat 24/7"],
     rating: 4.8,
@@ -110,6 +109,18 @@ const alternatives: Alternative[] = [
     rating: 3.1,
     blogSlug: "c24-club-vs-emerald-chat",
     externalUrl: "https://emeraldchat.com",
+  },
+  {
+    rank: 8,
+    name: "Vooz Video Chat",
+    tagline: "Social video chat with themed virtual rooms",
+    description:
+      "Vooz Video Chat offers a mix of random matching and themed virtual rooms, letting users jump into conversations based on shared interests. While the platform provides a modern interface and supports both web and mobile, it doesn't offer any earning or rewards for time spent chatting. Users looking for a gamified, incentive-driven experience will find C24 Club's reward system more compelling.",
+    tags: ["Themed Rooms", "Interest Matching", "Web + Mobile"],
+    pros: ["Interest-based virtual rooms", "Clean modern UI", "Works on web and mobile"],
+    cons: ["No rewards or earning system", "Smaller active user base", "Limited moderation tools", "Ads interrupt the experience"],
+    rating: 2.6,
+    blogSlug: "c24-club-vs-vooz-video-chat",
   },
 ];
 
@@ -223,12 +234,12 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
 
 const TopOmegleAlternativesPage = () => {
   useEffect(() => {
-    document.title = "Top 7 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
+    document.title = "Top 8 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
         "content",
-        "Compare the top 7 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle & Emerald Chat — find the best random video chat site that pays you to chat.",
+        "Compare the top 8 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat & Vooz — find the best random video chat site that pays you to chat.",
       );
     }
   }, []);
@@ -241,13 +252,13 @@ const TopOmegleAlternativesPage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            headline: "Top 7 Omegle Alternatives in 2026",
+            headline: "Top 8 Omegle Alternatives in 2026",
             description:
-              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, and Emerald Chat.",
+              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, and Vooz Video Chat.",
             author: { "@type": "Organization", name: "C24 Club" },
             publisher: { "@type": "Organization", name: "C24 Club", url: "https://c24club.com" },
             datePublished: "2026-01-15",
-            dateModified: "2026-03-25",
+            dateModified: "2026-04-24",
           }),
         }}
       />
@@ -260,7 +271,7 @@ const TopOmegleAlternativesPage = () => {
           className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
         >
-          <span className="text-white">Top 7 </span>
+          <span className="text-white">Top 8 </span>
           <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
             Omegle Alternatives
           </span>
@@ -274,7 +285,7 @@ const TopOmegleAlternativesPage = () => {
 
       {/* Quick comparison strip */}
       <section className="px-4 max-w-4xl mx-auto mb-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {alternatives.map((alt) => (
             <a
               key={alt.rank}
