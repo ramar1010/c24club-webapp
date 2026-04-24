@@ -2,22 +2,22 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 
 const TalkToStrangersPage = () => (
   <SeoLandingLayout
-    title="Talk to Strangers — Free Video Chat With Real People | C24 Club"
+    title="Talk to Strangers ,  Free Video Chat With Real People | C24 Club"
     metaDescription="Talk to strangers from around the world for free on C24 Club. Real video, real voices, real rewards. No sign-up barriers, AI-moderated for safety."
-    h1="Talk to Strangers — Real People, Real Conversations, Real Rewards"
-    intro="Sometimes the best conversations happen with someone you'll never meet again. C24 Club makes it easy to talk to strangers face-to-face, all over the world — and earn real rewards while you do."
+    h1="Talk to Strangers ,  Real People, Real Conversations, Real Rewards"
+    intro="Sometimes the best conversations happen with someone you'll never meet again. C24 Club makes it easy to talk to strangers face-to-face, all over the world ,  and earn real rewards while you do."
     canonical="https://c24club.com/talk-to-strangers"
     siblingLinks={[
       { label: "Video Chat With Strangers", to: "/video-chat-with-strangers" },
       { label: "Random Video Chat", to: "/random-video-chat" },
-      { label: "Free Video Chat — No Sign Up", to: "/free-video-chat-no-sign-up" },
+      { label: "Free Video Chat ,  No Sign Up", to: "/free-video-chat-no-sign-up" },
       { label: "Cam Chat", to: "/cam-chat" },
     ]}
   >
     <h2>Why people want to talk to strangers</h2>
     <p>
       There's a reason searches for &ldquo;talk to strangers&rdquo; spike every single month. Talking
-      to people you already know comes with baggage — history, expectations, judgments. A stranger
+      to people you already know comes with baggage ,  history, expectations, judgments. A stranger
       doesn't know your job, your relationship status, or your last embarrassing moment. That blank
       slate is freeing. It's why some of the best conversations of your life happen with someone you
       sit next to on a plane.
@@ -32,7 +32,7 @@ const TalkToStrangersPage = () => (
     <ul>
       <li>
         <strong>Real video, not just text.</strong> Tone of voice, facial expressions, the awkward
-        pauses — all the things that make a conversation actually feel like one.
+        pauses ,  all the things that make a conversation actually feel like one.
       </li>
       <li>
         <strong>Two-second matching.</strong> During scheduled call windows, you're talking to
@@ -82,7 +82,7 @@ const TalkToStrangersPage = () => (
       stopped feeling safe. C24 Club is built around safety from the ground up:
     </p>
     <ul>
-      <li>End-to-end encrypted WebRTC — we never see or store your video stream.</li>
+      <li>End-to-end encrypted WebRTC ,  we never see or store your video stream.</li>
       <li>On-device NSFW detection that flags violators in real time.</li>
       <li>One-tap reporting that triggers immediate moderator review.</li>
       <li>Strict 18+ age verification before any matchmaking begins.</li>
@@ -95,7 +95,7 @@ const TalkToStrangersPage = () => (
       Talking to strangers on C24 Club costs nothing. There's no premium paywall blocking the chat
       itself, no credit card required to start, and no subscription to forget about and get billed
       for. If you want to support the platform, our optional VIP tier unlocks priority matching,
-      higher earn rates, and unlimited skips — but the core experience is and will always be free.
+      higher earn rates, and unlimited skips ,  but the core experience is and will always be free.
     </p>
 
     <h2>Start your first conversation</h2>
