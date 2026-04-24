@@ -273,6 +273,16 @@ const VideoCallPage = () => {
   const [showFrozenPopup, setShowFrozenPopup] = useState(false);
   const frozenPopupShownRef = useRef(false);
 
+  // First-call welcome bonus (50/25/10 mins) — fires once per call after 30s connected
+  useWelcomeBonus({
+    userId: memberId,
+    isConnected: callState === "connected",
+    elapsedSeconds,
+    onAwarded: () => {
+      refreshMinutesBalance();
+    },
+  });
+
   // Show frozen popup once when freeze is detected
   useEffect(() => {
     if (freezeInfo.isFrozen && !frozenPopupShownRef.current) {
