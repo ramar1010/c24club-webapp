@@ -1992,6 +1992,33 @@ export type Database = {
           },
         ]
       }
+      push_open_events: {
+        Row: {
+          created_at: string
+          id: string
+          notification_type: string | null
+          opened_at: string
+          platform: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_type?: string | null
+          opened_at?: string
+          platform?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_type?: string | null
+          opened_at?: string
+          platform?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -2239,9 +2266,11 @@ export type Database = {
           disconnected_at: string | null
           id: string
           member1: string
+          member1_from_push: boolean
           member1_gender: string | null
           member1_voice_mode: boolean
           member2: string | null
+          member2_from_push: boolean
           member2_gender: string | null
           member2_voice_mode: boolean
           status: string
@@ -2254,9 +2283,11 @@ export type Database = {
           disconnected_at?: string | null
           id?: string
           member1: string
+          member1_from_push?: boolean
           member1_gender?: string | null
           member1_voice_mode?: boolean
           member2?: string | null
+          member2_from_push?: boolean
           member2_gender?: string | null
           member2_voice_mode?: boolean
           status?: string
@@ -2269,9 +2300,11 @@ export type Database = {
           disconnected_at?: string | null
           id?: string
           member1?: string
+          member1_from_push?: boolean
           member1_gender?: string | null
           member1_voice_mode?: boolean
           member2?: string | null
+          member2_from_push?: boolean
           member2_gender?: string | null
           member2_voice_mode?: boolean
           status?: string
