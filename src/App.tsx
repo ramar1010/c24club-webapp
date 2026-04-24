@@ -86,6 +86,11 @@ const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
 const TopOmegleAlternativesPage = lazy(() => import("@/pages/public/TopOmegleAlternativesPage"));
+const VideoChatWithStrangersPage = lazy(() => import("@/pages/public/seo/VideoChatWithStrangersPage"));
+const RandomVideoChatPage = lazy(() => import("@/pages/public/seo/RandomVideoChatPage"));
+const TalkToStrangersPage = lazy(() => import("@/pages/public/seo/TalkToStrangersPage"));
+const FreeVideoChatNoSignUpPage = lazy(() => import("@/pages/public/seo/FreeVideoChatNoSignUpPage"));
+const CamChatPage = lazy(() => import("@/pages/public/seo/CamChatPage"));
 const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -115,6 +120,11 @@ const App = () => (
                 <Route path="blog/:slug" element={<BlogPostPage />} />
                 <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
                 <Route path="top-omegle-alternatives" element={<TopOmegleAlternativesPage />} />
+                <Route path="video-chat-with-strangers" element={<VideoChatWithStrangersPage />} />
+                <Route path="random-video-chat" element={<RandomVideoChatPage />} />
+                <Route path="talk-to-strangers" element={<TalkToStrangersPage />} />
+                <Route path="free-video-chat-no-sign-up" element={<FreeVideoChatNoSignUpPage />} />
+                <Route path="cam-chat" element={<CamChatPage />} />
                 <Route path="csae-policy" element={<CSAEPolicyPage />} />
               </Route>
 
