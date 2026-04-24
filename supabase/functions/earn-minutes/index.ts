@@ -135,6 +135,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    // CLAIM_WELCOME_BONUS: Award first-call welcome bonus (50 / 25 / 10)
+    if (type === "claim_welcome_bonus") {
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Missing userId" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const { data, error } = await supabase.rpc("claim_welcome_bonus", { p_user_id: userId });
+      if (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: error.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify(data ?? { success: false }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // EARN: Record minutes earned from a call
     if (type === "earn") {
       if (!userId || !partnerId || !minutesEarned || minutesEarned <= 0) {
