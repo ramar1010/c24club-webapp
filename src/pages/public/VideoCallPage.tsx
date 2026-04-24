@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
 import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { useSpeedConnectChallenge } from "@/hooks/useSpeedConnectChallenge";
+import { useWelcomeBonus } from "@/hooks/useWelcomeBonus";
 import AnchorEarningPanel from "@/components/videocall/AnchorEarningPanel";
 
 import { useAnchorEarning } from "@/hooks/useAnchorEarning";
