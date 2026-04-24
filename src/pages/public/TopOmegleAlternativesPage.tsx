@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Star, ChevronRight, Video, Gift, Shield, Smartphone, Globe, DollarSign } from "lucide-react";
+import { Star, ChevronRight, Video, Gift, Check, X } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
