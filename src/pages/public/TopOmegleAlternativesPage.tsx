@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Star, ChevronRight, Video, Gift, Shield, Smartphone, Globe, DollarSign } from "lucide-react";
+import { Star, ChevronRight, Video, Gift, Check, X } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
@@ -232,6 +232,104 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
   </div>
 );
 
+const featureRows = [
+  { label: "Rewards / Earning System", key: "rewards" as const },
+  { label: "AI / Active Moderation", key: "moderation" as const },
+  { label: "Mobile App Available", key: "mobileApp" as const },
+  { label: "No Signup Required", key: "noSignup" as const },
+  { label: "Interest / Topic Matching", key: "interestMatch" as const },
+  { label: "Group Chat Rooms", key: "groupChat" as const },
+  { label: "Country / Gender Filters", key: "filters" as const },
+  { label: "Free to Use", key: "free" as const },
+];
+
+const featureData: Record<string, Record<string, boolean>> = {
+  "C24 Club":          { rewards: true,  moderation: true,  mobileApp: false, noSignup: false, interestMatch: true,  groupChat: false, filters: true,  free: true },
+  "Monkey App":        { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: true,  groupChat: false, filters: true,  free: true },
+  "Chatroulette":      { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: false, groupChat: false, filters: false, free: true },
+  "OmeTV":             { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: false, groupChat: false, filters: true,  free: true },
+  "Tinychat":          { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: true,  groupChat: true,  filters: false, free: true },
+  "Uhmegle":           { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: false, groupChat: false, filters: false, free: true },
+  "Emerald Chat":      { rewards: false, moderation: true,  mobileApp: false, noSignup: false, interestMatch: true,  groupChat: true,  filters: true,  free: true },
+  "Vooz Video Chat":   { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: true,  groupChat: true,  filters: false, free: true },
+};
+
+const ComparisonTable = () => {
+  return (
+    <section className="px-4 max-w-5xl mx-auto mb-16">
+      <h2
+        className="text-2xl md:text-3xl font-black text-white text-center mb-2"
+        style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+      >
+        Feature Comparison Table
+      </h2>
+      <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
+        See how each platform stacks up across the features that matter most.
+      </p>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th className="sticky left-0 z-10 bg-[#0f0f1a] px-4 py-3 text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/10 min-w-[180px]">
+                Feature
+              </th>
+              {alternatives.map((alt) => (
+                <th
+                  key={alt.name}
+                  className={`px-3 py-3 text-center text-xs font-black uppercase tracking-wider border-b border-white/10 min-w-[100px] ${
+                    alt.isBest ? "text-orange-400" : "text-white/70"
+                  }`}
+                >
+                  {alt.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-white/5">
+              <td className="sticky left-0 z-10 bg-[#0f0f1a] px-4 py-3 text-sm font-bold text-white/80">Rating</td>
+              {alternatives.map((alt) => (
+                <td key={alt.name} className="px-3 py-3 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className={`text-sm font-black ${alt.isBest ? "text-orange-400" : "text-white/70"}`}>
+                      {alt.rating}
+                    </span>
+                    <StarRating rating={alt.rating} />
+                  </div>
+                </td>
+              ))}
+            </tr>
+            {featureRows.map((row) => (
+              <tr key={row.key} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                <td className="sticky left-0 z-10 bg-[#0f0f1a] px-4 py-3 text-sm font-bold text-white/80">
+                  {row.label}
+                </td>
+                {alternatives.map((alt) => {
+                  const val = featureData[alt.name]?.[row.key] ?? false;
+                  return (
+                    <td key={alt.name} className="px-3 py-3 text-center">
+                      {val ? (
+                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500/20">
+                          <Check className="h-3.5 w-3.5 text-green-400" />
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500/10">
+                          <X className="h-3.5 w-3.5 text-red-400/60" />
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+};
+
 const TopOmegleAlternativesPage = () => {
   useEffect(() => {
     document.title = "Top 8 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
@@ -316,6 +414,8 @@ const TopOmegleAlternativesPage = () => {
           </div>
         ))}
       </section>
+
+      <ComparisonTable />
 
       {/* Internal links to related content */}
       <section className="px-4 py-16 max-w-4xl mx-auto border-t border-white/10">
