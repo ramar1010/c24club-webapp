@@ -360,6 +360,40 @@ const TopOmegleAlternativesPage = () => {
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Top 8 Omegle Alternatives in 2026",
+            description:
+              "A ranked list of the best Omegle alternatives for random video chat in 2026.",
+            url: "https://c24club.com/top-omegle-alternatives",
+            numberOfItems: alternatives.length,
+            itemListOrder: "https://schema.org/ItemListOrderAscending",
+            itemListElement: alternatives.map((alt) => ({
+              "@type": "ListItem",
+              position: alt.rank,
+              url: `https://c24club.com/top-omegle-alternatives#rank-${alt.rank}`,
+              item: {
+                "@type": "SoftwareApplication",
+                name: alt.name,
+                description: alt.tagline,
+                applicationCategory: "SocialNetworkingApplication",
+                operatingSystem: "Web, iOS, Android",
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: alt.rating,
+                  bestRating: 5,
+                  worstRating: 1,
+                  ratingCount: 100,
+                },
+              },
+            })),
+          }),
+        }}
+      />
       <PublicNav />
 
       {/* Hero */}
