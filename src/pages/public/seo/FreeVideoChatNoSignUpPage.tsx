@@ -2,9 +2,9 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 
 const FreeVideoChatNoSignUpPage = () => (
   <SeoLandingLayout
-    title="Free Video Chat — No Sign Up Required | C24 Club"
+    title="Free Video Chat ,  No Sign Up Required | C24 Club"
     metaDescription="Free video chat with strangers, no sign up needed. Just click START and meet someone new in seconds. Earn real rewards every minute. Safe, anonymous, browser-based."
-    h1="Free Video Chat — No Sign Up, No Download, No Excuses"
+    h1="Free Video Chat ,  No Sign Up, No Download, No Excuses"
     intro="The fastest way to video chat with a stranger online. Open C24 Club in your browser, hit START, and you're talking to someone new in under two seconds. No account. No download. No catch."
     canonical="https://c24club.com/free-video-chat-no-sign-up"
     siblingLinks={[
@@ -14,7 +14,7 @@ const FreeVideoChatNoSignUpPage = () => (
       { label: "Cam Chat", to: "/cam-chat" },
     ]}
   >
-    <h2>Free video chat — no sign up means no sign up</h2>
+    <h2>Free video chat ,  no sign up means no sign up</h2>
     <p>
       Most platforms that promise &ldquo;no sign up&rdquo; eventually walk you into one. They pop a
       modal three minutes in, lock the next match behind email verification, or quietly require
@@ -22,7 +22,7 @@ const FreeVideoChatNoSignUpPage = () => (
     </p>
     <p>
       You can land on the homepage, click START, and immediately be face-to-face with another live
-      user. The only things we ask for upfront are your camera and microphone permissions — both
+      user. The only things we ask for upfront are your camera and microphone permissions ,  both
       handled by your browser, not by us. No email, no phone number, no name, no credit card. Free
       really means free here.
     </p>
@@ -30,7 +30,7 @@ const FreeVideoChatNoSignUpPage = () => (
     <h2>How free video chat works on C24 Club without an account</h2>
     <ol>
       <li>
-        Open <a href="/">c24club.com</a> in any modern browser. Chrome, Safari, Firefox, Edge — all
+        Open <a href="/">c24club.com</a> in any modern browser. Chrome, Safari, Firefox, Edge ,  all
         supported. Desktop, tablet, or phone.
       </li>
       <li>
@@ -38,7 +38,7 @@ const FreeVideoChatNoSignUpPage = () => (
         camera and microphone. Click Allow.
       </li>
       <li>
-        Within 1–2 seconds, you're matched with another live user. You can see them, they can see
+        Within 1, 2 seconds, you're matched with another live user. You can see them, they can see
         you, and the conversation begins.
       </li>
       <li>
@@ -55,14 +55,14 @@ const FreeVideoChatNoSignUpPage = () => (
       We're transparent about what's free vs. what's optional:
     </p>
     <ul>
-      <li>✅ <strong>Unlimited video chat sessions</strong> — free, forever.</li>
-      <li>✅ <strong>Unlimited skips</strong> — though non-VIPs do face a small &minus;2 minute
+      <li>✅ <strong>Unlimited video chat sessions</strong> ,  free, forever.</li>
+      <li>✅ <strong>Unlimited skips</strong> ,  though non-VIPs do face a small &minus;2 minute
         penalty for skipping inside the first 5 seconds, to discourage farming.</li>
-      <li>✅ <strong>Reward minute earning</strong> — every minute of conversation builds your
+      <li>✅ <strong>Reward minute earning</strong> ,  every minute of conversation builds your
         balance, even on the free tier.</li>
-      <li>✅ <strong>Reward Store access</strong> — gift cards, designer products, PayPal cash. All
+      <li>✅ <strong>Reward Store access</strong> ,  gift cards, designer products, PayPal cash. All
         redeemable with the minutes you earned for free.</li>
-      <li>💎 <em>Optional VIP</em> — for users who want priority matching, higher earn rates,
+      <li>💎 <em>Optional VIP</em> ,  for users who want priority matching, higher earn rates,
         social pinning, and unlimited skip-with-no-penalty. Completely optional.</li>
     </ul>
 
@@ -77,7 +77,7 @@ const FreeVideoChatNoSignUpPage = () => (
     <p>
       You can use C24 Club for hours and never tell us anything about yourself. If you eventually
       want to redeem rewards, we'll ask for an email so we can send your gift card or process your
-      payout — but that's at the end of the funnel, not the beginning, and even then it's optional.
+      payout ,  but that's at the end of the funnel, not the beginning, and even then it's optional.
     </p>
 
     <h2>Free video chat that's actually safe</h2>
@@ -90,7 +90,7 @@ const FreeVideoChatNoSignUpPage = () => (
       <li>One-tap reporting from inside the chat triggers immediate review.</li>
       <li>IP-based ban enforcement keeps repeat offenders out.</li>
       <li>Strict 18+ verification gate before matchmaking opens.</li>
-      <li>Mandatory DTLS-SRTP encryption — we never see your video, period.</li>
+      <li>Mandatory DTLS-SRTP encryption ,  we never see your video, period.</li>
     </ul>
 
     <h2>Why C24 Club beats every other free video chat</h2>

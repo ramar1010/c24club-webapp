@@ -2,16 +2,16 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 
 const CamChatPage = () => (
   <SeoLandingLayout
-    title="Cam Chat — Free Webcam Chat With Strangers | C24 Club"
+    title="Cam Chat ,  Free Webcam Chat With Strangers | C24 Club"
     metaDescription="Cam chat with strangers worldwide on C24 Club. Free webcam chat, instant matchmaking, AI-moderated for safety, and you earn real rewards every minute."
-    h1="Cam Chat — Free Webcam Chat With Real People Worldwide"
-    intro="The fastest, safest, and most rewarding way to cam chat with strangers online. Browser-based, no downloads, instant matching — and every minute you cam chat earns you real, redeemable rewards."
+    h1="Cam Chat ,  Free Webcam Chat With Real People Worldwide"
+    intro="The fastest, safest, and most rewarding way to cam chat with strangers online. Browser-based, no downloads, instant matching ,  and every minute you cam chat earns you real, redeemable rewards."
     canonical="https://c24club.com/cam-chat"
     siblingLinks={[
       { label: "Video Chat With Strangers", to: "/video-chat-with-strangers" },
       { label: "Random Video Chat", to: "/random-video-chat" },
       { label: "Talk to Strangers", to: "/talk-to-strangers" },
-      { label: "Free Video Chat — No Sign Up", to: "/free-video-chat-no-sign-up" },
+      { label: "Free Video Chat ,  No Sign Up", to: "/free-video-chat-no-sign-up" },
     ]}
   >
     <h2>What is cam chat?</h2>
@@ -19,19 +19,19 @@ const CamChatPage = () => (
       <strong>Cam chat</strong> is the original term for live, one-on-one webcam-to-webcam
       conversation with someone you don't know. It predates Zoom, predates FaceTime, predates the
       whole &ldquo;video call&rdquo; era. The idea is simple: two cameras, two people, one
-      conversation, in real time. C24 Club is the modern reinvention of cam chat — built for fast
+      conversation, in real time. C24 Club is the modern reinvention of cam chat ,  built for fast
       browsers, fast networks, and people who actually want a reason to come back.
     </p>
 
     <h2>Cam chat on C24 Club: how it works</h2>
     <ol>
       <li>
-        Open <a href="/">c24club.com</a> in your browser. No download required — works on Windows,
+        Open <a href="/">c24club.com</a> in your browser. No download required ,  works on Windows,
         Mac, Linux, iOS, and Android.
       </li>
       <li>Allow webcam and microphone access.</li>
       <li>
-        Click <strong>START</strong>. The matchmaker pairs you with another live cammer in 1–2
+        Click <strong>START</strong>. The matchmaker pairs you with another live cammer in 1, 2
         seconds during a scheduled call window.
       </li>
       <li>Cam chat as long as you want. Click <strong>NEXT</strong> to skip and find someone new.</li>
@@ -50,7 +50,7 @@ const CamChatPage = () => (
       </li>
       <li>
         <strong>Real safety.</strong> NSFWJS runs in your browser to scan the remote stream and
-        flag policy violations. WebRTC connections use mandatory DTLS-SRTP encryption — we never
+        flag policy violations. WebRTC connections use mandatory DTLS-SRTP encryption ,  we never
         see, store, or process your stream.
       </li>
       <li>
@@ -77,7 +77,7 @@ const CamChatPage = () => (
       possible latency and the best possible quality your network and webcam can deliver.
     </p>
     <p>
-      For most users, this means HD-quality cam chat with sub-200ms latency — close to a regular
+      For most users, this means HD-quality cam chat with sub-200ms latency ,  close to a regular
       Zoom call, but with a stranger and zero setup. The platform automatically negotiates the best
       codec and resolution for your hardware.
     </p>
