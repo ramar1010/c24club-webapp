@@ -109,6 +109,7 @@ const VideoCallPage = () => {
   });
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
   const [showPickItem, setShowPickItem] = useState(false);
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [showRedeemTooltip, setShowRedeemTooltip] = useState(false);
   const [cameraUnlockRequest, setCameraUnlockRequest] = useState<{ id: string; recipient_cut_cents: number } | null>(null);
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
