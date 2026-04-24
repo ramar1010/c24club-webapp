@@ -415,6 +415,8 @@ const TopOmegleAlternativesPage = () => {
         ))}
       </section>
 
+      <ComparisonTable />
+
       {/* Internal links to related content */}
       <section className="px-4 py-16 max-w-4xl mx-auto border-t border-white/10">
         <h2
