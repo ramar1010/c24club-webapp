@@ -1,0 +1,1 @@
+DELETE FROM public.blog_posts WHERE slug = 'building-c24-club-architecture';
