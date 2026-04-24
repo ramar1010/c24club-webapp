@@ -56,6 +56,8 @@ import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
+import GoalItemPicker from "@/components/videocall/GoalItemPicker";
+import GoalProgressTracker from "@/components/videocall/GoalProgressTracker";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
 import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
