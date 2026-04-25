@@ -53,6 +53,7 @@ interface SubmissionRow {
   verification_status: string;
   verified_at: string | null;
   verification_note: string | null;
+  account_type: string;
 }
 
 const VERIF_COLORS: Record<string, string> = {
