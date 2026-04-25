@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -119,13 +118,30 @@ const WorkerRedditTaskPage = () => {
 
   const isDone = task && (task.status === "completed" || task.status === "verified");
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Task Portal";
+    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    let created = false;
+    let prevContent: string | null = null;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "robots");
+      document.head.appendChild(meta);
+      created = true;
+    } else {
+      prevContent = meta.getAttribute("content");
+    }
+    meta.setAttribute("content", "noindex, nofollow");
+    return () => {
+      document.title = prevTitle;
+      if (created) meta?.parentNode?.removeChild(meta);
+      else if (prevContent !== null) meta?.setAttribute("content", prevContent);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <Helmet>
-        <title>Task Portal</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-
       <div className="mx-auto max-w-2xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Task Portal</h1>
