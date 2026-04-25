@@ -3223,34 +3223,16 @@ export type Database = {
         Args: { p_minutes_amount: number; p_paypal_email: string }
         Returns: Json
       }
-      submit_reddit_task:
-        | {
-            Args: {
-              p_code: string
-              p_posted_url: string
-              p_worker_name: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_code: string
-              p_posted_url: string
-              p_variant_index?: number
-              p_worker_name: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_account_type?: string
-              p_code: string
-              p_posted_url: string
-              p_variant_index?: number
-              p_worker_name: string
-            }
-            Returns: Json
-          }
+      submit_reddit_task: {
+        Args: {
+          p_account_type?: string
+          p_code: string
+          p_posted_url: string
+          p_variant_index?: number
+          p_worker_name: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
