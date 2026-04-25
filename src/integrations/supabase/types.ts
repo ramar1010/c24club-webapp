@@ -2019,6 +2019,24 @@ export type Database = {
         }
         Relationships: []
       }
+      reddit_task_settings: {
+        Row: {
+          auto_assign_enabled: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          auto_assign_enabled?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_assign_enabled?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reddit_task_submissions: {
         Row: {
           created_at: string
@@ -3109,6 +3127,13 @@ export type Database = {
       atomic_increment_minutes: {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
+      }
+      auto_assign_reddit_task: {
+        Args: never
+        Returns: {
+          claim_code: string
+          enabled: boolean
+        }[]
       }
       claim_reddit_task: {
         Args: { p_code: string; p_worker_name: string }
