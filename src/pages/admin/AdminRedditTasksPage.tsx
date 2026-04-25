@@ -249,6 +249,25 @@ const AdminRedditTasksPage = () => {
               {workerBase}
             </code>
           </p>
+          <div className="mt-3 flex items-center gap-3 rounded-md border border-border bg-muted/30 p-3">
+            <Switch
+              checked={autoAssign}
+              onCheckedChange={toggleAutoAssign}
+              disabled={autoAssignSaving}
+              id="auto-assign-toggle"
+            />
+            <div>
+              <Label htmlFor="auto-assign-toggle" className="cursor-pointer">
+                Auto-assign open tasks
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                When ON, workers visiting{" "}
+                <code className="rounded bg-muted px-1 text-[10px]">/work/c24</code>{" "}
+                without a code get the next available open task automatically.
+                Manual code entry still works either way.
+              </p>
+            </div>
+          </div>
         </div>
         <div className="flex gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
