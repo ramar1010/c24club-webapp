@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Copy, Plus, Trash2, ExternalLink, Sparkles, RotateCcw, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import RedditAccountsManager from "@/components/admin/RedditAccountsManager";
 
 interface RedditTask {
   id: string;
@@ -445,6 +446,8 @@ const AdminRedditTasksPage = () => {
           </Button>
         </div>
       </div>
+
+      <RedditAccountsManager />
 
       {loading ? (
         <p className="text-muted-foreground">Loading…</p>

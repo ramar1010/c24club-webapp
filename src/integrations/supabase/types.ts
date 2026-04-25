@@ -2019,6 +2019,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reddit_accounts: {
+        Row: {
+          account_age_days: number
+          created_at: string
+          email: string | null
+          id: string
+          karma: number
+          last_used_at: string | null
+          notes: string | null
+          password: string | null
+          recovery_email: string | null
+          status: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          account_age_days?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          karma?: number
+          last_used_at?: string | null
+          notes?: string | null
+          password?: string | null
+          recovery_email?: string | null
+          status?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          account_age_days?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          karma?: number
+          last_used_at?: string | null
+          notes?: string | null
+          password?: string | null
+          recovery_email?: string | null
+          status?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       reddit_task_settings: {
         Row: {
           auto_assign_enabled: boolean
