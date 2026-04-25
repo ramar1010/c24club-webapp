@@ -687,6 +687,103 @@ const AdminRedditTasksPage = () => {
                   {generating ? "Generating…" : "Generate with AI"}
                 </Button>
               </div>
+              <div className="mb-2 space-y-2 rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-xs font-medium text-foreground">
+                  AI generation controls
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label className="text-xs">Count</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={15}
+                      value={genCount}
+                      onChange={(e) =>
+                        setGenCount(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))
+                      }
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Length</Label>
+                    <Select value={genLength} onValueChange={setGenLength}>
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short">Short (1 sentence)</SelectItem>
+                        <SelectItem value="medium">Medium (2-3 sentences)</SelectItem>
+                        <SelectItem value="long">Long (3-5 sentences)</SelectItem>
+                        <SelectItem value="mixed">Mixed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Tone</Label>
+                    <Select value={genTone} onValueChange={setGenTone}>
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                        <SelectItem value="skeptical">Skeptical / honest</SelectItem>
+                        <SelectItem value="blunt">Blunt / short</SelectItem>
+                        <SelectItem value="helpful">Helpful</SelectItem>
+                        <SelectItem value="mixed">Mixed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">
+                    Angles (leave blank = let AI rotate all)
+                  </Label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {ANGLE_OPTIONS.map((a) => {
+                      const checked = genAngles.includes(a.key);
+                      return (
+                        <label
+                          key={a.key}
+                          className={`flex cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 text-xs ${
+                            checked
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border text-muted-foreground"
+                          }`}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              setGenAngles((prev) =>
+                                v
+                                  ? [...prev, a.key]
+                                  : prev.filter((k) => k !== a.key),
+                              );
+                            }}
+                            className="h-3.5 w-3.5"
+                          />
+                          {a.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Custom instructions (optional)</Label>
+                  <Textarea
+                    value={genCustom}
+                    onChange={(e) => setGenCustom(e.target.value)}
+                    rows={2}
+                    placeholder="e.g. Mention you're a college student. Don't use the word 'awesome'. Reply like you're answering OP directly."
+                    className="text-xs"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Existing variants in the box below are auto-added to an "avoid"
+                  list so new generations don't repeat the same openings.
+                </p>
+              </div>
               <p className="mb-1 text-xs text-muted-foreground">
                 Separate each variant with a line containing only{" "}
                 <code className="rounded bg-muted px-1">---</code>
