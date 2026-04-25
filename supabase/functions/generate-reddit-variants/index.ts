@@ -38,13 +38,19 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { count = 5, context = "" } = await req.json().catch(() => ({}));
+    const { count = 5, context = "", noLinkMode = false } = await req
+      .json()
+      .catch(() => ({}));
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
+    const noLinkInstruction = noLinkMode
+      ? `\n\nIMPORTANT — NO-LINK MODE: Do NOT include the URL "c24club.com" or "c24club" anywhere in the comments. Instead, refer the reader to the worker's Reddit profile bio (e.g. "link's in my profile", "check my bio", "DMing it"). Recommend the SITE in a generic way ("a site I've been using", "this random video chat thing") without naming it. This avoids Reddit's link-spam filter.`
+      : "";
+
     const userPrompt = `Generate ${count} distinct Reddit comment variants recommending c24club.${
       context ? `\n\nThread context: ${context}` : ""
-    }\n\nReturn them via the provided tool.`;
+    }${noLinkInstruction}\n\nReturn them via the provided tool.`;
 
     const resp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
