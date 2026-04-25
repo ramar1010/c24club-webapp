@@ -379,6 +379,34 @@ const WorkerRedditTaskPage = () => {
                       />
                     </details>
                   </div>
+                  <div>
+                    <Label>Reddit account type used</Label>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      {[
+                        { key: "fresh", label: "Fresh / new account" },
+                        { key: "aged", label: "Aged (30+ days, 100+ karma)" },
+                      ].map((opt) => {
+                        const checked = accountType === opt.key;
+                        return (
+                          <button
+                            key={opt.key}
+                            type="button"
+                            onClick={() => setAccountType(opt.key as "fresh" | "aged")}
+                            className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+                              checked
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border bg-muted/30 text-muted-foreground"
+                            }`}
+                          >
+                            <div className="font-medium">{opt.label}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Be honest — aged accounts are tracked separately so we know which submissions are higher trust.
+                    </p>
+                  </div>
                   <Button
                     onClick={handleSubmit}
                     disabled={submitting}
