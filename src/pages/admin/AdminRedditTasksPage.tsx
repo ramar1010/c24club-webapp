@@ -496,6 +496,16 @@ const AdminRedditTasksPage = () => {
                             <span className="text-foreground">
                               {s.worker_name || "(no name)"}
                             </span>
+                            <Badge
+                              variant="outline"
+                              className={
+                                s.account_type === "aged"
+                                  ? "bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px]"
+                                  : "text-[10px]"
+                              }
+                            >
+                              {s.account_type === "aged" ? "🎖️ aged" : "fresh"}
+                            </Badge>
                             <a
                               href={s.posted_comment_url}
                               target="_blank"
