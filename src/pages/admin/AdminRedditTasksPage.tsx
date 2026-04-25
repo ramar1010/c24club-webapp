@@ -38,6 +38,8 @@ interface RedditTask {
   completed_at: string | null;
   admin_notes: string | null;
   created_at: string;
+  max_claims: number;
+  claims_count: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -66,6 +68,7 @@ const AdminRedditTasksPage = () => {
   const [threadUrl, setThreadUrl] = useState("");
   const [variantsText, setVariantsText] = useState("");
   const [notes, setNotes] = useState("");
+  const [maxClaims, setMaxClaims] = useState(1);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -137,6 +140,7 @@ const AdminRedditTasksPage = () => {
     setThreadUrl("");
     setVariantsText("");
     setNotes("");
+    setMaxClaims(1);
   };
 
   const handleCreate = async () => {
@@ -161,6 +165,7 @@ const AdminRedditTasksPage = () => {
       thread_url: threadUrl.trim(),
       suggested_comments: variants,
       notes: notes.trim() || null,
+      max_claims: Math.max(1, Math.min(50, maxClaims || 1)),
     });
     setSaving(false);
     if (error) {
