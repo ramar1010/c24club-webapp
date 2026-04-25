@@ -35,6 +35,8 @@ const WorkerRedditTaskPage = () => {
   const [postedUrl, setPostedUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [variantIndex, setVariantIndex] = useState<number | null>(null);
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [autoAssignFailed, setAutoAssignFailed] = useState(false);
 
   const fetchTask = async (c: string) => {
     if (!c.trim()) return;
@@ -60,8 +62,32 @@ const WorkerRedditTaskPage = () => {
     }
   };
 
+  const tryAutoAssign = async () => {
+    setAutoAssigning(true);
+    setAutoAssignFailed(false);
+    const { data, error } = await supabase.rpc("auto_assign_reddit_task");
+    setAutoAssigning(false);
+    if (error) {
+      setAutoAssignFailed(true);
+      return;
+    }
+    const row = (data && (data as any[])[0]) || null;
+    if (!row || !row.enabled || !row.claim_code) {
+      setAutoAssignFailed(true);
+      return;
+    }
+    const assigned = row.claim_code as string;
+    setCode(assigned);
+    setParams({ code: assigned });
+    await fetchTask(assigned);
+  };
+
   useEffect(() => {
-    if (codeFromUrl) fetchTask(codeFromUrl);
+    if (codeFromUrl) {
+      fetchTask(codeFromUrl);
+    } else {
+      tryAutoAssign();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
