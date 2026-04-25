@@ -99,17 +99,47 @@ const AdminRedditTasksPage = () => {
   const [maxClaims, setMaxClaims] = useState(1);
   const [noLinkMode, setNoLinkMode] = useState(false);
 
+  // AI generation controls
+  const ANGLE_OPTIONS: { key: string; label: string }[] = [
+    { key: "rewards", label: "Rewards / earn money" },
+    { key: "gender-ratio", label: "Better gender ratio" },
+    { key: "less-bots", label: "Less bots than Omegle" },
+    { key: "one-on-one", label: "1-on-1, no group" },
+    { key: "free-no-signup", label: "Free, no signup" },
+    { key: "personal-experience", label: "Personal experience" },
+  ];
+  const [genCount, setGenCount] = useState(5);
+  const [genLength, setGenLength] = useState<string>("mixed");
+  const [genTone, setGenTone] = useState<string>("mixed");
+  const [genAngles, setGenAngles] = useState<string[]>([]);
+  const [genCustom, setGenCustom] = useState("");
+
   const handleGenerate = async () => {
     setGenerating(true);
+    // Build avoid-list from the openings of variants already in the textarea
+    const existing = variantsText
+      .split(/\n---+\n/)
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const avoidPhrases = existing
+      .map((v) => v.split(/[.!?\n]/)[0].slice(0, 60))
+      .filter(Boolean)
+      .join("\n");
+
     const { data, error } = await supabase.functions.invoke(
       "generate-reddit-variants",
       {
         body: {
-          count: 5,
+          count: genCount,
           context: [threadTitle, subreddit ? `r/${subreddit}` : ""]
             .filter(Boolean)
             .join(" — "),
           noLinkMode,
+          length: genLength,
+          tone: genTone,
+          angles: genAngles,
+          customInstructions: genCustom,
+          avoidPhrases,
         },
       },
     );
