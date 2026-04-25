@@ -2019,6 +2019,44 @@ export type Database = {
         }
         Relationships: []
       }
+      reddit_task_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          posted_comment_url: string
+          task_id: string
+          variant_index: number | null
+          variant_text_hash: string | null
+          worker_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          posted_comment_url: string
+          task_id: string
+          variant_index?: number | null
+          variant_text_hash?: string | null
+          worker_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          posted_comment_url?: string
+          task_id?: string
+          variant_index?: number | null
+          variant_text_hash?: string | null
+          worker_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reddit_task_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "reddit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reddit_tasks: {
         Row: {
           admin_notes: string | null
@@ -3142,10 +3180,24 @@ export type Database = {
         Args: { p_minutes_amount: number; p_paypal_email: string }
         Returns: Json
       }
-      submit_reddit_task: {
-        Args: { p_code: string; p_posted_url: string; p_worker_name: string }
-        Returns: Json
-      }
+      submit_reddit_task:
+        | {
+            Args: {
+              p_code: string
+              p_posted_url: string
+              p_worker_name: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_code: string
+              p_posted_url: string
+              p_variant_index?: number
+              p_worker_name: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
