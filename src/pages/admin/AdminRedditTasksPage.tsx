@@ -53,6 +53,7 @@ interface SubmissionRow {
   verification_status: string;
   verified_at: string | null;
   verification_note: string | null;
+  account_type: string;
 }
 
 const VERIF_COLORS: Record<string, string> = {
@@ -177,7 +178,7 @@ const AdminRedditTasksPage = () => {
     const { data: subs } = await supabase
       .from("reddit_task_submissions")
       .select(
-        "id, task_id, worker_name, posted_comment_url, created_at, verification_status, verified_at, verification_note",
+        "id, task_id, worker_name, posted_comment_url, created_at, verification_status, verified_at, verification_note, account_type",
       )
       .order("created_at", { ascending: true });
     const map: Record<string, SubmissionRow[]> = {};
@@ -191,6 +192,7 @@ const AdminRedditTasksPage = () => {
         verification_status: s.verification_status || "unverified",
         verified_at: s.verified_at,
         verification_note: s.verification_note,
+        account_type: s.account_type || "fresh",
       });
     });
     setSubmissionsByTask(map);
@@ -494,6 +496,16 @@ const AdminRedditTasksPage = () => {
                             <span className="text-foreground">
                               {s.worker_name || "(no name)"}
                             </span>
+                            <Badge
+                              variant="outline"
+                              className={
+                                s.account_type === "aged"
+                                  ? "bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px]"
+                                  : "text-[10px]"
+                              }
+                            >
+                              {s.account_type === "aged" ? "🎖️ aged" : "fresh"}
+                            </Badge>
                             <a
                               href={s.posted_comment_url}
                               target="_blank"

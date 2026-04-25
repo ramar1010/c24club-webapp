@@ -35,6 +35,9 @@ const WorkerRedditTaskPage = () => {
   const [postedUrl, setPostedUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [variantIndex, setVariantIndex] = useState<number | null>(null);
+  const [accountType, setAccountType] = useState<"fresh" | "aged">(
+    () => (localStorage.getItem("reddit_worker_account_type") as "fresh" | "aged") || "fresh"
+  );
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignFailed, setAutoAssignFailed] = useState(false);
 
@@ -130,13 +133,15 @@ const WorkerRedditTaskPage = () => {
       return;
     }
     localStorage.setItem("reddit_worker_name", workerName.trim());
+    localStorage.setItem("reddit_worker_account_type", accountType);
     setSubmitting(true);
     const { data, error } = await supabase.rpc("submit_reddit_task", {
       p_code: code.trim().toUpperCase(),
       p_worker_name: workerName.trim(),
       p_posted_url: postedUrl.trim(),
       p_variant_index: variantIndex,
-    });
+      p_account_type: accountType,
+    } as any);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     const res = data as { success: boolean; error?: string };
@@ -373,6 +378,34 @@ const WorkerRedditTaskPage = () => {
                         className="mt-2 w-full rounded border border-border"
                       />
                     </details>
+                  </div>
+                  <div>
+                    <Label>Reddit account type used</Label>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      {[
+                        { key: "fresh", label: "Fresh / new account" },
+                        { key: "aged", label: "Aged (30+ days, 100+ karma)" },
+                      ].map((opt) => {
+                        const checked = accountType === opt.key;
+                        return (
+                          <button
+                            key={opt.key}
+                            type="button"
+                            onClick={() => setAccountType(opt.key as "fresh" | "aged")}
+                            className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+                              checked
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border bg-muted/30 text-muted-foreground"
+                            }`}
+                          >
+                            <div className="font-medium">{opt.label}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Be honest — aged accounts are tracked separately so we know which submissions are higher trust.
+                    </p>
                   </div>
                   <Button
                     onClick={handleSubmit}
