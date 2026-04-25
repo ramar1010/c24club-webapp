@@ -178,7 +178,7 @@ const AdminRedditTasksPage = () => {
     const { data: subs } = await supabase
       .from("reddit_task_submissions")
       .select(
-        "id, task_id, worker_name, posted_comment_url, created_at, verification_status, verified_at, verification_note",
+        "id, task_id, worker_name, posted_comment_url, created_at, verification_status, verified_at, verification_note, account_type",
       )
       .order("created_at", { ascending: true });
     const map: Record<string, SubmissionRow[]> = {};
@@ -192,6 +192,7 @@ const AdminRedditTasksPage = () => {
         verification_status: s.verification_status || "unverified",
         verified_at: s.verified_at,
         verification_note: s.verification_note,
+        account_type: s.account_type || "fresh",
       });
     });
     setSubmissionsByTask(map);
