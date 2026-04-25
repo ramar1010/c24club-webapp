@@ -12,5 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /work/
 
 Sitemap: https://c24club.com/sitemap.xml
