@@ -32,6 +32,7 @@ const WorkerRedditTaskPage = () => {
   );
   const [postedUrl, setPostedUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [variantIndex, setVariantIndex] = useState<number | null>(null);
 
   const fetchTask = async (c: string) => {
     if (!c.trim()) return;
@@ -96,12 +97,17 @@ const WorkerRedditTaskPage = () => {
       toast.error("Enter your worker name");
       return;
     }
+    if (variantIndex === null) {
+      toast.error("Select which variant you posted");
+      return;
+    }
     localStorage.setItem("reddit_worker_name", workerName.trim());
     setSubmitting(true);
     const { data, error } = await supabase.rpc("submit_reddit_task", {
       p_code: code.trim().toUpperCase(),
       p_worker_name: workerName.trim(),
       p_posted_url: postedUrl.trim(),
+      p_variant_index: variantIndex,
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
@@ -201,16 +207,34 @@ const WorkerRedditTaskPage = () => {
                 {task.suggested_comments.map((c, i) => (
                   <div
                     key={i}
-                    className="rounded-md border border-border bg-muted/30 p-3"
+                    className={`rounded-md border p-3 transition-colors ${
+                      variantIndex === i
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-muted/30"
+                    }`}
+                    onClick={() => !isDone && setVariantIndex(i)}
+                    role="button"
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Variant {i + 1}
-                      </span>
+                      <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+                        <input
+                          type="radio"
+                          name="variant"
+                          checked={variantIndex === i}
+                          onChange={() => setVariantIndex(i)}
+                          disabled={!!isDone}
+                          className="h-3.5 w-3.5"
+                        />
+                        Variant {i + 1} {variantIndex === i && "(selected)"}
+                      </label>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => copy(c)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setVariantIndex(i);
+                          copy(c);
+                        }}
                       >
                         <Copy className="mr-1 h-3 w-3" /> Copy
                       </Button>
@@ -221,6 +245,9 @@ const WorkerRedditTaskPage = () => {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Tip: clicking <strong>Copy</strong> auto-selects that variant.
+              </p>
             </div>
 
             <div className="space-y-3 border-t border-border pt-4">
