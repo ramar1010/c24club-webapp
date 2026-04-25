@@ -252,6 +252,11 @@ const AdminRedditTasksPage = () => {
     setMaxClaims(1);
     setNoLinkMode(false);
     setEditingId(null);
+    setGenCount(5);
+    setGenLength("mixed");
+    setGenTone("mixed");
+    setGenAngles([]);
+    setGenCustom("");
   };
 
   const handleCreate = async () => {
