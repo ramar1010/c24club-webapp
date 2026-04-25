@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Copy, ExternalLink, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import microworkersUsernameExample from "@/assets/microworkers-username-example.png";
 
 interface TaskView {
   id: string;
@@ -258,6 +259,21 @@ const WorkerRedditTaskPage = () => {
                   onChange={(e) => setWorkerName(e.target.value)}
                   placeholder="e.g. Microworkers username"
                 />
+                <details className="mt-2 rounded-md border border-border bg-muted/30 p-2 text-xs text-muted-foreground">
+                  <summary className="cursor-pointer select-none font-medium text-foreground">
+                    Where do I find my Microworkers username?
+                  </summary>
+                  <p className="mt-2">
+                    On your Microworkers Dashboard, your username appears at the
+                    top next to your name (highlighted below). Copy that exact
+                    username here.
+                  </p>
+                  <img
+                    src={microworkersUsernameExample}
+                    alt="Example showing where the Microworkers username appears on the dashboard"
+                    className="mt-2 w-full rounded border border-border"
+                  />
+                </details>
               </div>
 
               {!isDone && task.status === "open" && (
