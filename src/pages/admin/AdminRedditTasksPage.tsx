@@ -57,6 +57,9 @@ const generateCode = () =>
 
 const AdminRedditTasksPage = () => {
   const [tasks, setTasks] = useState<RedditTask[]>([]);
+  const [submissionsByTask, setSubmissionsByTask] = useState<
+    Record<string, { worker_name: string | null; posted_comment_url: string; created_at: string }[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -117,6 +120,20 @@ const AdminRedditTasksPage = () => {
     } else {
       setTasks((data || []) as RedditTask[]);
     }
+    const { data: subs } = await supabase
+      .from("reddit_task_submissions")
+      .select("task_id, worker_name, posted_comment_url, created_at")
+      .order("created_at", { ascending: true });
+    const map: Record<string, { worker_name: string | null; posted_comment_url: string; created_at: string }[]> = {};
+    (subs || []).forEach((s: any) => {
+      if (!map[s.task_id]) map[s.task_id] = [];
+      map[s.task_id].push({
+        worker_name: s.worker_name,
+        posted_comment_url: s.posted_comment_url,
+        created_at: s.created_at,
+      });
+    });
+    setSubmissionsByTask(map);
     setLoading(false);
   };
 
