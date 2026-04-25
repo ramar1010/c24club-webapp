@@ -35,6 +35,9 @@ const WorkerRedditTaskPage = () => {
   const [postedUrl, setPostedUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [variantIndex, setVariantIndex] = useState<number | null>(null);
+  const [accountType, setAccountType] = useState<"fresh" | "aged">(
+    () => (localStorage.getItem("reddit_worker_account_type") as "fresh" | "aged") || "fresh"
+  );
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignFailed, setAutoAssignFailed] = useState(false);
 
