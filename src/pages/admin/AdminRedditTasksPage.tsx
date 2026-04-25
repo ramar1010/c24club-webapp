@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,26 @@ interface RedditTask {
   created_at: string;
   max_claims: number;
   claims_count: number;
+  no_link_mode: boolean;
 }
+
+interface SubmissionRow {
+  id: string;
+  worker_name: string | null;
+  posted_comment_url: string;
+  created_at: string;
+  verification_status: string;
+  verified_at: string | null;
+  verification_note: string | null;
+}
+
+const VERIF_COLORS: Record<string, string> = {
+  unverified: "bg-muted text-muted-foreground",
+  live: "bg-green-500/20 text-green-400 border-green-500/30",
+  removed: "bg-red-500/20 text-red-400 border-red-500/30",
+  deleted: "bg-red-500/20 text-red-400 border-red-500/30",
+  unreachable: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+};
 
 const STATUS_COLORS: Record<string, string> = {
   open: "bg-muted text-muted-foreground",
@@ -58,7 +78,7 @@ const generateCode = () =>
 const AdminRedditTasksPage = () => {
   const [tasks, setTasks] = useState<RedditTask[]>([]);
   const [submissionsByTask, setSubmissionsByTask] = useState<
-    Record<string, { worker_name: string | null; posted_comment_url: string; created_at: string }[]>
+    Record<string, SubmissionRow[]>
   >({});
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -67,6 +87,7 @@ const AdminRedditTasksPage = () => {
   const [generating, setGenerating] = useState(false);
   const [autoAssign, setAutoAssign] = useState(true);
   const [autoAssignSaving, setAutoAssignSaving] = useState(false);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   // form state
   const [subreddit, setSubreddit] = useState("");
@@ -75,6 +96,7 @@ const AdminRedditTasksPage = () => {
   const [variantsText, setVariantsText] = useState("");
   const [notes, setNotes] = useState("");
   const [maxClaims, setMaxClaims] = useState(1);
+  const [noLinkMode, setNoLinkMode] = useState(false);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -86,6 +108,7 @@ const AdminRedditTasksPage = () => {
           context: [threadTitle, subreddit ? `r/${subreddit}` : ""]
             .filter(Boolean)
             .join(" — "),
+          noLinkMode,
         },
       },
     );
@@ -122,15 +145,21 @@ const AdminRedditTasksPage = () => {
     }
     const { data: subs } = await supabase
       .from("reddit_task_submissions")
-      .select("task_id, worker_name, posted_comment_url, created_at")
+      .select(
+        "id, task_id, worker_name, posted_comment_url, created_at, verification_status, verified_at, verification_note",
+      )
       .order("created_at", { ascending: true });
-    const map: Record<string, { worker_name: string | null; posted_comment_url: string; created_at: string }[]> = {};
+    const map: Record<string, SubmissionRow[]> = {};
     (subs || []).forEach((s: any) => {
       if (!map[s.task_id]) map[s.task_id] = [];
       map[s.task_id].push({
+        id: s.id,
         worker_name: s.worker_name,
         posted_comment_url: s.posted_comment_url,
         created_at: s.created_at,
+        verification_status: s.verification_status || "unverified",
+        verified_at: s.verified_at,
+        verification_note: s.verification_note,
       });
     });
     setSubmissionsByTask(map);
@@ -190,6 +219,7 @@ const AdminRedditTasksPage = () => {
     setVariantsText("");
     setNotes("");
     setMaxClaims(1);
+    setNoLinkMode(false);
   };
 
   const handleCreate = async () => {
@@ -215,6 +245,7 @@ const AdminRedditTasksPage = () => {
       suggested_comments: variants,
       notes: notes.trim() || null,
       max_claims: Math.max(1, Math.min(50, maxClaims || 1)),
+      no_link_mode: noLinkMode,
     });
     setSaving(false);
     if (error) {
@@ -253,6 +284,20 @@ const AdminRedditTasksPage = () => {
     const url = `${workerBase}?code=${code}`;
     navigator.clipboard.writeText(url);
     toast.success("Worker link copied");
+  };
+
+  const verifySubmission = async (submissionId: string) => {
+    setVerifyingId(submissionId);
+    const { error } = await supabase.functions.invoke("verify-reddit-comment", {
+      body: { submission_id: submissionId },
+    });
+    setVerifyingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Verification complete");
+    load();
   };
 
   return (
@@ -370,6 +415,22 @@ const AdminRedditTasksPage = () => {
                             >
                               view comment <ExternalLink className="h-3 w-3" />
                             </a>
+                            <Badge
+                              variant="outline"
+                              className={VERIF_COLORS[s.verification_status] || ""}
+                              title={s.verification_note || ""}
+                            >
+                              {s.verification_status}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => verifySubmission(s.id)}
+                              disabled={verifyingId === s.id}
+                            >
+                              {verifyingId === s.id ? "Checking…" : "Re-check"}
+                            </Button>
                           </li>
                         ))}
                       </ul>
@@ -382,6 +443,11 @@ const AdminRedditTasksPage = () => {
                   <p className="text-xs text-muted-foreground">
                     Claimed: {t.claims_count}/{t.max_claims}
                   </p>
+                  {t.no_link_mode && (
+                    <Badge variant="outline" className="text-[10px]">
+                      no-link mode
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -476,6 +542,26 @@ const AdminRedditTasksPage = () => {
                 value={maxClaims}
                 onChange={(e) => setMaxClaims(parseInt(e.target.value) || 1)}
               />
+            </div>
+            <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-3">
+              <Checkbox
+                id="no-link-mode"
+                checked={noLinkMode}
+                onCheckedChange={(v) => setNoLinkMode(!!v)}
+                className="mt-0.5"
+              />
+              <div>
+                <Label htmlFor="no-link-mode" className="cursor-pointer">
+                  No-link mode (avoids Reddit spam filter)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  When ON, AI-generated variants will NOT include "c24club.com" —
+                  workers should put the link in their Reddit profile bio and the
+                  comment will say "link's in my profile". Massively reduces
+                  auto-removal rate. Tell your worker to set their profile bio to
+                  the c24club URL.
+                </p>
+              </div>
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between gap-2">
