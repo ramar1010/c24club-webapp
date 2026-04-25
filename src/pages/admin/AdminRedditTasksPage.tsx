@@ -303,6 +303,9 @@ const AdminRedditTasksPage = () => {
                     {t.suggested_comments.length} comment variant
                     {t.suggested_comments.length === 1 ? "" : "s"}
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    Claimed: {t.claims_count}/{t.max_claims}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -382,6 +385,20 @@ const AdminRedditTasksPage = () => {
                 value={threadUrl}
                 onChange={(e) => setThreadUrl(e.target.value)}
                 placeholder="https://reddit.com/r/..."
+              />
+            </div>
+            <div>
+              <Label>Max workers per thread</Label>
+              <p className="mb-1 text-xs text-muted-foreground">
+                Cap the number of microworkers who can submit a comment on this
+                thread. Default 1 — keeps Reddit looking organic.
+              </p>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={maxClaims}
+                onChange={(e) => setMaxClaims(parseInt(e.target.value) || 1)}
               />
             </div>
             <div>
