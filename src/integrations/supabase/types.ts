@@ -2025,9 +2025,11 @@ export type Database = {
           claim_code: string
           claimed_at: string | null
           claimed_by_name: string | null
+          claims_count: number
           completed_at: string | null
           created_at: string
           id: string
+          max_claims: number
           notes: string | null
           posted_comment_url: string | null
           status: string
@@ -2042,9 +2044,11 @@ export type Database = {
           claim_code: string
           claimed_at?: string | null
           claimed_by_name?: string | null
+          claims_count?: number
           completed_at?: string | null
           created_at?: string
           id?: string
+          max_claims?: number
           notes?: string | null
           posted_comment_url?: string | null
           status?: string
@@ -2059,9 +2063,11 @@ export type Database = {
           claim_code?: string
           claimed_at?: string | null
           claimed_by_name?: string | null
+          claims_count?: number
           completed_at?: string | null
           created_at?: string
           id?: string
+          max_claims?: number
           notes?: string | null
           posted_comment_url?: string | null
           status?: string
@@ -3085,7 +3091,9 @@ export type Database = {
         Args: { p_code: string }
         Returns: {
           claimed_by_name: string
+          claims_count: number
           id: string
+          max_claims: number
           notes: string
           posted_comment_url: string
           status: string
