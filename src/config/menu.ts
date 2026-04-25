@@ -29,6 +29,7 @@ import {
   MousePointerClick,
   Dices,
   Clock,
+  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -300,6 +301,14 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "blog", label: "All Posts", path: "/admin/blog" },
       { key: "blog-new", label: "New Post", path: "/admin/blog/new" },
+    ],
+  },
+  {
+    key: "reddit-tasks",
+    icon: MessagesSquare,
+    title: "Reddit Tasks",
+    submenu: [
+      { key: "reddit-tasks", label: "All Tasks", path: "/admin/reddit-tasks" },
     ],
   },
   {

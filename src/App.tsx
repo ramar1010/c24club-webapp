@@ -65,6 +65,7 @@ const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPa
 const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
+const AdminRedditTasksPage = lazy(() => import("@/pages/admin/AdminRedditTasksPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -93,6 +94,7 @@ const FreeVideoChatNoSignUpPage = lazy(() => import("@/pages/public/seo/FreeVide
 const CamChatPage = lazy(() => import("@/pages/public/seo/CamChatPage"));
 const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
+const WorkerRedditTaskPage = lazy(() => import("@/pages/public/WorkerRedditTaskPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -141,6 +143,9 @@ const App = () => (
               <Route path="/gift-success" element={<GiftSuccessPage />} />
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
               <Route path="/call/:slug" element={<CallMePage />} />
+
+              {/* Hidden worker portal (noindex) */}
+              <Route path="/work/c24" element={<WorkerRedditTaskPage />} />
 
               {/* Admin login */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -211,6 +216,7 @@ const App = () => (
                 <Route path="blog" element={<AdminBlogPage />} />
                 <Route path="blog/new" element={<AdminBlogEditorPage />} />
                 <Route path="blog/:id/edit" element={<AdminBlogEditorPage />} />
+                <Route path="reddit-tasks" element={<AdminRedditTasksPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
