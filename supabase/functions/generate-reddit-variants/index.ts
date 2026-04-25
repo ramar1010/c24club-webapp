@@ -38,9 +38,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { count = 5, context = "", noLinkMode = false } = await req
-      .json()
-      .catch(() => ({}));
+    const {
+      count = 5,
+      context = "",
+      noLinkMode = false,
+      length = "mixed", // "short" | "medium" | "long" | "mixed"
+      tone = "casual", // "casual" | "enthusiastic" | "skeptical" | "blunt" | "helpful" | "mixed"
+      angles = [] as string[], // subset of: rewards, gender-ratio, less-bots, one-on-one, free-no-signup, personal-experience
+      customInstructions = "",
+      avoidPhrases = "", // newline or comma-separated phrases to avoid (e.g. previously generated openings)
+    } = await req.json().catch(() => ({}));
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -48,9 +55,48 @@ serve(async (req) => {
       ? `\n\nIMPORTANT — NO-LINK MODE: Do NOT include the full URL "c24club.com" (no ".com", no "https://", no clickable link). BUT you MUST mention the brand name "c24club" or "c24" naturally in EVERY comment so readers know what to search for (e.g. "I've been using c24club", "try c24", "there's this site called c24club"). Do NOT tell the reader to check a bio, profile, or DM. Curious readers will Google "c24club" themselves. This avoids Reddit's link-spam filter while still giving the brand recognition.`
       : "";
 
+    const lengthMap: Record<string, string> = {
+      short: "Every variant must be SHORT — 1 sentence, max ~15 words. Punchy, casual, like a quick drive-by recommendation.",
+      medium: "Every variant must be MEDIUM — 2-3 sentences, ~20-45 words. Conversational.",
+      long: "Every variant must be LONGER — 3-5 sentences, ~50-90 words. Sounds like a thoughtful personal recommendation with a small story or detail.",
+      mixed: "VARY the length deliberately across the batch: at least one 1-sentence punchy reply, at least one 2-3 sentence medium, and at least one 3-5 sentence longer reply. Do not make them all the same length.",
+    };
+
+    const toneMap: Record<string, string> = {
+      casual: "Tone: casual, lowercase-leaning, like a regular Redditor commenting on their phone. Occasional typos or sentence fragments are fine.",
+      enthusiastic: "Tone: genuinely enthusiastic and positive, like recommending something you actually love — but without sounding like an ad.",
+      skeptical: "Tone: slightly skeptical at first, then admits it's actually decent (e.g. 'wasn't expecting much but...'). Sounds more believable.",
+      blunt: "Tone: blunt, short, matter-of-fact. No fluff. Like 'just use c24, way less bots.'",
+      helpful: "Tone: helpful and informative, like answering someone's actual question patiently.",
+      mixed: "VARY the tone across the batch — mix casual, slightly skeptical/honest, enthusiastic, and blunt. Don't make them all sound the same.",
+    };
+
+    const angleLabels: Record<string, string> = {
+      rewards: "users actually earn rewards (gift cards / cash / PayPal) for chat time",
+      "gender-ratio": "way more balanced gender ratio than other random chat sites because of the rewards system",
+      "less-bots": "way fewer bots than Omegle / Ome.tv",
+      "one-on-one": "1-on-1 only, no group chat spam",
+      "free-no-signup": "free to start, no signup required",
+      "personal-experience": "first-person personal experience ('been using it for a few weeks', 'met someone cool on there', etc.)",
+    };
+
+    const angleInstruction = angles && angles.length > 0
+      ? `\n\nFOCUS THE BATCH on these angles ONLY — rotate through them so different variants emphasize different things:\n${angles
+          .map((a: string) => `- ${angleLabels[a] || a}`)
+          .join("\n")}\n\nDo NOT use angles outside this list.`
+      : "";
+
+    const customInstr = customInstructions && customInstructions.trim()
+      ? `\n\nADDITIONAL ADMIN INSTRUCTIONS (highest priority — follow these exactly):\n${customInstructions.trim()}`
+      : "";
+
+    const avoidInstr = avoidPhrases && avoidPhrases.trim()
+      ? `\n\nAVOID these openings/phrasings entirely (already used in prior batches — write something distinctly different):\n${avoidPhrases.trim()}`
+      : "";
+
     const userPrompt = `Generate ${count} distinct Reddit comment variants recommending c24club.${
       context ? `\n\nThread context: ${context}` : ""
-    }${noLinkInstruction}\n\nReturn them via the provided tool.`;
+    }\n\nLENGTH RULE: ${lengthMap[length] || lengthMap.mixed}\n\nTONE RULE: ${toneMap[tone] || toneMap.casual}${angleInstruction}${customInstr}${avoidInstr}${noLinkInstruction}\n\nMake every variant clearly distinct from the others — different opening words, different sentence structure, different angle. Return them via the provided tool.`;
 
     const resp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
