@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,8 @@ const AdminRedditTasksPage = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [autoAssign, setAutoAssign] = useState(true);
+  const [autoAssignSaving, setAutoAssignSaving] = useState(false);
 
   // form state
   const [subreddit, setSubreddit] = useState("");
@@ -119,7 +122,36 @@ const AdminRedditTasksPage = () => {
 
   useEffect(() => {
     load();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    const { data } = await supabase
+      .from("reddit_task_settings")
+      .select("auto_assign_enabled")
+      .eq("id", 1)
+      .maybeSingle();
+    if (data) setAutoAssign(!!data.auto_assign_enabled);
+  };
+
+  const toggleAutoAssign = async (next: boolean) => {
+    setAutoAssignSaving(true);
+    const prev = autoAssign;
+    setAutoAssign(next);
+    const { error } = await supabase
+      .from("reddit_task_settings")
+      .update({ auto_assign_enabled: next, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    setAutoAssignSaving(false);
+    if (error) {
+      setAutoAssign(prev);
+      toast.error(error.message);
+      return;
+    }
+    toast.success(
+      next ? "Auto-assign enabled" : "Auto-assign disabled (code-only)",
+    );
+  };
 
   const filtered = useMemo(() => {
     if (statusFilter === "all") return tasks;
