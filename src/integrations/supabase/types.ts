@@ -2039,6 +2039,7 @@ export type Database = {
       }
       reddit_task_submissions: {
         Row: {
+          account_type: string
           created_at: string
           id: string
           posted_comment_url: string
@@ -2052,6 +2053,7 @@ export type Database = {
           worker_name: string | null
         }
         Insert: {
+          account_type?: string
           created_at?: string
           id?: string
           posted_comment_url: string
@@ -2065,6 +2067,7 @@ export type Database = {
           worker_name?: string | null
         }
         Update: {
+          account_type?: string
           created_at?: string
           id?: string
           posted_comment_url?: string
@@ -3231,6 +3234,16 @@ export type Database = {
           }
         | {
             Args: {
+              p_code: string
+              p_posted_url: string
+              p_variant_index?: number
+              p_worker_name: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_account_type?: string
               p_code: string
               p_posted_url: string
               p_variant_index?: number
