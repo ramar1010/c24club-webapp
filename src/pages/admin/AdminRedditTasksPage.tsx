@@ -447,6 +447,8 @@ const AdminRedditTasksPage = () => {
         </div>
       </div>
 
+      <RedditAccountsManager />
+
       {loading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : filtered.length === 0 ? (
