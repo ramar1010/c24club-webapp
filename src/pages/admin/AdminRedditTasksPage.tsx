@@ -351,21 +351,29 @@ const AdminRedditTasksPage = () => {
                   >
                     Open thread <ExternalLink className="h-3 w-3" />
                   </a>
-                  {t.claimed_by_name && (
-                    <p className="text-xs text-muted-foreground">
-                      Claimed by:{" "}
-                      <span className="text-foreground">{t.claimed_by_name}</span>
-                    </p>
-                  )}
-                  {t.posted_comment_url && (
-                    <a
-                      href={t.posted_comment_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                    >
-                      View posted comment <ExternalLink className="h-3 w-3" />
-                    </a>
+                  {(submissionsByTask[t.id]?.length ?? 0) > 0 && (
+                    <div className="rounded-md border border-border bg-muted/30 p-2 text-xs">
+                      <p className="mb-1 font-medium text-foreground">
+                        Submissions ({submissionsByTask[t.id].length}/{t.max_claims}):
+                      </p>
+                      <ul className="space-y-1">
+                        {submissionsByTask[t.id].map((s, idx) => (
+                          <li key={idx} className="flex flex-wrap items-center gap-2">
+                            <span className="text-foreground">
+                              {s.worker_name || "(no name)"}
+                            </span>
+                            <a
+                              href={s.posted_comment_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              view comment <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   <p className="text-xs text-muted-foreground">
                     {t.suggested_comments.length} comment variant
