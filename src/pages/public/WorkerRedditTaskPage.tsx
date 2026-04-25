@@ -133,13 +133,15 @@ const WorkerRedditTaskPage = () => {
       return;
     }
     localStorage.setItem("reddit_worker_name", workerName.trim());
+    localStorage.setItem("reddit_worker_account_type", accountType);
     setSubmitting(true);
     const { data, error } = await supabase.rpc("submit_reddit_task", {
       p_code: code.trim().toUpperCase(),
       p_worker_name: workerName.trim(),
       p_posted_url: postedUrl.trim(),
       p_variant_index: variantIndex,
-    });
+      p_account_type: accountType,
+    } as any);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     const res = data as { success: boolean; error?: string };
