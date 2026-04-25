@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Copy, ExternalLink, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import microworkersUsernameExample from "@/assets/microworkers-username-example.png";
+import redditCopyLinkExample from "@/assets/reddit-copy-link-example.png";
 
 interface TaskView {
   id: string;
@@ -291,6 +292,20 @@ const WorkerRedditTaskPage = () => {
                       onChange={(e) => setPostedUrl(e.target.value)}
                       placeholder="https://reddit.com/r/.../comment/..."
                     />
+                    <details className="mt-2 rounded-md border border-border bg-muted/30 p-2 text-xs text-muted-foreground">
+                      <summary className="cursor-pointer select-none font-medium text-foreground">
+                        How do I get my comment URL?
+                      </summary>
+                      <p className="mt-2">
+                        On your posted Reddit comment, tap <strong>Share</strong> →{" "}
+                        <strong>Copy link</strong>, then paste it above.
+                      </p>
+                      <img
+                        src={redditCopyLinkExample}
+                        alt="Example showing the Share menu on a Reddit comment with Copy link highlighted"
+                        className="mt-2 w-full rounded border border-border"
+                      />
+                    </details>
                   </div>
                   <Button
                     onClick={handleSubmit}
