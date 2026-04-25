@@ -45,7 +45,7 @@ serve(async (req) => {
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
     const noLinkInstruction = noLinkMode
-      ? `\n\nIMPORTANT — NO-LINK MODE: Do NOT include the URL "c24club.com" or "c24club" anywhere in the comments. Instead, refer the reader to the worker's Reddit profile bio (e.g. "link's in my profile", "check my bio", "DMing it"). Recommend the SITE in a generic way ("a site I've been using", "this random video chat thing") without naming it. This avoids Reddit's link-spam filter.`
+      ? `\n\nIMPORTANT — NO-LINK MODE: Do NOT include the URL "c24club.com" or "c24club" anywhere in the comments. Recommend the SITE in a generic descriptive way ("a site I've been using", "this random video chat thing with rewards", "a newer omegle alternative") WITHOUT naming it and WITHOUT telling the reader to check a bio, profile, or DM. Curious readers will Google it themselves. This avoids Reddit's link-spam filter while keeping the comment natural.`
       : "";
 
     const userPrompt = `Generate ${count} distinct Reddit comment variants recommending c24club.${
