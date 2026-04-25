@@ -2045,6 +2045,10 @@ export type Database = {
           task_id: string
           variant_index: number | null
           variant_text_hash: string | null
+          verification_http_status: number | null
+          verification_note: string | null
+          verification_status: string
+          verified_at: string | null
           worker_name: string | null
         }
         Insert: {
@@ -2054,6 +2058,10 @@ export type Database = {
           task_id: string
           variant_index?: number | null
           variant_text_hash?: string | null
+          verification_http_status?: number | null
+          verification_note?: string | null
+          verification_status?: string
+          verified_at?: string | null
           worker_name?: string | null
         }
         Update: {
@@ -2063,6 +2071,10 @@ export type Database = {
           task_id?: string
           variant_index?: number | null
           variant_text_hash?: string | null
+          verification_http_status?: number | null
+          verification_note?: string | null
+          verification_status?: string
+          verified_at?: string | null
           worker_name?: string | null
         }
         Relationships: [
@@ -2086,6 +2098,7 @@ export type Database = {
           created_at: string
           id: string
           max_claims: number
+          no_link_mode: boolean
           notes: string | null
           posted_comment_url: string | null
           status: string
@@ -2105,6 +2118,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_claims?: number
+          no_link_mode?: boolean
           notes?: string | null
           posted_comment_url?: string | null
           status?: string
@@ -2124,6 +2138,7 @@ export type Database = {
           created_at?: string
           id?: string
           max_claims?: number
+          no_link_mode?: boolean
           notes?: string | null
           posted_comment_url?: string | null
           status?: string
