@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Plus, Trash2, ExternalLink, Sparkles, RotateCcw } from "lucide-react";
+import { Copy, Plus, Trash2, ExternalLink, Sparkles, RotateCcw, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 interface RedditTask {
@@ -85,6 +85,7 @@ const AdminRedditTasksPage = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [autoAssign, setAutoAssign] = useState(true);
   const [autoAssignSaving, setAutoAssignSaving] = useState(false);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
@@ -220,6 +221,7 @@ const AdminRedditTasksPage = () => {
     setNotes("");
     setMaxClaims(1);
     setNoLinkMode(false);
+    setEditingId(null);
   };
 
   const handleCreate = async () => {
@@ -237,8 +239,7 @@ const AdminRedditTasksPage = () => {
     }
 
     setSaving(true);
-    const { error } = await supabase.from("reddit_tasks").insert({
-      claim_code: generateCode(),
+    const payload = {
       subreddit: subreddit.trim() || null,
       thread_title: threadTitle.trim() || null,
       thread_url: threadUrl.trim(),
@@ -246,16 +247,33 @@ const AdminRedditTasksPage = () => {
       notes: notes.trim() || null,
       max_claims: Math.max(1, Math.min(50, maxClaims || 1)),
       no_link_mode: noLinkMode,
-    });
+    };
+    const { error } = editingId
+      ? await supabase.from("reddit_tasks").update(payload).eq("id", editingId)
+      : await supabase
+          .from("reddit_tasks")
+          .insert({ ...payload, claim_code: generateCode() });
     setSaving(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Task created");
+    toast.success(editingId ? "Task updated" : "Task created");
     setCreateOpen(false);
     resetForm();
     load();
+  };
+
+  const openEdit = (t: RedditTask) => {
+    setEditingId(t.id);
+    setSubreddit(t.subreddit || "");
+    setThreadTitle(t.thread_title || "");
+    setThreadUrl(t.thread_url);
+    setVariantsText((t.suggested_comments || []).join("\n---\n"));
+    setNotes(t.notes || "");
+    setMaxClaims(t.max_claims || 1);
+    setNoLinkMode(!!t.no_link_mode);
+    setCreateOpen(true);
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -527,6 +545,14 @@ const AdminRedditTasksPage = () => {
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
+                    onClick={() => openEdit(t)}
+                    title="Edit task details"
+                  >
+                    <Pencil className="mr-1 h-3 w-3" /> Edit
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="ghost"
                     onClick={() => deleteTask(t.id)}
                   >
@@ -539,10 +565,18 @@ const AdminRedditTasksPage = () => {
         </div>
       )}
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(o) => {
+          setCreateOpen(o);
+          if (!o) resetForm();
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>New Reddit task</DialogTitle>
+            <DialogTitle>
+              {editingId ? "Edit Reddit task" : "New Reddit task"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -597,11 +631,10 @@ const AdminRedditTasksPage = () => {
                   No-link mode (avoids Reddit spam filter)
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  When ON, AI-generated variants will NOT include "c24club.com" —
-                  workers should put the link in their Reddit profile bio and the
-                  comment will say "link's in my profile". Massively reduces
-                  auto-removal rate. Tell your worker to set their profile bio to
-                  the c24club URL.
+                  When ON, AI-generated variants will NOT include "c24club.com".
+                  Comments mention the site generically (e.g. "a newer omegle
+                  alternative"). Curious readers Google it themselves. Massively
+                  reduces Reddit auto-removal rate.
                 </p>
               </div>
             </div>
@@ -646,7 +679,7 @@ const AdminRedditTasksPage = () => {
               Cancel
             </Button>
             <Button onClick={handleCreate} disabled={saving}>
-              {saving ? "Saving…" : "Create task"}
+              {saving ? "Saving…" : editingId ? "Save changes" : "Create task"}
             </Button>
           </DialogFooter>
         </DialogContent>
