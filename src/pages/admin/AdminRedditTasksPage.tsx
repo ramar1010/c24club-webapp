@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Copy, Plus, Trash2, ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface RedditTask {
@@ -58,6 +58,7 @@ const AdminRedditTasksPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   // form state
   const [subreddit, setSubreddit] = useState("");
@@ -65,6 +66,37 @@ const AdminRedditTasksPage = () => {
   const [threadUrl, setThreadUrl] = useState("");
   const [variantsText, setVariantsText] = useState("");
   const [notes, setNotes] = useState("");
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    const { data, error } = await supabase.functions.invoke(
+      "generate-reddit-variants",
+      {
+        body: {
+          count: 5,
+          context: [threadTitle, subreddit ? `r/${subreddit}` : ""]
+            .filter(Boolean)
+            .join(" — "),
+        },
+      },
+    );
+    setGenerating(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const variants: string[] = data?.variants || [];
+    if (variants.length === 0) {
+      toast.error("No variants returned, try again");
+      return;
+    }
+    const merged = [
+      ...(variantsText.trim() ? [variantsText.trim()] : []),
+      ...variants,
+    ].join("\n---\n");
+    setVariantsText(merged);
+    toast.success(`Generated ${variants.length} variants`);
+  };
 
   const workerBase = `${window.location.origin}/work/c24`;
 
@@ -348,7 +380,19 @@ const AdminRedditTasksPage = () => {
               />
             </div>
             <div>
-              <Label>Comment variants *</Label>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <Label>Comment variants *</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleGenerate}
+                  disabled={generating}
+                >
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  {generating ? "Generating…" : "Generate with AI"}
+                </Button>
+              </div>
               <p className="mb-1 text-xs text-muted-foreground">
                 Separate each variant with a line containing only{" "}
                 <code className="rounded bg-muted px-1">---</code>
