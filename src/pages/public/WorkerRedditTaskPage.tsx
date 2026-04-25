@@ -243,6 +243,33 @@ const WorkerRedditTaskPage = () => {
               </div>
             )}
 
+            <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-foreground">
+              <p className="mb-1 font-semibold text-yellow-400">
+                ⚠️ Read this before posting (avoid getting your comment removed)
+              </p>
+              <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+                <li>
+                  Use a Reddit account that is at least <strong>30 days old</strong>{" "}
+                  with <strong>100+ comment karma</strong>. New / low-karma accounts
+                  get auto-removed by Reddit's spam filter.
+                </li>
+                <li>
+                  Before posting our comment, leave <strong>1–2 unrelated genuine
+                  replies</strong> in the same subreddit so you don't look like spam.
+                </li>
+                <li>
+                  After posting, <strong>open your comment in a private/incognito
+                  window</strong>. If it doesn't show up there, it was filtered —
+                  don't submit it.
+                </li>
+                <li>
+                  Submissions are <strong>auto-checked</strong>: if Reddit removes
+                  your comment within 6 hours it will be flagged and may not be
+                  approved.
+                </li>
+              </ul>
+            </div>
+
             <div className="space-y-2">
               <Label>Pick ONE comment variant and post it on the thread</Label>
               <div className="space-y-2">
