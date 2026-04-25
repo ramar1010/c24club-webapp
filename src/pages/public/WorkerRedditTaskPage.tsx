@@ -255,7 +255,7 @@ const WorkerRedditTaskPage = () => {
               <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
                 <li>
                   Use a Reddit account that is at least <strong>30 days old</strong>{" "}
-                  with <strong>100+ comment karma</strong>. New / low-karma accounts
+                  with <strong>20–50+ comment karma</strong>. New / low-karma accounts
                   get auto-removed by Reddit's spam filter.
                 </li>
                 <li>
@@ -384,7 +384,7 @@ const WorkerRedditTaskPage = () => {
                     <div className="mt-1 grid grid-cols-2 gap-2">
                       {[
                         { key: "fresh", label: "Fresh / new account" },
-                        { key: "aged", label: "Aged (30+ days, 100+ karma)" },
+                        { key: "aged", label: "Aged (30+ days, 20–50+ karma)" },
                       ].map((opt) => {
                         const checked = accountType === opt.key;
                         return (
