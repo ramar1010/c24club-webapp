@@ -35,6 +35,8 @@ const WorkerRedditTaskPage = () => {
   const [postedUrl, setPostedUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [variantIndex, setVariantIndex] = useState<number | null>(null);
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [autoAssignFailed, setAutoAssignFailed] = useState(false);
 
   const fetchTask = async (c: string) => {
     if (!c.trim()) return;
@@ -60,8 +62,32 @@ const WorkerRedditTaskPage = () => {
     }
   };
 
+  const tryAutoAssign = async () => {
+    setAutoAssigning(true);
+    setAutoAssignFailed(false);
+    const { data, error } = await supabase.rpc("auto_assign_reddit_task");
+    setAutoAssigning(false);
+    if (error) {
+      setAutoAssignFailed(true);
+      return;
+    }
+    const row = (data && (data as any[])[0]) || null;
+    if (!row || !row.enabled || !row.claim_code) {
+      setAutoAssignFailed(true);
+      return;
+    }
+    const assigned = row.claim_code as string;
+    setCode(assigned);
+    setParams({ code: assigned });
+    await fetchTask(assigned);
+  };
+
   useEffect(() => {
-    if (codeFromUrl) fetchTask(codeFromUrl);
+    if (codeFromUrl) {
+      fetchTask(codeFromUrl);
+    } else {
+      tryAutoAssign();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -159,17 +185,31 @@ const WorkerRedditTaskPage = () => {
         </div>
 
         <Card className="p-4">
-          <form onSubmit={handleLookup} className="flex gap-2">
-            <Input
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Task code (e.g. AB12CD34)"
-              className="font-mono uppercase"
-            />
-            <Button type="submit" disabled={loading}>
-              {loading ? "Loading…" : "Open"}
-            </Button>
-          </form>
+          {autoAssigning ? (
+            <p className="text-sm text-muted-foreground">
+              Finding an open task for you…
+            </p>
+          ) : (
+            <>
+              {!task && autoAssignFailed && (
+                <p className="mb-3 text-sm text-muted-foreground">
+                  No open tasks available right now. You can also enter a code
+                  manually below.
+                </p>
+              )}
+              <form onSubmit={handleLookup} className="flex gap-2">
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="Task code (e.g. AB12CD34)"
+                  className="font-mono uppercase"
+                />
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Loading…" : "Open"}
+                </Button>
+              </form>
+            </>
+          )}
         </Card>
 
         {task && (
