@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Plus, Trash2, ExternalLink, Sparkles } from "lucide-react";
+import { Copy, Plus, Trash2, ExternalLink, Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 interface RedditTask {
@@ -280,6 +280,40 @@ const AdminRedditTasksPage = () => {
     }
   };
 
+  const resetClaims = async (id: string) => {
+    if (
+      !confirm(
+        "Reset all claims and submissions for this task? Workers can claim it again from scratch.",
+      )
+    )
+      return;
+    const { error: subErr } = await supabase
+      .from("reddit_task_submissions")
+      .delete()
+      .eq("task_id", id);
+    if (subErr) {
+      toast.error(subErr.message);
+      return;
+    }
+    const { error: taskErr } = await supabase
+      .from("reddit_tasks")
+      .update({
+        status: "open",
+        claims_count: 0,
+        claimed_by_name: null,
+        claimed_at: null,
+        posted_comment_url: null,
+        completed_at: null,
+      })
+      .eq("id", id);
+    if (taskErr) {
+      toast.error(taskErr.message);
+      return;
+    }
+    toast.success("Claims reset — task is open again");
+    load();
+  };
+
   const copyLink = (code: string) => {
     const url = `${workerBase}?code=${code}`;
     navigator.clipboard.writeText(url);
@@ -483,6 +517,14 @@ const AdminRedditTasksPage = () => {
                       Reopen
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => resetClaims(t.id)}
+                    title="Clear all submissions & claim count so this task can be reused"
+                  >
+                    <RotateCcw className="mr-1 h-3 w-3" /> Reset claims
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
