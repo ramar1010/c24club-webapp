@@ -2019,6 +2019,60 @@ export type Database = {
         }
         Relationships: []
       }
+      reddit_tasks: {
+        Row: {
+          admin_notes: string | null
+          claim_code: string
+          claimed_at: string | null
+          claimed_by_name: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          posted_comment_url: string | null
+          status: string
+          subreddit: string | null
+          suggested_comments: string[]
+          thread_title: string | null
+          thread_url: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          claim_code: string
+          claimed_at?: string | null
+          claimed_by_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          posted_comment_url?: string | null
+          status?: string
+          subreddit?: string | null
+          suggested_comments?: string[]
+          thread_title?: string | null
+          thread_url: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          claim_code?: string
+          claimed_at?: string | null
+          claimed_by_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          posted_comment_url?: string | null
+          status?: string
+          subreddit?: string | null
+          suggested_comments?: string[]
+          thread_title?: string | null
+          thread_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -3012,6 +3066,10 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
       }
+      claim_reddit_task: {
+        Args: { p_code: string; p_worker_name: string }
+        Returns: Json
+      }
       claim_welcome_bonus: { Args: { p_user_id: string }; Returns: Json }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -3023,6 +3081,20 @@ export type Database = {
       }
       get_admin_user_ids: { Args: never; Returns: string[] }
       get_moderator_user_ids: { Args: never; Returns: string[] }
+      get_reddit_task_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          claimed_by_name: string
+          id: string
+          notes: string
+          posted_comment_url: string
+          status: string
+          subreddit: string
+          suggested_comments: string[]
+          thread_title: string
+          thread_url: string
+        }[]
+      }
       get_vip_user_ids: { Args: never; Returns: string[] }
       has_role: {
         Args: {
@@ -3060,6 +3132,10 @@ export type Database = {
       }
       request_cashout: {
         Args: { p_minutes_amount: number; p_paypal_email: string }
+        Returns: Json
+      }
+      submit_reddit_task: {
+        Args: { p_code: string; p_posted_url: string; p_worker_name: string }
         Returns: Json
       }
     }
