@@ -185,12 +185,6 @@ const DiscoverMemberCard = ({
                 {online ? "Online" : getTimeAgo(member.last_active_at)}
               </span>
             </div>
-            {isFemale && (
-              <div className="flex items-center gap-1 mt-0.5 text-emerald-400 text-[10px] sm:text-xs">
-                <DollarSign className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                <span>Earns by chatting</span>
-              </div>
-            )}
           </div>
 
           {!isSelf && (
