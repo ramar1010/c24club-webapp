@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -35,6 +36,7 @@ const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
   const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
@@ -71,7 +73,7 @@ const AdminDiscoverReviewPage = () => {
   };
 
   const handleScanAllPending = async () => {
-    const pending = members.filter(m => m.image_url && !scanResults[m.id]);
+    const pending = filteredMembers.filter(m => m.image_url && !scanResults[m.id]);
     for (const member of pending) {
       await handleNsfwScan(member);
     }
@@ -116,6 +118,17 @@ const AdminDiscoverReviewPage = () => {
       return results;
     },
   });
+
+  const filteredMembers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(m =>
+      (m.email || "").toLowerCase().includes(q) ||
+      (m.name || "").toLowerCase().includes(q) ||
+      (m.country || "").toLowerCase().includes(q) ||
+      m.id.toLowerCase().includes(q)
+    );
+  }, [members, searchQuery]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ memberId, status }: { memberId: string; status: ImageStatus }) => {
@@ -267,24 +280,41 @@ const AdminDiscoverReviewPage = () => {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Input
+              placeholder="Search by email, name, country, or user ID…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md"
+            />
+            {searchQuery && (
+              <p className="text-xs text-muted-foreground">
+                {filteredMembers.length} of {members.length}
+              </p>
+            )}
+          </div>
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="aspect-[3/4] rounded-lg bg-muted animate-pulse" />
               ))}
             </div>
-          ) : members.length === 0 ? (
+          ) : filteredMembers.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg font-medium">No {activeTab} images</p>
+              <p className="text-lg font-medium">
+                {searchQuery ? "No matches found" : `No ${activeTab} images`}
+              </p>
               <p className="text-sm mt-1">
-                {activeTab === "pending"
+                {searchQuery
+                  ? "Try a different email, name, or country."
+                  : activeTab === "pending"
                   ? "All caught up! No images waiting for review."
                   : `No ${activeTab} images to show.`}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {members.map((member) => (
+              {filteredMembers.map((member) => (
                 <div
                   key={member.id}
                   className="relative group rounded-lg overflow-hidden border bg-card"
@@ -321,6 +351,11 @@ const AdminDiscoverReviewPage = () => {
                       <p className="text-xs text-muted-foreground truncate">
                         {member.gender || "Unknown"} · {member.country || "N/A"}
                       </p>
+                      {member.email && (
+                        <p className="text-[10px] text-muted-foreground/70 truncate" title={member.email}>
+                          {member.email}
+                        </p>
+                      )}
                       {scanResults[member.id] && (
                         <Badge
                           variant={scanResults[member.id].isNsfw ? "destructive" : "secondary"}
