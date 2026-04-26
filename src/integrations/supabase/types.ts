@@ -1207,6 +1207,45 @@ export type Database = {
         }
         Relationships: []
       }
+      iap_purchases: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          minutes_added: number | null
+          platform: string
+          purchase_token_hash: string | null
+          recipient_id: string | null
+          sku: string
+          user_id: string
+          vip_tier: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          minutes_added?: number | null
+          platform: string
+          purchase_token_hash?: string | null
+          recipient_id?: string | null
+          sku: string
+          user_id: string
+          vip_tier?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          minutes_added?: number | null
+          platform?: string
+          purchase_token_hash?: string | null
+          recipient_id?: string | null
+          sku?: string
+          user_id?: string
+          vip_tier?: string | null
+        }
+        Relationships: []
+      }
       jackpot_payouts: {
         Row: {
           created_at: string

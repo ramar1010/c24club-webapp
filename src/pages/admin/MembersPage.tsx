@@ -30,6 +30,8 @@ type Member = {
   minutes?: number;
 };
 
+type VipSource = "all" | "google_play_or_appstore" | "stripe" | "admin_granted" | "free";
+
 const BAN_REASONS = [
   { value: "standard", label: "Standard Ban", reasons: ["Violation of terms", "Inappropriate behavior", "Spam / abuse", "Harassment"] },
   { value: "underage", label: "Underage (Permanent)", reasons: ["User is underage"] },
@@ -108,6 +110,33 @@ const MembersPage = () => {
   const [vipTier, setVipTier] = useState<string>("basic");
   const [savingVip, setSavingVip] = useState(false);
   const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
+
+  // Source filter (where their VIP / membership came from)
+  const [sourceFilter, setSourceFilter] = useState<VipSource>("all");
+  const [sourceMap, setSourceMap] = useState<Record<string, VipSource>>({});
+
+  // Build a map of user_id -> source classification
+  useEffect(() => {
+    (async () => {
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("user_id, is_vip, admin_granted_vip, stripe_customer_id");
+      if (!mm) return;
+      const map: Record<string, VipSource> = {};
+      for (const row of mm as any[]) {
+        if (!row.is_vip) {
+          map[row.user_id] = "free";
+        } else if (row.admin_granted_vip) {
+          map[row.user_id] = "admin_granted";
+        } else if (row.stripe_customer_id) {
+          map[row.user_id] = "stripe";
+        } else {
+          map[row.user_id] = "google_play_or_appstore";
+        }
+      }
+      setSourceMap(map);
+    })();
+  }, []);
 
   // Load current VIP status when dialog opens
   useEffect(() => {
@@ -240,8 +269,34 @@ const MembersPage = () => {
         </div>
       </div>
 
+      {/* Source filter chips */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground mr-1">Source:</span>
+        {([
+          { key: "all", label: "All" },
+          { key: "google_play_or_appstore", label: "🛒 Native App (Play / App Store)" },
+          { key: "stripe", label: "💳 Stripe (Web)" },
+          { key: "admin_granted", label: "🛡️ Admin-granted VIP" },
+          { key: "free", label: "Free" },
+        ] as { key: VipSource; label: string }[]).map((s) => (
+          <Button
+            key={s.key}
+            size="sm"
+            variant={sourceFilter === s.key ? "default" : "outline"}
+            onClick={() => setSourceFilter(s.key)}
+          >
+            {s.label}
+          </Button>
+        ))}
+      </div>
+
       <DataTable
-        data={(data as Member[]) ?? []}
+        data={
+          (((data as Member[]) ?? []).filter((m) => {
+            if (sourceFilter === "all") return true;
+            return (sourceMap[m.id] ?? "free") === sourceFilter;
+          })) as Member[]
+        }
         columns={memberColumns}
         expandable
         selectable
