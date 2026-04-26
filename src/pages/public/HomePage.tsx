@@ -702,9 +702,10 @@ const HomePage = () => {
               We built the <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">opposite</span>.
             </h2>
             <p className="text-white/70 text-base md:text-lg leading-relaxed">
-              Random video chat used to be a flood of trolls, exposers, and ghosts — because there was
-              zero reason to behave. C24 Club flips that script with a <span className="text-yellow-300 font-bold">Reward System</span> that
-              pays you for being kind, plus <span className="text-yellow-300 font-bold">verified profiles</span> so you actually know who's on the other side.
+              Random video chat used to be full of inappropriate content, quick skippers, and almost
+              entirely men — because there was zero reason to behave. C24 Club flips that script with
+              a <span className="text-yellow-300 font-bold">Reward System</span> that pays you for being kind, <span className="text-yellow-300 font-bold">verified profiles</span> so
+              you know who's on the other side, and an actively <span className="text-yellow-300 font-bold">balanced gender ratio</span>.
             </p>
           </div>
 
