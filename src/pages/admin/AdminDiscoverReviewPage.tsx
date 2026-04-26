@@ -351,6 +351,11 @@ const AdminDiscoverReviewPage = () => {
                       <p className="text-xs text-muted-foreground truncate">
                         {member.gender || "Unknown"} · {member.country || "N/A"}
                       </p>
+                      {member.email && (
+                        <p className="text-[10px] text-muted-foreground/70 truncate" title={member.email}>
+                          {member.email}
+                        </p>
+                      )}
                       {scanResults[member.id] && (
                         <Badge
                           variant={scanResults[member.id].isNsfw ? "destructive" : "secondary"}
