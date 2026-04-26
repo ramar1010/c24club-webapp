@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -35,6 +36,7 @@ const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
   const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
@@ -71,7 +73,7 @@ const AdminDiscoverReviewPage = () => {
   };
 
   const handleScanAllPending = async () => {
-    const pending = members.filter(m => m.image_url && !scanResults[m.id]);
+    const pending = filteredMembers.filter(m => m.image_url && !scanResults[m.id]);
     for (const member of pending) {
       await handleNsfwScan(member);
     }
@@ -116,6 +118,17 @@ const AdminDiscoverReviewPage = () => {
       return results;
     },
   });
+
+  const filteredMembers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(m =>
+      (m.email || "").toLowerCase().includes(q) ||
+      (m.name || "").toLowerCase().includes(q) ||
+      (m.country || "").toLowerCase().includes(q) ||
+      m.id.toLowerCase().includes(q)
+    );
+  }, [members, searchQuery]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ memberId, status }: { memberId: string; status: ImageStatus }) => {
