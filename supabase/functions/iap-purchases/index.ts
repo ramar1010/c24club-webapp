@@ -28,6 +28,23 @@ const CASH_VALUE_MAP: Record<string, number> = {
   c24_gift_1000_minutes: 10.0,
 };
 
+/**
+ * Resolve the VIP tier from any incoming SKU.
+ * Anything containing "premium" → premium, otherwise basic.
+ * This protects against minor SKU naming differences (e.g. `c24club_premium_vip`
+ * vs `c24_premium_vip`) that previously caused premium buyers to be saved as basic.
+ */
+const resolveVipTier = (sku: string): "basic" | "premium" => {
+  const normalized = (sku || "").toLowerCase();
+  if (normalized.includes("premium")) return "premium";
+  return "basic";
+};
+
+const tokenHash = (token?: string): string | null => {
+  if (!token || typeof token !== "string") return null;
+  return token.length <= 12 ? token : `…${token.slice(-12)}`;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -100,7 +117,7 @@ serve(async (req) => {
     if (action === "verify-subscription") {
       if (!sku) throw new Error("Missing sku");
       await verifyReceipt();
-      const tier = sku === "c24_premium_vip" ? "premium" : "basic";
+      const tier = resolveVipTier(sku);
       const now = new Date();
       const expiresAt =
         tier === "premium"
@@ -110,6 +127,15 @@ serve(async (req) => {
         .from("member_minutes")
         .upsert({ user_id: user.id, is_vip: true, vip_tier: tier, subscription_end: expiresAt }, { onConflict: "user_id" });
       if (updateError) throw updateError;
+      await supabaseAdmin.from("iap_purchases").insert({
+        user_id: user.id,
+        platform: platform ?? "unknown",
+        sku,
+        action,
+        vip_tier: tier,
+        purchase_token_hash: tokenHash(purchaseToken),
+      });
+      console.log(`[iap-purchases] subscription ok user=${user.id} sku=${sku} tier=${tier}`);
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -131,6 +157,14 @@ serve(async (req) => {
         .from("member_minutes")
         .upsert({ user_id: user.id, total_minutes: existingMinutes + minutesToAdd }, { onConflict: "user_id" });
       if (updateError) throw updateError;
+      await supabaseAdmin.from("iap_purchases").insert({
+        user_id: user.id,
+        platform: platform ?? "unknown",
+        sku,
+        action,
+        minutes_added: minutesToAdd,
+        purchase_token_hash: tokenHash(purchaseToken),
+      });
       return new Response(JSON.stringify({ success: true, minutes_added: minutesToAdd }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -182,6 +216,16 @@ serve(async (req) => {
         }
       }
 
+      await supabaseAdmin.from("iap_purchases").insert({
+        user_id: user.id,
+        platform: platform ?? "unknown",
+        sku,
+        action,
+        minutes_added: minutesToGift,
+        recipient_id,
+        purchase_token_hash: tokenHash(purchaseToken),
+      });
+
       return new Response(JSON.stringify({ success: true, minutes_gifted: minutesToGift, sender_bonus: senderBonus }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -203,6 +247,13 @@ serve(async (req) => {
         })
         .eq("user_id", user.id);
       if (updateError) throw updateError;
+      await supabaseAdmin.from("iap_purchases").insert({
+        user_id: user.id,
+        platform: platform ?? "unknown",
+        sku: sku ?? "c24_unfreeze",
+        action,
+        purchase_token_hash: tokenHash(purchaseToken),
+      });
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
