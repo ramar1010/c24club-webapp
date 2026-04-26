@@ -66,6 +66,7 @@ const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
 const AdminRedditTasksPage = lazy(() => import("@/pages/admin/AdminRedditTasksPage"));
+const AdminIapPurchasesPage = lazy(() => import("@/pages/admin/AdminIapPurchasesPage"));
 
 const HomePage = lazy(() => import("@/pages/public/HomePage"));
 const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
@@ -217,6 +218,7 @@ const App = () => (
                 <Route path="blog/new" element={<AdminBlogEditorPage />} />
                 <Route path="blog/:id/edit" element={<AdminBlogEditorPage />} />
                 <Route path="reddit-tasks" element={<AdminRedditTasksPage />} />
+                <Route path="iap-purchases" element={<AdminIapPurchasesPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
