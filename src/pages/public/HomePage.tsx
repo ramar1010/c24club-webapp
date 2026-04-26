@@ -684,6 +684,56 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ===== WHY C24 CLUB IS DIFFERENT ===== */}
+      <section className="px-4 py-14 max-w-5xl mx-auto">
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1a2e] via-[#241818] to-[#1a1a2e] p-8 md:p-12">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl" />
+
+          <div className="relative text-center max-w-3xl mx-auto space-y-4">
+            <p className="text-xs md:text-sm font-black uppercase tracking-[0.25em] text-orange-400">
+              Why C24 Club is different
+            </p>
+            <h2
+              className="text-2xl md:text-4xl font-black text-white leading-snug"
+              style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+            >
+              Old chat sites were <span className="text-red-400">toxic</span>.<br />
+              We built the <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">opposite</span>.
+            </h2>
+            <p className="text-white/70 text-base md:text-lg leading-relaxed">
+              Random video chat used to be a flood of trolls, exposers, and ghosts — because there was
+              zero reason to behave. C24 Club flips that script with a <span className="text-yellow-300 font-bold">Reward System</span> that
+              pays you for being kind, plus <span className="text-yellow-300 font-bold">verified profiles</span> so you actually know who's on the other side.
+            </p>
+          </div>
+
+          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-yellow-500/15 flex items-center justify-center">
+                <Gift className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="text-white font-black uppercase text-sm tracking-wide mb-1">Good Behavior Pays</h3>
+              <p className="text-white/60 text-sm">Earn reward minutes for every real conversation. Trolls get nothing — and get banned.</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-orange-500/15 flex items-center justify-center">
+                <Star className="w-6 h-6 text-orange-400" />
+              </div>
+              <h3 className="text-white font-black uppercase text-sm tracking-wide mb-1">Verified Profiles</h3>
+              <p className="text-white/60 text-sm">Every member uploads a selfie that's reviewed by our team. No bots, no fake photos.</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-pink-500/15 flex items-center justify-center">
+                <Users className="w-6 h-6 text-pink-400" />
+              </div>
+              <h3 className="text-white font-black uppercase text-sm tracking-wide mb-1">Real People, Real Vibes</h3>
+              <p className="text-white/60 text-sm">Live moderation and instant reporting keep the community safe and fun for everyone.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== STEPS ===== */}
       <section className="px-4 py-16 max-w-5xl mx-auto space-y-16">
         <div className="text-center space-y-3">
