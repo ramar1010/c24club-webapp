@@ -280,24 +280,41 @@ const AdminDiscoverReviewPage = () => {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Input
+              placeholder="Search by email, name, country, or user ID…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md"
+            />
+            {searchQuery && (
+              <p className="text-xs text-muted-foreground">
+                {filteredMembers.length} of {members.length}
+              </p>
+            )}
+          </div>
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="aspect-[3/4] rounded-lg bg-muted animate-pulse" />
               ))}
             </div>
-          ) : members.length === 0 ? (
+          ) : filteredMembers.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg font-medium">No {activeTab} images</p>
+              <p className="text-lg font-medium">
+                {searchQuery ? "No matches found" : `No ${activeTab} images`}
+              </p>
               <p className="text-sm mt-1">
-                {activeTab === "pending"
+                {searchQuery
+                  ? "Try a different email, name, or country."
+                  : activeTab === "pending"
                   ? "All caught up! No images waiting for review."
                   : `No ${activeTab} images to show.`}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {members.map((member) => (
+              {filteredMembers.map((member) => (
                 <div
                   key={member.id}
                   className="relative group rounded-lg overflow-hidden border bg-card"
