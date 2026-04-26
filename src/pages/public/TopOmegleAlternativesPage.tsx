@@ -332,7 +332,7 @@ const ComparisonTable = () => {
 
 const TopOmegleAlternativesPage = () => {
   useEffect(() => {
-    document.title = "Top 8 Omegle Alternatives in 2026 — Best Random Video Chat Sites | C24 Club";
+    document.title = "8 Best Omegle Alternatives in 2026 (Tested for Safety & Privacy)";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
