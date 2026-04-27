@@ -28,6 +28,25 @@ serve(async (req) => {
 
     const { action, minutes_amount, paypal_email } = await req.json();
 
+    if (action === "get-settings") {
+      const { data: settings } = await supabaseAdmin
+        .from("cashout_settings")
+        .select("min_cashout_minutes, max_cashout_minutes, rate_per_minute")
+        .limit(1)
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          settings: {
+            min_cashout_minutes: settings?.min_cashout_minutes ?? 100,
+            max_cashout_minutes: settings?.max_cashout_minutes ?? 5000,
+            rate_per_minute: settings?.rate_per_minute ?? 0.02,
+          },
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (action === "request-cashout") {
       if (!minutes_amount || minutes_amount <= 0) throw new Error("Invalid minutes amount");
       if (!paypal_email) throw new Error("PayPal email is required");
