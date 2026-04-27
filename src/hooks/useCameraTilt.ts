@@ -2,23 +2,33 @@ import { useEffect, useState } from "react";
 
 interface UseCameraTiltOptions {
   isActive: boolean;
-  /** Beta tilt threshold (degrees) before considered "pointed downward". */
-  tiltThreshold?: number;
+  /** Upper beta bound — above this the phone is upright (safe). */
+  uprightMinBeta?: number;
+  /** Lower beta bound — below this the phone is flipped backwards (safe-ish, ignore). */
+  downwardMinBeta?: number;
   /** Sustained seconds before warning fires. */
   sustainedSeconds?: number;
 }
 
 /**
- * Detects when a mobile user tilts their device far downward — a common
- * pattern for flashers pointing the camera at their crotch. Uses the
+ * Detects when a mobile user tilts their device so the rear/front camera is
+ * pointed downward at their body — a common flasher pattern. Uses the
  * DeviceOrientation API; gracefully no-ops on desktop / unsupported devices.
  *
- * `beta` ranges roughly -180 to 180; held upright facing the user it sits
- * around 60-90. Below ~20 means the phone is being held flat or tilted down.
+ * `beta` semantics (degrees):
+ *   ~ 90  = phone held upright, screen facing user (NORMAL)
+ *   ~ 0   = phone lying flat (screen up OR down — ambiguous, IGNORE)
+ *   ~ -45 = phone tilted forward, top edge away from user, camera angled
+ *           down toward lap (SUSPICIOUS — fire warning)
+ *   ~-180 = phone upside down
+ *
+ * We only warn in the suspicious window: downwardMinBeta < beta < uprightMinBeta
+ * Default: -60° < beta < 10°  (skip the flat-on-table zone too).
  */
 export function useCameraTilt({
   isActive,
-  tiltThreshold = 25,
+  uprightMinBeta = 10,
+  downwardMinBeta = -60,
   sustainedSeconds = 3,
 }: UseCameraTiltOptions) {
   const [tiltWarning, setTiltWarning] = useState(false);
@@ -37,8 +47,12 @@ export function useCameraTilt({
       const beta = typeof e.beta === "number" ? e.beta : null;
       if (beta === null) return;
 
-      // beta < tiltThreshold = phone is flat or pointed downward
-      if (beta < tiltThreshold) {
+      // Only suspicious when tilted forward (camera aimed at body),
+      // NOT when upright (beta>=upright) and NOT when laying flat / face-up
+      // on a table (beta near 0 ambiguous — require beta below upright AND
+      // above the flipped-backwards floor).
+      const isSuspicious = beta < uprightMinBeta && beta > downwardMinBeta;
+      if (isSuspicious) {
         if (downSinceMs === null) downSinceMs = Date.now();
         const elapsed = (Date.now() - downSinceMs) / 1000;
         if (elapsed >= sustainedSeconds) {
@@ -61,7 +75,7 @@ export function useCameraTilt({
       window.removeEventListener("deviceorientation", onOrient);
       cancelAnimationFrame(raf);
     };
-  }, [isActive, tiltThreshold, sustainedSeconds, tiltWarning]);
+  }, [isActive, uprightMinBeta, downwardMinBeta, sustainedSeconds, tiltWarning]);
 
   return { tiltWarning };
 }
