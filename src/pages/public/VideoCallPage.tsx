@@ -1306,6 +1306,17 @@ const VideoCallPage = () => {
             </button>
           }
 
+          {/* Mobile: Female-only "Skip + Flag inappropriate" button */}
+          {isActive && callState === "connected" && isFemale && partnerGender?.toLowerCase() === "male" &&
+          <button
+            onClick={handleFlagAndNext}
+            title="Skip and flag as inappropriate"
+            className="md:hidden absolute bottom-3 right-[88px] flex flex-col items-center bg-destructive/80 hover:bg-destructive backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20 text-destructive-foreground">
+              <span className="font-bold text-xs">🚩 SKIP</span>
+              <span className="text-[9px] leading-none mt-0.5">inappropriate</span>
+            </button>
+          }
+
           {isMobile &&
           <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
               {/* Local video (me) - small box on mobile */}
