@@ -138,7 +138,15 @@ const AdminReferralsPage = () => {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Code: {t.referral_codes?.code} | Referrer: {t.referrer_id?.slice(0, 8)}... | Referred: {t.referred_user_id?.slice(0, 8)}...
+                  Code: {t.referral_codes?.code}
+                </p>
+                <p className="text-xs">
+                  <span className="text-muted-foreground">Referrer:</span>{" "}
+                  <span className="font-medium">{t.referrer?.email ?? t.referrer?.name ?? `${t.referrer_id?.slice(0, 8)}...`}</span>
+                </p>
+                <p className="text-xs">
+                  <span className="text-muted-foreground">Referred:</span>{" "}
+                  <span className="font-medium">{t.referred?.email ?? t.referred?.name ?? `${t.referred_user_id?.slice(0, 8)}...`}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {new Date(t.created_at).toLocaleDateString()}
