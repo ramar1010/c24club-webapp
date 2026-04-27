@@ -247,6 +247,23 @@ const VideoCallPage = () => {
     viewerUserId: memberId,
   });
 
+  // Anti-flasher: ensure the local user keeps their face in frame
+  const { noFaceWarning } = useLocalFaceCheck({
+    localVideoRef,
+    isActive: callState === "connected" && !(isFemale && voiceMode),
+  });
+
+  // Anti-flasher: detect downward camera tilt on mobile
+  const { tiltWarning } = useCameraTilt({
+    isActive: callState === "connected" && isMobile,
+  });
+
+  const localBehaviorWarning: "no-face" | "tilt" | null = noFaceWarning
+    ? "no-face"
+    : tiltWarning
+      ? "tilt"
+      : null;
+
   const anchorEarning = useAnchorEarning({
     userId: memberId,
     isOnCall: callState === "connected",
