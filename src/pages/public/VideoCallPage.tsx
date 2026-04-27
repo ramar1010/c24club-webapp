@@ -1468,6 +1468,17 @@ const VideoCallPage = () => {
                 <img src={nextBtn} alt="Next" className="w-8 h-8" />
               </button>
           }
+
+            {/* Desktop: Female-only "Skip + Flag inappropriate" button */}
+            {isActive && callState === "connected" && isFemale && partnerGender?.toLowerCase() === "male" &&
+          <button
+            onClick={handleFlagAndNext}
+            title="Skip and flag this user as inappropriate"
+            className="absolute bottom-3 right-[140px] z-40 flex items-center gap-2 bg-destructive/85 hover:bg-destructive backdrop-blur-sm rounded-lg px-4 py-2 transition-colors text-destructive-foreground">
+                <span className="font-bold text-sm">🚩 SKIP</span>
+                <span className="text-[10px] opacity-90">inappropriate</span>
+              </button>
+            }
           </div>
         }
       </div>
