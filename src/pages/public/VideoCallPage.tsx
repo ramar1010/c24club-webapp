@@ -1799,16 +1799,6 @@ const VideoCallPage = () => {
           }
         }}
       />
-      {/* Goal Item Picker — auto-shown to new females */}
-      <GoalItemPicker
-        open={showGoalPicker}
-        onClose={() => setShowGoalPicker(false)}
-        userId={memberId}
-        onItemAdded={() => {
-          refetchWishlist();
-          queryClient.invalidateQueries({ queryKey: ["goal_tracker_item", memberId] });
-        }}
-      />
       {/* NSFW Confirm Overlay */}
       {showConfirmPrompt && (
         <NsfwConfirmOverlay
