@@ -118,12 +118,22 @@ const MembersPage = () => {
   // Build a map of user_id -> source classification
   useEffect(() => {
     (async () => {
-      const { data: mm } = await supabase
-        .from("member_minutes")
-        .select("user_id, is_vip, admin_granted_vip, stripe_customer_id");
-      if (!mm) return;
+      // Paginate: Supabase caps a single .select() at 1000 rows
+      const all: any[] = [];
+      const pageSize = 1000;
+      let from = 0;
+      while (true) {
+        const { data: page, error } = await supabase
+          .from("member_minutes")
+          .select("user_id, is_vip, admin_granted_vip, stripe_customer_id")
+          .range(from, from + pageSize - 1);
+        if (error || !page || page.length === 0) break;
+        all.push(...page);
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
       const map: Record<string, VipSource> = {};
-      for (const row of mm as any[]) {
+      for (const row of all) {
         if (!row.is_vip) {
           map[row.user_id] = "free";
         } else if (row.admin_granted_vip) {
