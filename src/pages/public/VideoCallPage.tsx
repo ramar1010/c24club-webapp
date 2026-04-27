@@ -1158,6 +1158,11 @@ const VideoCallPage = () => {
           className={`absolute inset-0 w-full h-full object-cover ${isFemale && voiceMode && isActive ? "hidden" : "block"}`} />
           }
 
+          {/* Anti-flasher local warnings — desktop large box */}
+          {localBehaviorWarning && callState === "connected" && !(isFemale && voiceMode) &&
+          <BehaviorWarningOverlay visible variant={localBehaviorWarning} />
+          }
+
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd &&
           <PromoAdOverlay
