@@ -148,7 +148,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
       {/* Become VIP */}
       <button 
-        onClick={() => navigate("/videocall")}
+        onClick={() => navigate("/videocall", { state: { openVip: true } })}
         className="relative w-full max-w-sm mb-8 rounded-2xl p-5 flex items-center justify-center gap-3 hover:scale-[1.02] transition-all shadow-lg shadow-yellow-500/30 border border-white/10 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6, #3b82f6, #06b6d4)" }}
       >
