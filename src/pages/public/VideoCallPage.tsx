@@ -255,7 +255,7 @@ const VideoCallPage = () => {
 
   // Anti-flasher: detect downward camera tilt on mobile
   const { tiltWarning } = useCameraTilt({
-    isActive: callState === "connected" && isMobile,
+    isActive: callState === "connected",
   });
 
   const localBehaviorWarning: "no-face" | "tilt" | null = noFaceWarning
