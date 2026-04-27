@@ -85,12 +85,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkBan = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("user_bans")
-      .select("reason, ban_type, created_at")
+      .select("reason, ban_type, created_at, expires_at")
       .eq("user_id", userId)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (data && (data as any).expires_at && new Date((data as any).expires_at) <= new Date()) {
+      // Temporary ban has elapsed — auto-deactivate and ignore
+      await supabase.from("user_bans").update({ is_active: false } as any).eq("user_id", userId).eq("is_active", true);
+      setBanInfo(null);
+      return;
+    }
 
     setBanInfo(data ? { reason: data.reason, ban_type: data.ban_type, created_at: data.created_at } : null);
   }, []);

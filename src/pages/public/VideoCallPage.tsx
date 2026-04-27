@@ -55,6 +55,9 @@ import BlueEyesSnapButton from "@/components/videocall/BlueEyesSnapButton";
 import ChallengeCarousel from "@/components/videocall/ChallengeCarousel";
 import { useNsfwDetection } from "@/hooks/useNsfwDetection";
 import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
+import BehaviorWarningOverlay from "@/components/videocall/BehaviorWarningOverlay";
+import { useLocalFaceCheck } from "@/hooks/useLocalFaceCheck";
+import { useCameraTilt } from "@/hooks/useCameraTilt";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
 import GoalItemPicker from "@/components/videocall/GoalItemPicker";
@@ -243,6 +246,23 @@ const VideoCallPage = () => {
     userId: currentPartnerId || "",
     viewerUserId: memberId,
   });
+
+  // Anti-flasher: ensure the local user keeps their face in frame
+  const { noFaceWarning } = useLocalFaceCheck({
+    localVideoRef,
+    isActive: callState === "connected" && !(isFemale && voiceMode),
+  });
+
+  // Anti-flasher: detect downward camera tilt on mobile
+  const { tiltWarning } = useCameraTilt({
+    isActive: callState === "connected",
+  });
+
+  const localBehaviorWarning: "no-face" | "tilt" | null = noFaceWarning
+    ? "no-face"
+    : tiltWarning
+      ? "tilt"
+      : null;
 
   const anchorEarning = useAnchorEarning({
     userId: memberId,
@@ -933,6 +953,28 @@ const VideoCallPage = () => {
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => startCall();
+
+  // Female-only: skip + flag the male partner as inappropriate.
+  // Two distinct female reporters in 24h trigger a 24h shadowban server-side.
+  const handleFlagAndNext = async () => {
+    const partnerToFlag = currentPartnerId;
+    const connectedDurationSec = connectionStartRef.current
+      ? (Date.now() - connectionStartRef.current) / 1000
+      : 0;
+    if (partnerToFlag && partnerToFlag !== memberId) {
+      void supabase.functions
+        .invoke("report-fast-skip", {
+          body: {
+            reportedUserId: partnerToFlag,
+            skipSeconds: connectedDurationSec,
+          },
+        })
+        .catch((err) => console.warn("[fast-skip] report failed", err));
+      toast.success("Reported — thanks for keeping C24 safe");
+    }
+    await handleNext();
+  };
+
   const handleNext = async () => {
     // --- Skip Penalty Logic ---
     const connectedDurationMs = connectionStartRef.current ?
@@ -1138,6 +1180,11 @@ const VideoCallPage = () => {
           className={`absolute inset-0 w-full h-full object-cover ${isFemale && voiceMode && isActive ? "hidden" : "block"}`} />
           }
 
+          {/* Anti-flasher local warnings — desktop large box */}
+          {localBehaviorWarning && callState === "connected" && !(isFemale && voiceMode) &&
+          <BehaviorWarningOverlay visible variant={localBehaviorWarning} />
+          }
+
           {/* Promo Ad - shown inside local video box between skips */}
           {showPromoAd &&
           <PromoAdOverlay
@@ -1259,6 +1306,17 @@ const VideoCallPage = () => {
             </button>
           }
 
+          {/* Mobile: Female-only "Skip + Flag inappropriate" button */}
+          {isActive && callState === "connected" && isFemale && partnerGender?.toLowerCase() === "male" &&
+          <button
+            onClick={handleFlagAndNext}
+            title="Skip and flag as inappropriate"
+            className="md:hidden absolute bottom-3 right-[88px] flex flex-col items-center bg-destructive/80 hover:bg-destructive backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20 text-destructive-foreground">
+              <span className="font-bold text-xs">🚩 SKIP</span>
+              <span className="text-[9px] leading-none mt-0.5">inappropriate</span>
+            </button>
+          }
+
           {isMobile &&
           <div className="absolute top-2 right-2 z-10 w-[30%] aspect-[3/4] rounded-lg border border-neutral-600 bg-neutral-800 overflow-hidden shadow-xl">
               {/* Local video (me) - small box on mobile */}
@@ -1271,6 +1329,10 @@ const VideoCallPage = () => {
             <video ref={localVideoRef} autoPlay muted playsInline
             className="w-full h-full object-cover block" style={{ transform: "scaleX(-1)" }} />
             }
+              {/* Anti-flasher local warnings — mobile small box */}
+              {localBehaviorWarning && callState === "connected" && !(isFemale && voiceMode) &&
+              <BehaviorWarningOverlay visible variant={localBehaviorWarning} />
+              }
               {callState !== "connected" && callState !== "idle" &&
             <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-neutral-800/60">
                   <p className="text-neutral-300 text-[10px] text-center px-1">
@@ -1406,6 +1468,17 @@ const VideoCallPage = () => {
                 <img src={nextBtn} alt="Next" className="w-8 h-8" />
               </button>
           }
+
+            {/* Desktop: Female-only "Skip + Flag inappropriate" button */}
+            {isActive && callState === "connected" && isFemale && partnerGender?.toLowerCase() === "male" &&
+          <button
+            onClick={handleFlagAndNext}
+            title="Skip and flag this user as inappropriate"
+            className="absolute bottom-3 right-[140px] z-40 flex items-center gap-2 bg-destructive/85 hover:bg-destructive backdrop-blur-sm rounded-lg px-4 py-2 transition-colors text-destructive-foreground">
+                <span className="font-bold text-sm">🚩 SKIP</span>
+                <span className="text-[10px] opacity-90">inappropriate</span>
+              </button>
+            }
           </div>
         }
       </div>
