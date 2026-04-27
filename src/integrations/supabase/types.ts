@@ -706,6 +706,7 @@ export type Database = {
           paypal_email: string
           reviewed_at: string | null
           reviewed_by: string | null
+          source: string
           status: string
           updated_at: string
           user_id: string
@@ -718,6 +719,7 @@ export type Database = {
           paypal_email: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: string
           updated_at?: string
           user_id: string
@@ -730,6 +732,7 @@ export type Database = {
           paypal_email?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: string
           updated_at?: string
           user_id?: string
@@ -1126,6 +1129,42 @@ export type Database = {
           reporter_id?: string
           room_id?: string | null
           skip_seconds?: number | null
+        }
+        Relationships: []
+      }
+      female_retention_progress: {
+        Row: {
+          created_at: string
+          current_cents: number
+          day_completed: boolean
+          day_qualifying_seconds: number
+          day_started_at: string
+          last_activity_at: string
+          total_lifetime_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_cents?: number
+          day_completed?: boolean
+          day_qualifying_seconds?: number
+          day_started_at?: string
+          last_activity_at?: string
+          total_lifetime_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_cents?: number
+          day_completed?: boolean
+          day_qualifying_seconds?: number
+          day_started_at?: string
+          last_activity_at?: string
+          total_lifetime_cents?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3256,6 +3295,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_female_retention_seconds: {
+        Args: { p_seconds: number; p_state: string }
+        Returns: Json
+      }
       atomic_increment_minutes: {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
@@ -3335,6 +3378,10 @@ export type Database = {
       }
       request_cashout: {
         Args: { p_minutes_amount: number; p_paypal_email: string }
+        Returns: Json
+      }
+      request_female_retention_cashout: {
+        Args: { p_cents: number; p_paypal_email: string }
         Returns: Json
       }
       submit_reddit_task: {
