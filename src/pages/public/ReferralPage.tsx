@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
+import ReferralCashoutModal from "@/components/videocall/ReferralCashoutModal";
 
 const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
@@ -188,7 +188,7 @@ const ReferralPage = ({ onClose }: { onClose?: () => void }) => {
       )}
 
       {/* Cashout Modal */}
-      {showCashout && <ChallengeEarningsModal onClose={() => setShowCashout(false)} onSuccess={() => setShowCashout(false)} />}
+      {showCashout && <ReferralCashoutModal onClose={() => setShowCashout(false)} onSuccess={() => setShowCashout(false)} />}
     </div>
   );
 };
