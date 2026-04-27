@@ -9,6 +9,7 @@ import { DirectCallInviteListenerWrapper } from "@/components/DirectCallInviteLi
 import DmNotificationListener from "@/components/DmNotificationListener";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import HomePage from "@/pages/public/HomePage";
+import VideoCallPage from "@/pages/public/VideoCallPage";
 
 // Lightweight layout - keep eager
 import PublicLayout from "@/components/public/PublicLayout";
@@ -69,7 +70,6 @@ const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPa
 const AdminRedditTasksPage = lazy(() => import("@/pages/admin/AdminRedditTasksPage"));
 const AdminIapPurchasesPage = lazy(() => import("@/pages/admin/AdminIapPurchasesPage"));
 
-const VideoCallPage = lazy(() => import("@/pages/public/VideoCallPage"));
 const RewardStorePage = lazy(() => import("@/pages/public/RewardStorePage"));
 const ProfilePage = lazy(() => import("@/pages/public/ProfilePage"));
 const MyRewardsPage = lazy(() => import("@/pages/public/MyRewardsPage"));
