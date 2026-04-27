@@ -1270,7 +1270,7 @@ const VideoCallPage = () => {
           {callState === "connected" && partnerGiftEnabled && currentPartnerId &&
           <button
             onClick={() => setShowGiftOverlay(true)}
-            className="absolute bottom-3 left-3 z-20 animate-bounce">
+            className="absolute bottom-10 left-3 z-20 animate-bounce">
             
               <img src={giftIcon} alt="Send Gift" className="w-12 h-12 drop-shadow-lg" />
             </button>

@@ -35,7 +35,7 @@ const PinnedSocialsDisplay = ({ pinnedSocials }: PinnedSocialsDisplayProps) => {
   if (parsed.length === 0) return null;
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex flex-col items-start gap-2">
     {parsed.map((s) => {
         if (!s.urlPrefix) {
           // Non-linkable platform (e.g. Discord) — show icon + handle
