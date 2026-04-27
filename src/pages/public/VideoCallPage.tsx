@@ -1517,7 +1517,7 @@ const VideoCallPage = () => {
       )}
 
       {!showRedeem && isFemale && memberId !== "anonymous" && (
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 mx-auto w-full max-w-[880px]">
           <FemaleRetentionBar
             userId={memberId}
             state={
