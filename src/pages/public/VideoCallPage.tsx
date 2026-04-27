@@ -60,8 +60,7 @@ import { useLocalFaceCheck } from "@/hooks/useLocalFaceCheck";
 import { useCameraTilt } from "@/hooks/useCameraTilt";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
-import GoalItemPicker from "@/components/videocall/GoalItemPicker";
-import GoalProgressTracker from "@/components/videocall/GoalProgressTracker";
+import FemaleRetentionBar from "@/components/videocall/FemaleRetentionBar";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
 import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
@@ -1517,24 +1516,18 @@ const VideoCallPage = () => {
         <AppDownloadMiniBanner userId={memberId} gender={memberGender} />
       )}
 
-      {!showRedeem && isFemale && wishlistCount < 3 && (
+      {!showRedeem && isFemale && memberId !== "anonymous" && (
         <div className="px-3 py-2">
-          {wishlistCount === 0 ? (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowGoalPicker(true)}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 animate-pulse"
-              >
-                💎 Pick Your Dream Reward
-              </button>
-            </div>
-          ) : (
-            <GoalProgressTracker
-              userId={memberId}
-              totalMinutes={totalMinutes}
-              onClick={() => isActive ? setOverlayPage("store") : navigate("/store")}
-            />
-          )}
+          <FemaleRetentionBar
+            userId={memberId}
+            state={
+              callState === "connected" && partnerGender?.toLowerCase() === "male"
+                ? "connected_male"
+                : callState === "waiting"
+                  ? "waiting"
+                  : "idle"
+            }
+          />
         </div>
       )}
 
