@@ -1102,6 +1102,33 @@ export type Database = {
         }
         Relationships: []
       }
+      fast_skip_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reported_user_id: string
+          reporter_id: string
+          room_id: string | null
+          skip_seconds: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reported_user_id: string
+          reporter_id: string
+          room_id?: string | null
+          skip_seconds?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reported_user_id?: string
+          reporter_id?: string
+          room_id?: string | null
+          skip_seconds?: number | null
+        }
+        Relationships: []
+      }
       freeze_settings: {
         Row: {
           frozen_earn_rate: number
@@ -2882,6 +2909,7 @@ export type Database = {
           ban_type: string
           banned_by: string | null
           created_at: string
+          expires_at: string | null
           id: string
           ip_address: string | null
           is_active: boolean
@@ -2896,6 +2924,7 @@ export type Database = {
           ban_type?: string
           banned_by?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           ip_address?: string | null
           is_active?: boolean
@@ -2910,6 +2939,7 @@ export type Database = {
           ban_type?: string
           banned_by?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           ip_address?: string | null
           is_active?: boolean
