@@ -953,6 +953,28 @@ const VideoCallPage = () => {
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
   const handleStart = () => startCall();
+
+  // Female-only: skip + flag the male partner as inappropriate.
+  // Two distinct female reporters in 24h trigger a 24h shadowban server-side.
+  const handleFlagAndNext = async () => {
+    const partnerToFlag = currentPartnerId;
+    const connectedDurationSec = connectionStartRef.current
+      ? (Date.now() - connectionStartRef.current) / 1000
+      : 0;
+    if (partnerToFlag && partnerToFlag !== memberId) {
+      void supabase.functions
+        .invoke("report-fast-skip", {
+          body: {
+            reportedUserId: partnerToFlag,
+            skipSeconds: connectedDurationSec,
+          },
+        })
+        .catch((err) => console.warn("[fast-skip] report failed", err));
+      toast.success("Reported — thanks for keeping C24 safe");
+    }
+    await handleNext();
+  };
+
   const handleNext = async () => {
     // --- Skip Penalty Logic ---
     const connectedDurationMs = connectionStartRef.current ?
