@@ -72,6 +72,26 @@ Deno.serve(async (req) => {
           .eq("user_id", user.id)
           .maybeSingle();
 
+        // Check for an active IAP (Google Play / Apple) subscription so we don't
+        // overwrite mobile-store VIP with a Stripe-only check.
+        const { data: latestIap } = await supabase
+          .from("iap_purchases")
+          .select("vip_tier, sku, platform, created_at")
+          .eq("user_id", user.id)
+          .eq("action", "verify-subscription")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const iapStillValid = (() => {
+          if (!latestIap?.created_at || !latestIap?.vip_tier) return false;
+          const created = new Date(latestIap.created_at).getTime();
+          const windowMs = latestIap.vip_tier === "premium"
+            ? 31 * 24 * 60 * 60 * 1000   // monthly
+            : 8 * 24 * 60 * 60 * 1000;   // weekly (+1d grace)
+          return Date.now() - created < windowMs;
+        })();
+
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
 
         if (stripeKey) {
@@ -103,6 +123,8 @@ Deno.serve(async (req) => {
               }, { onConflict: "user_id" });
             } else if (currentMinutes?.admin_granted_vip) {
               subscription = { subscribed: true, vip_tier: currentMinutes.vip_tier || "premium", subscription_end: null };
+            } else if (iapStillValid) {
+              subscription = { subscribed: true, vip_tier: latestIap!.vip_tier!, subscription_end: null };
             } else {
               await supabase.from("member_minutes").upsert({
                 user_id: user.id, is_vip: false, vip_tier: null,
@@ -111,6 +133,8 @@ Deno.serve(async (req) => {
             }
           } else if (currentMinutes?.admin_granted_vip) {
             subscription = { subscribed: true, vip_tier: currentMinutes.vip_tier || "premium", subscription_end: null };
+          } else if (iapStillValid) {
+            subscription = { subscribed: true, vip_tier: latestIap!.vip_tier!, subscription_end: null };
           } else {
             await supabase.from("member_minutes").upsert({
               user_id: user.id, is_vip: false, vip_tier: null,
@@ -119,6 +143,8 @@ Deno.serve(async (req) => {
           }
         } else if (currentMinutes?.admin_granted_vip) {
           subscription = { subscribed: true, vip_tier: currentMinutes.vip_tier || "premium", subscription_end: null };
+        } else if (iapStillValid) {
+          subscription = { subscribed: true, vip_tier: latestIap!.vip_tier!, subscription_end: null };
         }
       }
     }
