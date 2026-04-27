@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const MILESTONES_CENTS = [500, 1000, 2000, 3000, 4000, 5000, 10000];
 const formatUsd = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -32,6 +33,7 @@ export default function FemaleRetentionBar({
   const [submitting, setSubmitting] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<CashoutHistoryRow[]>([]);
+  const [collapsed, setCollapsed] = useState(false);
 
   const cents = progress?.current_cents ?? 0;
   const nextMilestone = useMemo(() => MILESTONES_CENTS.find((m) => m > cents) ?? 10000, [cents]);
@@ -91,21 +93,32 @@ export default function FemaleRetentionBar({
   };
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-pink-500/20 border-2 border-pink-400/50 p-4 shadow-lg">
-      {/* Headline */}
-      <div className="text-center mb-1">
-        <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
-          💖 Female users are important so we pay you!
-        </h3>
-        <p className="text-[11px] sm:text-xs text-pink-100/90 mt-1 leading-snug">
-          Watch your bar increase while you're waiting for a partner or connected to a guy user.
-          <br />
-          <span className="text-yellow-200 font-semibold">Your bar resets if you miss a day.</span>
-        </p>
-      </div>
+    <div className="rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-pink-500/20 border-2 border-pink-400/50 p-4 shadow-lg relative">
+      {/* Hide/Unhide toggle */}
+      <button
+        onClick={() => setCollapsed((c) => !c)}
+        className="absolute top-2 right-2 z-10 flex items-center gap-1 text-[10px] font-bold text-pink-100 bg-black/40 hover:bg-black/60 rounded-full px-2 py-1 border border-white/20"
+      >
+        {collapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+        {collapsed ? "UNHIDE" : "HIDE"}
+      </button>
+
+      {/* Headline (hidden when collapsed) */}
+      {!collapsed && (
+        <div className="text-center mb-1 pr-16">
+          <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+            💖 Female users are important so we pay you!
+          </h3>
+          <p className="text-[11px] sm:text-xs text-pink-100/90 mt-1 leading-snug">
+            Watch your bar increase while you're waiting for a partner or connected to a guy user.
+            <br />
+            <span className="text-yellow-200 font-semibold">Your bar resets if you miss a day.</span>
+          </p>
+        </div>
+      )}
 
       {/* Big cash + next milestone */}
-      <div className="flex items-end justify-between mt-3 mb-2 px-1">
+      <div className={`flex items-end justify-between mb-2 px-1 ${collapsed ? "mt-1 pr-20" : "mt-3"}`}>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-pink-200/80 font-bold">Earned</div>
           <div className="text-3xl font-black text-white drop-shadow">
@@ -143,6 +156,7 @@ export default function FemaleRetentionBar({
       </div>
 
       {/* Milestone labels */}
+      {!collapsed && (
       <div className="relative mt-1 h-4 text-[9px] sm:text-[10px] font-bold text-white/80">
         {[0, ...MILESTONES_CENTS].map((m) => {
           const left = (m / 10000) * 100;
@@ -158,8 +172,10 @@ export default function FemaleRetentionBar({
           );
         })}
       </div>
+      )}
 
       {/* Status row */}
+      {!collapsed && (
       <div className="flex items-center justify-between mt-4 text-[11px]">
         <div className="flex items-center gap-1.5 text-white/90">
           {state === "connected_male" ? (
@@ -183,6 +199,7 @@ export default function FemaleRetentionBar({
           Earn history
         </button>
       </div>
+      )}
 
       {/* Cashout prompt */}
       <Dialog open={promptCents !== null} onOpenChange={(open) => !open && setPromptCents(null)}>
