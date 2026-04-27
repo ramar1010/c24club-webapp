@@ -218,6 +218,105 @@ serve(async (req) => {
       });
     }
 
+    // === cashout_summary: available referral earnings + cashout history ===
+    if (action === "cashout_summary") {
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
+      }
+
+      const { data: referrals } = await adminClient
+        .from("referral_tracking")
+        .select("reward_amount, status, created_at")
+        .eq("referrer_id", userId)
+        .eq("status", "engaged");
+
+      const totalEarned = (referrals || []).reduce(
+        (sum: number, r: any) => sum + Number(r.reward_amount),
+        0,
+      );
+
+      const { data: history } = await adminClient
+        .from("cashout_requests")
+        .select("id, cash_amount, status, created_at, paypal_email")
+        .eq("user_id", userId)
+        .eq("source", "referral")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      const totalCashedOut = (history || [])
+        .filter((h: any) => h.status !== "rejected" && h.status !== "denied")
+        .reduce((sum: number, h: any) => sum + Number(h.cash_amount), 0);
+
+      const hasPending = (history || []).some((h: any) => h.status === "pending");
+      const available = Number((totalEarned - totalCashedOut).toFixed(2));
+
+      return json({
+        totalEarned,
+        totalCashedOut,
+        available,
+        hasPending,
+        engagedCount: referrals?.length ?? 0,
+        history: history || [],
+      });
+    }
+
+    // === request_cashout: request payout of referral earnings via PayPal ===
+    if (action === "request_cashout") {
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        return json({ error: "Not authenticated" }, 401);
+      }
+
+      const { paypal_email } = body;
+      if (!paypal_email || !String(paypal_email).includes("@")) {
+        return json({ error: "Valid PayPal email required" }, 400);
+      }
+
+      const { data: referrals } = await adminClient
+        .from("referral_tracking")
+        .select("reward_amount")
+        .eq("referrer_id", userId)
+        .eq("status", "engaged");
+
+      const totalEarned = (referrals || []).reduce(
+        (sum: number, r: any) => sum + Number(r.reward_amount),
+        0,
+      );
+
+      const { data: history } = await adminClient
+        .from("cashout_requests")
+        .select("cash_amount, status")
+        .eq("user_id", userId)
+        .eq("source", "referral");
+
+      const hasPending = (history || []).some((h: any) => h.status === "pending");
+      if (hasPending) {
+        return json({ error: "You already have a pending referral cashout request" }, 400);
+      }
+
+      const totalCashedOut = (history || [])
+        .filter((h: any) => h.status !== "rejected" && h.status !== "denied")
+        .reduce((sum: number, h: any) => sum + Number(h.cash_amount), 0);
+
+      const available = Number((totalEarned - totalCashedOut).toFixed(2));
+      if (available <= 0) {
+        return json({ error: "No referral earnings available to cash out" }, 400);
+      }
+
+      const { error: insertError } = await adminClient.from("cashout_requests").insert({
+        user_id: userId,
+        minutes_amount: 0,
+        cash_amount: available,
+        paypal_email,
+        status: "pending",
+        source: "referral",
+      });
+      if (insertError) throw insertError;
+
+      return json({ success: true, cash_amount: available, paypal_email });
+    }
+
     // === admin_get_all: admin view ===
     if (action === "admin_get_all") {
       const userId = await getAuthenticatedUserId();
