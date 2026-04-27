@@ -341,7 +341,29 @@ serve(async (req) => {
         .limit(1)
         .maybeSingle();
 
-      return json({ tracking: tracking || [], settings });
+      // Enrich with member emails/names
+      const userIds = new Set<string>();
+      (tracking || []).forEach((t: any) => {
+        if (t.referrer_id) userIds.add(t.referrer_id);
+        if (t.referred_user_id) userIds.add(t.referred_user_id);
+      });
+
+      let memberMap = new Map<string, { email: string | null; name: string | null }>();
+      if (userIds.size > 0) {
+        const { data: members } = await adminClient
+          .from("members")
+          .select("id, email, name")
+          .in("id", Array.from(userIds));
+        memberMap = new Map((members || []).map((m: any) => [m.id, { email: m.email, name: m.name }]));
+      }
+
+      const enriched = (tracking || []).map((t: any) => ({
+        ...t,
+        referrer: memberMap.get(t.referrer_id) || null,
+        referred: memberMap.get(t.referred_user_id) || null,
+      }));
+
+      return json({ tracking: enriched, settings });
     }
 
     // === admin_update_settings ===
