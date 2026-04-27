@@ -30,7 +30,7 @@ type Member = {
   minutes?: number;
 };
 
-type VipSource = "all" | "google_play_or_appstore" | "stripe" | "admin_granted" | "free";
+type VipSource = "all" | "all_vip" | "google_play_or_appstore" | "stripe" | "admin_granted" | "free";
 
 const BAN_REASONS = [
   { value: "standard", label: "Standard Ban", reasons: ["Violation of terms", "Inappropriate behavior", "Spam / abuse", "Harassment"] },
@@ -274,6 +274,7 @@ const MembersPage = () => {
         <span className="text-xs text-muted-foreground mr-1">Source:</span>
         {([
           { key: "all", label: "All" },
+          { key: "all_vip", label: "👑 All VIPs" },
           { key: "google_play_or_appstore", label: "🛒 Native App (Play / App Store)" },
           { key: "stripe", label: "💳 Stripe (Web)" },
           { key: "admin_granted", label: "🛡️ Admin-granted VIP" },
@@ -294,7 +295,9 @@ const MembersPage = () => {
         data={
           (((data as Member[]) ?? []).filter((m) => {
             if (sourceFilter === "all") return true;
-            return (sourceMap[m.id] ?? "free") === sourceFilter;
+            const src = sourceMap[m.id] ?? "free";
+            if (sourceFilter === "all_vip") return src !== "free";
+            return src === sourceFilter;
           })) as Member[]
         }
         columns={memberColumns}
