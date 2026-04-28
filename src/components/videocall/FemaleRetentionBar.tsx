@@ -297,6 +297,17 @@ export default function FemaleRetentionBar({
           </div>
         </DialogContent>
       </Dialog>
+
+      <FemaleAfkCheckModal
+        open={afkOpen}
+        onPass={() => {
+          setAfkOpen(false);
+          setAfkPaused(false);
+        }}
+        onFail={() => {
+          setAfkPaused(true);
+        }}
+      />
     </div>
   );
 }
