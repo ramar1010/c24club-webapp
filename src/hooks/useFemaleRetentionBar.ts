@@ -17,8 +17,9 @@ export function useFemaleRetentionBar(opts: {
   enabled: boolean;
   userId: string;
   state: RetentionState;
+  paused?: boolean;
 }) {
-  const { enabled, userId, state } = opts;
+  const { enabled, userId, state, paused = false } = opts;
   const [progress, setProgress] = useState<ProgressRow | null>(null);
   const [loading, setLoading] = useState(true);
   const accumulatedRef = useRef(0);
@@ -51,7 +52,7 @@ export function useFemaleRetentionBar(opts: {
   // Tick: accumulate seconds and flush every TICK_SECONDS
   useEffect(() => {
     if (!enabled || !userId || userId === "anonymous") return;
-    if (state === "idle") {
+    if (state === "idle" || paused) {
       lastTickRef.current = Date.now();
       accumulatedRef.current = 0;
       return;
@@ -88,7 +89,7 @@ export function useFemaleRetentionBar(opts: {
     }, TICK_SECONDS * 1000);
 
     return () => clearInterval(interval);
-  }, [enabled, userId, state]);
+  }, [enabled, userId, state, paused]);
 
   const cashout = useCallback(
     async (cents: number, paypalEmail: string) => {
