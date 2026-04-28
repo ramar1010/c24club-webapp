@@ -64,6 +64,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
   const genderPreferenceRef = useRef(genderPreference);
   const memberGenderRef = useRef(memberGender);
   const voiceModeRef = useRef(voiceMode);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
 
   useEffect(() => {
     memberIdRef.current = memberId;
@@ -122,6 +123,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
+    pendingIceCandidatesRef.current = [];
     clearRemoteVideo();
   }
 
@@ -169,13 +171,34 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
             await pc.setLocalDescription(answer);
             // Send answer via DB
             await dbSendSignal(roomId, "answer", answer);
+            // Flush any ICE candidates that arrived before remote description
+            for (const cand of pendingIceCandidatesRef.current) {
+              await pc.addIceCandidate(new RTCIceCandidate(cand)).catch((e) =>
+                console.warn("[WebRTC] flush ICE failed:", e)
+              );
+            }
+            pendingIceCandidatesRef.current = [];
           } else if (sig.signal_type === "answer") {
             console.log("[WebRTC] DB: Received answer");
             if (pc.signalingState === "have-local-offer") {
               await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+              // Flush any ICE candidates that arrived before answer
+              for (const cand of pendingIceCandidatesRef.current) {
+                await pc.addIceCandidate(new RTCIceCandidate(cand)).catch((e) =>
+                  console.warn("[WebRTC] flush ICE failed:", e)
+                );
+              }
+              pendingIceCandidatesRef.current = [];
             }
           } else if (sig.signal_type === "ice-candidate") {
-            await pc.addIceCandidate(new RTCIceCandidate(sig.payload)).catch(() => {});
+            // Buffer ICE candidates if remote description isn't set yet
+            if (!pc.remoteDescription || !pc.remoteDescription.type) {
+              pendingIceCandidatesRef.current.push(sig.payload);
+            } else {
+              await pc.addIceCandidate(new RTCIceCandidate(sig.payload)).catch((e) =>
+                console.warn("[WebRTC] addIceCandidate failed:", e)
+              );
+            }
           } else if (sig.signal_type === "partner-disconnected") {
             handlePartnerLeft();
           }
@@ -302,6 +325,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     };
 
     pc.onconnectionstatechange = () => {
+      console.log("[WebRTC] connectionState:", pc.connectionState);
       if (pc.connectionState === "connected") {
         clearSignalPolling(); // Stop polling once connected
         attachStreamToVideo(remoteVideoRef.current, remoteStreamRef.current);
@@ -311,6 +335,10 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
         handlePartnerLeft();
       }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log("[WebRTC] iceConnectionState:", pc.iceConnectionState);
     };
 
     peerConnectionRef.current = pc;
