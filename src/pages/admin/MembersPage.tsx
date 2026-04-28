@@ -212,11 +212,21 @@ const MembersPage = () => {
         return;
       }
 
+      // Pull last known IP so the ban also blocks the IP, not just the user_id
+      const { data: memberRow } = await supabase
+        .from("members")
+        .select("last_ip")
+        .eq("id", banTarget.id)
+        .maybeSingle();
+
       const { error } = await supabase.from("user_bans").insert({
         user_id: banTarget.id,
         reason,
         ban_type: banType,
         banned_by: user.id,
+        is_active: true,
+        ip_address: (memberRow as any)?.last_ip || null,
+        ban_source: "manual",
       } as any);
 
       if (error) throw error;
