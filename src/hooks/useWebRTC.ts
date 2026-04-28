@@ -2,12 +2,35 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { attachStreamToVideo, getTrackEventStream } from "@/lib/mediaStream";
 
-const ICE_SERVERS: RTCConfiguration = {
+const FALLBACK_ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
   ],
 };
+
+let cachedIceConfig: RTCConfiguration | null = null;
+let cachedIceConfigAt = 0;
+const ICE_CONFIG_TTL_MS = 5 * 60 * 1000;
+
+async function getIceConfig(): Promise<RTCConfiguration> {
+  const now = Date.now();
+  if (cachedIceConfig && now - cachedIceConfigAt < ICE_CONFIG_TTL_MS) {
+    return cachedIceConfig;
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke("get-ice-servers");
+    if (error) throw error;
+    if (data?.iceServers?.length) {
+      cachedIceConfig = { iceServers: data.iceServers };
+      cachedIceConfigAt = now;
+      return cachedIceConfig;
+    }
+  } catch (e) {
+    console.warn("[WebRTC] Failed to fetch TURN config, using STUN fallback:", e);
+  }
+  return FALLBACK_ICE_SERVERS;
+}
 
 type CallState = "idle" | "waiting" | "connecting" | "connected" | "disconnected";
 
@@ -231,7 +254,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
         setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
-        createPeerConnection();
+        await createPeerConnection();
         await setupSignaling(data.roomId);
       } else if (data?.message === "added_to_queue") {
         await pollForMatch();
@@ -244,10 +267,11 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
-  function createPeerConnection() {
+  async function createPeerConnection() {
     cleanupPeerConnection();
 
-    const pc = new RTCPeerConnection(ICE_SERVERS);
+    const iceConfig = await getIceConfig();
+    const pc = new RTCPeerConnection(iceConfig);
 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
@@ -325,7 +349,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       setPartnerGender(pGender ?? null);
       setCallState("connecting");
 
-      const pc = createPeerConnection();
+      const pc = await createPeerConnection();
       await setupSignaling(room.id);
 
       const offer = await pc.createOffer();
@@ -399,7 +423,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
         setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
-        createPeerConnection();
+        await createPeerConnection();
         await setupSignaling(data.roomId);
         console.log("[WebRTC] Signaling ready, waiting for poller's offer");
         return;
