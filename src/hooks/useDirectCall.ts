@@ -1,25 +1,40 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const ICE_SERVERS: RTCConfiguration = {
+const FALLBACK_ICE_SERVERS: RTCConfiguration = {
   iceServers: [
-    {
-      urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"],
-    },
-    {
-      urls: [
-        "turn:openrelay.metered.ca:80",
-        "turn:openrelay.metered.ca:443",
-        "turn:openrelay.metered.ca:443?transport=tcp",
-        "turns:openrelay.metered.ca:443?transport=tcp",
-      ],
-      username: "openrelayproject",
-      credential: "openrelayproject",
-    },
+    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
   ],
   iceTransportPolicy: "all",
   iceCandidatePoolSize: 10,
 };
+
+let cachedIceConfig: RTCConfiguration | null = null;
+let cachedIceConfigAt = 0;
+const ICE_CONFIG_TTL_MS = 5 * 60 * 1000;
+
+async function getIceConfig(): Promise<RTCConfiguration> {
+  const now = Date.now();
+  if (cachedIceConfig && now - cachedIceConfigAt < ICE_CONFIG_TTL_MS) {
+    return cachedIceConfig;
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke("get-ice-servers");
+    if (error) throw error;
+    if (data?.iceServers?.length) {
+      cachedIceConfig = {
+        iceServers: data.iceServers,
+        iceTransportPolicy: "all",
+        iceCandidatePoolSize: 10,
+      };
+      cachedIceConfigAt = now;
+      return cachedIceConfig;
+    }
+  } catch (e) {
+    console.warn("[DirectCall] Failed to fetch TURN config, using fallback:", e);
+  }
+  return FALLBACK_ICE_SERVERS;
+}
 
 const playVideoElement = (video: HTMLVideoElement | null) => {
   if (!video) return;
@@ -153,7 +168,8 @@ export function useDirectCall({ myUserId, partnerId, inviteId, isInitiator }: Us
         localStreamRef.current = stream;
         attachStreamToVideo(localVideoRef.current, stream);
 
-        const pc = new RTCPeerConnection(ICE_SERVERS);
+        const iceConfig = await getIceConfig();
+        const pc = new RTCPeerConnection(iceConfig);
         pcRef.current = pc;
 
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
