@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import FemaleAfkCheckModal from "./FemaleAfkCheckModal";
+
+const AFK_CHECK_INTERVAL_MS = 5 * 60 * 1000; // every 5 minutes
 
 const MILESTONES_CENTS = [500, 1000, 2000, 3000, 4000, 5000, 10000];
 const formatUsd = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -26,7 +29,22 @@ export default function FemaleRetentionBar({
   userId: string;
   state: RetentionState;
 }) {
-  const { progress, cashout } = useFemaleRetentionBar({ enabled: true, userId, state });
+  const [afkOpen, setAfkOpen] = useState(false);
+  const [afkPaused, setAfkPaused] = useState(false);
+  const { progress, cashout } = useFemaleRetentionBar({
+    enabled: true,
+    userId,
+    state,
+    paused: afkPaused || afkOpen,
+  });
+
+  // Show the "type the word" check every 5 minutes while actively earning.
+  // Does NOT count down while idle, paused, or while the modal is open.
+  useEffect(() => {
+    if (state === "idle" || afkPaused || afkOpen) return;
+    const id = setTimeout(() => setAfkOpen(true), AFK_CHECK_INTERVAL_MS);
+    return () => clearTimeout(id);
+  }, [state, afkPaused, afkOpen]);
   const [promptCents, setPromptCents] = useState<number | null>(null);
   const [seenMilestones, setSeenMilestones] = useState<Set<number>>(new Set());
   const [paypalEmail, setPaypalEmail] = useState("");
