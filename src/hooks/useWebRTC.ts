@@ -254,7 +254,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
         setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
-        createPeerConnection();
+        await createPeerConnection();
         await setupSignaling(data.roomId);
       } else if (data?.message === "added_to_queue") {
         await pollForMatch();
@@ -267,10 +267,11 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
     }
   }
 
-  function createPeerConnection() {
+  async function createPeerConnection() {
     cleanupPeerConnection();
 
-    const pc = new RTCPeerConnection(ICE_SERVERS);
+    const iceConfig = await getIceConfig();
+    const pc = new RTCPeerConnection(iceConfig);
 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
@@ -348,7 +349,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
       setPartnerGender(pGender ?? null);
       setCallState("connecting");
 
-      const pc = createPeerConnection();
+      const pc = await createPeerConnection();
       await setupSignaling(room.id);
 
       const offer = await pc.createOffer();
@@ -422,7 +423,7 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
         setPartnerVoiceMode(data.partnerVoiceMode ?? false);
         setPartnerGender(data.partnerGender ?? null);
         setCallState("connecting");
-        createPeerConnection();
+        await createPeerConnection();
         await setupSignaling(data.roomId);
         console.log("[WebRTC] Signaling ready, waiting for poller's offer");
         return;
