@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,8 +39,8 @@ const AdminRoomsPage = () => {
     )
   );
 
-  const { data: members } = useQuery({
-    queryKey: ["admin-members-lookup", memberIds.sort().join(",")],
+  const { data: members, error: membersError } = useQuery({
+    queryKey: ["admin-members-lookup", [...memberIds].sort().join(",")],
     queryFn: async () => {
       if (memberIds.length === 0) return [];
       // Fetch in batches of 100 to avoid URI limits
@@ -51,12 +51,17 @@ const AdminRoomsPage = () => {
           .from("members")
           .select("id, name")
           .in("id", batch);
-        if (error) throw error;
+        if (error) {
+          console.error("[AdminRooms] members lookup error:", error);
+          throw error;
+        }
         if (data) results.push(...data);
       }
       return results;
     },
     enabled: memberIds.length > 0,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 
   const memberName = (id: string | null) => {
