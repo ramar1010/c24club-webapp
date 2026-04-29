@@ -10,6 +10,8 @@ import { Video, Wifi, WifiOff, Clock, Trash2, Zap, Bell } from "lucide-react";
 import { toast } from "sonner";
 
 const STALE_HOURS = 24;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+type PushRoomFields = { member1_from_push?: boolean | null; member2_from_push?: boolean | null };
 
 const AdminRoomsPage = () => {
   const queryClient = useQueryClient();
@@ -39,14 +41,16 @@ const AdminRoomsPage = () => {
     )
   );
 
+  const lookupMemberIds = memberIds.filter((id) => UUID_REGEX.test(id));
+
   const { data: members, error: membersError } = useQuery({
-    queryKey: ["admin-members-lookup", [...memberIds].sort().join(",")],
+    queryKey: ["admin-members-lookup", [...lookupMemberIds].sort().join(",")],
     queryFn: async () => {
-      if (memberIds.length === 0) return [];
+      if (lookupMemberIds.length === 0) return [];
       // Fetch in batches of 100 to avoid URI limits
       const results: { id: string; name: string }[] = [];
-      for (let i = 0; i < memberIds.length; i += 100) {
-        const batch = memberIds.slice(i, i + 100);
+      for (let i = 0; i < lookupMemberIds.length; i += 100) {
+        const batch = lookupMemberIds.slice(i, i + 100);
         const { data, error } = await supabase
           .from("members")
           .select("id, name")
@@ -59,13 +63,14 @@ const AdminRoomsPage = () => {
       }
       return results;
     },
-    enabled: memberIds.length > 0,
+    enabled: lookupMemberIds.length > 0,
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 
   const memberName = (id: string | null) => {
     if (!id) return "—";
+    if (!UUID_REGEX.test(id)) return id === "anonymous" ? "Anonymous" : id;
     const m = members?.find((m) => m.id === id);
     return m?.name || id.slice(0, 8) + "…";
   };
@@ -80,8 +85,10 @@ const AdminRoomsPage = () => {
 
   const staleRooms = connectedRooms.filter((r) => isStale(r.connected_at));
 
-  const isFromPush = (r: NonNullable<typeof rooms>[number]) =>
-    Boolean((r as any).member1_from_push || (r as any).member2_from_push);
+  const isFromPush = (r: NonNullable<typeof rooms>[number]) => {
+    const roomWithPush = r as NonNullable<typeof rooms>[number] & PushRoomFields;
+    return Boolean(roomWithPush.member1_from_push || roomWithPush.member2_from_push);
+  };
 
   const fromPushRooms = (rooms ?? []).filter(isFromPush);
   const totalRooms = rooms?.length ?? 0;
