@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 const STALE_HOURS = 24;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+type PushRoomFields = { member1_from_push?: boolean | null; member2_from_push?: boolean | null };
 
 const AdminRoomsPage = () => {
   const queryClient = useQueryClient();
@@ -84,8 +85,10 @@ const AdminRoomsPage = () => {
 
   const staleRooms = connectedRooms.filter((r) => isStale(r.connected_at));
 
-  const isFromPush = (r: NonNullable<typeof rooms>[number]) =>
-    Boolean((r as any).member1_from_push || (r as any).member2_from_push);
+  const isFromPush = (r: NonNullable<typeof rooms>[number]) => {
+    const roomWithPush = r as NonNullable<typeof rooms>[number] & PushRoomFields;
+    return Boolean(roomWithPush.member1_from_push || roomWithPush.member2_from_push);
+  };
 
   const fromPushRooms = (rooms ?? []).filter(isFromPush);
   const totalRooms = rooms?.length ?? 0;
