@@ -219,6 +219,15 @@ export function useWebRTC({ memberId, genderPreference = "Both", memberGender, v
 
   async function getLocalStream() {
     if (localStreamRef.current) {
+      // If voice mode is on, ensure no video track is present in the cached stream
+      // (could exist from a prior preview / camera-on session).
+      if (voiceModeRef.current) {
+        const videoTracks = localStreamRef.current.getVideoTracks();
+        videoTracks.forEach((t) => {
+          t.stop();
+          localStreamRef.current?.removeTrack(t);
+        });
+      }
       return localStreamRef.current;
     }
 
