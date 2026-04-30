@@ -95,6 +95,7 @@ const FreeVideoChatNoSignUpPage = lazy(() => import("@/pages/public/seo/FreeVide
 const CamChatPage = lazy(() => import("@/pages/public/seo/CamChatPage"));
 const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
+const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
 const WorkerRedditTaskPage = lazy(() => import("@/pages/public/WorkerRedditTaskPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -129,6 +130,7 @@ const App = () => (
                 <Route path="free-video-chat-no-sign-up" element={<FreeVideoChatNoSignUpPage />} />
                 <Route path="cam-chat" element={<CamChatPage />} />
                 <Route path="csae-policy" element={<CSAEPolicyPage />} />
+                <Route path="contact" element={<ContactPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
