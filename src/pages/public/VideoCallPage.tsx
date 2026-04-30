@@ -1299,7 +1299,7 @@ const VideoCallPage = () => {
           }
 
           {isActive &&
-          <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20">
+          <button onClick={handleNext} className="md:hidden absolute bottom-3 right-3 flex flex-col items-center bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-40">
               <span className="font-bold text-sm">NEXT</span>
               <img src={nextBtn} alt="Next" className="w-9 h-9" />
             </button>
@@ -1310,7 +1310,7 @@ const VideoCallPage = () => {
           <button
             onClick={handleFlagAndNext}
             title="Skip and flag as inappropriate"
-            className="md:hidden absolute bottom-3 right-[88px] flex flex-col items-center bg-destructive/80 hover:bg-destructive backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-20 text-destructive-foreground">
+            className="md:hidden absolute bottom-3 right-[88px] flex flex-col items-center bg-destructive/80 hover:bg-destructive backdrop-blur-sm rounded-lg px-3 py-1.5 transition-colors z-40 text-destructive-foreground">
               <span className="font-bold text-xs">🚩 SKIP</span>
               <span className="text-[9px] leading-none mt-0.5">inappropriate</span>
             </button>
