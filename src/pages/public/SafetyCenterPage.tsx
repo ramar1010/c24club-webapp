@@ -1,4 +1,4 @@
-import { Shield, Eye, Lock, AlertTriangle, UserX, Camera, Clock, MessageCircle, Phone, Ban } from "lucide-react";
+import { Shield, Eye, Lock, AlertTriangle, UserX, Camera, Clock, MessageCircle, Phone, Ban, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SafetyCenterPage = () => {
@@ -18,6 +18,12 @@ const SafetyCenterPage = () => {
           <p className="text-white/60 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
             C24 Club is built with multiple layers of protection to keep you safe while video chatting. Here's how our platform protects you and what you can do to stay safe.
           </p>
+          <Link
+            to="/"
+            className="mt-8 inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black text-base uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+          >
+            Take Me To C24 Club <ChevronRight className="h-5 w-5" />
+          </Link>
         </div>
       </section>
 
@@ -198,6 +204,16 @@ const SafetyCenterPage = () => {
               Privacy Policy
             </Link>
           </div>
+        </section>
+
+        {/* Bottom CTA */}
+        <section className="text-center pt-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black text-base uppercase tracking-wide shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+          >
+            Take Me To C24 Club <ChevronRight className="h-5 w-5" />
+          </Link>
         </section>
       </div>
     </div>
