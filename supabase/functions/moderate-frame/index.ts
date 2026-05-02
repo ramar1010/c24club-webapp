@@ -134,6 +134,7 @@ serve(async (req) => {
         : await supabaseAdmin.from("member_minutes").insert({ user_id: reported_user_id, ...strikePayload });
 
       if (strikeWrite.error) throw strikeWrite.error;
+      console.log(`moderate-frame strike ${newStrikes}/3 for ${reported_user_id} (${topReason})`);
 
       let banned = false;
       if (newStrikes === 3) {
@@ -158,6 +159,7 @@ serve(async (req) => {
           console.error("Failed to insert ban:", banError.message);
         } else {
           banned = true;
+          console.log(`moderate-frame banned ${reported_user_id} after 3 strikes`);
           const resetWrite = mm?.id
             ? await supabaseAdmin.from("member_minutes").update({ nsfw_strikes: 0 }).eq("id", mm.id)
             : await supabaseAdmin.from("member_minutes").update({ nsfw_strikes: 0 }).eq("user_id", reported_user_id);
