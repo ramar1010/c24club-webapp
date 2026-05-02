@@ -36,6 +36,7 @@ export function useNsfwDetection({
   const strikesRef = useRef(0);
   const lastValidTargetRef = useRef<string | null>(null);
   const pendingBanUserIdRef = useRef<string | null>(null);
+  const serverScanInFlightRef = useRef(false);
   const viewerIdentity = viewerUserId && viewerUserId !== "anonymous" ? viewerUserId : authUserId;
 
   useEffect(() => {
@@ -113,10 +114,7 @@ export function useNsfwDetection({
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
 
-        if (strikes >= maxStrikes) {
-          pendingBanUserIdRef.current = targetUserId;
-          setShowConfirmPrompt(true);
-        } else if (pendingBanUserIdRef.current === targetUserId) {
+        if (pendingBanUserIdRef.current === targetUserId && strikes < maxStrikes) {
           pendingBanUserIdRef.current = null;
         }
       });
@@ -155,25 +153,36 @@ export function useNsfwDetection({
     if (!isConnected) setIsNsfwBlurred(false);
   }, [isConnected]);
 
-  // Persist strikes to DB
-  const persistStrike = useCallback(
-    async (newCount: number, targetUserIdOverride?: string | null) => {
-      const targetUserId =
-        targetUserIdOverride ||
-        pendingBanUserIdRef.current ||
-        getValidatedTargetUserId() ||
-        lastValidTargetRef.current;
+  const scanFrameWithSightengine = useCallback(async (targetUserId: string, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+    const video = remoteVideoRef.current;
+    if (!video || video.readyState < 2 || serverScanInFlightRef.current) return;
 
-      if (!targetUserId) return;
+    serverScanInFlightRef.current = true;
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frame = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+      const { data, error } = await supabase.functions.invoke("moderate-frame", {
+        body: { frame, reported_user_id: targetUserId },
+      });
 
-      const safeCount = Math.min(maxStrikes, Math.max(0, Math.floor(newCount)));
-      await supabase
-        .from("member_minutes")
-        .update({ nsfw_strikes: safeCount } as any)
-        .eq("user_id", targetUserId);
-    },
-    [getValidatedTargetUserId, maxStrikes]
-  );
+      if (error) throw error;
+
+      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number((data as any)?.strikes ?? strikesRef.current)));
+      strikesRef.current = nextStrikes;
+      setNsfwStrikes(nextStrikes);
+      setShowConfirmPrompt(false);
+
+      if ((data as any)?.banned) {
+        pendingBanUserIdRef.current = null;
+        strikesRef.current = 0;
+        setNsfwStrikes(0);
+      }
+    } catch (err) {
+      console.error("[NSFW] Sightengine moderation failed:", err);
+    } finally {
+      serverScanInFlightRef.current = false;
+    }
+  }, [maxStrikes, remoteVideoRef]);
 
   // Periodic detection
   useEffect(() => {
