@@ -167,7 +167,12 @@ export function useNsfwDetection({
 
       if (error) throw error;
 
-      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number((data as any)?.strikes ?? strikesRef.current)));
+      if (!(data as any)?.flagged) {
+        setIsNsfwBlurred(false);
+        return;
+      }
+
+      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number((data as any)?.strikes ?? 0)));
       strikesRef.current = nextStrikes;
       setNsfwStrikes(nextStrikes);
       setShowConfirmPrompt(false);
@@ -224,10 +229,7 @@ export function useNsfwDetection({
           const now = Date.now();
           if (strikesRef.current < maxStrikes && now - lastStrikeAtRef.current >= strikeCooldownMs) {
             lastStrikeAtRef.current = now;
-            const next = Math.min(maxStrikes, strikesRef.current + 1);
-            strikesRef.current = next;
-            setNsfwStrikes(next);
-            console.log(`[NSFW] Local detection ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
+            console.log(`[NSFW] Local detection — nudity: ${(nudityScore * 100).toFixed(1)}%; sending to Sightengine`);
             void scanFrameWithSightengine(targetUserId, canvas, ctx);
           }
         } else {
