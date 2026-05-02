@@ -1388,6 +1388,19 @@ const VideoCallPage = () => {
           }
             <video ref={remoteVideoRef} autoPlay playsInline
           className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred || isNsfwBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
+            {isNsfwBlurred && !isPreBlurred && callState === "connected" && !partnerVoiceMode &&
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 pointer-events-none">
+                <div className="bg-black/70 backdrop-blur-sm rounded-xl px-4 py-2 text-center pointer-events-none">
+                  <p className="text-white font-bold text-sm">⚠️ Inappropriate content detected</p>
+                  <p className="text-neutral-300 text-xs mt-0.5">Video blurred for your safety</p>
+                </div>
+                <button
+              onClick={manualUnblur}
+              className="bg-white text-black font-bold text-sm px-5 py-2 rounded-full shadow-lg pointer-events-auto active:scale-95 transition-transform">
+                  Unblur
+                </button>
+              </div>
+          }
             {partnerBlackScreen && callState === "connected" && !partnerVoiceMode &&
           <div className="absolute inset-0 z-30 bg-black flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-4xl">📵</span>
