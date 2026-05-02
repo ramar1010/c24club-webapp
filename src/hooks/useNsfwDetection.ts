@@ -37,6 +37,10 @@ export function useNsfwDetection({
   const lastValidTargetRef = useRef<string | null>(null);
   const pendingBanUserIdRef = useRef<string | null>(null);
   const serverScanInFlightRef = useRef(false);
+  // Once NSFW is detected for a partner, blur "latches" on for the rest of the
+  // call until the viewer manually clicks Unblur. Reset on disconnect / new partner.
+  const stickyBlurRef = useRef(false);
+  const viewerUnblurredRef = useRef(false);
   const viewerIdentity = viewerUserId && viewerUserId !== "anonymous" ? viewerUserId : authUserId;
 
   useEffect(() => {
@@ -84,6 +88,8 @@ export function useNsfwDetection({
         strikesRef.current = 0;
         setNsfwStrikes(0);
       }
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
       setIsNsfwBlurred(false);
       return;
     }
@@ -95,6 +101,11 @@ export function useNsfwDetection({
       setNsfwStrikes(0);
       setShowConfirmPrompt(false);
       setIsNsfwBlurred(false);
+    }
+    if (loadedUserIdRef.current !== targetUserId) {
+      // New partner — clear sticky blur state for that partner
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
     }
 
     loadedUserIdRef.current = targetUserId;
@@ -150,7 +161,11 @@ export function useNsfwDetection({
 
   // Reset blur when disconnected
   useEffect(() => {
-    if (!isConnected) setIsNsfwBlurred(false);
+    if (!isConnected) {
+      setIsNsfwBlurred(false);
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
+    }
   }, [isConnected]);
 
   const scanFrameWithSightengine = useCallback(async (targetUserId: string, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
@@ -168,7 +183,10 @@ export function useNsfwDetection({
       if (error) throw error;
 
       if (!(data as any)?.flagged) {
-        setIsNsfwBlurred(false);
+        // Server says clean — but if local model latched, keep blur on
+        if (!stickyBlurRef.current || viewerUnblurredRef.current) {
+          setIsNsfwBlurred(false);
+        }
         return;
       }
 
@@ -223,7 +241,10 @@ export function useNsfwDetection({
         const nudityScore = Math.max(pornScore, hentaiScore);
 
         if (nudityScore >= nudityThreshold) {
-          setIsNsfwBlurred(true);
+          stickyBlurRef.current = true;
+          if (!viewerUnblurredRef.current) {
+            setIsNsfwBlurred(true);
+          }
           lastValidTargetRef.current = targetUserId;
 
           const now = Date.now();
@@ -233,7 +254,12 @@ export function useNsfwDetection({
             void scanFrameWithSightengine(targetUserId, canvas, ctx);
           }
         } else {
-          setIsNsfwBlurred(false);
+          // Latch blur on once triggered, until viewer manually unblurs
+          if (stickyBlurRef.current && !viewerUnblurredRef.current) {
+            setIsNsfwBlurred(true);
+          } else {
+            setIsNsfwBlurred(false);
+          }
         }
       } catch (err) {
         console.warn("[NSFW] Classification error:", err);
@@ -307,5 +333,11 @@ export function useNsfwDetection({
     }
   }, [getActionTargetUserId]);
 
-  return { isNsfwBlurred, nsfwStrikes, showConfirmPrompt, confirmBan, dismissStrikes };
+  // Viewer manually unblurs partner's video for rest of this connection
+  const manualUnblur = useCallback(() => {
+    viewerUnblurredRef.current = true;
+    setIsNsfwBlurred(false);
+  }, []);
+
+  return { isNsfwBlurred, nsfwStrikes, showConfirmPrompt, confirmBan, dismissStrikes, manualUnblur };
 }
