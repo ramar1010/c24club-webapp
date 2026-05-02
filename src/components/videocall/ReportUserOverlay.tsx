@@ -39,6 +39,14 @@ const captureVideoFrame = (videoRef?: RefObject<HTMLVideoElement>): Blob | null 
   return new Blob([ab], { type: "image/jpeg" });
 };
 
+const blobToBase64 = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
 const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose }: ReportUserOverlayProps) => {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [details, setDetails] = useState("");
@@ -71,6 +79,21 @@ const ReportUserOverlay = ({ reporterId, reportedUserId, remoteVideoRef, onClose
       details: details.trim() || null,
       screenshot_url: screenshotUrl,
     });
+
+    const shouldModerateFrame =
+      blob && ["Nudity / Sexual Content", "Inappropriate Behavior"].includes(selectedReason);
+    if (!error && shouldModerateFrame) {
+      try {
+        const frame = await blobToBase64(blob);
+        if (frame) {
+          await supabase.functions.invoke("moderate-frame", {
+            body: { frame, reported_user_id: reportedUserId },
+          });
+        }
+      } catch (moderationError) {
+        console.error("Failed to moderate reported frame:", moderationError);
+      }
+    }
 
     if (error) {
       toast.error("Failed to submit report");
