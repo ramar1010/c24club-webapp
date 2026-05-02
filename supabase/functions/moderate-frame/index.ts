@@ -101,8 +101,63 @@ serve(async (req) => {
         console.error("Failed to insert report:", reportError.message);
       }
 
+      // Increment NSFW strikes and ban at 3
+      let newStrikes = 1;
+      const { data: mm } = await supabaseAdmin
+        .from("member_minutes")
+        .select("nsfw_strikes")
+        .eq("user_id", reported_user_id)
+        .maybeSingle();
+
+      newStrikes = (mm?.nsfw_strikes ?? 0) + 1;
+
+      await supabaseAdmin
+        .from("member_minutes")
+        .update({ nsfw_strikes: newStrikes })
+        .eq("user_id", reported_user_id);
+
+      let banned = false;
+      if (newStrikes >= 3) {
+        const { data: existingBan } = await supabaseAdmin
+          .from("user_bans")
+          .select("id")
+          .eq("user_id", reported_user_id)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (!existingBan) {
+          const { data: memberData } = await supabaseAdmin
+            .from("members")
+            .select("last_ip")
+            .eq("id", reported_user_id)
+            .maybeSingle();
+
+          const { error: banError } = await supabaseAdmin.from("user_bans").insert({
+            user_id: reported_user_id,
+            reason: `Automated NSFW moderation (3 strikes — last: ${topReason})`,
+            ban_type: "standard",
+            is_active: true,
+            ip_address: memberData?.last_ip ?? null,
+            ban_source: "videocall",
+          });
+
+          if (banError) {
+            console.error("Failed to insert ban:", banError.message);
+          } else {
+            banned = true;
+            // Reset strikes after successful ban
+            await supabaseAdmin
+              .from("member_minutes")
+              .update({ nsfw_strikes: 0 })
+              .eq("user_id", reported_user_id);
+          }
+        } else {
+          banned = true;
+        }
+      }
+
       return new Response(
-        JSON.stringify({ flagged: true, reason: topReason, score: scores[topReason] }),
+        JSON.stringify({ flagged: true, reason: topReason, score: scores[topReason], strikes: newStrikes, banned }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
