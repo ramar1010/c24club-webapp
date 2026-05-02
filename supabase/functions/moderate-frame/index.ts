@@ -101,63 +101,72 @@ serve(async (req) => {
         console.error("Failed to insert report:", reportError.message);
       }
 
-      // Increment NSFW strikes and ban at 3
-      let newStrikes = 1;
-      const { data: mm } = await supabaseAdmin
+      const { data: existingBan, error: existingBanError } = await supabaseAdmin
+        .from("user_bans")
+        .select("id")
+        .eq("user_id", reported_user_id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (existingBanError) throw existingBanError;
+
+      if (existingBan) {
+        return new Response(
+          JSON.stringify({ flagged: true, reason: topReason, score: scores[topReason], strikes: 0, banned: true, alreadyBanned: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+
+      // Increment NSFW strikes and ban exactly when the count reaches 3.
+      const { data: mm, error: mmFetchError } = await supabaseAdmin
         .from("member_minutes")
-        .select("nsfw_strikes")
+        .select("id, nsfw_strikes")
         .eq("user_id", reported_user_id)
         .maybeSingle();
 
-      newStrikes = (mm?.nsfw_strikes ?? 0) + 1;
+      if (mmFetchError) throw mmFetchError;
 
-      await supabaseAdmin
-        .from("member_minutes")
-        .update({ nsfw_strikes: newStrikes })
-        .eq("user_id", reported_user_id);
+      const currentStrikes = Math.max(0, Number(mm?.nsfw_strikes ?? 0));
+      const newStrikes = Math.min(3, currentStrikes + 1);
+      const strikePayload = { nsfw_strikes: newStrikes };
+      const strikeWrite = mm?.id
+        ? await supabaseAdmin.from("member_minutes").update(strikePayload).eq("id", mm.id)
+        : await supabaseAdmin.from("member_minutes").insert({ user_id: reported_user_id, ...strikePayload });
+
+      if (strikeWrite.error) throw strikeWrite.error;
 
       let banned = false;
-      if (newStrikes >= 3) {
-        const { data: existingBan } = await supabaseAdmin
-          .from("user_bans")
-          .select("id")
-          .eq("user_id", reported_user_id)
-          .eq("is_active", true)
+      if (newStrikes === 3) {
+        const { data: memberData, error: memberError } = await supabaseAdmin
+          .from("members")
+          .select("last_ip")
+          .eq("id", reported_user_id)
           .maybeSingle();
 
-        if (!existingBan) {
-          const { data: memberData } = await supabaseAdmin
-            .from("members")
-            .select("last_ip")
-            .eq("id", reported_user_id)
-            .maybeSingle();
+        if (memberError) console.error("Failed to read target member IP:", memberError.message);
 
-          const { error: banError } = await supabaseAdmin.from("user_bans").insert({
-            user_id: reported_user_id,
-            reason: `Automated NSFW moderation (3 strikes — last: ${topReason})`,
-            ban_type: "standard",
-            is_active: true,
-            ip_address: memberData?.last_ip ?? null,
-            ban_source: "videocall",
-          });
+        const { error: banError } = await supabaseAdmin.from("user_bans").insert({
+          user_id: reported_user_id,
+          reason: `Automated NSFW moderation (3 strikes — last: ${topReason})`,
+          ban_type: "standard",
+          is_active: true,
+          ip_address: memberData?.last_ip ?? null,
+          ban_source: "videocall",
+        });
 
-          if (banError) {
-            console.error("Failed to insert ban:", banError.message);
-          } else {
-            banned = true;
-            // Reset strikes after successful ban
-            await supabaseAdmin
-              .from("member_minutes")
-              .update({ nsfw_strikes: 0 })
-              .eq("user_id", reported_user_id);
-          }
+        if (banError) {
+          console.error("Failed to insert ban:", banError.message);
         } else {
           banned = true;
+          const resetWrite = mm?.id
+            ? await supabaseAdmin.from("member_minutes").update({ nsfw_strikes: 0 }).eq("id", mm.id)
+            : await supabaseAdmin.from("member_minutes").update({ nsfw_strikes: 0 }).eq("user_id", reported_user_id);
+          if (resetWrite.error) console.error("Failed to reset strikes after ban:", resetWrite.error.message);
         }
       }
 
       return new Response(
-        JSON.stringify({ flagged: true, reason: topReason, score: scores[topReason], strikes: newStrikes, banned }),
+        JSON.stringify({ flagged: true, reason: topReason, score: scores[topReason], strikes: banned ? 0 : newStrikes, banned }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
