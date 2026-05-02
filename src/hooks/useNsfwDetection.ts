@@ -227,14 +227,8 @@ export function useNsfwDetection({
             const next = Math.min(maxStrikes, strikesRef.current + 1);
             strikesRef.current = next;
             setNsfwStrikes(next);
-            console.log(`[NSFW] Strike ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
-            void persistStrike(next, targetUserId);
-
-            if (next >= maxStrikes) {
-              pendingBanUserIdRef.current = targetUserId;
-              console.log("[NSFW] Showing confirm prompt for:", targetUserId);
-              setShowConfirmPrompt(true);
-            }
+            console.log(`[NSFW] Local detection ${next}/${maxStrikes} — nudity: ${(nudityScore * 100).toFixed(1)}%`);
+            void scanFrameWithSightengine(targetUserId, canvas, ctx);
           }
         } else {
           setIsNsfwBlurred(false);
@@ -252,7 +246,7 @@ export function useNsfwDetection({
     maxStrikes,
     strikeCooldownMs,
     remoteVideoRef,
-    persistStrike,
+    scanFrameWithSightengine,
     getValidatedTargetUserId,
   ]);
 
@@ -303,8 +297,13 @@ export function useNsfwDetection({
     setShowConfirmPrompt(false);
     setIsNsfwBlurred(false);
     pendingBanUserIdRef.current = null;
-    await persistStrike(0, targetUserId);
-  }, [getActionTargetUserId, persistStrike]);
+    if (targetUserId) {
+      await supabase
+        .from("member_minutes")
+        .update({ nsfw_strikes: 0 } as any)
+        .eq("user_id", targetUserId);
+    }
+  }, [getActionTargetUserId]);
 
   return { isNsfwBlurred, nsfwStrikes, showConfirmPrompt, confirmBan, dismissStrikes };
 }
