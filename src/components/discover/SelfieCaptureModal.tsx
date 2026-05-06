@@ -148,6 +148,38 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     const { data: urlData } = supabase.storage.from("member-photos").getPublicUrl(filePath);
     const imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
+    // Run Sightengine moderation on the uploaded selfie BEFORE saving as profile image
+    try {
+      const { data: modData } = await supabase.functions.invoke("moderate-selfie", {
+        body: { image_url: imageUrl },
+      });
+      if (modData?.flagged) {
+        // Remove the uploaded file
+        await supabase.storage.from("member-photos").remove([filePath]);
+        if (modData.banned) {
+          toast({
+            title: "Account banned 🚫",
+            description: "Your selfie violated our community guidelines. Contact support if you believe this is a mistake.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          window.location.href = "/";
+          return;
+        }
+        const remaining = Math.max(0, 3 - (modData.strikes ?? 0));
+        toast({
+          title: "Selfie rejected 🚫",
+          description: `Inappropriate content detected. ${remaining} strike${remaining === 1 ? "" : "s"} remaining before account ban.`,
+          variant: "destructive",
+        });
+        setStep("socials");
+        return;
+      }
+    } catch (err) {
+      console.error("Selfie moderation failed:", err);
+      // Fail-open: continue with normal pending review flow
+    }
+
     // Update member profile
     await supabase.from("members").update({
       image_url: imageUrl,
