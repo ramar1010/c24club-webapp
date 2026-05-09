@@ -148,7 +148,7 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
     const { data: urlData } = supabase.storage.from("member-photos").getPublicUrl(filePath);
     const imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    // Run Sightengine moderation on the uploaded selfie BEFORE saving as profile image
+    // Run AI moderation on the uploaded selfie BEFORE saving as profile image
     try {
       const { data: modData } = await supabase.functions.invoke("moderate-selfie", {
         body: { image_url: imageUrl },
@@ -156,20 +156,9 @@ const SelfieCaptureModal = ({ open, onClose, onComplete }: SelfieCaptureModalPro
       if (modData?.flagged) {
         // Remove the uploaded file
         await supabase.storage.from("member-photos").remove([filePath]);
-        if (modData.banned) {
-          toast({
-            title: "Account banned 🚫",
-            description: "Your selfie violated our community guidelines. Contact support if you believe this is a mistake.",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-          window.location.href = "/";
-          return;
-        }
-        const remaining = Math.max(0, 3 - (modData.strikes ?? 0));
         toast({
           title: "Selfie rejected 🚫",
-          description: `Inappropriate content detected. ${remaining} strike${remaining === 1 ? "" : "s"} remaining before account ban.`,
+          description: "Inappropriate content detected. Please upload a different photo that follows our community guidelines.",
           variant: "destructive",
         });
         setStep("socials");
