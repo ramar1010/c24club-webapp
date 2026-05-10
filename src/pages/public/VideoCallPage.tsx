@@ -1002,7 +1002,13 @@ const VideoCallPage = () => {
   const timerSec = elapsedSeconds % 60;
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
-  const handleStart = () => startCall();
+  const handleStart = () => {
+    if (preCallFlagged) {
+      toast.error("Your camera was flagged for inappropriate content. Please reload and try again.", { duration: 6000 });
+      return;
+    }
+    startCall();
+  };
 
   // Female-only: skip + flag the male partner as inappropriate.
   // Two distinct female reporters in 24h trigger a 24h shadowban server-side.
@@ -1162,8 +1168,16 @@ const VideoCallPage = () => {
                   📸 Take a Selfie to Start
                 </button> :
 
-            <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
-                  START
+            <button
+              onClick={handleStart}
+              disabled={preCallFlagged}
+              className={`font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg ${
+                preCallFlagged
+                  ? "bg-neutral-700 text-neutral-400 cursor-not-allowed opacity-60"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+                  {preCallFlagged ? "BLOCKED" : "START"}
                 </button>
             }
               {needsSelfie &&
