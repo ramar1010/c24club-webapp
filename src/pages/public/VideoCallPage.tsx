@@ -503,7 +503,7 @@ const VideoCallPage = () => {
   useEffect(() => {
     if (memberId === "anonymous") return;
     if (preCallScannedRef.current) return;
-    if (isActive) return;
+    if (callState !== "idle") return;
     if (isFemale && voiceMode) return; // no camera in voice mode
 
     let cancelled = false;
@@ -545,7 +545,7 @@ const VideoCallPage = () => {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [memberId, isActive, isFemale, voiceMode, mySelfieUrl, localStreamRef, localVideoRef]);
+  }, [memberId, callState, isFemale, voiceMode, mySelfieUrl, localStreamRef, localVideoRef]);
 
 
   // Manage female anchor slot via backend queue/session logic
