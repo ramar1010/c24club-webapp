@@ -496,6 +496,57 @@ const VideoCallPage = () => {
     }
   }, [memberId, isFemale, voiceMode, startPreview]);
 
+  // Pre-call AI moderation: scan local preview frame + selfie ONCE per session.
+  // If flagged: disable START + auto-blur outgoing video for partners (via nsfw_strikes).
+  const [preCallFlagged, setPreCallFlagged] = useState(false);
+  const preCallScannedRef = useRef(false);
+  useEffect(() => {
+    if (memberId === "anonymous") return;
+    if (preCallScannedRef.current) return;
+    if (callState !== "idle") return;
+    if (isFemale && voiceMode) return; // no camera in voice mode
+
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const stream = localStreamRef.current;
+      const video = localVideoRef.current;
+      if (!stream || !video || video.readyState < 2) return;
+      preCallScannedRef.current = true;
+
+      try {
+        const w = video.videoWidth || 320;
+        const h = video.videoHeight || 240;
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, 320 / w);
+        canvas.width = Math.max(1, Math.floor(w * scale));
+        canvas.height = Math.max(1, Math.floor(h * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const frame = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+
+        const { data } = await supabase.functions.invoke("moderate-precall", {
+          body: { frame, selfie_url: mySelfieUrl ?? undefined },
+        });
+        if (cancelled) return;
+        if ((data as any)?.flagged) {
+          setPreCallFlagged(true);
+          toast.error(
+            "Inappropriate content detected in your camera. Please adjust and reload the page to try again.",
+            { duration: 8000 }
+          );
+        }
+      } catch (err) {
+        console.warn("[pre-call moderation] failed", err);
+      }
+    }, 2500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [memberId, callState, isFemale, voiceMode, mySelfieUrl, localStreamRef, localVideoRef]);
+
 
   // Manage female anchor slot via backend queue/session logic
   // DISABLED: Anchor earning system is hidden/deactivated — no polling needed
@@ -951,7 +1002,13 @@ const VideoCallPage = () => {
   const timerSec = elapsedSeconds % 60;
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
-  const handleStart = () => startCall();
+  const handleStart = () => {
+    if (preCallFlagged) {
+      toast.error("Your camera was flagged for inappropriate content. Please reload and try again.", { duration: 6000 });
+      return;
+    }
+    startCall();
+  };
 
   // Female-only: skip + flag the male partner as inappropriate.
   // Two distinct female reporters in 24h trigger a 24h shadowban server-side.
@@ -1111,8 +1168,16 @@ const VideoCallPage = () => {
                   📸 Take a Selfie to Start
                 </button> :
 
-            <button onClick={handleStart} className="bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg">
-                  START
+            <button
+              onClick={handleStart}
+              disabled={preCallFlagged}
+              className={`font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg ${
+                preCallFlagged
+                  ? "bg-neutral-700 text-neutral-400 cursor-not-allowed opacity-60"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+                  {preCallFlagged ? "BLOCKED" : "START"}
                 </button>
             }
               {needsSelfie &&

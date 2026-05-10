@@ -129,6 +129,14 @@ export function useNsfwDetection({
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
 
+        // If this partner has any prior NSFW strikes (e.g. flagged in pre-call),
+        // auto-blur them on connect. Viewer must click Unblur to see them.
+        if (strikes > 0) {
+          stickyBlurRef.current = true;
+          viewerUnblurredRef.current = false;
+          setIsNsfwBlurred(true);
+        }
+
         if (pendingBanUserIdRef.current === targetUserId && strikes < maxStrikes) {
           pendingBanUserIdRef.current = null;
         }
