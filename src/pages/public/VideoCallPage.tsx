@@ -1213,14 +1213,14 @@ const VideoCallPage = () => {
 
             <button
               onClick={handleStart}
-              disabled={preCallFlagged}
+              disabled={preCallFlagged || preCallScanning}
               className={`font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg ${
-                preCallFlagged
+                preCallFlagged || preCallScanning
                   ? "bg-neutral-700 text-neutral-400 cursor-not-allowed opacity-60"
                   : "bg-red-600 hover:bg-red-700 text-white"
               }`}
             >
-                  {preCallFlagged ? "BLOCKED" : "START"}
+                  {preCallFlagged ? "BLOCKED" : preCallScanning ? "CHECKING…" : "START"}
                 </button>
             }
               {needsSelfie &&
