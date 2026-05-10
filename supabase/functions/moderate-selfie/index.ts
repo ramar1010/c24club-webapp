@@ -105,6 +105,31 @@ serve(async (req) => {
       is_discoverable: false,
     } as any).eq("id", user.id);
 
+    // Bump nsfw_strikes so viewers auto-blur this user on connect (sticky
+    // across partners until viewer manually unblurs). Stay below max so
+    // they aren't auto-banned — blur only.
+    try {
+      const { data: mm } = await supabaseAdmin
+        .from("member_minutes")
+        .select("nsfw_strikes")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const current = Number((mm as any)?.nsfw_strikes ?? 0);
+      const next = Math.min(2, current + 1); // cap at 2 to avoid auto-ban (max=3)
+      if (mm) {
+        await supabaseAdmin
+          .from("member_minutes")
+          .update({ nsfw_strikes: next } as any)
+          .eq("user_id", user.id);
+      } else {
+        await supabaseAdmin
+          .from("member_minutes")
+          .insert({ user_id: user.id, nsfw_strikes: next } as any);
+      }
+    } catch (e) {
+      console.error("moderate-selfie: failed to bump nsfw_strikes", e);
+    }
+
     await supabaseAdmin.from("user_reports").insert({
       reporter_id: user.id,
       reported_user_id: user.id,
