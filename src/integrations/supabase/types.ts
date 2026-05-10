@@ -3355,6 +3355,7 @@ export type Database = {
       }
       get_admin_user_ids: { Args: never; Returns: string[] }
       get_moderator_user_ids: { Args: never; Returns: string[] }
+      get_partner_nsfw_strikes: { Args: { _user_id: string }; Returns: number }
       get_reddit_task_by_code: {
         Args: { p_code: string }
         Returns: {
