@@ -500,6 +500,7 @@ const VideoCallPage = () => {
   // If flagged: disable START + auto-blur outgoing video for partners (via nsfw_strikes).
   const [preCallFlagged, setPreCallFlagged] = useState(false);
   const preCallScannedRef = useRef(false);
+  const [preCallScanning, setPreCallScanning] = useState(false);
   useEffect(() => {
     if (memberId === "anonymous") return;
     if (preCallScannedRef.current) return;
@@ -1002,11 +1003,53 @@ const VideoCallPage = () => {
   const timerSec = elapsedSeconds % 60;
   const timerDisplay = `${String(timerMin).padStart(2, "0")}:${String(timerSec).padStart(2, "0")}`;
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (preCallFlagged) {
       toast.error("Your camera was flagged for inappropriate content. Please reload and try again.", { duration: 6000 });
       return;
     }
+
+    // Second Gemini scan right at click time — catches behavior changes
+    // between the initial preview scan and the moment they hit Start.
+    // Skip if voice mode (no camera) or anonymous.
+    const skipScan = memberId === "anonymous" || (isFemale && voiceMode);
+    if (!skipScan) {
+      const stream = localStreamRef.current;
+      const video = localVideoRef.current;
+      if (stream && video && video.readyState >= 2) {
+        setPreCallScanning(true);
+        try {
+          const w = video.videoWidth || 320;
+          const h = video.videoHeight || 240;
+          const canvas = document.createElement("canvas");
+          const scale = Math.min(1, 320 / w);
+          canvas.width = Math.max(1, Math.floor(w * scale));
+          canvas.height = Math.max(1, Math.floor(h * scale));
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frame = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+            const { data } = await supabase.functions.invoke("moderate-precall", {
+              body: { frame, selfie_url: mySelfieUrl ?? undefined },
+            });
+            if ((data as any)?.flagged) {
+              setPreCallFlagged(true);
+              setPreCallScanning(false);
+              toast.error(
+                "Inappropriate content detected. Please adjust and reload to try again.",
+                { duration: 8000 }
+              );
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("[pre-call moderation @click] failed — allowing start", err);
+        } finally {
+          setPreCallScanning(false);
+        }
+      }
+    }
+
     startCall();
   };
 
@@ -1170,14 +1213,14 @@ const VideoCallPage = () => {
 
             <button
               onClick={handleStart}
-              disabled={preCallFlagged}
+              disabled={preCallFlagged || preCallScanning}
               className={`font-black text-xl px-10 py-2.5 rounded-lg transition-colors shadow-lg ${
-                preCallFlagged
+                preCallFlagged || preCallScanning
                   ? "bg-neutral-700 text-neutral-400 cursor-not-allowed opacity-60"
                   : "bg-red-600 hover:bg-red-700 text-white"
               }`}
             >
-                  {preCallFlagged ? "BLOCKED" : "START"}
+                  {preCallFlagged ? "BLOCKED" : preCallScanning ? "CHECKING…" : "START"}
                 </button>
             }
               {needsSelfie &&
