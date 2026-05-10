@@ -116,15 +116,12 @@ export function useNsfwDetection({
     let isMounted = true;
 
     supabase
-      .from("member_minutes")
-      .select("nsfw_strikes")
-      .eq("user_id", targetUserId)
-      .maybeSingle()
+      .rpc("get_partner_nsfw_strikes", { _user_id: targetUserId })
       .then(({ data, error }) => {
         if (!isMounted || loadedUserIdRef.current !== targetUserId) return;
         if (error) return;
 
-        const raw = Number((data as any)?.nsfw_strikes ?? 0);
+        const raw = Number((data as any) ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
