@@ -500,6 +500,7 @@ const VideoCallPage = () => {
   // If flagged: disable START + auto-blur outgoing video for partners (via nsfw_strikes).
   const [preCallFlagged, setPreCallFlagged] = useState(false);
   const preCallScannedRef = useRef(false);
+  const [preCallScanning, setPreCallScanning] = useState(false);
   useEffect(() => {
     if (memberId === "anonymous") return;
     if (preCallScannedRef.current) return;
