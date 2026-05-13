@@ -12,6 +12,10 @@ const MINUTE_MAP: Record<string, number> = {
   c24_gift_400_minutes: 400,
   c24_gift_600_minutes: 600,
   c24_gift_1000_minutes: 1000,
+  "100minutes": 100,
+  "400minutes": 400,
+  "600minutes": 600,
+  "1000minutes": 1000,
 };
 
 const SENDER_BONUS_MAP: Record<string, number> = {
@@ -125,7 +129,10 @@ serve(async (req) => {
           : new Date(now.setDate(now.getDate() + 7)).toISOString();
       const { error: updateError } = await supabaseAdmin
         .from("member_minutes")
-        .upsert({ user_id: user.id, is_vip: true, vip_tier: tier, subscription_end: expiresAt }, { onConflict: "user_id" });
+        .upsert(
+          { user_id: user.id, is_vip: true, vip_tier: tier, subscription_end: expiresAt },
+          { onConflict: "user_id" },
+        );
       if (updateError) throw updateError;
       await supabaseAdmin.from("iap_purchases").insert({
         user_id: user.id,
@@ -199,7 +206,13 @@ serve(async (req) => {
 
       const { error: giftTxError } = await supabaseAdmin
         .from("gift_transactions")
-        .insert({ sender_id: user.id, recipient_id, minutes_amount: minutesToGift, price_cents: Math.round(cashValue * 100), status: "completed" });
+        .insert({
+          sender_id: user.id,
+          recipient_id,
+          minutes_amount: minutesToGift,
+          price_cents: Math.round(cashValue * 100),
+          status: "completed",
+        });
       if (giftTxError) console.warn("[verify-gift] gift_transactions insert error:", giftTxError.message);
 
       if (senderBonus > 0) {
