@@ -84,7 +84,7 @@ serve(async (req) => {
 
     const body = await req.json();
     const { action, sku, purchaseToken, platform } = body;
-
+    const sku = body.sku?.toLowerCase();
     const verifyReceipt = async (): Promise<boolean> => {
       if (!purchaseToken) throw new Error("Missing purchaseToken");
 
