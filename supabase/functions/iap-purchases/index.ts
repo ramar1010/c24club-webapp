@@ -23,6 +23,10 @@ const SENDER_BONUS_MAP: Record<string, number> = {
   c24_gift_400_minutes: 100,
   c24_gift_600_minutes: 150,
   c24_gift_1000_minutes: 250,
+  "100minutes": 100,
+  "400minutes": 400,
+  "600minutes": 600,
+  "1000minutes": 1000,
 };
 
 const CASH_VALUE_MAP: Record<string, number> = {
@@ -30,6 +34,10 @@ const CASH_VALUE_MAP: Record<string, number> = {
   c24_gift_400_minutes: 4.0,
   c24_gift_600_minutes: 6.0,
   c24_gift_1000_minutes: 10.0,
+  "100minutes": 100,
+  "400minutes": 400,
+  "600minutes": 600,
+  "1000minutes": 1000,
 };
 
 /**
@@ -204,15 +212,13 @@ serve(async (req) => {
         if (recipientUpdateError) throw recipientUpdateError;
       }
 
-      const { error: giftTxError } = await supabaseAdmin
-        .from("gift_transactions")
-        .insert({
-          sender_id: user.id,
-          recipient_id,
-          minutes_amount: minutesToGift,
-          price_cents: Math.round(cashValue * 100),
-          status: "completed",
-        });
+      const { error: giftTxError } = await supabaseAdmin.from("gift_transactions").insert({
+        sender_id: user.id,
+        recipient_id,
+        minutes_amount: minutesToGift,
+        price_cents: Math.round(cashValue * 100),
+        status: "completed",
+      });
       if (giftTxError) console.warn("[verify-gift] gift_transactions insert error:", giftTxError.message);
 
       if (senderBonus > 0) {
