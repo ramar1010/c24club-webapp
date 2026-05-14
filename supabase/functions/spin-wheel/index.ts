@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAuthenticatedUserId, unauthorized } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,8 +90,12 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
+    const authedUserId = await getAuthenticatedUserId(req);
+    if (!authedUserId) return unauthorized(corsHeaders);
+
     const body = await req.json();
-    const { type, userId } = body;
+    const { type } = body;
+    const userId = authedUserId;
 
     // GET_PRIZES: Return active prizes for the wheel
     if (type === "get_prizes") {

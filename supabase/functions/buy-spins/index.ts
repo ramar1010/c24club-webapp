@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         customer_email: customerId ? undefined : user.email,
         line_items: [{ price: pkg.price_id, quantity: 1 }],
         mode: "payment",
-        success_url: `${origin}/profile?spin_purchased=${spins}`,
+        success_url: `${origin}/profile?spin_purchased=${spins}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/profile`,
         metadata: { user_id: user.id, spins: String(spins) },
       });
