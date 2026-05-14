@@ -26,6 +26,7 @@ Deno.serve(async () => {
     { loc: "/contact", priority: "0.5", changefreq: "monthly" },
     { loc: "/videocall", priority: "0.9", changefreq: "weekly" },
     { loc: "/referral", priority: "0.6", changefreq: "monthly" },
+    { loc: "/store", priority: "0.8", changefreq: "weekly" },
     { loc: "/omegle-alternative", priority: "0.9", changefreq: "weekly" },
     { loc: "/top-omegle-alternatives", priority: "0.9", changefreq: "weekly" },
     { loc: "/video-chat-with-strangers", priority: "0.9", changefreq: "weekly" },

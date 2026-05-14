@@ -1,8 +1,15 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const PrivacyPolicyPage = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Privacy Policy | C24 Club",
+    description:
+      "How C24 Club (Cyber Media Rush LLC) collects, uses, and protects your personal data on our random video chat and rewards platform.",
+    path: "/privacy",
+  });
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">

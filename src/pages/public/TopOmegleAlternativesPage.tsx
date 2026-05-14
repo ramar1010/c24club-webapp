@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Star, ChevronRight, Video, Gift, Check, X } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import usePageMeta from "@/hooks/usePageMeta";
 
 interface Alternative {
   rank: number;
@@ -331,16 +331,12 @@ const ComparisonTable = () => {
 };
 
 const TopOmegleAlternativesPage = () => {
-  useEffect(() => {
-    document.title = "8 Best Omegle Alternatives in 2026 (Tested for Safety & Privacy)";
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute(
-        "content",
-        "Compare the top 8 Omegle alternatives in 2026. C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat & Vooz — find the best random video chat site that pays you to chat.",
-      );
-    }
-  }, []);
+  usePageMeta({
+    title: "8 Best Omegle Alternatives — Tested 2026 | C24 Club",
+    description:
+      "Compare the top 8 Omegle alternatives: C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat & Vooz. Find the best random video chat.",
+    path: "/top-omegle-alternatives",
+  });
 
   return (
     <div className="relative">
