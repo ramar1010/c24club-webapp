@@ -214,20 +214,6 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
       if (error) {
         toast.error("Sign up failed", { description: error.message });
       } else {
-        // Track referral if code exists in URL
-        const refCode = new URLSearchParams(window.location.search).get("ref");
-        if (refCode && signUpData?.user?.id) {
-          supabase.functions.invoke("referral", {
-            body: { action: "track_signup", referral_code: refCode, new_user_id: signUpData.user.id },
-          }).catch(() => {});
-        }
-        // Track bestie invite if code exists in URL
-        const bestieCode = new URLSearchParams(window.location.search).get("bestie");
-        if (bestieCode && signUpData?.user?.id) {
-          supabase.functions.invoke("bestie-call", {
-            body: { action: "accept_invite", invite_code: bestieCode, user_id: signUpData.user.id },
-          }).catch((err) => console.error("Bestie accept failed:", err));
-        }
         // Auto sign-in immediately so the homepage reflects logged-in state
         if (!signUpData?.session) {
           const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -240,6 +226,19 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
             onClose();
             return;
           }
+        }
+        // Track referral / bestie AFTER sign-in so the edge functions can verify the JWT
+        const refCode = new URLSearchParams(window.location.search).get("ref");
+        if (refCode) {
+          supabase.functions.invoke("referral", {
+            body: { action: "track_signup", referral_code: refCode },
+          }).catch(() => {});
+        }
+        const bestieCode = new URLSearchParams(window.location.search).get("bestie");
+        if (bestieCode) {
+          supabase.functions.invoke("bestie-call", {
+            body: { action: "accept_invite", invite_code: bestieCode },
+          }).catch((err) => console.error("Bestie accept failed:", err));
         }
         toast.success("Account created!");
         onClose();
