@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getAuthenticatedUserId, hasRole, unauthorized, forbidden } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,8 +106,19 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
+    const authedUserId = await getAuthenticatedUserId(req);
+    if (!authedUserId) return unauthorized(corsHeaders);
+
     const body = await req.json();
-    const { type, userId, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId, voiceMode } = body;
+    const { type, partnerId, minutesEarned, targetUserId, minutes, mode, elapsedSeconds, sessionId, voiceMode } = body;
+    // Always use the authenticated user id for user-scoped operations.
+    // Admin actions (admin_add_minutes, admin_ad_points) get a role check below.
+    const userId = authedUserId;
+
+    if (type === "admin_add_minutes" || type === "admin_ad_points") {
+      const isAdmin = await hasRole(authedUserId, "admin");
+      if (!isAdmin) return forbidden(corsHeaders);
+    }
 
     // GET_BALANCE: Return current minutes + ad points + VIP status + freeze status
     if (type === "get_balance") {
