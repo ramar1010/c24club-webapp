@@ -1,0 +1,35 @@
+# C24 Club
+
+> C24 Club is a free Omegle-style 1-on-1 random video chat platform that rewards real conversations with minutes redeemable for gift cards, designer products, and PayPal cash.
+
+C24 Club lets anyone start a video chat with strangers instantly — no signup required to try it. Members earn reward minutes for time spent in calls and can redeem them in the Reward Store, on the Spin to Win wheel, or as PayPal cashout. Premium VIP unlocks gifting, faster matching, and higher earning caps.
+
+## Pages
+
+- [Home](/): Start a random video chat and learn how rewards work.
+- [How To Guide](/how-to-guide): Step-by-step explanation of earning, spins, and redemption.
+- [Reward Store](/store): Browse gift cards, designer items, and cash payouts.
+- [Discover](/discover): Browse member profiles and send direct call invites.
+- [Weekly Challenges](/challenges): Active challenges that boost minute earnings.
+- [Spin to Win](/spin): Daily and reward spin wheels.
+- [Referral Program](/referral): Earn $5 per referred member who qualifies.
+- [Blog](/blog): Articles on online dating, video chat safety, and platform updates.
+- [Safety Center](/safety): Reporting tools, blur shield, and moderation overview.
+- [Rules](/rules): Community guidelines and prohibited behavior.
+
+## SEO landing pages
+
+- [Omegle Alternative](/omegle-alternative): Why C24 Club is the top Omegle replacement.
+- [Top Omegle Alternatives](/top-omegle-alternatives): Comparison of leading random video chat sites.
+- [Video Chat With Strangers](/video-chat-with-strangers): Overview of stranger video chat features.
+- [Random Video Chat](/random-video-chat): How random matching works.
+- [Talk To Strangers](/talk-to-strangers): Anonymous text and video chat options.
+- [Free Video Chat No Sign Up](/free-video-chat-no-sign-up): Instant chat without an account.
+- [Cam Chat](/cam-chat): Webcam-based 1-on-1 chat.
+
+## Optional
+
+- [Privacy Policy](/privacy): How user data is handled.
+- [Terms of Service](/terms): Legal terms of use.
+- [CSAE Policy](/csae-policy): Child safety and exploitation policy.
+- [Contact](/contact): Support contact form.
