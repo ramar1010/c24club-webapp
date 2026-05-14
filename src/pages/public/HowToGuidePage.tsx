@@ -1,6 +1,7 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const sections = [
   {
@@ -144,9 +145,31 @@ const sections = [
 
 const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "How To Guide — Earn Rewards | C24 Club",
+    description:
+      "Step-by-step guide to C24 Club: how to collect minutes by video chatting, redeem rewards, win on Spin to Win, and use VIP perks.",
+    path: "/how-to-guide",
+  });
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: sections.flatMap((s) =>
+      s.items.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    ),
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-neutral-800 px-4 py-3 flex items-center gap-3">
         <button
