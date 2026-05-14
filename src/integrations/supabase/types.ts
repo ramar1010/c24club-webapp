@@ -872,6 +872,27 @@ export type Database = {
         }
         Relationships: []
       }
+      consumed_stripe_sessions: {
+        Row: {
+          consumed_at: string
+          purpose: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string
+          purpose: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string
+          purpose?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
