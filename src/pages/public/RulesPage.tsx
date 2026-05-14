@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const sections = [
   {

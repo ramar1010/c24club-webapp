@@ -1,8 +1,15 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const TermsPage = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Terms & Conditions | C24 Club",
+    description:
+      "The legally binding Terms of Service between Cyber Media Rush LLC (C24 Club) and members using our random video chat and rewards platform.",
+    path: "/terms",
+  });
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
