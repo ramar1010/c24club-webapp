@@ -3,7 +3,7 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 const RandomVideoChatPage = () => (
   <SeoLandingLayout
     title="Random Video Chat ,  Free, Instant & Rewarding | C24 Club"
-    metaDescription="Random video chat with strangers worldwide on C24 Club. Instant matchmaking, no downloads, AI-moderated for safety, and you earn real rewards every minute."
+    metaDescription="Random video chat with strangers worldwide on C24 Club. Instant matchmaking, no downloads, AI-moderated, earn real rewards every minute."
     h1="Random Video Chat ,  Meet Anyone, Anywhere, Instantly"
     intro="Click once and get matched with a random person in seconds. C24 Club is the modern random video chat platform built for spontaneous connections ,  and you earn real rewards while you chat."
     canonical="https://c24club.com/random-video-chat"

@@ -2,8 +2,8 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 
 const VideoChatWithStrangersPage = () => (
   <SeoLandingLayout
-    title="Video Chat With Strangers ,  Free, Safe & Rewarding | C24 Club"
-    metaDescription="Video chat with strangers from around the world for free on C24 Club. No sign-up barriers, AI-moderated for safety, and you earn real rewards every minute you chat."
+    title="Video Chat With Strangers — Free & Safe | C24 Club"
+    metaDescription="Video chat with strangers worldwide for free on C24 Club. No sign-up barriers, AI-moderated for safety, earn real rewards every minute."
     h1="Video Chat With Strangers ,  Free, Anonymous & Rewarding"
     intro="Meet new people face-to-face in seconds. C24 Club lets you video chat with strangers worldwide while earning real, redeemable rewards for every minute you spend connecting."
     canonical="https://c24club.com/video-chat-with-strangers"

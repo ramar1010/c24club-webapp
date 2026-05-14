@@ -3,7 +3,7 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 const FreeVideoChatNoSignUpPage = () => (
   <SeoLandingLayout
     title="Free Video Chat ,  No Sign Up Required | C24 Club"
-    metaDescription="Free video chat with strangers, no sign up needed. Just click START and meet someone new in seconds. Earn real rewards every minute. Safe, anonymous, browser-based."
+    metaDescription="Free video chat with strangers, no sign up needed. Click START and meet someone new in seconds. Earn real rewards. Safe, anonymous, browser-based."
     h1="Free Video Chat ,  No Sign Up, No Download, No Excuses"
     intro="The fastest way to video chat with a stranger online. Open C24 Club in your browser, hit START, and you're talking to someone new in under two seconds. No account. No download. No catch."
     canonical="https://c24club.com/free-video-chat-no-sign-up"

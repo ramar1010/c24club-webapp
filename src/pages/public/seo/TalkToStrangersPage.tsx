@@ -3,7 +3,7 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 const TalkToStrangersPage = () => (
   <SeoLandingLayout
     title="Talk to Strangers ,  Free Video Chat With Real People | C24 Club"
-    metaDescription="Talk to strangers from around the world for free on C24 Club. Real video, real voices, real rewards. No sign-up barriers, AI-moderated for safety."
+    metaDescription="Talk to strangers worldwide for free on C24 Club. Real video, real voices, real rewards. No sign-up barriers, AI-moderated for safety."
     h1="Talk to Strangers ,  Real People, Real Conversations, Real Rewards"
     intro="Sometimes the best conversations happen with someone you'll never meet again. C24 Club makes it easy to talk to strangers face-to-face, all over the world ,  and earn real rewards while you do."
     canonical="https://c24club.com/talk-to-strangers"
