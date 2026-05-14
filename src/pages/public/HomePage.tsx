@@ -74,7 +74,7 @@ const RewardCarousel = () => {
         {items.map((r, i) => (
           <div key={i} className="flex-shrink-0 mx-3">
             <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg">
-              <img src={r.image} alt={r.label} className="w-full h-full object-cover" />
+              <img src={r.image} alt={r.label} className="w-full h-full object-cover" width="160" height="160" />
             </div>
             <p className="text-center text-white font-bold text-sm mt-2 drop-shadow">{r.minutes} Minutes</p>
           </div>
@@ -86,7 +86,7 @@ const RewardCarousel = () => {
 
 const SideCard = ({ image }: { image: string }) => (
   <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md border border-white/10">
-    <img src={image} alt="Reward" className="w-full h-full object-cover" />
+    <img src={image} alt="Reward" className="w-full h-full object-cover" width="64" height="64" />
   </div>
 );
 
@@ -164,7 +164,7 @@ const MobileRewardSlider = () => {
           {items.map((img, i) => (
             <div key={i} className="flex-shrink-0 mx-1.5">
               <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <img src={img} alt="Reward" className="w-full h-full object-cover pointer-events-none" draggable={false} />
+                <img src={img} alt="Reward" className="w-full h-full object-cover pointer-events-none" width="80" height="80" draggable={false} />
               </div>
             </div>
           ))}
@@ -439,7 +439,7 @@ const OnboardingPopup = ({ open, onComplete }: { open: boolean; onComplete: () =
             {saving ? "Saving..." : (
               <>
                 Enter C24 Club
-                <img src={arrowRight} alt="" className="h-4 w-4" />
+                <img src={arrowRight} alt="" className="h-4 w-4 object-cover" width="16" height="16" />
               </>
             )}
           </button>
@@ -562,7 +562,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
             >
               <span className="flex items-center gap-2">
                 Enter C24 Club
-                <img src={arrowRight} alt="" className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <img src={arrowRight} alt="" className="h-5 w-5 object-cover group-hover:translate-x-1 transition-transform" width="20" height="20" />
               </span>
             </button>
             <button
@@ -580,7 +580,7 @@ const CTAButtons = ({ variant }: { variant?: "bottom" }) => {
             >
               <span className="flex items-center gap-2">
                 Get Rewards Now
-                <img src={arrowRight} alt="" className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <img src={arrowRight} alt="" className="h-5 w-5 object-cover group-hover:translate-x-1 transition-transform" width="20" height="20" />
               </span>
               <span className="block text-sm font-bold text-yellow-300 mt-0.5">Sign Up Today</span>
             </button>
@@ -665,6 +665,7 @@ const HomePage = () => {
                 allowFullScreen
                 className="absolute inset-0 w-full h-full border-0"
                 title="C24 Club Video Chat Preview"
+                loading="eager"
               />
             </div>
           </div>
@@ -851,7 +852,7 @@ const HomePage = () => {
                       className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
                       style={{ animationDelay: `${i * 0.1}s` }}
                     >
-                      <img src={img} alt="Reward" className="w-full h-full object-cover" />
+                      <img src={img} alt="Reward" className="w-full h-full object-cover" width="100" height="100" />
                     </div>
                   ))}
                 </div>
