@@ -93,6 +93,8 @@ const RandomVideoChatPage = lazy(() => import("@/pages/public/seo/RandomVideoCha
 const TalkToStrangersPage = lazy(() => import("@/pages/public/seo/TalkToStrangersPage"));
 const FreeVideoChatNoSignUpPage = lazy(() => import("@/pages/public/seo/FreeVideoChatNoSignUpPage"));
 const CamChatPage = lazy(() => import("@/pages/public/seo/CamChatPage"));
+const OmeTvAlternativePage = lazy(() => import("@/pages/public/seo/OmeTvAlternativePage"));
+const MonkeyAppAlternativePage = lazy(() => import("@/pages/public/seo/MonkeyAppAlternativePage"));
 const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
 const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
@@ -129,6 +131,8 @@ const App = () => (
                 <Route path="talk-to-strangers" element={<TalkToStrangersPage />} />
                 <Route path="free-video-chat-no-sign-up" element={<FreeVideoChatNoSignUpPage />} />
                 <Route path="cam-chat" element={<CamChatPage />} />
+                <Route path="ome-tv-alternative" element={<OmeTvAlternativePage />} />
+                <Route path="monkey-app-alternative" element={<MonkeyAppAlternativePage />} />
                 <Route path="csae-policy" element={<CSAEPolicyPage />} />
                 <Route path="contact" element={<ContactPage />} />
               </Route>
