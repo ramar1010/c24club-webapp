@@ -86,6 +86,12 @@ const sections = [
 
 const RulesPage = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Community Rules | C24 Club",
+    description:
+      "C24 Club community rules: age restrictions, prohibited content, respectful communication, privacy, and consequences for violations.",
+    path: "/rules",
+  });
 
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col items-center px-4 pb-12">
