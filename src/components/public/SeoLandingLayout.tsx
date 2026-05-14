@@ -41,7 +41,22 @@ const SeoLandingLayout = ({
       }
       el.setAttribute("content", content);
     };
+    const setMetaProp = (property: string, content: string) => {
+      let el = document.querySelector(`meta[property="${property}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute("property", property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
     setMeta("description", metaDescription);
+    setMeta("twitter:title", title);
+    setMeta("twitter:description", metaDescription);
+    setMetaProp("og:title", title);
+    setMetaProp("og:description", metaDescription);
+    setMetaProp("og:url", canonical);
+    setMetaProp("og:type", "website");
 
     let canonicalEl = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonicalEl) {
