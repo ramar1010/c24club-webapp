@@ -1,27 +1,23 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { DollarSign, Trophy, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import CashoutModal from "@/components/discover/CashoutModal";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+/**
+ * FemaleEarningPanel – Hidden for now.
+ *
+ * What it does:
+ * Displays a vibrant, neon-styled earnings dashboard for female users
+ * during video calls. It shows:
+ *  • Total minutes earned vs cashable (gifted) minutes
+ *  • Real-time cash value at a per-minute rate fetched from cashout_settings
+ *  • Anti-AFK word-verification challenge every 15 minutes (pauses earning)
+ *  • Active bonus “anchor challenges” with progress bars
+ *  • Last cashout request status badge (pending/paid/declined)
+ *  • Rotating earning tips and a Cashout modal trigger
+ *
+ * When re-enabled, restore the original component body below this export.
+ */
+const FemaleEarningPanel = () => {
+  return null;
+};
 
-const VERIFY_WORDS = ["sunshine", "butterfly", "rainbow", "dolphin", "mountain", "galaxy", "crystal", "meadow", "horizon", "thunder"];
-const VERIFY_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-
-interface FemaleEarningPanelProps {
-  totalMinutes: number;
-  giftedMinutes: number;
-  onPauseEarning: (paused: boolean) => void;
-  onCashoutSuccess: () => void;
-}
-
-const FemaleEarningPanel = ({
-  totalMinutes,
-  giftedMinutes,
-  onPauseEarning,
-  onCashoutSuccess,
-}: FemaleEarningPanelProps) => {
+export default FemaleEarningPanel;
   const { user } = useAuth();
   const [rate, setRate] = useState(0.01);
   const [showCashout, setShowCashout] = useState(false);
