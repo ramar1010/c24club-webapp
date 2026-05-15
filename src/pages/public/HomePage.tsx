@@ -205,12 +205,52 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
     // }
     setLoading(true);
     if (isSignUp) {
-      const { error, data: signUpData } = await supabase.auth.signUp({ email: email.trim(), password });
+      // Native iOS / Capacitor WebView workaround: supabase.auth.signUp() can
+      // succeed server-side but never resolve its promise (GoTrue lock + native
+      // fetch bridge). Race the call against an onAuthStateChange SIGNED_IN
+      // event and a timeout so the UI never hangs.
+      let resolved = false;
+      const signUpPromise = supabase.auth.signUp({ email: email.trim(), password });
+
+      const sessionFromEvent = await new Promise<{ session: any | null; error: Error | null }>((resolve) => {
+        const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "SIGNED_IN" && session && !resolved) {
+            resolved = true;
+            sub.subscription.unsubscribe();
+            resolve({ session, error: null });
+          }
+        });
+
+        signUpPromise
+          .then(({ data, error }) => {
+            if (resolved) return;
+            resolved = true;
+            sub.subscription.unsubscribe();
+            resolve({ session: data?.session ?? null, error: (error as Error | null) ?? null });
+          })
+          .catch((err) => {
+            if (resolved) return;
+            resolved = true;
+            sub.subscription.unsubscribe();
+            resolve({ session: null, error: err as Error });
+          });
+
+        // Hard fallback — if neither resolves in 8s, attempt password sign-in below
+        setTimeout(() => {
+          if (resolved) return;
+          resolved = true;
+          sub.subscription.unsubscribe();
+          resolve({ session: null, error: null });
+        }, 8000);
+      });
+
+      const { session: signedSession, error } = sessionFromEvent;
       if (error) {
         toast.error("Sign up failed", { description: error.message });
       } else {
-        // Auto sign-in immediately so the homepage reflects logged-in state
-        if (!signUpData?.session) {
+        // If we don't yet have a session (signUp promise hung or email-confirm flow),
+        // try a direct sign-in. This usually works because the account was created.
+        if (!signedSession) {
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: email.trim(),
             password,
