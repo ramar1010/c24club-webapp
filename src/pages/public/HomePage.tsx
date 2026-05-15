@@ -248,8 +248,8 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
       if (error) {
         toast.error("Sign up failed", { description: error.message });
       } else {
-        // If we don't yet have a session (signUp promise hung or email-confirm flow),
-        // try a direct sign-in. This usually works because the account was created.
+        // Auto-confirm is enabled, so account + session should be immediate.
+        // Fallback sign-in handles iOS WebView promise-hang bug.
         if (!signedSession) {
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: email.trim(),
