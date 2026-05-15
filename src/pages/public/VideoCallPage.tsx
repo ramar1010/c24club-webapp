@@ -1650,20 +1650,7 @@ const VideoCallPage = () => {
         <AppDownloadMiniBanner userId={memberId} gender={memberGender} />
       )}
 
-      {!showRedeem && isFemale && memberId !== "anonymous" && (
-        <div className="px-3 py-2 mx-auto w-full max-w-[880px]">
-          <FemaleRetentionBar
-            userId={memberId}
-            state={
-              callState === "connected" && partnerGender?.toLowerCase() === "male"
-                ? "connected_male"
-                : callState === "waiting"
-                  ? "waiting"
-                  : "idle"
-            }
-          />
-        </div>
-      )}
+      {/* FemaleRetentionBar hidden for now */}
 
       {/* Panels */}
       {showRedeem ?
