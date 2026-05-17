@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -142,18 +141,33 @@ const AdminDiscoverReviewPage = () => {
         .eq("id", memberId);
       if (error) throw error;
     },
-    onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
-      toast({
-        title: status === "approved" ? "Image Approved ✅" : "Image Denied ❌",
-        description: status === "approved"
-          ? "User is now discoverable."
-          : "User has been removed from discover.",
-      });
+    onMutate: async ({ memberId }) => {
+      // Optimistic: instantly remove card from current tab list
+      await queryClient.cancelQueries({ queryKey: ["admin-discover-images", activeTab] });
+      const prev = queryClient.getQueryData<MemberImage[]>(["admin-discover-images", activeTab]);
+      queryClient.setQueryData<MemberImage[]>(
+        ["admin-discover-images", activeTab],
+        (old) => (old || []).filter((m) => m.id !== memberId),
+      );
+      // Decrement pending count optimistically
+      if (activeTab === "pending") {
+        queryClient.setQueryData<number>(
+          ["admin-discover-pending-count"],
+          (old) => Math.max(0, (old || 0) - 1),
+        );
+      }
+      return { prev };
     },
-    onError: (err: any) => {
+    onError: (err: any, _vars, ctx) => {
+      // Roll back optimistic removal
+      if (ctx?.prev) {
+        queryClient.setQueryData(["admin-discover-images", activeTab], ctx.prev);
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
     },
   });
 
@@ -228,6 +242,27 @@ const AdminDiscoverReviewPage = () => {
       return count || 0;
     },
   });
+
+  // Keyboard shortcuts: A = approve first pending, D = deny first pending
+  useEffect(() => {
+    if (activeTab !== "pending") return;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const first = filteredMembers[0];
+      if (!first) return;
+      if (e.key === "a" || e.key === "A") {
+        e.preventDefault();
+        updateStatus.mutate({ memberId: first.id, status: "approved" });
+      } else if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        updateStatus.mutate({ memberId: first.id, status: "denied" });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeTab, filteredMembers, updateStatus]);
 
   return (
     <div className="space-y-6">
