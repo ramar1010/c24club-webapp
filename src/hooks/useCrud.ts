@@ -296,7 +296,12 @@ export function useDeleteMember() {
       const { error } = await supabase.from("members").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["members"] }); toast.success("Member deleted"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["members"] });
+      qc.invalidateQueries({ queryKey: ["members_page"] });
+      qc.invalidateQueries({ queryKey: ["members_count"] });
+      toast.success("Member deleted");
+    },
     onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
   });
 }
