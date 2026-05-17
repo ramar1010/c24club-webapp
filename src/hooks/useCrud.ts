@@ -45,6 +45,143 @@ export function useMembers() {
   });
 }
 
+// Lightweight count-only hook for dashboards / headers
+export function useMembersCount() {
+  return useQuery({
+    queryKey: ["members_count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("members")
+        .select("id", { count: "exact", head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+    staleTime: 60_000,
+  });
+}
+
+export type MemberSourceFilter =
+  | "all"
+  | "all_vip"
+  | "google_play_or_appstore"
+  | "stripe"
+  | "admin_granted"
+  | "free";
+
+// Server-side paginated members fetch with optional search + source filter.
+// Avoids pulling the entire members table into the browser on every visit.
+export function useMembersServerPage(params: {
+  page: number;
+  pageSize: number;
+  search: string;
+  sourceFilter: MemberSourceFilter;
+}) {
+  const { page, pageSize, search, sourceFilter } = params;
+  return useQuery({
+    queryKey: ["members_page", page, pageSize, search, sourceFilter],
+    queryFn: async () => {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const safeSearch = search.trim().replace(/[%,()]/g, "");
+
+      // Source filters that map directly to member_minutes columns:
+      // paginate via member_minutes for an exact server-side filter + count.
+      if (
+        sourceFilter === "all_vip" ||
+        sourceFilter === "stripe" ||
+        sourceFilter === "admin_granted" ||
+        sourceFilter === "google_play_or_appstore"
+      ) {
+        let mq = supabase
+          .from("member_minutes")
+          .select("user_id, total_minutes", { count: "exact" });
+        if (sourceFilter === "all_vip") {
+          mq = mq.eq("is_vip", true);
+        } else if (sourceFilter === "stripe") {
+          mq = mq
+            .eq("is_vip", true)
+            .not("stripe_customer_id", "is", null)
+            .eq("admin_granted_vip", false);
+        } else if (sourceFilter === "admin_granted") {
+          mq = mq.eq("is_vip", true).eq("admin_granted_vip", true);
+        } else if (sourceFilter === "google_play_or_appstore") {
+          mq = mq
+            .eq("is_vip", true)
+            .is("stripe_customer_id", null)
+            .eq("admin_granted_vip", false);
+        }
+        const { data: mm, count, error } = await mq.range(from, to);
+        if (error) throw error;
+        const ids = (mm ?? []).map((r: any) => r.user_id);
+        if (ids.length === 0) return { rows: [], total: count ?? 0 };
+
+        let membersQ = supabase.from("members").select("*").in("id", ids);
+        if (safeSearch) {
+          membersQ = membersQ.or(
+            `name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%,country.ilike.%${safeSearch}%`,
+          );
+        }
+        const { data: members, error: mErr } = await membersQ;
+        if (mErr) throw mErr;
+        const minutesMap = new Map(
+          (mm ?? []).map((r: any) => [r.user_id, r.total_minutes]),
+        );
+        const rows = (members ?? [])
+          .map((m: any) => ({ ...m, minutes: minutesMap.get(m.id) ?? 0 }))
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          );
+        return { rows, total: count ?? 0 };
+      }
+
+      // "all" or "free": paginate the members table directly.
+      let q = supabase
+        .from("members")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false });
+      if (safeSearch) {
+        q = q.or(
+          `name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%,country.ilike.%${safeSearch}%`,
+        );
+      }
+      const { data: members, count, error } = await q.range(from, to);
+      if (error) throw error;
+      const ids = (members ?? []).map((m: any) => m.id);
+
+      let mmRows: any[] = [];
+      if (ids.length > 0) {
+        const { data: mm } = await supabase
+          .from("member_minutes")
+          .select(
+            "user_id, total_minutes, is_vip, admin_granted_vip, stripe_customer_id",
+          )
+          .in("user_id", ids);
+        mmRows = mm ?? [];
+      }
+      const minutesMap = new Map(
+        mmRows.map((r: any) => [r.user_id, r.total_minutes]),
+      );
+      let rows = (members ?? []).map((m: any) => ({
+        ...m,
+        minutes: minutesMap.get(m.id) ?? 0,
+      }));
+
+      // "free" = no VIP record / not VIP. Applied to the current page only.
+      if (sourceFilter === "free") {
+        const vipSet = new Set(
+          mmRows.filter((r: any) => r.is_vip).map((r: any) => r.user_id),
+        );
+        rows = rows.filter((r: any) => !vipSet.has(r.id));
+      }
+
+      return { rows, total: count ?? 0 };
+    },
+    placeholderData: (prev: any) => prev,
+    staleTime: 30_000,
+  });
+}
+
 export function useRewards() {
   return useQuery({
     queryKey: ["rewards"],
