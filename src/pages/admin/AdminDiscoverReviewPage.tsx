@@ -583,6 +583,36 @@ const AdminDiscoverReviewPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Mass Delete Denied Images Dialog */}
+      <Dialog open={massDeleteOpen} onOpenChange={setMassDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Mass Delete All Denied Images?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              This will permanently delete <strong>{members.length}</strong> denied images from storage and reset those members to pending review. This action cannot be undone.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Use this to free up storage space from denied/banned user selfies.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setMassDeleteOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => massDeleteDenied.mutate()}
+              disabled={massDeleteDenied.isPending}
+            >
+              {massDeleteDenied.isPending ? "Deleting..." : "Delete All"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
