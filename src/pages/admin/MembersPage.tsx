@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useMembersServerPage,
@@ -371,8 +371,8 @@ const MembersPage = () => {
               rows.map((row) => {
                 const isExpanded = expandedRows.has(row.id);
                 return (
-                  <>
-                    <TableRow key={row.id} className={selectedIds.has(row.id) ? "bg-primary/5" : ""}>
+                  <Fragment key={row.id}>
+                    <TableRow className={selectedIds.has(row.id) ? "bg-primary/5" : ""}>
                       <TableCell className="w-10">
                         <Checkbox checked={selectedIds.has(row.id)} onCheckedChange={() => toggleOne(row.id)} />
                       </TableCell>
@@ -413,7 +413,7 @@ const MembersPage = () => {
                       </TableCell>
                     </TableRow>
                     {isExpanded && (
-                      <TableRow key={`${row.id}-expanded`}>
+                      <TableRow>
                         <TableCell colSpan={13} className="bg-muted/10 p-4">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
                             <div><span className="text-muted-foreground">Title:</span> <span className="font-medium text-foreground">{row.title}</span></div>
@@ -426,7 +426,7 @@ const MembersPage = () => {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })
             )}
