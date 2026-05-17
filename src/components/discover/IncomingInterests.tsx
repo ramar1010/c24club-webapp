@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import DirectCallModal from "./DirectCallModal";
 import VipCallGate, { shouldBlockCall } from "./VipCallGate";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import { transformImage } from "@/lib/imageTransform";
 
 interface IncomingInterestsProps {
   interests: IncomingInterest[];
@@ -96,7 +97,15 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
                 {/* Avatar */}
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0">
                   {interest.image_url ? (
-                    <img src={interest.image_url} alt={interest.name} className="w-full h-full object-cover" />
+                    <img
+                      src={transformImage(interest.image_url, { width: 96, quality: 70, resize: "cover" })}
+                      alt={interest.name}
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/30 font-bold text-lg">
                       {interest.name.charAt(0).toUpperCase()}
