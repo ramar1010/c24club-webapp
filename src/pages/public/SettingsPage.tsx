@@ -36,8 +36,7 @@ const SettingsPage = () => {
     if (error) toast.error("Failed to save bio");
     else toast.success("Bio saved! ✨");
     setBioSaving(false);
-  };
-
+  const handleResetPassword = async () => {
     if (!user?.email) {
       toast.error("No email found on your account.");
       return;
