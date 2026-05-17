@@ -1,14 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Tag } from "lucide-react";
-import { useMembers, useRewards, usePromos } from "@/hooks/useCrud";
+import { useMembersCount, useRewards, usePromos } from "@/hooks/useCrud";
 
 const DashboardPage = () => {
-  const { data: members } = useMembers();
+  const { data: membersCount } = useMembersCount();
   const { data: rewards } = useRewards();
   const { data: promos } = usePromos();
 
   const stats = [
-    { label: "Total Members", value: members?.length ?? 0, icon: Users, color: "text-primary" },
+    { label: "Total Members", value: membersCount ?? 0, icon: Users, color: "text-primary" },
     { label: "Active Rewards", value: rewards?.length ?? 0, icon: Gift, color: "text-accent" },
     { label: "Total Promos", value: promos?.length ?? 0, icon: Tag, color: "text-warning" },
   ];
