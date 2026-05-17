@@ -1,9 +1,23 @@
-import { useState, useEffect } from "react";
-import DataTable, { DataTableColumn } from "@/components/admin/DataTable";
-import { useMembers, useDeleteMember } from "@/hooks/useCrud";
+import { useState, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useMembersServerPage,
+  useDeleteMember,
+  type MemberSourceFilter,
+} from "@/hooks/useCrud";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, User, ShieldX, Crown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil, Trash2, User, ShieldX, Crown, Search, ChevronDown, ChevronRight } from "lucide-react";
 import DeleteDialog from "@/components/admin/DeleteDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,75 +44,34 @@ type Member = {
   minutes?: number;
 };
 
-type VipSource = "all" | "all_vip" | "google_play_or_appstore" | "stripe" | "admin_granted" | "free";
+type VipSource = MemberSourceFilter;
 
 const BAN_REASONS = [
   { value: "standard", label: "Standard Ban", reasons: ["Violation of terms", "Inappropriate behavior", "Spam / abuse", "Harassment"] },
   { value: "underage", label: "Underage (Permanent)", reasons: ["User is underage"] },
 ];
 
-const memberColumns: DataTableColumn<Member>[] = [
-  {
-    key: "id",
-    header: "ID",
-    className: "w-20",
-    render: (row) => <span className="font-mono text-xs text-foreground">{row.id.slice(0, 8)}</span>,
-  },
-  {
-    key: "name" as any,
-    header: "Photo",
-    sortable: false,
-    className: "w-14",
-    render: () => (
-      <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
-        <User className="h-4 w-4 text-muted-foreground" />
-      </div>
-    ),
-  },
-  { key: "name", header: "Name" },
-  { key: "email", header: "Email" },
-  { key: "country", header: "Country" },
-  { key: "stats", header: "Stats" },
-  { key: "birthdate", header: "Birth Date" },
-  {
-    key: "minutes",
-    header: "Minutes",
-    render: (row) => (
-      <span className="font-mono text-sm text-foreground">{row.minutes ?? 0}</span>
-    ),
-  },
-  {
-    key: "gender",
-    header: "Gender",
-    render: (row) => row.gender ? (
-      <Badge variant="secondary" className="text-xs font-normal">{row.gender}</Badge>
-    ) : null,
-  },
-  {
-    key: "membership",
-    header: "Membership",
-    render: (row) => {
-      const colors: Record<string, string> = {
-        Free: "bg-muted text-muted-foreground",
-        Premium: "bg-primary/10 text-primary",
-        Gold: "bg-warning/10 text-warning",
-        Platinum: "bg-accent/10 text-accent",
-      };
-      return row.membership ? (
-        <Badge className={`text-xs font-medium ${colors[row.membership] || ""}`}>{row.membership}</Badge>
-      ) : null;
-    },
-  },
-];
+const membershipColor = (membership: string | null) => {
+  const colors: Record<string, string> = {
+    Free: "bg-muted text-muted-foreground",
+    Premium: "bg-primary/10 text-primary",
+    Gold: "bg-warning/10 text-warning",
+    Platinum: "bg-accent/10 text-accent",
+  };
+  return colors[membership || ""] || "";
+};
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const MembersPage = () => {
-  const { data, isLoading } = useMembers();
+  const qc = useQueryClient();
   const deleteMutation = useDeleteMember();
   const { user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [banTarget, setBanTarget] = useState<Member | null>(null);
   const [banType, setBanType] = useState("standard");
   const [banReason, setBanReason] = useState("Violation of terms");
@@ -111,42 +84,36 @@ const MembersPage = () => {
   const [savingVip, setSavingVip] = useState(false);
   const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
 
-  // Source filter (where their VIP / membership came from)
+  // Source filter + server-side pagination state
   const [sourceFilter, setSourceFilter] = useState<VipSource>("all");
-  const [sourceMap, setSourceMap] = useState<Record<string, VipSource>>({});
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
 
-  // Build a map of user_id -> source classification
+  // Debounce search input -> server query (300ms)
   useEffect(() => {
-    (async () => {
-      // Paginate: Supabase caps a single .select() at 1000 rows
-      const all: any[] = [];
-      const pageSize = 1000;
-      let from = 0;
-      while (true) {
-        const { data: page, error } = await supabase
-          .from("member_minutes")
-          .select("user_id, is_vip, admin_granted_vip, stripe_customer_id")
-          .range(from, from + pageSize - 1);
-        if (error || !page || page.length === 0) break;
-        all.push(...page);
-        if (page.length < pageSize) break;
-        from += pageSize;
-      }
-      const map: Record<string, VipSource> = {};
-      for (const row of all) {
-        if (!row.is_vip) {
-          map[row.user_id] = "free";
-        } else if (row.admin_granted_vip) {
-          map[row.user_id] = "admin_granted";
-        } else if (row.stripe_customer_id) {
-          map[row.user_id] = "stripe";
-        } else {
-          map[row.user_id] = "google_play_or_appstore";
-        }
-      }
-      setSourceMap(map);
-    })();
-  }, []);
+    const t = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(0);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  // Reset to first page when filter or page size changes
+  useEffect(() => {
+    setPage(0);
+  }, [sourceFilter, pageSize]);
+
+  const { data: pageData, isLoading, isFetching } = useMembersServerPage({
+    page,
+    pageSize,
+    search,
+    sourceFilter,
+  });
+  const rows = (pageData?.rows ?? []) as Member[];
+  const total = pageData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // Load current VIP status when dialog opens
   useEffect(() => {
@@ -256,9 +223,8 @@ const MembersPage = () => {
       toast.success(`${ids.length} member(s) deleted`);
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);
-      // Invalidate query to refresh
-      deleteMutation.reset();
-      window.location.reload();
+      qc.invalidateQueries({ queryKey: ["members_page"] });
+      qc.invalidateQueries({ queryKey: ["members_count"] });
     } catch (err: any) {
       toast.error("Bulk delete failed", { description: err.message });
     } finally {
@@ -266,13 +232,43 @@ const MembersPage = () => {
     }
   };
 
+  const allPageIds = rows.map((r) => r.id);
+  const allPageSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedIds.has(id));
+  const somePageSelected = allPageIds.some((id) => selectedIds.has(id));
+
+  const togglePageAll = () => {
+    const next = new Set(selectedIds);
+    if (allPageSelected) allPageIds.forEach((id) => next.delete(id));
+    else allPageIds.forEach((id) => next.add(id));
+    setSelectedIds(next);
+  };
+  const toggleOne = (id: string) => {
+    const next = new Set(selectedIds);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelectedIds(next);
+  };
+  const toggleExpand = (id: string) => {
+    const next = new Set(expandedRows);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setExpandedRows(next);
+  };
+
+  const pagesToShow = useMemo(() => {
+    const max = 5;
+    if (totalPages <= max) return Array.from({ length: totalPages }, (_, i) => i);
+    if (page < 3) return [0, 1, 2, 3, 4];
+    if (page > totalPages - 4) return Array.from({ length: 5 }, (_, i) => totalPages - 5 + i);
+    return [page - 2, page - 1, page, page + 1, page + 2];
+  }, [page, totalPages]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">All Members</h2>
           <p className="text-muted-foreground mt-1">
-            {isLoading ? "Loading..." : `${data?.length ?? 0} members total.`}
+            {isLoading ? "Loading..." : `${total} members total.`}
+            {isFetching && !isLoading ? " · refreshing…" : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -309,71 +305,154 @@ const MembersPage = () => {
             {s.label}
           </Button>
         ))}
+        {sourceFilter === "free" && (
+          <span className="text-[11px] text-muted-foreground ml-2">
+            (Free filter applies to the current page only.)
+          </span>
+        )}
       </div>
 
-      <DataTable
-        data={
-          (((data as Member[]) ?? []).filter((m) => {
-            if (sourceFilter === "all") return true;
-            const src = sourceMap[m.id] ?? "free";
-            if (sourceFilter === "all_vip") return src !== "free";
-            return src === sourceFilter;
-          })) as Member[]
-        }
-        columns={memberColumns}
-        expandable
-        selectable
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        searchKeys={["name", "email", "country", "gender", "membership"]}
-        renderExpandedRow={(row) => (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
-            <div><span className="text-muted-foreground">Title:</span> <span className="font-medium text-foreground">{row.title}</span></div>
-            <div><span className="text-muted-foreground">City:</span> <span className="font-medium text-foreground">{row.city}</span></div>
-            <div><span className="text-muted-foreground">State:</span> <span className="font-medium text-foreground">{row.state}</span></div>
-            <div><span className="text-muted-foreground">Zip:</span> <span className="font-medium text-foreground">{row.zip}</span></div>
-            <div><span className="text-muted-foreground">Email:</span> <span className="font-medium text-foreground">{row.email}</span></div>
-            <div><span className="text-muted-foreground">Profession:</span> <span className="font-medium text-foreground">{row.profession}</span></div>
-          </div>
-        )}
-        actions={(row) => (
+      {/* Toolbar: page size + server search */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Show</span>
+          <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+            <SelectTrigger className="w-20 h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((o) => (
+                <SelectItem key={o} value={String(o)}>{o}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">per page</span>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search name, email, country…"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9 h-9"
+          />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-md border overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allPageSelected ? true : somePageSelected ? "indeterminate" : false}
+                  onCheckedChange={togglePageAll}
+                />
+              </TableHead>
+              <TableHead className="w-10" />
+              <TableHead className="w-20 text-xs font-semibold uppercase tracking-wider">ID</TableHead>
+              <TableHead className="w-14 text-xs font-semibold uppercase tracking-wider">Photo</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Name</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Email</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Country</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Stats</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Birth Date</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Minutes</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Gender</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Membership</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={13} className="h-24 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+            ) : rows.length === 0 ? (
+              <TableRow><TableCell colSpan={13} className="h-24 text-center text-muted-foreground">No results found.</TableCell></TableRow>
+            ) : (
+              rows.map((row) => {
+                const isExpanded = expandedRows.has(row.id);
+                return (
+                  <>
+                    <TableRow key={row.id} className={selectedIds.has(row.id) ? "bg-primary/5" : ""}>
+                      <TableCell className="w-10">
+                        <Checkbox checked={selectedIds.has(row.id)} onCheckedChange={() => toggleOne(row.id)} />
+                      </TableCell>
+                      <TableCell className="w-10 cursor-pointer" onClick={() => toggleExpand(row.id)}>
+                        {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                      </TableCell>
+                      <TableCell><span className="font-mono text-xs text-foreground">{row.id.slice(0, 8)}</span></TableCell>
+                      <TableCell>
+                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground">{row.name ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-foreground">{row.email ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-foreground">{row.country ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-foreground">{row.stats ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-foreground">{row.birthdate ?? "—"}</TableCell>
+                      <TableCell><span className="font-mono text-sm text-foreground">{row.minutes ?? 0}</span></TableCell>
+                      <TableCell>{row.gender ? <Badge variant="secondary" className="text-xs font-normal">{row.gender}</Badge> : "—"}</TableCell>
+                      <TableCell>{row.membership ? <Badge className={`text-xs font-medium ${membershipColor(row.membership)}`}>{row.membership}</Badge> : "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-yellow-500 hover:text-yellow-400" title="Manage VIP"
+                            onClick={() => { setVipTarget(row); setVipTier("basic"); setCurrentVipInfo(null); }}>
+                            <Crown className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Ban user"
+                            onClick={() => { setBanTarget(row); setBanType("standard"); setBanReason("Violation of terms"); setCustomReason(""); }}>
+                            <ShieldX className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <TableRow key={`${row.id}-expanded`}>
+                        <TableCell colSpan={13} className="bg-muted/10 p-4">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-sm">
+                            <div><span className="text-muted-foreground">Title:</span> <span className="font-medium text-foreground">{row.title}</span></div>
+                            <div><span className="text-muted-foreground">City:</span> <span className="font-medium text-foreground">{row.city}</span></div>
+                            <div><span className="text-muted-foreground">State:</span> <span className="font-medium text-foreground">{row.state}</span></div>
+                            <div><span className="text-muted-foreground">Zip:</span> <span className="font-medium text-foreground">{row.zip}</span></div>
+                            <div><span className="text-muted-foreground">Email:</span> <span className="font-medium text-foreground">{row.email}</span></div>
+                            <div><span className="text-muted-foreground">Profession:</span> <span className="font-medium text-foreground">{row.profession}</span></div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination footer */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
+        <div>
+          {total === 0
+            ? "0 entries"
+            : `Showing ${page * pageSize + 1}–${Math.min((page + 1) * pageSize, total)} of ${total}`}
+        </div>
+        {totalPages > 1 && (
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-yellow-500 hover:text-yellow-400"
-              title="Manage VIP"
-              onClick={() => {
-                setVipTarget(row);
-                setVipTier("basic");
-                setCurrentVipInfo(null);
-              }}
-            >
-              <Crown className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              title="Ban user"
-              onClick={() => {
-                setBanTarget(row);
-                setBanType("standard");
-                setBanReason("Violation of terms");
-                setCustomReason("");
-              }}
-            >
-              <ShieldX className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Previous</Button>
+            {pagesToShow.map((p) => (
+              <Button key={p} variant={p === page ? "default" : "outline"} size="sm" onClick={() => setPage(p)} className="w-9">
+                {p + 1}
+              </Button>
+            ))}
+            <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next</Button>
           </div>
         )}
-      />
+      </div>
 
       <DeleteDialog
         open={!!deleteId}
