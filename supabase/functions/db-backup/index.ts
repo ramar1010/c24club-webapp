@@ -33,8 +33,6 @@ const ALL_TABLES = [
   "member_minutes",
   "member_redemptions",
   "members",
-  "milestone_rewards",
-  "milestones",
   "notification_cooldowns",
   "pinned_topics",
   "promo_analytics",
