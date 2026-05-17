@@ -321,6 +321,17 @@ const AdminDiscoverReviewPage = () => {
             {scanningIds.size > 0 ? "Scanning..." : "NSFW Scan All"}
           </Button>
         )}
+        {activeTab === "denied" && members.length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setMassDeleteOpen(true)}
+            className="gap-1.5"
+          >
+            <Trash2 className="w-4 h-4" />
+            Mass Delete All Denied ({members.length})
+          </Button>
+        )}
       </div>
 
       <Alert className="border-blue-500/30 bg-blue-500/10">
