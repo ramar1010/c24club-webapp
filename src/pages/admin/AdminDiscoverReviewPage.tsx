@@ -40,6 +40,7 @@ const AdminDiscoverReviewPage = () => {
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
   const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
   const [scanResults, setScanResults] = useState<Record<string, { isNsfw: boolean; score: number }>>({});
+  const [massDeleteOpen, setMassDeleteOpen] = useState(false);
   const { user } = useAuth();
 
   const handleNsfwScan = async (member: MemberImage) => {
@@ -192,6 +193,38 @@ const AdminDiscoverReviewPage = () => {
     },
   });
 
+  const massDeleteDenied = useMutation({
+    mutationFn: async () => {
+      const targets = members.filter((m) => m.image_url);
+      // Delete from storage in parallel batches of 50
+      const BATCH = 50;
+      for (let i = 0; i < targets.length; i += BATCH) {
+        const batch = targets.slice(i, i + BATCH);
+        const paths = batch.map((m) => `${m.id}/selfie.jpg`);
+        await supabase.storage.from("member-photos").remove(paths);
+      }
+      // Update member records: clear image fields and reset status
+      const memberIds = targets.map((m) => m.id);
+      if (memberIds.length > 0) {
+        const { error } = await supabase
+          .from("members")
+          .update({ image_url: null, image_thumb_url: null, image_status: "pending", is_discoverable: false } as any)
+          .in("id", memberIds);
+        if (error) throw error;
+      }
+      return targets.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "Mass Delete Complete 🗑️", description: `${count} denied images deleted and storage freed.` });
+      setMassDeleteOpen(false);
+    },
+    onError: (err: any) => {
+      toast({ title: "Mass Delete Failed", description: err.message, variant: "destructive" });
+    },
+  });
+
   const banUser = useMutation({
     mutationFn: async ({ member, reason }: { member: MemberImage; reason: string }) => {
       // Get member's IP
@@ -286,6 +319,17 @@ const AdminDiscoverReviewPage = () => {
           >
             <ScanSearch className="w-4 h-4" />
             {scanningIds.size > 0 ? "Scanning..." : "NSFW Scan All"}
+          </Button>
+        )}
+        {activeTab === "denied" && members.length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setMassDeleteOpen(true)}
+            className="gap-1.5"
+          >
+            <Trash2 className="w-4 h-4" />
+            Mass Delete All Denied ({members.length})
           </Button>
         )}
       </div>
@@ -535,6 +579,36 @@ const AdminDiscoverReviewPage = () => {
               disabled={banUser.isPending || !banReason.trim()}
             >
               {banUser.isPending ? "Banning..." : "Confirm Ban"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mass Delete Denied Images Dialog */}
+      <Dialog open={massDeleteOpen} onOpenChange={setMassDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Mass Delete All Denied Images?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              This will permanently delete <strong>{members.length}</strong> denied images from storage and reset those members to pending review. This action cannot be undone.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Use this to free up storage space from denied/banned user selfies.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setMassDeleteOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => massDeleteDenied.mutate()}
+              disabled={massDeleteDenied.isPending}
+            >
+              {massDeleteDenied.isPending ? "Deleting..." : "Delete All"}
             </Button>
           </div>
         </DialogContent>
