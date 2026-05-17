@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { transformImage, transformImageSrcSet } from "@/lib/imageTransform";
 type ImageStatus = "pending" | "approved" | "denied";
 
 interface MemberImage {
@@ -413,8 +414,14 @@ const AdminDiscoverReviewPage = () => {
                     onClick={() => setPreviewImage(member.image_url)}
                   >
                     <img
-                      src={member.image_url || ""}
+                      src={transformImage(member.image_url, { width: 300, quality: 65, resize: "cover" })}
+                      srcSet={member.image_url ? transformImageSrcSet(member.image_url, 300, 65) : undefined}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 200px"
+                      width={300}
+                      height={400}
                       alt={member.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                     <div className="absolute top-2 right-2">
@@ -548,8 +555,10 @@ const AdminDiscoverReviewPage = () => {
           </DialogHeader>
           {previewImage && (
             <img
-              src={previewImage}
+              src={transformImage(previewImage, { width: 800, quality: 80 })}
               alt="Preview"
+              loading="eager"
+              decoding="async"
               className="w-full rounded-lg object-contain max-h-[70vh]"
             />
           )}
