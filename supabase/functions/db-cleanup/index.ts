@@ -50,6 +50,14 @@ Deno.serve(async (req) => {
       .lt("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
     results.old_email_logs = emailLogCount || 0;
 
+    // 4b. Strip heavy metadata from email logs older than 7 days (keep status/template/recipient)
+    const { count: emailMetaCount } = await supabase
+      .from("email_send_log")
+      .update({ metadata: null, error_message: null }, { count: "exact" })
+      .lt("created_at", new Date(Date.now() - 7 * 86400000).toISOString())
+      .not("metadata", "is", null);
+    results.email_logs_trimmed = emailMetaCount || 0;
+
     // 5. Delete SMS delivery logs older than 30 days
     const { count: smsLogCount } = await supabase
       .from("sms_delivery_log")
@@ -71,6 +79,41 @@ Deno.serve(async (req) => {
       .eq("status", "pending")
       .lt("expires_at", new Date().toISOString());
     results.expired_pending_invites = expiredInvites || 0;
+
+    // 8. Delete discover profile views older than 30 days (high-volume analytics table)
+    const { count: viewCount } = await supabase
+      .from("discover_profile_views")
+      .delete({ count: "exact" })
+      .lt("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+    results.old_profile_views = viewCount || 0;
+
+    // 9. Delete push notification logs older than 60 days
+    const { count: pushLogCount } = await supabase
+      .from("push_notification_log")
+      .delete({ count: "exact" })
+      .lt("last_sent_at", new Date(Date.now() - 60 * 86400000).toISOString());
+    results.old_push_logs = pushLogCount || 0;
+
+    // 10. Delete push open events older than 60 days
+    const { count: pushOpenCount } = await supabase
+      .from("push_open_events")
+      .delete({ count: "exact" })
+      .lt("created_at", new Date(Date.now() - 60 * 86400000).toISOString());
+    results.old_push_opens = pushOpenCount || 0;
+
+    // 11. Delete tap-me events older than 60 days
+    const { count: tapCount } = await supabase
+      .from("tap_me_events")
+      .delete({ count: "exact" })
+      .lt("created_at", new Date(Date.now() - 60 * 86400000).toISOString());
+    results.old_tap_events = tapCount || 0;
+
+    // 12. Delete stale room signals older than 1 hour (WebRTC ICE/SDP churn)
+    const { count: signalCount } = await supabase
+      .from("room_signals")
+      .delete({ count: "exact" })
+      .lt("created_at", new Date(Date.now() - 3600000).toISOString());
+    results.old_room_signals = signalCount || 0;
 
     console.log("Cleanup results:", results);
 
