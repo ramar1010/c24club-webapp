@@ -40,6 +40,7 @@ const AdminDiscoverReviewPage = () => {
   const [banReason, setBanReason] = useState("Inappropriate selfie (admin review)");
   const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
   const [scanResults, setScanResults] = useState<Record<string, { isNsfw: boolean; score: number }>>({});
+  const [massDeleteOpen, setMassDeleteOpen] = useState(false);
   const { user } = useAuth();
 
   const handleNsfwScan = async (member: MemberImage) => {
