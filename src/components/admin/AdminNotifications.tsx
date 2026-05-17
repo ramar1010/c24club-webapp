@@ -45,9 +45,15 @@ const AdminNotifications = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const poll = setInterval(fetchNotifications, 10000);
-    return () => clearInterval(poll);
+    const tick = () => { if (!document.hidden) fetchNotifications(); };
+    tick();
+    const poll = setInterval(tick, 30000); // 10s -> 30s
+    const onVis = () => { if (!document.hidden) fetchNotifications(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, []);
 
   const markAsRead = async (id: string) => {
