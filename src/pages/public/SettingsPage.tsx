@@ -158,11 +158,8 @@ const SettingsPage = () => {
       )}
 
 
-      {/* Referrals & Get Help */}
-      <div className="flex gap-4 mb-6">
-        <button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-black text-base py-2.5 px-6 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide border border-red-400/40">
-          Referrals
-        </button>
+      {/* Get Help */}
+      <div className="mb-6">
         <button
           onClick={() => setHelpOpen(true)}
           className="bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-base py-2.5 px-6 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide border border-green-400/40"
