@@ -18,44 +18,68 @@ async function chunkedPushFanout(
 ) {
   const CHUNK = 5;
   const DELAY_MS = 350;
+  const MAX_ATTEMPTS = 4;
+
+  const isRateLimited = (r: any): { limited: boolean; retryAfterMs: number | null } => {
+    const blob = JSON.stringify(r ?? "");
+    const m = blob.match(/retryAfterMs["'\s:]+(\d+)/i);
+    const limited = /RateLimit|rate.?limit|TOO_MANY|429|RESOURCE_EXHAUSTED/i.test(blob);
+    return { limited, retryAfterMs: m ? parseInt(m[1], 10) : null };
+  };
+
+  const invokeWithRetry = async (userId: string) => {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      let r: any;
+      try {
+        r = await supabase.functions.invoke("send-push-notification", {
+          body: {
+            user_id: userId,
+            title: opts.title,
+            body: opts.body,
+            data: { deepLink: "/(tabs)/chat" },
+            notification_type,
+            cooldown_minutes: opts.cooldown_minutes,
+          },
+        });
+      } catch (err) {
+        r = { error: String(err) };
+      }
+      const errPayload = r?.error ?? r?.data;
+      const { limited, retryAfterMs } = isRateLimited(errPayload);
+      const success = r?.data && !r?.error && r?.data?.success !== false;
+      const skipped = r?.data?.skipped === true;
+
+      if (success || skipped || !limited || attempt === MAX_ATTEMPTS) {
+        console.log(
+          JSON.stringify({
+            tag: "fanout_push_result",
+            type: notification_type,
+            user: userId,
+            attempt,
+            result: r?.data ?? r?.error ?? null,
+          }),
+        );
+        return r;
+      }
+
+      const backoff = Math.min(retryAfterMs ?? 0, 60000) ||
+        Math.min(1000 * 2 ** (attempt - 1), 8000) + Math.floor(Math.random() * 250);
+      console.log(
+        JSON.stringify({
+          tag: "fanout_rate_limited_retry",
+          type: notification_type,
+          user: userId,
+          attempt,
+          backoff_ms: backoff,
+        }),
+      );
+      await new Promise((res) => setTimeout(res, backoff));
+    }
+  };
+
   for (let i = 0; i < users.length; i += CHUNK) {
     const slice = users.slice(i, i + CHUNK);
-    await Promise.all(
-      slice.map((user) =>
-        supabase.functions
-          .invoke("send-push-notification", {
-            body: {
-              user_id: user.id,
-              title: opts.title,
-              body: opts.body,
-              data: { deepLink: "/(tabs)/chat" },
-              notification_type,
-              cooldown_minutes: opts.cooldown_minutes,
-            },
-          })
-          .then((r) => {
-            console.log(
-              JSON.stringify({
-                tag: "fanout_push_result",
-                type: notification_type,
-                user: user.id,
-                result: r?.data ?? r?.error ?? null,
-              }),
-            );
-            return r;
-          })
-          .catch((err) => {
-            console.log(
-              JSON.stringify({
-                tag: "fanout_push_result",
-                type: notification_type,
-                user: user.id,
-                result: { error: String(err) },
-              }),
-            );
-          }),
-      ),
-    );
+    await Promise.all(slice.map((u) => invokeWithRetry(u.id)));
     if (i + CHUNK < users.length) {
       await new Promise((r) => setTimeout(r, DELAY_MS));
     }
