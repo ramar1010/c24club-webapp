@@ -32,7 +32,8 @@ const AdminRoomsPage = () => {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 5000,
+    refetchInterval: 10000, // 5s -> 10s
+    refetchIntervalInBackground: false, // pause when tab hidden
   });
 
   const memberIds = Array.from(

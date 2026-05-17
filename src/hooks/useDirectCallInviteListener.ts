@@ -86,11 +86,15 @@ export function useDirectCallInviteListener() {
       }, 60000);
     };
 
-    checkIncomingInvites();
-    const poll = setInterval(checkIncomingInvites, 5000);
-
+    // Visibility-aware polling: skip ticks when tab hidden, fire on tab focus
+    const tick = () => { if (!document.hidden) checkIncomingInvites(); };
+    tick();
+    const poll = setInterval(tick, 10000); // 5s -> 10s
+    const onVis = () => { if (!document.hidden) checkIncomingInvites(); };
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [user]);
 
