@@ -193,6 +193,38 @@ const AdminDiscoverReviewPage = () => {
     },
   });
 
+  const massDeleteDenied = useMutation({
+    mutationFn: async () => {
+      const targets = members.filter((m) => m.image_url);
+      // Delete from storage in parallel batches of 50
+      const BATCH = 50;
+      for (let i = 0; i < targets.length; i += BATCH) {
+        const batch = targets.slice(i, i + BATCH);
+        const paths = batch.map((m) => `${m.id}/selfie.jpg`);
+        await supabase.storage.from("member-photos").remove(paths);
+      }
+      // Update member records: clear image fields and reset status
+      const memberIds = targets.map((m) => m.id);
+      if (memberIds.length > 0) {
+        const { error } = await supabase
+          .from("members")
+          .update({ image_url: null, image_thumb_url: null, image_status: "pending", is_discoverable: false } as any)
+          .in("id", memberIds);
+        if (error) throw error;
+      }
+      return targets.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-discover-pending-count"] });
+      toast({ title: "Mass Delete Complete 🗑️", description: `${count} denied images deleted and storage freed.` });
+      setMassDeleteOpen(false);
+    },
+    onError: (err: any) => {
+      toast({ title: "Mass Delete Failed", description: err.message, variant: "destructive" });
+    },
+  });
+
   const banUser = useMutation({
     mutationFn: async ({ member, reason }: { member: MemberImage; reason: string }) => {
       // Get member's IP
