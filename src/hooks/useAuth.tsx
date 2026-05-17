@@ -181,14 +181,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Heartbeat: update last_active_at every 5 minutes while logged in
   useEffect(() => {
     if (!user) return;
-    const interval = setInterval(() => {
+    const beat = () => {
+      if (document.hidden) return; // pause heartbeat when backgrounded (mobile battery + Cloud egress)
       supabase
         .from("members")
         .update({ last_active_at: new Date().toISOString() })
         .eq("id", user.id)
         .then(() => {});
-    }, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    };
+    const interval = setInterval(beat, 5 * 60 * 1000);
+    // Beat once when tab becomes visible again so presence catches up quickly.
+    const onVis = () => { if (!document.hidden) beat(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [user]);
 
   useEffect(() => {
