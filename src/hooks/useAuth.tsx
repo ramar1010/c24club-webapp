@@ -205,13 +205,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       checkBan(user.id);
     }, 100);
 
-    const banPoll = setInterval(() => {
-      checkBan(user.id);
-    }, 15000);
+    const tickBan = () => { if (!document.hidden) checkBan(user.id); };
+    const banPoll = setInterval(tickBan, 30000); // 15s -> 30s, pause when hidden
+    const onVis = () => { if (!document.hidden) checkBan(user.id); };
+    document.addEventListener("visibilitychange", onVis);
 
     return () => {
       clearTimeout(timeout);
       clearInterval(banPoll);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [user, checkAdmin, checkBan]);
 
