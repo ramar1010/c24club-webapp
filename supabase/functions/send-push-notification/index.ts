@@ -67,6 +67,36 @@ function isExpoPushToken(token: string): boolean {
   return /^(ExponentPushToken|ExpoPushToken)\[.+\]$/.test(token);
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function extractRetryAfterMs(raw: string, parsed: any, headerRetryAfter?: string | null): number | null {
+  // Try parsed body for retryAfterMs / retry_after
+  const candidates = [
+    parsed?.retryAfterMs,
+    parsed?.errors?.[0]?.retryAfterMs,
+    parsed?.errors?.[0]?.details?.retryAfterMs,
+    parsed?.error?.details?.retryAfterMs,
+  ];
+  for (const c of candidates) {
+    const n = typeof c === "string" ? parseInt(c, 10) : c;
+    if (typeof n === "number" && !isNaN(n) && n > 0) return n;
+  }
+  // Regex scan as fallback
+  const m = raw?.match(/retryAfterMs["'\s:]+(\d+)/i);
+  if (m) return parseInt(m[1], 10);
+  if (headerRetryAfter) {
+    const secs = parseInt(headerRetryAfter, 10);
+    if (!isNaN(secs)) return secs * 1000;
+  }
+  return null;
+}
+
+function isRateLimitSignal(raw: string, parsed: any, status: number): boolean {
+  if (status === 429) return true;
+  const blob = JSON.stringify(parsed ?? "") + " " + (raw ?? "");
+  return /RateLimit|rate.?limit|TOO_MANY|too many requests|quota/i.test(blob);
+}
+
 function getWebLink(data: Record<string, unknown>): string {
   const rawLink = typeof data.deepLink === "string" ? data.deepLink : typeof data.screen === "string" ? data.screen : "/";
   if (rawLink.startsWith("http://") || rawLink.startsWith("https://")) return rawLink;
@@ -87,50 +117,38 @@ async function sendExpoPush(
   data: Record<string, unknown>,
 ): Promise<PushResult> {
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
-  const resp = await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      to: token,
-      title,
-      body,
-      data,
-      sound: "default",
-      priority: "high",
-      channelId,
-    }),
-  });
+  const maxAttempts = 4;
+  let lastReason = "Expo push send failed";
+  let lastClear = false;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const resp = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ to: token, title, body, data, sound: "default", priority: "high", channelId }),
+    });
+    const raw = await resp.text();
+    let parsed: any = null;
+    try { parsed = raw ? JSON.parse(raw) : null; } catch { parsed = null; }
+    const ticket = Array.isArray(parsed?.data) ? parsed.data[0] : parsed?.data;
 
-  const raw = await resp.text();
-  let parsed = null
-  try {
-    parsed = raw ? JSON.parse(raw) : null
-  } catch {
-    parsed = null
+    if (resp.ok && ticket?.status === "ok") return { ok: true, provider: "expo" };
+
+    const expoError =
+      ticket?.details?.error || parsed?.errors?.[0]?.code || parsed?.errors?.[0]?.message ||
+      ticket?.message || raw || "Expo push send failed";
+    lastReason = expoError;
+    lastClear = expoError === "DeviceNotRegistered";
+
+    const isRateLimited = isRateLimitSignal(raw, parsed, resp.status);
+    if (!isRateLimited || attempt === maxAttempts) break;
+
+    const retryAfter = extractRetryAfterMs(raw, parsed, resp.headers.get("retry-after"));
+    const backoff = Math.min(retryAfter ?? 0, 60000) ||
+      Math.min(1000 * 2 ** (attempt - 1), 8000) + Math.floor(Math.random() * 250);
+    console.log(`[send-push] expo rate-limited, attempt ${attempt}/${maxAttempts}, waiting ${backoff}ms`);
+    await sleep(backoff);
   }
-  const ticket = Array.isArray(parsed?.data) ? parsed.data[0] : parsed?.data;
-
-  if (resp.ok && ticket?.status === "ok") {
-    return { ok: true, provider: "expo" };
-  }
-
-  const expoError =
-    ticket?.details?.error ||
-    parsed?.errors?.[0]?.code ||
-    parsed?.errors?.[0]?.message ||
-    ticket?.message ||
-    raw ||
-    "Expo push send failed";
-
-  return {
-    ok: false,
-    provider: "expo",
-    reason: expoError,
-    clearToken: expoError === "DeviceNotRegistered",
-  };
+  return { ok: false, provider: "expo", reason: lastReason, clearToken: lastClear };
 }
 
 async function sendFcmPush(
@@ -145,55 +163,56 @@ async function sendFcmPush(
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
   const webLink = getWebLink(data);
 
-  const fcmResp = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      message: {
-        token,
-        notification: { title, body },
-        data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
-        android: {
-          priority: "high",
-          notification: { channel_id: channelId, sound: "default" },
-        },
-        apns: {
-          payload: {
-            aps: {
-              alert: { title, body },
-              sound: "default",
-              badge: 0,
-              "content-available": 1,
-              "mutable-content": 1,
-            },
+  const payload = JSON.stringify({
+    message: {
+      token,
+      notification: { title, body },
+      data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
+      android: { priority: "high", notification: { channel_id: channelId, sound: "default" } },
+      apns: {
+        payload: {
+          aps: {
+            alert: { title, body },
+            sound: "default", badge: 0,
+            "content-available": 1, "mutable-content": 1,
           },
         },
-        webpush: {
-          fcm_options: { link: webLink },
-        },
       },
-    }),
+      webpush: { fcm_options: { link: webLink } },
+    },
   });
 
-  const raw = await fcmResp.text();
-  let fcmBody = null;
-  try {
-    fcmBody = raw ? JSON.parse(raw) : null;
-  } catch {
-    fcmBody = null;
-  }
+  const maxAttempts = 4;
+  let lastReason = "FCM push send failed";
+  let lastClear = false;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const fcmResp = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: payload,
+    });
+    const raw = await fcmResp.text();
+    let fcmBody: any = null;
+    try { fcmBody = raw ? JSON.parse(raw) : null; } catch { fcmBody = null; }
 
-  if (fcmResp.ok) {
-    return { ok: true, provider: "fcm" };
-  }
+    if (fcmResp.ok) return { ok: true, provider: "fcm" };
 
-  const errorCode = fcmBody?.error?.status;
-  return {
-    ok: false,
-    provider: "fcm",
-    reason: fcmBody?.error?.message || raw || "FCM push send failed",
-    clearToken: errorCode === "UNREGISTERED" || errorCode === "NOT_FOUND",
-  };
+    const errorCode = fcmBody?.error?.status;
+    lastReason = fcmBody?.error?.message || raw || "FCM push send failed";
+    lastClear = errorCode === "UNREGISTERED" || errorCode === "NOT_FOUND";
+
+    const isRateLimited =
+      fcmResp.status === 429 || errorCode === "RESOURCE_EXHAUSTED" || errorCode === "UNAVAILABLE" ||
+      isRateLimitSignal(raw, fcmBody, fcmResp.status);
+    if (!isRateLimited || attempt === maxAttempts) break;
+
+    const retryAfter = extractRetryAfterMs(raw, fcmBody, fcmResp.headers.get("retry-after"));
+    const backoff = Math.min(retryAfter ?? 0, 60000) ||
+      Math.min(1000 * 2 ** (attempt - 1), 8000) + Math.floor(Math.random() * 250);
+    console.log(`[send-push] fcm rate-limited (${errorCode || fcmResp.status}), attempt ${attempt}/${maxAttempts}, waiting ${backoff}ms`);
+    await sleep(backoff);
+  }
+  return { ok: false, provider: "fcm", reason: lastReason, clearToken: lastClear };
 }
 
 Deno.serve(async (req: Request) => {
