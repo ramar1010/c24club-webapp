@@ -215,32 +215,6 @@ export function useRewardCategories() {
   });
 }
 
-export function useMilestones() {
-  return useQuery({
-    queryKey: ["milestones"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("milestones").select("*").order("unlock_minutes", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function useMilestoneRewards(milestoneId?: string) {
-  return useQuery({
-    queryKey: ["milestone_rewards", milestoneId],
-    enabled: !!milestoneId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("milestone_rewards")
-        .select("*, rewards(title, type, rarity)")
-        .eq("milestone_id", milestoneId!);
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
 // Public hooks for store
 export function usePublicRewards() {
   return useQuery({
@@ -267,20 +241,6 @@ export function usePublicCategories() {
         .eq("status", "active")
         .order("display_order", { ascending: true })
         .order("name", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function usePublicMilestones() {
-  return useQuery({
-    queryKey: ["public_milestones"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("milestones")
-        .select("*, milestone_rewards(*, rewards(id, title, type, rarity, image_url, minutes_cost))")
-        .order("unlock_minutes", { ascending: true });
       if (error) throw error;
       return data;
     },
@@ -386,30 +346,6 @@ export function useDeleteCategory() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["reward_categories"] }); toast.success("Category deleted"); },
-    onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
-  });
-}
-
-export function useCreateMilestone() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (values: Record<string, unknown>) => {
-      const { error } = await supabase.from("milestones").insert(values as any);
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["milestones"] }); toast.success("Milestone created"); },
-    onError: (e: Error) => toast.error("Create failed", { description: e.message }),
-  });
-}
-
-export function useDeleteMilestone() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("milestones").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["milestones"] }); toast.success("Milestone deleted"); },
     onError: (e: Error) => toast.error("Delete failed", { description: e.message }),
   });
 }

@@ -6,7 +6,6 @@ import ChallengeMinutesOverlay from "@/components/videocall/ChallengeMinutesOver
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
-import { useBoyfriendChallenge } from "@/hooks/useBoyfriendChallenge";
 import { toast } from "sonner";
 
 /* ─── Theme Presets ─── */
@@ -151,19 +150,12 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   });
 
   const { hasPair, pairActive, pairCompleted, dailyLogs } = useBestieChallenge();
-  const { hasPair: hasBfPair, pairActive: bfActive, pairCompleted: bfCompleted, dailyLogs: bfLogs } = useBoyfriendChallenge();
 
   const getStatus = (challenge: any) => {
     if (challenge.slug === "bestie-challenge") {
       if (pairCompleted) return "approved";
       if (pairActive) return "active";
       if (hasPair) return "pending";
-      return null;
-    }
-    if (challenge.slug === "boyfriend-challenge") {
-      if (bfCompleted) return "approved";
-      if (bfActive) return "active";
-      if (hasBfPair) return "pending";
       return null;
     }
     const sub = submissions.find((s: any) => s.challenge_id === challenge.id);
@@ -174,10 +166,6 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
     if (challenge.slug === "bestie-challenge") {
       if (!hasPair) return null;
       return `${dailyLogs.length}/3 days`;
-    }
-    if (challenge.slug === "boyfriend-challenge") {
-      if (!hasBfPair) return null;
-      return `${bfLogs.length}/2 days`;
     }
     // Speed connect progress from localStorage
     try {
@@ -209,8 +197,6 @@ const ChallengeCarousel = ({ onOpenChallenges, onOpenReferral, isFemale }: Chall
   const sortedChallenges = [...visibleChallenges].sort((a: any, b: any) => {
     if (a.slug === "bestie-challenge") return -1;
     if (b.slug === "bestie-challenge") return 1;
-    if (a.slug === "boyfriend-challenge") return -1;
-    if (b.slug === "boyfriend-challenge") return 1;
     return 0;
   });
 
