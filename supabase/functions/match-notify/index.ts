@@ -129,20 +129,86 @@ Deno.serve(async (req) => {
     const targetGender = normalizedGender === "female" ? "male" : "female";
     const { data: targets } = await supabase
       .from("members")
-      .select("id, push_token")
+      .select("id, push_token, male_search_notify_mode, last_active_at")
       .eq("notify_enabled", true)
       .ilike("gender", targetGender)
       .eq("is_test_account", false)
       .not("push_token", "is", null)
       .neq("id", memberId)
-      .limit(100);
+      .order("last_active_at", { ascending: false, nullsFirst: false })
+      .limit(500);
 
-    // Queue-join push notifications are sent by videocall-match.
-    // This function keeps the secondary notification channels only,
-    // so users do not receive duplicate pushes for the same join event.
-    const pushSent = 0;
-    const pushFailed = 0;
-    const pushError: string | null = null;
+    // Backup push fanout — per-user cooldown in send-push-notification (10 min) ensures
+    // we don't duplicate notifications already sent by videocall-match (which uses
+    // shorter 2-5 min cooldowns). If videocall-match silently missed a user, this
+    // backup path catches them on the next queue join.
+    const { data: activeRooms2 } = await supabase
+      .from("rooms").select("member1, member2").eq("status", "active");
+    const activeIds2 = new Set<string>();
+    if (activeRooms2) {
+      for (const r of activeRooms2) {
+        if (r.member1) activeIds2.add(r.member1);
+        if (r.member2) activeIds2.add(r.member2);
+      }
+    }
+
+    const isFemaleTarget = targetGender === "female";
+    const pushTargets = (targets ?? []).filter((t) => {
+      if (activeIds2.has(t.id)) return false;
+      if (!t.push_token) return false;
+      // Respect female opt-out
+      if (isFemaleTarget && t.male_search_notify_mode === "off") return false;
+      return true;
+    });
+
+    const pushNotificationType = isFemaleTarget ? "male_search_every" : "female_searching";
+    const pushTitle = isFemaleTarget
+      ? "💬 Money Awaits - A guy is looking to video chat!"
+      : "🔥 A girl is looking for a video chat!";
+    const pushBody = isFemaleTarget
+      ? "Tap to join and start chatting now!"
+      : "Hurry before she leaves — tap to join now!";
+
+    let pushSent = 0;
+    let pushFailed = 0;
+    let pushError: string | null = null;
+    const pushResults = await Promise.allSettled(
+      pushTargets.map((t) =>
+        supabase.functions.invoke("send-push-notification", {
+          body: {
+            user_id: t.id,
+            title: pushTitle,
+            body: pushBody,
+            data: { deepLink: "/(tabs)/chat" },
+            notification_type: pushNotificationType,
+            // 10-min cooldown — primary path (videocall-match) uses 2-5 min, so it
+            // always "wins" if it ran successfully. This only fires for users the
+            // primary missed.
+            cooldown_minutes: 10,
+          },
+        }),
+      ),
+    );
+    for (const r of pushResults) {
+      if (r.status === "fulfilled") {
+        const body: any = r.value?.data;
+        if (body?.success) pushSent++;
+        else if (body?.skipped) {/* cooldown / no token — not an error */}
+        else { pushFailed++; pushError = body?.reason || pushError; }
+      } else {
+        pushFailed++;
+        pushError = String(r.reason);
+      }
+    }
+    console.log(JSON.stringify({
+      tag: "match_notify_backup_push",
+      joiner: memberId,
+      target_gender: targetGender,
+      candidates: targets?.length ?? 0,
+      eligible: pushTargets.length,
+      sent: pushSent,
+      failed: pushFailed,
+    }));
 
     // Update cooldown and increment email counter
     const { data: updatedCooldown } = await supabase
