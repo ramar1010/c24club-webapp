@@ -5,6 +5,63 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Send push fan-out in small chunks to stay under the Edge Functions invoke
+// rate limit. Without chunking, a 30+ user fanout fires all calls in parallel
+// and the first chunk fails with RateLimitError (silently dropped) — that's
+// why some Android users (and anyone early in the list) miss notifications
+// while users later in the list see "Cooldown active" from the backup path.
+async function chunkedPushFanout(
+  supabase: ReturnType<typeof createClient>,
+  users: Array<{ id: string }>,
+  notification_type: string,
+  opts: { title: string; body: string; cooldown_minutes: number },
+) {
+  const CHUNK = 5;
+  const DELAY_MS = 350;
+  for (let i = 0; i < users.length; i += CHUNK) {
+    const slice = users.slice(i, i + CHUNK);
+    await Promise.all(
+      slice.map((user) =>
+        supabase.functions
+          .invoke("send-push-notification", {
+            body: {
+              user_id: user.id,
+              title: opts.title,
+              body: opts.body,
+              data: { deepLink: "/(tabs)/chat" },
+              notification_type,
+              cooldown_minutes: opts.cooldown_minutes,
+            },
+          })
+          .then((r) => {
+            console.log(
+              JSON.stringify({
+                tag: "fanout_push_result",
+                type: notification_type,
+                user: user.id,
+                result: r?.data ?? r?.error ?? null,
+              }),
+            );
+            return r;
+          })
+          .catch((err) => {
+            console.log(
+              JSON.stringify({
+                tag: "fanout_push_result",
+                type: notification_type,
+                user: user.id,
+                result: { error: String(err) },
+              }),
+            );
+          }),
+      ),
+    );
+    if (i + CHUNK < users.length) {
+      await new Promise((r) => setTimeout(r, DELAY_MS));
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -198,23 +255,11 @@ Deno.serve(async (req) => {
         }));
 
         if (eligibleMales.length > 0) {
-          Promise.all(
-            eligibleMales.map((user) =>
-              supabase.functions.invoke("send-push-notification", {
-                body: {
-                  user_id: user.id,
-                  title: "🔥 A girl is looking for a video chat!",
-                  body: "Hurry before she leaves — tap to join now!",
-                  data: { deepLink: "/(tabs)/chat" },
-                  notification_type: "female_searching",
-                  cooldown_minutes: 2,
-                },
-              }).then((r) => {
-                console.log(JSON.stringify({ tag: "fanout_push_result", type: "female_searching", user: user.id, result: r?.data ?? r?.error ?? null }));
-                return r;
-              }),
-            ),
-          ).catch(console.error);
+          chunkedPushFanout(supabase, eligibleMales, "female_searching", {
+            title: "🔥 A girl is looking for a video chat!",
+            body: "Hurry before she leaves — tap to join now!",
+            cooldown_minutes: 2,
+          }).catch(console.error);
         }
       }
 
@@ -258,23 +303,11 @@ Deno.serve(async (req) => {
           }));
 
           if (everyUsers.length > 0) {
-            Promise.all(
-              everyUsers.map((user) =>
-                supabase.functions.invoke("send-push-notification", {
-                  body: {
-                    user_id: user.id,
-                    title: "💬 Money Awaits - A guy is looking to video chat!",
-                    body: "Tap to join and start chatting now!",
-                    data: { deepLink: "/(tabs)/chat" },
-                    notification_type: "male_search_every",
-                    cooldown_minutes: 5,
-                  },
-                }).then((r) => {
-                  console.log(JSON.stringify({ tag: "fanout_push_result", type: "male_search_every", user: user.id, result: r?.data ?? r?.error ?? null }));
-                  return r;
-                }),
-              ),
-            ).catch(console.error);
+            chunkedPushFanout(supabase, everyUsers, "male_search_every", {
+              title: "💬 Money Awaits - A guy is looking to video chat!",
+              body: "Tap to join and start chatting now!",
+              cooldown_minutes: 5,
+            }).catch(console.error);
           }
 
           if (batchedUsers.length > 0) {
