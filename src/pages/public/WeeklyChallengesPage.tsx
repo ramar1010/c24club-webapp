@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getCurrentWeekStart, resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 import bestieCutout from "@/assets/challenges/bestie-cutout.png";
-import boyfriendCutout from "@/assets/quickstart/boyfriend-cutout.png";
 import blueEyeImg from "@/assets/challenges/blue-eye.jpg";
 import { ChevronLeft, Users, Eye, Clock, Upload, CheckCircle, XCircle, Clock as ClockStatus, Trophy, Camera, DollarSign, Copy, Check, Link2, Loader2, Heart, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useBestieChallenge } from "@/hooks/useBestieChallenge";
-import { useBoyfriendChallenge } from "@/hooks/useBoyfriendChallenge";
 import ChallengeEarningsModal from "@/components/videocall/ChallengeEarningsModal";
 import ChallengeSuggestionForm from "@/components/videocall/ChallengeSuggestionForm";
 import ChallengeMinutesOverlay from "@/components/videocall/ChallengeMinutesOverlay";
