@@ -36,6 +36,8 @@ const SettingsPage = () => {
     if (error) toast.error("Failed to save bio");
     else toast.success("Bio saved! ✨");
     setBioSaving(false);
+  };
+
   const handleResetPassword = async () => {
     if (!user?.email) {
       toast.error("No email found on your account.");
@@ -155,7 +157,6 @@ const SettingsPage = () => {
           <p className="text-neutral-500 text-xs text-center mt-1.5">Share this link so others can call you directly</p>
         </div>
       )}
-
 
       {/* Get Help */}
       <div className="mb-6">
