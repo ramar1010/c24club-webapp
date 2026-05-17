@@ -38,13 +38,11 @@ const AdminChallengeIssuesPage = lazy(() => import("@/pages/admin/AdminChallenge
 const AdminSpinPrizesPage = lazy(() => import("@/pages/admin/AdminSpinPrizesPage"));
 const AdminSpinWinnersPage = lazy(() => import("@/pages/admin/AdminSpinWinnersPage"));
 const LegendaryCashoutPage = lazy(() => import("@/pages/admin/LegendaryCashoutPage"));
-const AdminLuckySpinPage = lazy(() => import("@/pages/admin/AdminLuckySpinPage"));
 const AdminEmailTemplatesPage = lazy(() => import("@/pages/admin/AdminEmailTemplatesPage"));
 const AdminEmailDashboardPage = lazy(() => import("@/pages/admin/AdminEmailDashboardPage"));
 const AdminGiftCardsPage = lazy(() => import("@/pages/admin/AdminGiftCardsPage"));
 const AdminRoomsPage = lazy(() => import("@/pages/admin/AdminRoomsPage"));
 const AnchorSettingsPage = lazy(() => import("@/pages/admin/AnchorSettingsPage"));
-const AdminAnchorChallengesPage = lazy(() => import("@/pages/admin/AdminAnchorChallengesPage"));
 const SystemHealthPage = lazy(() => import("@/pages/admin/SystemHealthPage"));
 const NotificationHealthPage = lazy(() => import("@/pages/admin/NotificationHealthPage"));
 const RevenuePage = lazy(() => import("@/pages/admin/RevenuePage"));
@@ -63,7 +61,6 @@ const CameraUnlockSuccessPage = lazy(() => import("@/pages/public/CameraUnlockSu
 const AdminReferralsPage = lazy(() => import("@/pages/admin/AdminReferralsPage"));
 const AdminJackpotPayoutsPage = lazy(() => import("@/pages/admin/AdminJackpotPayoutsPage"));
 const AdminWagerSettingsPage = lazy(() => import("@/pages/admin/AdminWagerSettingsPage"));
-const AdminCallWindowsPage = lazy(() => import("@/pages/admin/AdminCallWindowsPage"));
 const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
@@ -178,12 +175,6 @@ const App = () => (
                 <Route path="categories/:id/edit" element={<AddCategoryPage />} />
                 <Route path="topics" element={<TopicsPage />} />
                 <Route path="reported-promos" element={<PlaceholderPage title="Reported Promos" />} />
-                <Route path="rewards-pp" element={<PlaceholderPage title="Product Point Rewards" />} />
-                <Route path="rewards-pp/new" element={<PlaceholderPage title="Add New PP Reward" />} />
-                <Route path="categories-pp" element={<PlaceholderPage title="PP Categories" />} />
-                <Route path="categories-pp/new" element={<PlaceholderPage title="Add New PP Category" />} />
-                <Route path="contests" element={<PlaceholderPage title="Contests" />} />
-                <Route path="contests/new" element={<PlaceholderPage title="Add New Contest" />} />
                 <Route path="banned-users" element={<AdminBannedUsersPage />} />
                 <Route path="ban-by-ip" element={<PlaceholderPage title="Ban by IP" />} />
                 <Route path="challenges" element={<AdminChallengesPage />} />
@@ -193,7 +184,6 @@ const App = () => (
                 <Route path="spin-to-win" element={<AdminSpinPrizesPage />} />
                 <Route path="spin-to-win/winners" element={<AdminSpinWinnersPage />} />
                 <Route path="legendary-cashout" element={<LegendaryCashoutPage />} />
-                <Route path="lucky-spin" element={<AdminLuckySpinPage />} />
                 <Route path="jackpot-payouts" element={<AdminJackpotPayoutsPage />} />
                 <Route path="wager-settings" element={<AdminWagerSettingsPage />} />
                 <Route path="gift-cards" element={<AdminGiftCardsPage />} />
@@ -202,7 +192,6 @@ const App = () => (
                 <Route path="referrals/cashouts" element={<AdminReferralsPage />} />
                 <Route path="anchor-rewards/cashouts" element={<AnchorSettingsPage />} />
                 <Route path="anchor-rewards/queue" element={<AnchorSettingsPage />} />
-                <Route path="anchor-rewards/challenges" element={<AdminAnchorChallengesPage />} />
                 <Route path="emails" element={<AdminEmailTemplatesPage />} />
                 <Route path="email-analytics" element={<AdminEmailDashboardPage />} />
                 <Route path="settings" element={<PlaceholderPage title="Manage Settings" />} />
@@ -219,7 +208,6 @@ const App = () => (
                 <Route path="moderator-permissions" element={<ModeratorPermissionsPage />} />
                 <Route path="camera-unlock" element={<CameraUnlockSettingsPage />} />
                 <Route path="wishlist-settings" element={<WishlistSettingsPage />} />
-                <Route path="call-windows" element={<AdminCallWindowsPage />} />
                 <Route path="blog" element={<AdminBlogPage />} />
                 <Route path="blog/new" element={<AdminBlogEditorPage />} />
                 <Route path="blog/:id/edit" element={<AdminBlogEditorPage />} />
