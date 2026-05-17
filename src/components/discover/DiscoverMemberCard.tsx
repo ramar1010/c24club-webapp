@@ -154,10 +154,15 @@ const DiscoverMemberCard = ({
         <div className="aspect-[3/4] overflow-hidden">
           {member.image_url ? (
             <img
-              src={member.image_url}
+              src={transformImage(member.image_url, { width: 400, quality: 70, resize: "cover" })}
+              srcSet={transformImageSrcSet(member.image_url, 400)}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+              width={400}
+              height={533}
               alt={member.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/20 text-4xl font-bold">
@@ -324,8 +329,10 @@ const DiscoverMemberCard = ({
           </button>
           <div className="relative max-w-md w-full rounded-2xl overflow-hidden bg-black/80 border border-white/10">
             <img
-              src={member.image_url}
+              src={transformImage(member.image_url, { width: 800, quality: 80 })}
               alt={member.name}
+              loading="eager"
+              decoding="async"
               className="w-full max-h-[70vh] object-contain"
             />
             <div className="p-4 text-center">
