@@ -117,10 +117,19 @@ export function useConversations() {
   // Poll for conversation updates
   useEffect(() => {
     if (!user) return;
-    const poll = setInterval(() => {
+    const refresh = () => {
+      if (document.hidden) return;
       queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-    }, 5000);
-    return () => clearInterval(poll);
+    };
+    const poll = setInterval(refresh, 20000); // 5s -> 20s
+    const onVis = () => {
+      if (!document.hidden) queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [user, queryClient]);
 
   return query;
@@ -174,10 +183,19 @@ export function useConversationMessages(conversationId: string | null) {
   // Poll for new messages in this conversation
   useEffect(() => {
     if (!conversationId) return;
-    const poll = setInterval(() => {
+    const refresh = () => {
+      if (document.hidden) return;
       queryClient.invalidateQueries({ queryKey: ["dm_messages", conversationId] });
-    }, 3000);
-    return () => clearInterval(poll);
+    };
+    const poll = setInterval(refresh, 8000); // 3s -> 8s
+    const onVis = () => {
+      if (!document.hidden) queryClient.invalidateQueries({ queryKey: ["dm_messages", conversationId] });
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [conversationId, queryClient]);
 
   return query;
