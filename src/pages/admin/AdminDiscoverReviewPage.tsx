@@ -196,23 +196,31 @@ const AdminDiscoverReviewPage = () => {
   const massDeleteDenied = useMutation({
     mutationFn: async () => {
       const targets = members.filter((m) => m.image_url);
-      // Delete from storage in parallel batches of 50
-      const BATCH = 50;
-      for (let i = 0; i < targets.length; i += BATCH) {
-        const batch = targets.slice(i, i + BATCH);
+      // Process in chunks to avoid 414/400 from oversized URLs (PostgREST .in() limit)
+      const CHUNK = 100;
+      let deleted = 0;
+      for (let i = 0; i < targets.length; i += CHUNK) {
+        const batch = targets.slice(i, i + CHUNK);
+        const ids = batch.map((m) => m.id);
         const paths = batch.map((m) => `${m.id}/selfie.jpg`);
-        await supabase.storage.from("member-photos").remove(paths);
-      }
-      // Update member records: clear image fields and reset status
-      const memberIds = targets.map((m) => m.id);
-      if (memberIds.length > 0) {
+
+        // Remove storage objects (ignore individual failures so one missing file doesn't block the batch)
+        try {
+          await supabase.storage.from("member-photos").remove(paths);
+        } catch (e) {
+          console.warn("Storage remove batch failed (continuing):", e);
+        }
+
+        // Clear image fields on the member rows for this chunk
         const { error } = await supabase
           .from("members")
           .update({ image_url: null, image_thumb_url: null, image_status: "pending", is_discoverable: false } as any)
-          .in("id", memberIds);
+          .in("id", ids);
         if (error) throw error;
+
+        deleted += batch.length;
       }
-      return targets.length;
+      return deleted;
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ["admin-discover-images"] });
