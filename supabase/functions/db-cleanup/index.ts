@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
     const { count: pushLogCount } = await supabase
       .from("push_notification_log")
       .delete({ count: "exact" })
-      .lt("created_at", new Date(Date.now() - 60 * 86400000).toISOString());
+      .lt("last_sent_at", new Date(Date.now() - 60 * 86400000).toISOString());
     results.old_push_logs = pushLogCount || 0;
 
     // 10. Delete push open events older than 60 days
