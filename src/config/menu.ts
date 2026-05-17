@@ -28,7 +28,6 @@ import {
   Camera,
   MousePointerClick,
   Dices,
-  Clock,
   MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
@@ -143,26 +142,6 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
-    key: "rewards-pp",
-    icon: ShoppingBag,
-    title: "Product Point Rewards",
-    submenu: [
-      { key: "rewards-pp", label: "All PP Rewards", path: "/admin/rewards-pp" },
-      { key: "reward-form-pp", label: "Add New PP Reward", path: "/admin/rewards-pp/new" },
-      { key: "categories-pp", label: "All PP Categories", path: "/admin/categories-pp" },
-      { key: "category-form-pp", label: "Add New PP Category", path: "/admin/categories-pp/new" },
-    ],
-  },
-  {
-    key: "contests",
-    icon: Trophy,
-    title: "Contests",
-    submenu: [
-      { key: "contests", label: "Contests", path: "/admin/contests" },
-      { key: "contest-form", label: "Add New Contest", path: "/admin/contests/new" },
-    ],
-  },
-  {
     key: "ban-ip",
     icon: Ban,
     title: "Bans",
@@ -199,14 +178,6 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
-    key: "lucky-spin",
-    icon: Disc3,
-    title: "Lucky Spin",
-    submenu: [
-      { key: "lucky-spin-settings", label: "Lucky Spin Settings", path: "/admin/lucky-spin" },
-    ],
-  },
-  {
     key: "legendary-cashout",
     icon: Crown,
     title: "Legendary Items CashOut",
@@ -238,7 +209,6 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "anchor-settings", label: "Anchor Settings", path: "/admin/anchor-rewards/cashouts" },
       { key: "anchor-user-queue", label: "Anchor Users Queue", path: "/admin/anchor-rewards/queue" },
-      { key: "anchor-challenges", label: "Bonus Challenges", path: "/admin/anchor-rewards/challenges" },
     ],
   },
   {
@@ -285,14 +255,6 @@ export const adminMenu: MenuItem[] = [
     submenu: [
       { key: "user-roles", label: "Manage Roles", path: "/admin/user-roles" },
       { key: "mod-permissions", label: "Moderator Permissions", path: "/admin/moderator-permissions" },
-    ],
-  },
-  {
-    key: "call-windows",
-    icon: Clock,
-    title: "Call Windows",
-    submenu: [
-      { key: "call-windows", label: "Manage Schedule", path: "/admin/call-windows" },
     ],
   },
   {
