@@ -177,15 +177,25 @@ Deno.serve(async (req) => {
 
         const { data: maleUsers } = await supabase
           .from("members")
-          .select("id, push_token")
+          .select("id, name, push_token, last_active_at")
           .ilike("gender", "male")
           .eq("notify_enabled", true)
           .eq("is_test_account", false)
           .not("push_token", "is", null)
           .neq("id", memberId)
-          .limit(100);
+          .order("last_active_at", { ascending: false, nullsFirst: false })
+          .limit(500);
 
         const eligibleMales = (maleUsers ?? []).filter((u) => !activeIdsM.has(u.id) && u.push_token);
+        const excludedActive = (maleUsers ?? []).filter((u) => activeIdsM.has(u.id)).map((u) => u.id);
+        console.log(JSON.stringify({
+          tag: "fanout_female_joined",
+          joiner: memberId,
+          candidates: maleUsers?.length ?? 0,
+          eligible: eligibleMales.length,
+          excluded_active: excludedActive.length,
+          eligible_ids: eligibleMales.map((u) => u.id),
+        }));
 
         if (eligibleMales.length > 0) {
           Promise.all(
@@ -199,6 +209,9 @@ Deno.serve(async (req) => {
                   notification_type: "female_searching",
                   cooldown_minutes: 2,
                 },
+              }).then((r) => {
+                console.log(JSON.stringify({ tag: "fanout_push_result", type: "female_searching", user: user.id, result: r?.data ?? r?.error ?? null }));
+                return r;
               }),
             ),
           ).catch(console.error);
@@ -219,10 +232,13 @@ Deno.serve(async (req) => {
 
         const { data: femaleUsers } = await supabase
           .from("members")
-          .select("id, male_search_notify_mode, push_token")
+          .select("id, name, male_search_notify_mode, push_token, last_active_at")
           .ilike("gender", "female")
           .eq("notify_enabled", true)
-          .neq("male_search_notify_mode", "off");
+          .eq("is_test_account", false)
+          .neq("male_search_notify_mode", "off")
+          .order("last_active_at", { ascending: false, nullsFirst: false })
+          .limit(500);
 
         if (femaleUsers && femaleUsers.length > 0) {
           const everyUsers = femaleUsers.filter(
@@ -231,6 +247,15 @@ Deno.serve(async (req) => {
           const batchedUsers = femaleUsers.filter(
             (f) => f.male_search_notify_mode === "batched" && !activeIds.has(f.id),
           );
+          console.log(JSON.stringify({
+            tag: "fanout_male_joined",
+            joiner: memberId,
+            candidates: femaleUsers.length,
+            every: everyUsers.length,
+            batched: batchedUsers.length,
+            excluded_active: femaleUsers.filter((f) => activeIds.has(f.id)).length,
+            every_ids: everyUsers.map((u) => u.id),
+          }));
 
           if (everyUsers.length > 0) {
             Promise.all(
@@ -244,6 +269,9 @@ Deno.serve(async (req) => {
                     notification_type: "male_search_every",
                     cooldown_minutes: 5,
                   },
+                }).then((r) => {
+                  console.log(JSON.stringify({ tag: "fanout_push_result", type: "male_search_every", user: user.id, result: r?.data ?? r?.error ?? null }));
+                  return r;
                 }),
               ),
             ).catch(console.error);
