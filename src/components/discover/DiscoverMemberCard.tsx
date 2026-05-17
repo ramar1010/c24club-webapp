@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import VipCallGate, { shouldBlockCall } from "./VipCallGate";
+import { transformImage, transformImageSrcSet } from "@/lib/imageTransform";
 
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
 import DirectCallModal from "./DirectCallModal";
