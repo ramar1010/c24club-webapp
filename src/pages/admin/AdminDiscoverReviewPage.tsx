@@ -420,7 +420,6 @@ const AdminDiscoverReviewPage = () => {
                           size="sm"
                           className="flex-1 h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
                           onClick={() => updateStatus.mutate({ memberId: member.id, status: "approved" })}
-                          disabled={updateStatus.isPending}
                         >
                           <Check className="w-3.5 h-3.5 mr-1" /> Approve
                         </Button>
@@ -429,7 +428,6 @@ const AdminDiscoverReviewPage = () => {
                           variant="destructive"
                           className="flex-1 h-8 text-xs"
                           onClick={() => updateStatus.mutate({ memberId: member.id, status: "denied" })}
-                          disabled={updateStatus.isPending}
                         >
                           <X className="w-3.5 h-3.5 mr-1" /> Deny
                         </Button>
@@ -442,7 +440,6 @@ const AdminDiscoverReviewPage = () => {
                         variant="destructive"
                         className="w-full h-8 text-xs"
                         onClick={() => updateStatus.mutate({ memberId: member.id, status: "denied" })}
-                        disabled={updateStatus.isPending}
                       >
                         <X className="w-3.5 h-3.5 mr-1" /> Revoke
                       </Button>
@@ -453,7 +450,6 @@ const AdminDiscoverReviewPage = () => {
                         size="sm"
                         className="w-full h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
                         onClick={() => updateStatus.mutate({ memberId: member.id, status: "approved" })}
-                        disabled={updateStatus.isPending}
                       >
                         <Check className="w-3.5 h-3.5 mr-1" /> Re-approve
                       </Button>
