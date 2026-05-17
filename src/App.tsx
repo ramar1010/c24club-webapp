@@ -98,7 +98,19 @@ const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
 const WorkerRedditTaskPage = lazy(() => import("@/pages/public/WorkerRedditTaskPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Avoid refetching on every remount / tab focus for rarely-changing data.
+      // Hooks that need fresher data can override via their own staleTime.
+      staleTime: 60_000, // 1 min
+      gcTime: 5 * 60_000, // 5 min
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
