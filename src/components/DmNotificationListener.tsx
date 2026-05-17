@@ -76,11 +76,15 @@ const DmNotificationListener = () => {
       });
     };
 
-    checkNewMessages();
-    const poll = setInterval(checkNewMessages, 5000);
-
+    // Visibility-aware polling: skip ticks when tab hidden, fire on tab focus
+    const tick = () => { if (!document.hidden) checkNewMessages(); };
+    tick();
+    const poll = setInterval(tick, 20000); // 5s -> 20s
+    const onVis = () => { if (!document.hidden) checkNewMessages(); };
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [user, navigate]);
 
