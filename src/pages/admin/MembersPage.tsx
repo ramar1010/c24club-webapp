@@ -214,13 +214,21 @@ const MembersPage = () => {
     setBulkDeleting(true);
     try {
       const ids = Array.from(selectedIds);
-      // Delete in batches of 50
-      for (let i = 0; i < ids.length; i += 50) {
-        const batch = ids.slice(i, i + 50);
-        const { error } = await supabase.from("members").delete().in("id", batch);
+      // Delete in batches of 20 via admin-delete-account (removes auth user + all data)
+      let failed = 0;
+      for (let i = 0; i < ids.length; i += 20) {
+        const batch = ids.slice(i, i + 20);
+        const { data, error } = await supabase.functions.invoke("admin-delete-account", {
+          body: { user_ids: batch },
+        });
         if (error) throw error;
+        failed += (data?.results || []).filter((r: any) => !r.success).length;
       }
-      toast.success(`${ids.length} member(s) deleted`);
+      if (failed > 0) {
+        toast.warning(`${ids.length - failed} deleted, ${failed} failed`);
+      } else {
+        toast.success(`${ids.length} member(s) deleted`);
+      }
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);
       qc.invalidateQueries({ queryKey: ["members_page"] });
