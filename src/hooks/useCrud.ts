@@ -253,8 +253,14 @@ export function useDeleteMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("members").delete().eq("id", id);
+      const { data, error } = await supabase.functions.invoke("admin-delete-account", {
+        body: { user_id: id },
+      });
       if (error) throw error;
+      if (!data?.success) {
+        const msg = data?.results?.[0]?.error || data?.error || "Delete failed";
+        throw new Error(msg);
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["members"] });
