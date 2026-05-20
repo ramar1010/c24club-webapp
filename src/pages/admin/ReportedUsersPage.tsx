@@ -100,18 +100,14 @@ const ReportedUsersPage = () => {
     if (!dialogAction || dialogAction.type !== "delete") return;
     setLoading(true);
     try {
-      // Delete member record (cascading cleanup)
-      const { error } = await supabase
-        .from("members")
-        .delete()
-        .eq("id", dialogAction.userId);
+      const { data, error } = await supabase.functions.invoke("admin-delete-account", {
+        body: { user_id: dialogAction.userId },
+      });
       if (error) throw error;
-
-      // Also remove from member_minutes
-      await supabase
-        .from("member_minutes")
-        .delete()
-        .eq("user_id", dialogAction.userId);
+      if (!data?.success) {
+        const msg = data?.results?.[0]?.error || data?.error || "Delete failed";
+        throw new Error(msg);
+      }
 
       toast.success("Account deleted");
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
@@ -283,7 +279,7 @@ const ReportedUsersPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the member record for user <span className="font-mono text-foreground">{dialogAction?.userId}</span>. This action cannot be undone.
+              This will permanently remove the auth account and member data for user <span className="font-mono text-foreground">{dialogAction?.userId}</span>. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
