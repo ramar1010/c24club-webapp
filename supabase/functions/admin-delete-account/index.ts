@@ -22,8 +22,17 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    const anonClient = createClient(supabaseUrl, anonKey);
-    const adminClient = createClient(supabaseUrl, serviceKey);
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      return respond({ success: false, error: "Delete service is not configured" }, 500);
+    }
+
+    const anonClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const adminClient = createClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${serviceKey}` } },
+    });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return respond({ success: false, error: "Missing Authorization header" }, 401);
@@ -41,7 +50,11 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (roleError || !adminRow) {
+    if (roleError) {
+      console.error("[admin-delete-account] Admin role check failed:", roleError.message);
+      return respond({ success: false, error: `Admin check failed: ${roleError.message}` }, 500);
+    }
+    if (!adminRow) {
       return respond({ success: false, error: "Forbidden: admin role required" }, 403);
     }
 
@@ -56,6 +69,8 @@ Deno.serve(async (req) => {
       return respond({ success: false, error: "user_id or user_ids required" }, 400);
     }
 
+    console.log(`[admin-delete-account] Admin ${user.id} deleting ${targetIds.length} account(s)`);
+
     const results: { id: string; success: boolean; error?: string }[] = [];
 
     for (const targetId of targetIds) {
@@ -68,8 +83,9 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(targetId);
+        const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(targetId, false);
         if (deleteUserError && !/not found/i.test(deleteUserError.message)) {
+          console.error(`[admin-delete-account] Auth delete failed for ${targetId}:`, deleteUserError.message);
           results.push({ id: targetId, success: false, error: `auth: ${deleteUserError.message}` });
           continue;
         }

@@ -22,8 +22,17 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    const anonClient = createClient(supabaseUrl, supabaseAnonKey);
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+      return respond({ success: false, error: "Delete service is not configured" });
+    }
+
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${supabaseServiceKey}` } },
+    });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return respond({ success: false, error: "Missing Authorization header" });
@@ -46,7 +55,7 @@ Deno.serve(async (req) => {
       return respond({ success: false, error: `Failed to delete user data: ${rpcError.message}` });
     }
 
-    const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(user.id);
+    const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(user.id, false);
 
     if (deleteUserError) {
       console.error("[delete-account] Auth delete error:", deleteUserError.message);
