@@ -34,12 +34,14 @@ Deno.serve(async (req) => {
       return respond({ success: false, error: "Not authenticated" }, 401);
     }
 
-    // Verify caller is an admin
-    const { data: isAdmin, error: roleError } = await adminClient.rpc("has_role", {
-      _user_id: user.id,
-      _role: "admin",
-    });
-    if (roleError || !isAdmin) {
+    // Verify caller is an admin (query user_roles directly to avoid enum-cast issues)
+    const { data: adminRow, error: roleError } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleError || !adminRow) {
       return respond({ success: false, error: "Forbidden: admin role required" }, 403);
     }
 
