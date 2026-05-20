@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
           target_user_id: targetId,
         });
         if (rpcError) {
+          console.error(`[admin-delete-account] Data cleanup failed for ${targetId}:`, rpcError.message);
           results.push({ id: targetId, success: false, error: `data: ${rpcError.message}` });
           continue;
         }
@@ -93,6 +94,7 @@ Deno.serve(async (req) => {
         results.push({ id: targetId, success: true });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
+        console.error(`[admin-delete-account] Unexpected failure for ${targetId}:`, msg);
         results.push({ id: targetId, success: false, error: msg });
       }
     }
