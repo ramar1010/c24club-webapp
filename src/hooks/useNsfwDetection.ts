@@ -247,9 +247,9 @@ export function useNsfwDetection({
       try {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const predictions = await model.classify(canvas);
-        const pornScore = predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
-        const hentaiScore = predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
-        const sexyScore = predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
+        const pornScore = predictions.find((p) => p.className === "Porn")?.probability ?? 0;
+        const hentaiScore = predictions.find((p) => p.className === "Hentai")?.probability ?? 0;
+        const sexyScore = predictions.find((p) => p.className === "Sexy")?.probability ?? 0;
         // Only Porn and Hentai trigger bans; Sexy alone has too many false positives
         const nudityScore = Math.max(pornScore, hentaiScore);
 
@@ -343,7 +343,7 @@ export function useNsfwDetection({
     if (targetUserId) {
       await supabase
         .from("member_minutes")
-        .update({ nsfw_strikes: 0 } as any)
+        .update({ nsfw_strikes: 0 })
         .eq("user_id", targetUserId);
     }
   }, [getActionTargetUserId]);
