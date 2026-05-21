@@ -251,6 +251,10 @@ export function useNsfwDetection({
         // Only Porn and Hentai trigger bans; Sexy alone has too many false positives
         const nudityScore = Math.max(pornScore, hentaiScore);
 
+        console.log(
+          `[NSFW] scan P=${pornScore.toFixed(3)} H=${hentaiScore.toFixed(3)} S=${sexyScore.toFixed(3)} nudity=${nudityScore.toFixed(3)} thresh=${nudityThreshold}`
+        );
+
         if (nudityScore >= nudityThreshold) {
           stickyBlurRef.current = true;
           if (!viewerUnblurredRef.current) {
