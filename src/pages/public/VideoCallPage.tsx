@@ -249,8 +249,8 @@ const VideoCallPage = () => {
 
   // DEBUG: log when blur state flips at the component level
   useEffect(() => {
-    console.log(`[NSFW] component isNsfwBlurred=${isNsfwBlurred} isPreBlurred=${isPreBlurred} isMobile=${isMobile}`);
-  }, [isNsfwBlurred, isPreBlurred, isMobile]);
+    console.log(`[NSFW] component isNsfwBlurred=${isNsfwBlurred} isPreBlurred=${isPreBlurred}`);
+  }, [isNsfwBlurred, isPreBlurred]);
 
   // Anti-flasher: ensure the local user keeps their face in frame
   const { noFaceWarning } = useLocalFaceCheck({
