@@ -13,6 +13,10 @@ interface UseNsfwDetectionOptions {
   persistAcrossPartners?: boolean;
 }
 
+type NsfwPrediction = { className: string; probability: number };
+type NsfwModel = { classify: (source: HTMLCanvasElement) => Promise<NsfwPrediction[]> };
+type ModerateFrameResponse = { flagged?: boolean; strikes?: number; banned?: boolean };
+
 export function useNsfwDetection({
   remoteVideoRef,
   isConnected,
@@ -28,7 +32,7 @@ export function useNsfwDetection({
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
   const [showConfirmPrompt, setShowConfirmPrompt] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
-  const modelRef = useRef<any>(null);
+  const modelRef = useRef<NsfwModel | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loadingRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
@@ -88,11 +92,9 @@ export function useNsfwDetection({
         strikesRef.current = 0;
         setNsfwStrikes(0);
       }
-      // Don't clear sticky blur when partner disappears — it must linger
-      // across new partners until the viewer manually unblurs.
-      if (!stickyBlurRef.current || viewerUnblurredRef.current) {
-        setIsNsfwBlurred(false);
-      }
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
+      setIsNsfwBlurred(false);
       return;
     }
 
@@ -105,11 +107,9 @@ export function useNsfwDetection({
       setIsNsfwBlurred(false);
     }
     if (loadedUserIdRef.current !== targetUserId) {
-      // New partner — sticky blur lingers across partners.
-      // If still latched and viewer hasn't unblurred, immediately re-blur.
-      if (stickyBlurRef.current && !viewerUnblurredRef.current) {
-        setIsNsfwBlurred(true);
-      }
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
+      setIsNsfwBlurred(false);
     }
 
     loadedUserIdRef.current = targetUserId;
@@ -121,7 +121,7 @@ export function useNsfwDetection({
         if (!isMounted || loadedUserIdRef.current !== targetUserId) return;
         if (error) return;
 
-        const raw = Number((data as any) ?? 0);
+        const raw = Number(data ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
@@ -193,7 +193,9 @@ export function useNsfwDetection({
 
       if (error) throw error;
 
-      if (!(data as any)?.flagged) {
+      const moderation = data as ModerateFrameResponse | null;
+
+      if (!moderation?.flagged) {
         // Server says clean — but if local model latched, keep blur on
         if (!stickyBlurRef.current || viewerUnblurredRef.current) {
           setIsNsfwBlurred(false);
@@ -201,12 +203,12 @@ export function useNsfwDetection({
         return;
       }
 
-      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number((data as any)?.strikes ?? 0)));
+      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number(moderation.strikes ?? 0)));
       strikesRef.current = nextStrikes;
       setNsfwStrikes(nextStrikes);
       setShowConfirmPrompt(false);
 
-      if ((data as any)?.banned) {
+      if (moderation.banned) {
         pendingBanUserIdRef.current = null;
         strikesRef.current = 0;
         setNsfwStrikes(0);
@@ -245,9 +247,9 @@ export function useNsfwDetection({
       try {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const predictions = await model.classify(canvas);
-        const pornScore = predictions.find((p: any) => p.className === "Porn")?.probability ?? 0;
-        const hentaiScore = predictions.find((p: any) => p.className === "Hentai")?.probability ?? 0;
-        const sexyScore = predictions.find((p: any) => p.className === "Sexy")?.probability ?? 0;
+        const pornScore = predictions.find((p) => p.className === "Porn")?.probability ?? 0;
+        const hentaiScore = predictions.find((p) => p.className === "Hentai")?.probability ?? 0;
+        const sexyScore = predictions.find((p) => p.className === "Sexy")?.probability ?? 0;
         // Only Porn and Hentai trigger bans; Sexy alone has too many false positives
         const nudityScore = Math.max(pornScore, hentaiScore);
 
@@ -257,9 +259,7 @@ export function useNsfwDetection({
 
         if (nudityScore >= nudityThreshold) {
           stickyBlurRef.current = true;
-          if (!viewerUnblurredRef.current) {
-            setIsNsfwBlurred(true);
-          }
+          setIsNsfwBlurred(true);
           lastValidTargetRef.current = targetUserId;
 
           const now = Date.now();
@@ -343,7 +343,7 @@ export function useNsfwDetection({
     if (targetUserId) {
       await supabase
         .from("member_minutes")
-        .update({ nsfw_strikes: 0 } as any)
+        .update({ nsfw_strikes: 0 })
         .eq("user_id", targetUserId);
     }
   }, [getActionTargetUserId]);
