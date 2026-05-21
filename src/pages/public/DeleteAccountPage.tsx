@@ -23,6 +23,7 @@ const DeleteAccountPage = () => {
     title: "Delete Your Account - C24 Club",
     description:
       "Request deletion of your C24 Club account and associated data. Learn what data is removed, what is retained, and how to submit a request.",
+    path: "/delete-account",
   });
 
   useEffect(() => {
