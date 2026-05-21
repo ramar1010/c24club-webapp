@@ -95,6 +95,7 @@ const MonkeyAppAlternativePage = lazy(() => import("@/pages/public/seo/MonkeyApp
 const CSAEPolicyPage = lazy(() => import("@/pages/public/CSAEPolicyPage"));
 const CallMePage = lazy(() => import("@/pages/public/CallMePage"));
 const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
+const DeleteAccountPage = lazy(() => import("@/pages/public/DeleteAccountPage"));
 const WorkerRedditTaskPage = lazy(() => import("@/pages/public/WorkerRedditTaskPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -144,6 +145,7 @@ const App = () => (
                 <Route path="monkey-app-alternative" element={<MonkeyAppAlternativePage />} />
                 <Route path="csae-policy" element={<CSAEPolicyPage />} />
                 <Route path="contact" element={<ContactPage />} />
+                <Route path="delete-account" element={<DeleteAccountPage />} />
               </Route>
 
               {/* Video call (full-screen, no public layout) */}
