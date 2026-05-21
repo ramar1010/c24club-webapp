@@ -244,13 +244,8 @@ const VideoCallPage = () => {
     isConnected: callState === "connected",
     userId: currentPartnerId || "",
     viewerUserId: memberId,
-    nudityThreshold: 0.4,
+    nudityThreshold: 0.75,
   });
-
-  // DEBUG: log when blur state flips at the component level
-  useEffect(() => {
-    console.log(`[NSFW] component isNsfwBlurred=${isNsfwBlurred} isPreBlurred=${isPreBlurred}`);
-  }, [isNsfwBlurred, isPreBlurred]);
 
   // Anti-flasher: ensure the local user keeps their face in frame
   const { noFaceWarning } = useLocalFaceCheck({
