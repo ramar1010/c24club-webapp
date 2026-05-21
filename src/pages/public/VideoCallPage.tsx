@@ -1501,8 +1501,7 @@ const VideoCallPage = () => {
           <VoiceModeAvatar videoRef={remoteVideoRef} partnerId={currentPartnerId} className="z-20" />
           }
             <video ref={remoteVideoRef} autoPlay playsInline
-          style={isPreBlurred || isNsfwBlurred ? { filter: "blur(30px)", outline: "4px solid red" } : { outline: "4px solid lime" }}
-          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} transition-[filter] duration-500`} />
+          className={`absolute inset-0 w-full h-full object-cover ${callState === "connected" && !partnerVoiceMode ? "block" : "hidden"} ${isPreBlurred || isNsfwBlurred ? "blur-[30px] transition-[filter] duration-500" : "transition-[filter] duration-500"}`} />
             {isNsfwBlurred && !isPreBlurred && callState === "connected" && !partnerVoiceMode &&
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 pointer-events-none">
                 <div className="bg-black/70 backdrop-blur-sm rounded-xl px-4 py-2 text-center pointer-events-none">
