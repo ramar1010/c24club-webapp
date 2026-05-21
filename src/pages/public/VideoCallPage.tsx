@@ -247,6 +247,11 @@ const VideoCallPage = () => {
     nudityThreshold: 0.4,
   });
 
+  // DEBUG: log when blur state flips at the component level
+  useEffect(() => {
+    console.log(`[NSFW] component isNsfwBlurred=${isNsfwBlurred} isPreBlurred=${isPreBlurred} isMobile=${isMobile}`);
+  }, [isNsfwBlurred, isPreBlurred, isMobile]);
+
   // Anti-flasher: ensure the local user keeps their face in frame
   const { noFaceWarning } = useLocalFaceCheck({
     localVideoRef,
