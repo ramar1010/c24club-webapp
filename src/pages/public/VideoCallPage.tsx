@@ -244,6 +244,7 @@ const VideoCallPage = () => {
     isConnected: callState === "connected",
     userId: currentPartnerId || "",
     viewerUserId: memberId,
+    nudityThreshold: 0.4,
   });
 
   // Anti-flasher: ensure the local user keeps their face in frame
