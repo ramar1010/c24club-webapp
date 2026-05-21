@@ -15,7 +15,6 @@ interface UseNsfwDetectionOptions {
 
 type NsfwPrediction = { className: string; probability: number };
 type NsfwModel = { classify: (source: HTMLCanvasElement) => Promise<NsfwPrediction[]> };
-type ModerateFrameResponse = { flagged?: boolean; strikes?: number; banned?: boolean };
 
 export function useNsfwDetection({
   remoteVideoRef,
@@ -40,7 +39,6 @@ export function useNsfwDetection({
   const strikesRef = useRef(0);
   const lastValidTargetRef = useRef<string | null>(null);
   const pendingBanUserIdRef = useRef<string | null>(null);
-  const serverScanInFlightRef = useRef(false);
   // Once NSFW is detected for a partner, blur "latches" on for the rest of the
   // call until the viewer manually clicks Unblur. Reset on disconnect / new partner.
   const stickyBlurRef = useRef(false);
@@ -179,47 +177,6 @@ export function useNsfwDetection({
     }
   }, [isConnected]);
 
-  const scanFrameWithSightengine = useCallback(async (targetUserId: string, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
-    const video = remoteVideoRef.current;
-    if (!video || video.readyState < 2 || serverScanInFlightRef.current) return;
-
-    serverScanInFlightRef.current = true;
-    try {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const frame = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-      const { data, error } = await supabase.functions.invoke("moderate-frame", {
-        body: { frame, reported_user_id: targetUserId },
-      });
-
-      if (error) throw error;
-
-      const moderation = data as ModerateFrameResponse | null;
-
-      if (!moderation?.flagged) {
-        // Server says clean — but if local model latched, keep blur on
-        if (!stickyBlurRef.current || viewerUnblurredRef.current) {
-          setIsNsfwBlurred(false);
-        }
-        return;
-      }
-
-      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number(moderation.strikes ?? 0)));
-      strikesRef.current = nextStrikes;
-      setNsfwStrikes(nextStrikes);
-      setShowConfirmPrompt(false);
-
-      if (moderation.banned) {
-        pendingBanUserIdRef.current = null;
-        strikesRef.current = 0;
-        setNsfwStrikes(0);
-      }
-    } catch (err) {
-      console.error("[NSFW] Sightengine moderation failed:", err);
-    } finally {
-      serverScanInFlightRef.current = false;
-    }
-  }, [maxStrikes, remoteVideoRef]);
-
   // Periodic detection
   useEffect(() => {
     if (!isConnected) return;
@@ -261,13 +218,7 @@ export function useNsfwDetection({
           stickyBlurRef.current = true;
           setIsNsfwBlurred(true);
           lastValidTargetRef.current = targetUserId;
-
-          const now = Date.now();
-          if (strikesRef.current < maxStrikes && now - lastStrikeAtRef.current >= strikeCooldownMs) {
-            lastStrikeAtRef.current = now;
-            console.log(`[NSFW] Local detection — nudity: ${(nudityScore * 100).toFixed(1)}%; sending to Sightengine`);
-            void scanFrameWithSightengine(targetUserId, canvas, ctx);
-          }
+          console.log(`[NSFW] Local detection — nudity: ${(nudityScore * 100).toFixed(1)}% (blurred locally)`);
         } else {
           // Latch blur on once triggered, until viewer manually unblurs
           if (stickyBlurRef.current && !viewerUnblurredRef.current) {
@@ -286,10 +237,7 @@ export function useNsfwDetection({
     isConnected,
     checkIntervalMs,
     nudityThreshold,
-    maxStrikes,
-    strikeCooldownMs,
     remoteVideoRef,
-    scanFrameWithSightengine,
     getValidatedTargetUserId,
   ]);
 
