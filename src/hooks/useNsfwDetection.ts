@@ -13,6 +13,10 @@ interface UseNsfwDetectionOptions {
   persistAcrossPartners?: boolean;
 }
 
+type NsfwPrediction = { className: string; probability: number };
+type NsfwModel = { classify: (source: HTMLCanvasElement) => Promise<NsfwPrediction[]> };
+type ModerateFrameResponse = { flagged?: boolean; strikes?: number; banned?: boolean };
+
 export function useNsfwDetection({
   remoteVideoRef,
   isConnected,
@@ -28,7 +32,7 @@ export function useNsfwDetection({
   const [nsfwStrikes, setNsfwStrikes] = useState(0);
   const [showConfirmPrompt, setShowConfirmPrompt] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
-  const modelRef = useRef<any>(null);
+  const modelRef = useRef<NsfwModel | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loadingRef = useRef(false);
   const loadedUserIdRef = useRef<string | null>(null);
@@ -117,7 +121,7 @@ export function useNsfwDetection({
         if (!isMounted || loadedUserIdRef.current !== targetUserId) return;
         if (error) return;
 
-        const raw = Number((data as any) ?? 0);
+        const raw = Number(data ?? 0);
         const strikes = Math.min(Math.max(0, Math.floor(raw)), maxStrikes);
         strikesRef.current = strikes;
         setNsfwStrikes(strikes);
@@ -189,7 +193,9 @@ export function useNsfwDetection({
 
       if (error) throw error;
 
-      if (!(data as any)?.flagged) {
+      const moderation = data as ModerateFrameResponse | null;
+
+      if (!moderation?.flagged) {
         // Server says clean — but if local model latched, keep blur on
         if (!stickyBlurRef.current || viewerUnblurredRef.current) {
           setIsNsfwBlurred(false);
@@ -197,12 +203,12 @@ export function useNsfwDetection({
         return;
       }
 
-      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number((data as any)?.strikes ?? 0)));
+      const nextStrikes = Math.max(0, Math.min(maxStrikes, Number(moderation.strikes ?? 0)));
       strikesRef.current = nextStrikes;
       setNsfwStrikes(nextStrikes);
       setShowConfirmPrompt(false);
 
-      if ((data as any)?.banned) {
+      if (moderation.banned) {
         pendingBanUserIdRef.current = null;
         strikesRef.current = 0;
         setNsfwStrikes(0);
