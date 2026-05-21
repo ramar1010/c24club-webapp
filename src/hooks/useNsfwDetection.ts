@@ -88,11 +88,9 @@ export function useNsfwDetection({
         strikesRef.current = 0;
         setNsfwStrikes(0);
       }
-      // Don't clear sticky blur when partner disappears — it must linger
-      // across new partners until the viewer manually unblurs.
-      if (!stickyBlurRef.current || viewerUnblurredRef.current) {
-        setIsNsfwBlurred(false);
-      }
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
+      setIsNsfwBlurred(false);
       return;
     }
 
@@ -105,11 +103,9 @@ export function useNsfwDetection({
       setIsNsfwBlurred(false);
     }
     if (loadedUserIdRef.current !== targetUserId) {
-      // New partner — sticky blur lingers across partners.
-      // If still latched and viewer hasn't unblurred, immediately re-blur.
-      if (stickyBlurRef.current && !viewerUnblurredRef.current) {
-        setIsNsfwBlurred(true);
-      }
+      stickyBlurRef.current = false;
+      viewerUnblurredRef.current = false;
+      setIsNsfwBlurred(false);
     }
 
     loadedUserIdRef.current = targetUserId;
@@ -257,9 +253,7 @@ export function useNsfwDetection({
 
         if (nudityScore >= nudityThreshold) {
           stickyBlurRef.current = true;
-          if (!viewerUnblurredRef.current) {
-            setIsNsfwBlurred(true);
-          }
+          setIsNsfwBlurred(true);
           lastValidTargetRef.current = targetUserId;
 
           const now = Date.now();
