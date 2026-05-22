@@ -1,0 +1,1 @@
+ALTER TABLE public.member_welcome_dm_log ALTER COLUMN sent_gender DROP NOT NULL;
