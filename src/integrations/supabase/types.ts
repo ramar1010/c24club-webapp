@@ -1592,17 +1592,17 @@ export type Database = {
       member_welcome_dm_log: {
         Row: {
           sent_at: string
-          sent_gender: string
+          sent_gender: string | null
           user_id: string
         }
         Insert: {
           sent_at?: string
-          sent_gender: string
+          sent_gender?: string | null
           user_id: string
         }
         Update: {
           sent_at?: string
-          sent_gender?: string
+          sent_gender?: string | null
           user_id?: string
         }
         Relationships: []
