@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { identifyRedditUser, trackRedditEvent } from "@/lib/redditPixel";
 
 interface BanInfo {
   reason: string;
@@ -116,6 +117,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (nextSession?.user) {
         void ensureMemberRow(nextSession.user);
+        // Reddit Pixel advanced matching
+        identifyRedditUser({
+          email: nextSession.user.email ?? undefined,
+          externalId: nextSession.user.id,
+        });
       }
 
       // Fire welcome email on first signup (deduplicated per user)
@@ -132,6 +138,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             supabase.functions.invoke("welcome-email", {
               body: { userId: uid },
             }).catch((err) => console.warn("Welcome email failed:", err));
+            // Reddit SignUp conversion (pixel + CAPI, deduped via conversionId)
+            void trackRedditEvent("SignUp", {
+              conversionId: `signup_${uid}`,
+              email: nextSession.user.email ?? undefined,
+              externalId: uid,
+            });
           }
         }
       }
@@ -143,6 +155,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       if (initialSession?.user) {
         void ensureMemberRow(initialSession.user);
+        identifyRedditUser({
+          email: initialSession.user.email ?? undefined,
+          externalId: initialSession.user.id,
+        });
       }
     });
 
