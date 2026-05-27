@@ -100,6 +100,24 @@ export async function trackRedditEvent(
 
   // 2) Server CAPI (fire-and-forget)
   try {
+    // Capture Reddit click ID from URL (?rdt_cid=...) and persist for later events
+    let clickId: string | undefined;
+    if (typeof window !== "undefined") {
+      try {
+        const url = new URL(window.location.href);
+        const fromUrl = url.searchParams.get("rdt_cid");
+        if (fromUrl) {
+          localStorage.setItem("rdt_cid", fromUrl);
+          clickId = fromUrl;
+        } else {
+          clickId = localStorage.getItem("rdt_cid") || undefined;
+        }
+      } catch {}
+    }
+    const screen =
+      typeof window !== "undefined" && window.screen
+        ? { width: window.screen.width, height: window.screen.height }
+        : undefined;
     await supabase.functions.invoke("reddit-capi", {
       body: {
         event,
@@ -110,6 +128,8 @@ export async function trackRedditEvent(
         customEventName: payload.customEventName,
         email: payload.email,
         externalId: payload.externalId,
+        clickId,
+        screen,
         url: typeof window !== "undefined" ? window.location.href : undefined,
         referrer: typeof document !== "undefined" ? document.referrer : undefined,
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
