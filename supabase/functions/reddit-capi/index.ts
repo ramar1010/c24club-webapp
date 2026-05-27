@@ -54,6 +54,8 @@ Deno.serve(async (req) => {
     customEventName,
     email,
     externalId,
+    clickId,
+    screen,
     url,
     referrer,
     userAgent,
@@ -69,11 +71,17 @@ Deno.serve(async (req) => {
   const ip = getClientIp(req);
   const ua = userAgent || req.headers.get("user-agent") || undefined;
 
-  const user: Record<string, string> = {};
+  const user: Record<string, any> = {};
   if (email) user.email = await sha256(String(email));
   if (externalId) user.external_id = await sha256(String(externalId));
   if (ip) user.ip_address = ip;
   if (ua) user.user_agent = ua;
+  if (screen && typeof screen === "object" && screen.width && screen.height) {
+    user.screen_dimensions = {
+      width: Number(screen.width),
+      height: Number(screen.height),
+    };
+  }
 
   const isCustom = event === "Custom";
   const eventObj: Record<string, any> = {
@@ -82,6 +90,7 @@ Deno.serve(async (req) => {
     type: isCustom && customEventName
       ? { tracking_type: "CUSTOM", custom_event_name: customEventName }
       : { tracking_type: event },
+    ...(clickId ? { click_id: String(clickId) } : {}),
     event_metadata: {
       conversion_id: conversionId,
       ...(value != null ? { value: Number(value), value_decimal: Number(value) } : {}),
