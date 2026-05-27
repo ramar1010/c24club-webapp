@@ -6,7 +6,7 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const PIXEL_ID = "t2_80vn1q03";
-const REDDIT_ENDPOINT = `https://ads-api.reddit.com/api/v2.0/conversions/events/${PIXEL_ID}`;
+const REDDIT_ENDPOINT = `https://ads-api.reddit.com/api/v3/pixels/${PIXEL_ID}/conversion_events`;
 
 async function sha256(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input.trim().toLowerCase());
@@ -75,27 +75,25 @@ Deno.serve(async (req) => {
   if (ip) user.ip_address = ip;
   if (ua) user.user_agent = ua;
 
+  const isCustom = event === "Custom";
   const eventObj: Record<string, any> = {
-    event_at: new Date().toISOString(),
-    event_type: { tracking_type: event },
-    click_id: undefined,
+    event_at: Date.now(), // Unix epoch ms (must be <7 days old)
+    action_source: "website",
+    type: isCustom && customEventName
+      ? { tracking_type: "CUSTOM", custom_event_name: customEventName }
+      : { tracking_type: event },
     event_metadata: {
       conversion_id: conversionId,
       ...(value != null ? { value: Number(value), value_decimal: Number(value) } : {}),
       ...(currency ? { currency } : {}),
       ...(itemCount != null ? { item_count: Number(itemCount) } : {}),
+      ...(url ? { conversion_url: url } : {}),
+      ...(referrer ? { referrer } : {}),
     },
     user,
   };
 
-  if (event === "Custom" && customEventName) {
-    eventObj.event_type.custom_event_name = customEventName;
-  }
-
-  if (url) eventObj.event_metadata.conversion_url = url;
-  if (referrer) eventObj.event_metadata.referrer = referrer;
-
-  const payload = { events: [eventObj], test_mode: false };
+  const payload = { data: { events: [eventObj] } };
 
   try {
     const resp = await fetch(REDDIT_ENDPOINT, {
