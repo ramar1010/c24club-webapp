@@ -58,6 +58,7 @@ import NsfwConfirmOverlay from "@/components/videocall/NsfwConfirmOverlay";
 import BehaviorWarningOverlay from "@/components/videocall/BehaviorWarningOverlay";
 import { useLocalFaceCheck } from "@/hooks/useLocalFaceCheck";
 import { useCameraTilt } from "@/hooks/useCameraTilt";
+import { scanImageForNsfw } from "@/lib/nsfwScan";
 import QuietHoursBanner from "@/components/videocall/QuietHoursBanner";
 import PickItemModal from "@/components/videocall/PickItemModal";
 import FemaleRetentionBar from "@/components/videocall/FemaleRetentionBar";
@@ -497,7 +498,23 @@ const VideoCallPage = () => {
     }
   }, [memberId, isFemale, voiceMode, startPreview]);
 
-  // Pre-call AI moderation: scan local preview frame + selfie ONCE per session.
+  const runLocalPreCallScan = useCallback(async () => {
+    const stream = localStreamRef.current;
+    const video = localVideoRef.current;
+    if (!stream || !video || video.readyState < 2) return false;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 224;
+    canvas.height = 224;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return false;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const result = await scanImageForNsfw(canvas, 0.55);
+    return result.isNsfw;
+  }, [localStreamRef, localVideoRef]);
+
+  // Pre-call moderation runs in the browser to avoid Lovable AI usage on every visit.
   // If flagged: disable START + auto-blur outgoing video for partners (via nsfw_strikes).
   const [preCallFlagged, setPreCallFlagged] = useState(false);
   const preCallScannedRef = useRef(false);
@@ -510,28 +527,12 @@ const VideoCallPage = () => {
 
     let cancelled = false;
     const t = setTimeout(async () => {
-      const stream = localStreamRef.current;
-      const video = localVideoRef.current;
-      if (!stream || !video || video.readyState < 2) return;
       preCallScannedRef.current = true;
 
       try {
-        const w = video.videoWidth || 320;
-        const h = video.videoHeight || 240;
-        const canvas = document.createElement("canvas");
-        const scale = Math.min(1, 320 / w);
-        canvas.width = Math.max(1, Math.floor(w * scale));
-        canvas.height = Math.max(1, Math.floor(h * scale));
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const frame = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
-
-        const { data } = await supabase.functions.invoke("moderate-precall", {
-          body: { frame, selfie_url: mySelfieUrl ?? undefined },
-        });
+        const flagged = await runLocalPreCallScan();
         if (cancelled) return;
-        if ((data as any)?.flagged) {
+        if (flagged) {
           setPreCallFlagged(true);
           toast.error(
             "Inappropriate content detected in your camera. Please adjust and reload the page to try again.",
@@ -547,7 +548,7 @@ const VideoCallPage = () => {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [memberId, callState, isFemale, voiceMode, mySelfieUrl, localStreamRef, localVideoRef]);
+  }, [memberId, callState, isFemale, voiceMode, runLocalPreCallScan]);
 
 
   // Manage female anchor slot via backend queue/session logic
@@ -1010,44 +1011,27 @@ const VideoCallPage = () => {
       return;
     }
 
-    // Second Gemini scan right at click time — catches behavior changes
+    // Second local scan right at click time — catches behavior changes
     // between the initial preview scan and the moment they hit Start.
     // Skip if voice mode (no camera) or anonymous.
     const skipScan = memberId === "anonymous" || (isFemale && voiceMode);
     if (!skipScan) {
-      const stream = localStreamRef.current;
-      const video = localVideoRef.current;
-      if (stream && video && video.readyState >= 2) {
-        setPreCallScanning(true);
-        try {
-          const w = video.videoWidth || 320;
-          const h = video.videoHeight || 240;
-          const canvas = document.createElement("canvas");
-          const scale = Math.min(1, 320 / w);
-          canvas.width = Math.max(1, Math.floor(w * scale));
-          canvas.height = Math.max(1, Math.floor(h * scale));
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const frame = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
-            const { data } = await supabase.functions.invoke("moderate-precall", {
-              body: { frame, selfie_url: mySelfieUrl ?? undefined },
-            });
-            if ((data as any)?.flagged) {
-              setPreCallFlagged(true);
-              setPreCallScanning(false);
-              toast.error(
-                "Inappropriate content detected. Please adjust and reload to try again.",
-                { duration: 8000 }
-              );
-              return;
-            }
-          }
-        } catch (err) {
-          console.warn("[pre-call moderation @click] failed — allowing start", err);
-        } finally {
+      setPreCallScanning(true);
+      try {
+        const flagged = await runLocalPreCallScan();
+        if (flagged) {
+          setPreCallFlagged(true);
           setPreCallScanning(false);
+          toast.error(
+            "Inappropriate content detected. Please adjust and reload to try again.",
+            { duration: 8000 }
+          );
+          return;
         }
+      } catch (err) {
+        console.warn("[pre-call moderation @click] failed — allowing start", err);
+      } finally {
+        setPreCallScanning(false);
       }
     }
 
