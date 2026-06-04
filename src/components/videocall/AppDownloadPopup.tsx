@@ -9,11 +9,13 @@ interface AppDownloadPopupProps {
 
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.c24club.app&hl=en_US";
+const IOS_APP_URL =
+  "https://apps.apple.com/us/app/c24-club/id6766305883";
 
 const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
-  const handleDownloadClick = () => {
+  const handleDownloadClick = (source: string) => {
     if (userId && userId !== "anonymous") {
-      supabase.from("app_download_clicks").insert({ user_id: userId, source: "popup" }).then(() => {});
+      supabase.from("app_download_clicks").insert({ user_id: userId, source }).then(() => {});
     }
   };
 
@@ -55,30 +57,35 @@ const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
       </div>
 
       {/* App preview image with glow */}
-      <a
-        href={GOOGLE_PLAY_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleDownloadClick}
-        className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] transition-shadow duration-300"
-      >
+      <div className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
         <img
           src={appPreview}
-          alt="C24Club App Preview — Get it on Google Play"
+          alt="C24Club App Preview"
           className="w-full h-auto"
         />
-      </a>
+      </div>
 
-      {/* CTA button with glow */}
-      <a
-        href={GOOGLE_PLAY_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleDownloadClick}
-        className="mt-4 block w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-sm uppercase tracking-wide transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)] hover:scale-105 duration-300"
-      >
-        📲 Download Now — It's FREE 🚀
-      </a>
+      {/* CTA buttons */}
+      <div className="mt-4 flex gap-3">
+        <a
+          href={IOS_APP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => handleDownloadClick("popup-ios")}
+          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(161,161,170,0.3)] hover:shadow-[0_0_25px_rgba(161,161,170,0.5)] hover:scale-105 duration-300 flex items-center justify-center gap-1"
+        >
+          🍎 App Store
+        </a>
+        <a
+          href={GOOGLE_PLAY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => handleDownloadClick("popup-android")}
+          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)] hover:scale-105 duration-300 flex items-center justify-center gap-1"
+        >
+          🤖 Google Play
+        </a>
+      </div>
     </div>
   </div>
   );
