@@ -56,17 +56,8 @@ const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
         </p>
       </div>
 
-      {/* App preview image with glow */}
-      <div className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-        <img
-          src={appPreview}
-          alt="C24Club App Preview"
-          className="w-full h-auto"
-        />
-      </div>
-
       {/* CTA buttons */}
-      <div className="mt-4 flex gap-3">
+      <div className="flex gap-3 mb-4">
         <a
           href={IOS_APP_URL}
           target="_blank"
@@ -85,6 +76,15 @@ const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
         >
           🤖 Google Play
         </a>
+      </div>
+
+      {/* App preview image with glow */}
+      <div className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+        <img
+          src={appPreview}
+          alt="C24Club App Preview"
+          className="w-full h-auto"
+        />
       </div>
     </div>
   </div>
