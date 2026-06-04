@@ -13,9 +13,9 @@ const IOS_APP_URL =
   "https://apps.apple.com/us/app/c24-club/id6766305883";
 
 const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
-  const handleDownloadClick = () => {
+  const handleDownloadClick = (source: string) => {
     if (userId && userId !== "anonymous") {
-      supabase.from("app_download_clicks").insert({ user_id: userId, source: "popup" }).then(() => {});
+      supabase.from("app_download_clicks").insert({ user_id: userId, source }).then(() => {});
     }
   };
 
