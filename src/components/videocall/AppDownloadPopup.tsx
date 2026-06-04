@@ -9,6 +9,8 @@ interface AppDownloadPopupProps {
 
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.c24club.app&hl=en_US";
+const IOS_APP_URL =
+  "https://apps.apple.com/us/app/c24-club/id6766305883";
 
 const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
   const handleDownloadClick = () => {
