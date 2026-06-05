@@ -1,7 +1,7 @@
 import { X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import appPreviewMale from "@/assets/app-promo/app-preview-with-badges.jpeg";
-import appPreviewFemale from "@/assets/app-promo/app-preview-female.jpeg";
+import appPreviewFemale from "@/assets/app-promo/app-preview-female-v2.jpeg";
 import appStoreBadge from "@/assets/app-promo/app-store-badge.png";
 import googlePlayBadge from "@/assets/app-promo/google-play-badge.svg";
 
