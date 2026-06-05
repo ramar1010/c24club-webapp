@@ -62,25 +62,33 @@ const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) =>
         </p>
       </div>
 
-      {/* CTA buttons */}
+      {/* CTA buttons with store badges */}
       <div className="flex gap-3 mb-4">
         <a
           href={IOS_APP_URL}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => handleDownloadClick("popup-ios")}
-          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(161,161,170,0.3)] hover:shadow-[0_0_25px_rgba(161,161,170,0.5)] hover:scale-105 duration-300 flex items-center justify-center gap-1"
+          className="flex-1 rounded-xl overflow-hidden transition-all hover:scale-105 duration-300 shadow-[0_0_15px_rgba(161,161,170,0.3)] hover:shadow-[0_0_25px_rgba(161,161,170,0.5)]"
         >
-          🍎 App Store
+          <img
+            src={appStoreBadge}
+            alt="Download on the App Store"
+            className="w-full h-auto"
+          />
         </a>
         <a
           href={GOOGLE_PLAY_URL}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => handleDownloadClick("popup-android")}
-          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xs uppercase tracking-wide transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)] hover:scale-105 duration-300 flex items-center justify-center gap-1"
+          className="flex-1 rounded-xl overflow-hidden transition-all hover:scale-105 duration-300 shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_rgba(34,197,94,0.6)]"
         >
-          🤖 Google Play
+          <img
+            src={googlePlayBadge}
+            alt="Get it on Google Play"
+            className="w-full h-auto"
+          />
         </a>
       </div>
 
