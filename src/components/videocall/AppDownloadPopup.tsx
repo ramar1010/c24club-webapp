@@ -1,10 +1,12 @@
 import { X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import appPreview from "@/assets/app-promo/app-preview-with-badges.jpeg";
+import appPreviewMale from "@/assets/app-promo/app-preview-with-badges.jpeg";
+import appPreviewFemale from "@/assets/app-promo/app-preview-female.jpeg";
 
 interface AppDownloadPopupProps {
   onClose: () => void;
   userId?: string;
+  gender?: string | null;
 }
 
 const GOOGLE_PLAY_URL =
@@ -12,7 +14,9 @@ const GOOGLE_PLAY_URL =
 const IOS_APP_URL =
   "https://apps.apple.com/us/app/c24-club/id6766305883";
 
-const AppDownloadPopup = ({ onClose, userId }: AppDownloadPopupProps) => {
+const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) => {
+  const isFemale = (gender || "").toLowerCase() === "female";
+  const appPreview = isFemale ? appPreviewFemale : appPreviewMale;
   const handleDownloadClick = (source: string) => {
     if (userId && userId !== "anonymous") {
       supabase.from("app_download_clicks").insert({ user_id: userId, source }).then(() => {});

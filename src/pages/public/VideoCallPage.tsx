@@ -1746,7 +1746,7 @@ const VideoCallPage = () => {
       }
 
       {/* App Download Popup (after 7s waiting) */}
-      {showAppDownloadPopup && <AppDownloadPopup onClose={() => setShowAppDownloadPopup(false)} userId={memberId} />}
+      {showAppDownloadPopup && <AppDownloadPopup onClose={() => setShowAppDownloadPopup(false)} userId={memberId} gender={memberGender} />}
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
