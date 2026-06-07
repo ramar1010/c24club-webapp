@@ -239,6 +239,7 @@ const OmegleAlternativePage = () => {
                 ["No download needed", "✅", "✅", "✅", "❌"],
                 ["Spin to win prizes", "✅", "❌", "❌", "❌"],
                 ["Weekly challenges", "✅", "❌", "❌", "❌"],
+                ["Native iOS & Android apps", "✅", "❌", "❌", "✅"],
                 ["Still active (2026)", "✅", "❌", "✅", "✅"],
               ].map(([feat, ...vals], i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-white/[0.02]" : ""}>
