@@ -736,6 +736,14 @@ const HomePage = () => {
         <div className="mt-8">
           <CTAButtons />
         </div>
+
+        {/* App Store Badges */}
+        <div className="mt-6">
+          <p className="text-center text-xs font-black uppercase tracking-[0.25em] text-white/60 mb-3">
+            Also available on
+          </p>
+          <AppStoreBadges />
+        </div>
       </section>
 
       {/* ===== WHY C24 CLUB IS DIFFERENT ===== */}
@@ -986,6 +994,9 @@ const HomePage = () => {
         {/* Bottom CTA */}
         <div className="pt-8">
           <CTAButtons variant="bottom" />
+        </div>
+        <div className="pt-6">
+          <AppStoreBadges />
         </div>
       </section>
 
