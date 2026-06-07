@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Video, Gift, Shield, Users, Clock, DollarSign, MessageCircle, Zap, Star, ChevronRight } from "lucide-react";
+import { Video, Gift, Shield, Users, Clock, DollarSign, MessageCircle, Zap, Star, ChevronRight, Smartphone } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import usePageMeta from "@/hooks/usePageMeta";
