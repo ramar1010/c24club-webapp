@@ -31,6 +31,7 @@ const alternatives: Alternative[] = [
       "AI-powered NSFW moderation",
       "100+ redeemable prizes",
       "•\nActive community with scheduled sessions\n",
+      "Native iOS & Android apps (June 2026)",
     ],
     cons: ["Requires account signup", "Call windows mean you can't chat 24/7"],
     rating: 4.8,
