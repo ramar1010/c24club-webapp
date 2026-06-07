@@ -194,8 +194,9 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
           <p className="text-red-400 font-bold text-xs uppercase tracking-wider mb-2">❌ Cons</p>
           <ul className="space-y-1">
             {alt.cons.map((c) => (
-              <li key={c} className="text-white/70 text-sm flex items-start gap-2">
-                <span className="text-red-400 mt-0.5">•</span> {c}
+              <li key={c} className="text-white/70 text-sm flex items-start gap-2 whitespace-pre-line">
+                {!c.startsWith("•") && <span className="text-red-400 mt-0.5 flex-shrink-0">•</span>}
+                <span>{c}</span>
               </li>
             ))}
           </ul>
