@@ -10,6 +10,32 @@ import { toast } from "sonner";
 import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import playStoreBadge from "@/assets/playstore.png.asset.json";
+import appStoreBadge from "@/assets/app_store.svg.asset.json";
+
+/* ─── App Store Badges ─── */
+const AppStoreBadges = ({ className = "" }: { className?: string }) => (
+  <div className={`flex items-center justify-center gap-3 flex-wrap ${className}`}>
+    <a
+      href="https://apps.apple.com/app/c24-club/id6766305883"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Download C24 Club on the App Store"
+      className="transition-transform hover:scale-105"
+    >
+      <img src={appStoreBadge.url} alt="Download on the App Store" className="h-12 md:h-14 w-auto" />
+    </a>
+    <a
+      href="https://play.google.com/store/apps/details?id=com.c24club.app"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Get C24 Club on Google Play"
+      className="transition-transform hover:scale-105"
+    >
+      <img src={playStoreBadge.url} alt="Get it on Google Play" className="h-12 md:h-14 w-auto" />
+    </a>
+  </div>
+);
 
 
 import reward3 from "@/assets/rewards/optimized/reward3.webp";
