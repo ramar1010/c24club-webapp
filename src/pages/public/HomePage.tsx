@@ -23,7 +23,7 @@ const AppStoreBadges = ({ className = "" }: { className?: string }) => (
       aria-label="Download C24 Club on the App Store"
       className="transition-transform hover:scale-105"
     >
-      <img src={appStoreBadge.url} alt="Download on the App Store" className="h-12 md:h-14 w-auto" />
+      <img src={appStoreBadge.url} alt="Download on the App Store" className="h-16 md:h-20 w-44 md:w-52 object-contain" />
     </a>
     <a
       href="https://play.google.com/store/apps/details?id=com.c24club.app"
@@ -32,7 +32,7 @@ const AppStoreBadges = ({ className = "" }: { className?: string }) => (
       aria-label="Get C24 Club on Google Play"
       className="transition-transform hover:scale-105"
     >
-      <img src={playStoreBadge.url} alt="Get it on Google Play" className="h-12 md:h-14 w-auto" />
+      <img src={playStoreBadge.url} alt="Get it on Google Play" className="h-16 md:h-20 w-44 md:w-52 object-contain" />
     </a>
   </div>
 );
