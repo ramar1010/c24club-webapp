@@ -247,7 +247,7 @@ const featureRows = [
 ];
 
 const featureData: Record<string, Record<string, boolean>> = {
-  "C24 Club":          { rewards: true,  moderation: true,  mobileApp: false, noSignup: false, interestMatch: true,  groupChat: false, filters: true,  free: true },
+  "C24 Club":          { rewards: true,  moderation: true,  mobileApp: true,  noSignup: false, interestMatch: true,  groupChat: false, filters: true,  free: true },
   "Monkey App":        { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: true,  groupChat: false, filters: true,  free: true },
   "Chatroulette":      { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: false, groupChat: false, filters: false, free: true },
   "OmeTV":             { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: false, groupChat: false, filters: true,  free: true },
