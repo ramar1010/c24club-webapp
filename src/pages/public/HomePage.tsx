@@ -11,7 +11,7 @@ import arrowRight from "@/assets/arrow-right.png";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import playStoreBadge from "@/assets/playstore.png.asset.json";
-import appStoreBadge from "@/assets/app_store.svg.asset.json";
+import appStoreBadge from "@/assets/app_store.png.asset.json";
 
 /* ─── App Store Badges ─── */
 const AppStoreBadges = ({ className = "" }: { className?: string }) => (
