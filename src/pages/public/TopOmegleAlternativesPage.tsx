@@ -30,7 +30,7 @@ const alternatives: Alternative[] = [
       "Collect real rewards for chatting",
       "AI-powered NSFW moderation",
       "100+ redeemable prizes",
-      "Active community with scheduled sessions",
+      "•\nActive community with scheduled sessions\n",
     ],
     cons: ["Requires account signup", "Call windows mean you can't chat 24/7"],
     rating: 4.8,
@@ -183,8 +183,9 @@ const AlternativeCard = ({ alt }: { alt: Alternative }) => (
           <p className="text-green-400 font-bold text-xs uppercase tracking-wider mb-2">✅ Pros</p>
           <ul className="space-y-1">
             {alt.pros.map((p) => (
-              <li key={p} className="text-white/70 text-sm flex items-start gap-2">
-                <span className="text-green-400 mt-0.5">•</span> {p}
+              <li key={p} className="text-white/70 text-sm flex items-start gap-2 whitespace-pre-line">
+                {!p.startsWith("•") && <span className="text-green-400 mt-0.5 flex-shrink-0">•</span>}
+                <span>{p}</span>
               </li>
             ))}
           </ul>
@@ -394,7 +395,7 @@ const TopOmegleAlternativesPage = () => {
 
       {/* Hero */}
       <section className="pt-28 pb-12 px-4 text-center">
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">Updated May 2026</p>
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">UPDATED JUNE 2026</p>
         <h1
           className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
