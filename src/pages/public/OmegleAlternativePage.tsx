@@ -41,6 +41,12 @@ const features = [
     description:
       "Female users get bonus minutes and exclusive perks. The anchor program gives women extra rewards just for chatting.",
   },
+  {
+    icon: Smartphone,
+    title: "Native iOS & Android Apps",
+    description:
+      "As of June 2026, C24 Club is available on the App Store and Google Play. Get push notifications, smoother video, and one-tap calling with our native apps.",
+  },
 ];
 
 const faqs = [
@@ -66,7 +72,7 @@ const faqs = [
   },
   {
     q: "Does C24 Club work on mobile?",
-    a: "Yes, C24 Club works on any device with a browser and cameras phones, tablets, laptops, and desktops. No app download is actually required.",
+    a: "Yes, C24 Club works on any device with a browser and cameras — phones, tablets, laptops, and desktops. As of June 2026, we also have native iOS and Android apps on the App Store and Google Play for the best mobile experience with push notifications and one-tap calling.",
   },
 ];
 
@@ -91,7 +97,7 @@ const OmegleAlternativePage = () => {
             description:
               "C24 Club is the best free Omegle alternative where you video chat 1-on-1 with strangers and collect real rewards.",
             applicationCategory: "SocialNetworkingApplication",
-            operatingSystem: "Web",
+            operatingSystem: "Web, iOS, Android",
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
           }),
         }}
@@ -128,7 +134,7 @@ const OmegleAlternativePage = () => {
           <span className="text-yellow-300">Rewards You For Chatting</span>
         </h1>
         <p className="mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
-          Omegle shut down, but the fun didn't stop. C24 Club is a free random video chat platform where you meet
+          Omegle shut down, but the fun didn't stop. C24 Club is a free random video chat platform — now with native iOS and Android apps as of June 2026 — where you meet
           strangers 1-on-1 and <span className="text-green-400 font-bold">collect real rewards</span> for every
           conversation.
         </p>
@@ -173,7 +179,7 @@ const OmegleAlternativePage = () => {
           <p>
             You might have called it Omegle, Chatroulette, OmeTV, or whatever other names you came up with for "that
             random video chat site." Whatever you want to call it, C24 Club is here, and we are better in every way,
-            with safer moderation, better features, and actual rewards for your time.
+            with safer moderation, better features, actual rewards for your time, and as of June 2026, native apps for iOS and Android.
           </p>
         </div>
       </section>
