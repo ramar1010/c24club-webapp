@@ -22,8 +22,26 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId } = await req.json();
+    const { priceId, source, tier: tierFromClient } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
+
+    // Log purchase intent for KPI tracking (interface/source)
+    try {
+      const serviceClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      );
+      const tier =
+        tierFromClient === "premium" || tierFromClient === "basic" ? tierFromClient : null;
+      await serviceClient.from("vip_purchase_intents").insert({
+        user_id: user.id,
+        source: typeof source === "string" && source.length > 0 ? source.slice(0, 80) : "unknown",
+        price_id: priceId,
+        tier,
+      });
+    } catch (e) {
+      console.error("[create-checkout] failed to log intent", e);
+    }
 
     // Use live key since price IDs are in live mode
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")!;
