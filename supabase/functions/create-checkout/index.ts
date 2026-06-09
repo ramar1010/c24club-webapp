@@ -22,7 +22,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId, source } = await req.json();
+    const { priceId, source, tier: tierFromClient } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
 
     // Log purchase intent for KPI tracking (interface/source)
@@ -32,9 +32,7 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
       const tier =
-        priceId && typeof priceId === "string" && priceId.toLowerCase().includes("premium")
-          ? "premium"
-          : "basic";
+        tierFromClient === "premium" || tierFromClient === "basic" ? tierFromClient : null;
       await serviceClient.from("vip_purchase_intents").insert({
         user_id: user.id,
         source: typeof source === "string" && source.length > 0 ? source.slice(0, 80) : "unknown",
