@@ -47,12 +47,12 @@ const VipPurchaseAnalyticsPage = () => {
     setLoading(true);
     const since = new Date(Date.now() - rangeDays * 86400_000).toISOString();
     (async () => {
-      const q = supabase
+      let q = supabase
         .from("vip_purchase_intents")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(1000);
-      if (rangeDays < 9999) q.gte("created_at", since);
+      if (rangeDays < 9999) q = q.gte("created_at", since);
       const { data, error } = await q;
       if (!active) return;
       if (error) {
