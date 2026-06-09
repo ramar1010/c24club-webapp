@@ -1716,7 +1716,7 @@ const VideoCallPage = () => {
       <VipFeaturesOverlay
         onClose={() => setOverlayPage(null)}
         currentTier={vipTier}
-        onPurchase={startCheckout}
+        onPurchase={(priceId) => startCheckout(priceId, "videocall_vip_overlay")}
         onManage={() => {setOverlayPage("vip-settings");return Promise.resolve();}} />
 
       }
@@ -1784,7 +1784,7 @@ const VideoCallPage = () => {
         isVip={subscribed}
         onPurchaseVip={async () => {
           const { VIP_TIERS } = await import("@/config/vip-tiers");
-          void startCheckout(VIP_TIERS.basic.price_id);
+          void startCheckout(VIP_TIERS.basic.price_id, "minutes_frozen_popup");
         }}
         isFemale={isFemale} />
 
