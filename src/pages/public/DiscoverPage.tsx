@@ -152,7 +152,7 @@ const DiscoverPage = () => {
         <button
           onClick={async () => {
             const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.basic.price_id);
+            void startCheckout(VIP_TIERS.basic.price_id, "discover_female_banner");
           }}
           className="mx-4 mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 animate-pulse-slow text-left w-[calc(100%-2rem)] cursor-pointer hover:brightness-110 transition"
         >
