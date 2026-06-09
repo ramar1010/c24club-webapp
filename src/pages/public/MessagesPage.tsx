@@ -641,7 +641,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       onClick={async (e) => {
                         e.stopPropagation();
                         const { VIP_TIERS } = await import("@/config/vip-tiers");
-                        void startCheckout(VIP_TIERS.basic.price_id);
+                        void startCheckout(VIP_TIERS.basic.price_id, "messages_female_banner");
                       }}
                       className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 text-left w-[calc(100%-1.5rem)] cursor-pointer hover:brightness-110 transition"
                     >
@@ -1119,7 +1119,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           onSubscribe={async () => {
             setShowVipGate(false);
             const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.premium.price_id);
+            void startCheckout(VIP_TIERS.premium.price_id, "messages_vip_call_gate");
           }}
         />
       )}
@@ -1153,7 +1153,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           onSubscribe={async () => {
             setShowDmPaywall(false);
             const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.basic.price_id);
+            void startCheckout(VIP_TIERS.basic.price_id, "messages_dm_paywall");
           }}
         />
       )}
