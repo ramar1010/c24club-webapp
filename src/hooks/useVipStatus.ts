@@ -83,9 +83,13 @@ export function useVipStatus(userId: string | null) {
     return () => clearInterval(interval);
   }, [userId, checkSubscription]);
 
-  const startCheckout = useCallback(async (priceId: string) => {
+  const startCheckout = useCallback(async (priceId: string, source: string = "unknown") => {
+    const tier =
+      priceId === "price_1T9ygOA5n8uAZoY1tzoTfeMH"
+        ? "basic"
+        : "premium";
     const { data, error } = await supabase.functions.invoke("create-checkout", {
-      body: { priceId },
+      body: { priceId, source, tier },
     });
     if (error) throw error;
     if (data?.url) {
