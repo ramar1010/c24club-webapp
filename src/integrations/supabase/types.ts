@@ -2866,6 +2866,39 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_purchase_intents: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          price_id: string | null
+          source: string
+          tier: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          price_id?: string | null
+          source: string
+          tier?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          price_id?: string | null
+          source?: string
+          tier?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vip_settings: {
         Row: {
           created_at: string
