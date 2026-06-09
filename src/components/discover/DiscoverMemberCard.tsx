@@ -309,7 +309,7 @@ const DiscoverMemberCard = ({
           onSubscribe={async () => {
             setShowVipGate(false);
             const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.premium.price_id);
+            void startCheckout(VIP_TIERS.premium.price_id, "discover_card_vip_call_gate");
           }}
         />
       )}
