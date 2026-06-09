@@ -226,6 +226,7 @@ export const adminMenu: MenuItem[] = [
     title: "Revenue",
     submenu: [
       { key: "revenue", label: "Revenue Dashboard", path: "/admin/revenue" },
+      { key: "vip-purchases", label: "VIP Purchase Sources", path: "/admin/vip-purchases" },
     ],
   },
   {
