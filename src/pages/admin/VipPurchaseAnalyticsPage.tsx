@@ -31,6 +31,9 @@ const SOURCE_LABELS: Record<string, string> = {
   messages_vip_call_gate: "Messages · VIP Call Gate",
   messages_dm_paywall: "Messages · DM Paywall",
   discover_card_vip_call_gate: "Discover Card · VIP Call Gate",
+  ios_native_vip: "📱 iOS App · VIP Purchase",
+  android_native_vip: "🤖 Android App · VIP Purchase",
+  native_vip: "📱 Native App · VIP Purchase",
   unknown: "Unknown / Legacy",
 };
 

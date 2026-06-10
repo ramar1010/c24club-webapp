@@ -110,6 +110,28 @@ Deno.serve(async (req) => {
         .from("member_minutes")
         .upsert({ user_id: user.id, is_vip: true, vip_tier: tier }, { onConflict: "user_id" });
       if (error) throw error;
+
+      // KPI: log to vip_purchase_intents so the admin analytics dashboard
+      // shows native (iOS / Android) purchases alongside Stripe web purchases.
+      // Skip pure restores so they don't inflate "new purchase" counts.
+      if (action === "verify-subscription") {
+        const sourceFromBody = typeof body.source === "string" && body.source.trim().length > 0
+          ? body.source.trim()
+          : (platform === "ios" ? "ios_native_vip" : platform === "android" ? "android_native_vip" : "native_vip");
+        try {
+          await supabaseAdmin.from("vip_purchase_intents").insert({
+            user_id: user.id,
+            source: sourceFromBody,
+            price_id: sku,
+            tier,
+            completed: true,
+            completed_at: new Date().toISOString(),
+          });
+        } catch (logErr) {
+          console.error("[iap-purchases] failed to log vip_purchase_intents:", logErr);
+        }
+      }
+
       return new Response(JSON.stringify({ success: true, tier }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
