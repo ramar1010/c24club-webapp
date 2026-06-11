@@ -305,21 +305,33 @@ export type Database = {
       }
       app_download_clicks: {
         Row: {
+          clicked: boolean
+          context: string | null
           created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
           id: string
-          source: string
+          source: string | null
           user_id: string
         }
         Insert: {
+          clicked?: boolean
+          context?: string | null
           created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
           id?: string
-          source?: string
+          source?: string | null
           user_id: string
         }
         Update: {
+          clicked?: boolean
+          context?: string | null
           created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
           id?: string
-          source?: string
+          source?: string | null
           user_id?: string
         }
         Relationships: []

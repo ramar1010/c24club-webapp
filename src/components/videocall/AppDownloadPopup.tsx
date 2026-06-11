@@ -1,4 +1,5 @@
-import { X, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import appPreviewMale from "@/assets/app-promo/app-preview-with-badges.jpeg";
 import appPreviewFemale from "@/assets/app-promo/app-preview-female-v2.jpeg";
@@ -9,6 +10,12 @@ interface AppDownloadPopupProps {
   onClose: () => void;
   userId?: string;
   gender?: string | null;
+  /** Where in the flow the popup is being shown — e.g. "quiet_waiting_room" or "after_skip_no_match". */
+  context?: string;
+  /** Whether the device is mobile. Desktop gets a "Browse Discover" variant. */
+  isMobile?: boolean;
+  /** Called when desktop user chooses "Browse Discover while you wait". */
+  onBrowseDiscover?: () => void;
 }
 
 const GOOGLE_PLAY_URL =
@@ -16,13 +23,75 @@ const GOOGLE_PLAY_URL =
 const IOS_APP_URL =
   "https://apps.apple.com/us/app/c24-club/id6766305883";
 
-const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) => {
+const AppDownloadPopup = ({
+  onClose,
+  userId,
+  gender,
+  context = "quiet_waiting_room",
+  isMobile = true,
+  onBrowseDiscover,
+}: AppDownloadPopupProps) => {
   const isFemale = (gender || "").toLowerCase() === "female";
   const appPreview = isFemale ? appPreviewFemale : appPreviewMale;
+
+  // Record a "shown" row on mount; remember its id so we can later mark
+  // clicked/dismissed for accurate click-through reporting.
+  const shownIdRef = useRef<string | null>(null);
+  const outcomeRef = useRef<"clicked" | "dismissed" | null>(null);
+  const [shownId, setShownId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!userId || userId === "anonymous") return;
+    let cancelled = false;
+    supabase
+      .from("app_download_clicks")
+      .insert({ user_id: userId, source: null, context, clicked: false, dismissed: false })
+      .select("id")
+      .single()
+      .then(({ data }) => {
+        if (!cancelled && data?.id) {
+          shownIdRef.current = data.id;
+          setShownId(data.id);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, context]);
+
   const handleDownloadClick = (source: string) => {
-    if (userId && userId !== "anonymous") {
-      supabase.from("app_download_clicks").insert({ user_id: userId, source }).then(() => {});
+    outcomeRef.current = "clicked";
+    if (!userId || userId === "anonymous") return;
+    if (shownIdRef.current) {
+      supabase
+        .from("app_download_clicks")
+        .update({ source, clicked: true })
+        .eq("id", shownIdRef.current)
+        .then(() => {});
+    } else {
+      // Fallback if the shown-row insert hadn't finished yet.
+      supabase
+        .from("app_download_clicks")
+        .insert({ user_id: userId, source, context, clicked: true })
+        .then(() => {});
     }
+  };
+
+  const handleClose = () => {
+    if (outcomeRef.current !== "clicked" && shownIdRef.current && userId && userId !== "anonymous") {
+      supabase
+        .from("app_download_clicks")
+        .update({ dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq("id", shownIdRef.current)
+        .then(() => {});
+    }
+    onClose();
+  };
+
+  const handleBrowseDiscover = () => {
+    handleDownloadClick("popup-browse-discover");
+    onBrowseDiscover?.();
+    onClose();
   };
 
   return (
@@ -30,7 +99,7 @@ const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) =>
     <div className="relative bg-neutral-900 border border-white/10 rounded-2xl p-5 max-w-sm w-full text-center shadow-[0_0_40px_rgba(234,179,8,0.25)] max-h-[90vh] overflow-y-auto animate-scale-in">
       {/* Close */}
       <button
-        onClick={onClose}
+        onClick={handleClose}
         className="absolute top-3 right-3 bg-neutral-800 hover:bg-neutral-700 rounded-full p-1.5 transition-colors z-10"
       >
         <X className="w-5 h-5 text-white" />
@@ -63,7 +132,8 @@ const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) =>
       </div>
 
       {/* CTA buttons with store badges */}
-      <div className="flex gap-3 mb-4">
+      {isMobile ? (
+        <div className="flex gap-3 mb-4">
         <a
           href={IOS_APP_URL}
           target="_blank"
@@ -90,7 +160,21 @@ const AppDownloadPopup = ({ onClose, userId, gender }: AppDownloadPopupProps) =>
             className="w-full h-auto"
           />
         </a>
-      </div>
+        </div>
+      ) : (
+        <div className="mb-4">
+          <button
+            onClick={handleBrowseDiscover}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold uppercase tracking-wide hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(234,179,8,0.4)]"
+          >
+            <Users className="w-5 h-5" />
+            Browse Discover While You Wait
+          </button>
+          <p className="text-neutral-400 text-xs mt-2">
+            Send a gift or DM members from Discover — we'll keep you in the queue.
+          </p>
+        </div>
+      )}
 
       {/* App preview image with glow */}
       <div className="block rounded-xl overflow-hidden border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
