@@ -1770,7 +1770,16 @@ const VideoCallPage = () => {
       }
 
       {/* App Download Popup (after 7s waiting) */}
-      {showAppDownloadPopup && <AppDownloadPopup onClose={() => setShowAppDownloadPopup(false)} userId={memberId} gender={memberGender} />}
+      {showAppDownloadPopup && (
+        <AppDownloadPopup
+          onClose={() => setShowAppDownloadPopup(false)}
+          userId={memberId}
+          gender={memberGender}
+          context={appPopupContext}
+          isMobile={isMobileDevice}
+          onBrowseDiscover={() => setOverlayPage("discover")}
+        />
+      )}
 
       {/* Skip Penalty Popup (first 3 times) */}
       {showSkipPenaltyPopup &&
