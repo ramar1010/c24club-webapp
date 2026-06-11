@@ -126,6 +126,9 @@ const VideoCallPage = () => {
   const connectionStartRef = useRef<number | null>(null); // track when connection started
   const [showAppDownloadPopup, setShowAppDownloadPopup] = useState(false);
   const appDownloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastConnectedEndRef = useRef<number | null>(null);
+  const [appPopupContext, setAppPopupContext] = useState<"quiet_waiting_room" | "after_skip_no_match">("quiet_waiting_room");
+  const isMobileDevice = typeof navigator !== "undefined" && /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 
   const [showPromoAd, setShowPromoAd] = useState(false);
   const [overlayPage, setOverlayPage] = useState<"store" | "profile" | "topics" | "promo" | "vip" | "vip-settings" | "my-rewards" | "discover" | "messages" | "challenges" | null>(null);
@@ -614,15 +617,36 @@ const VideoCallPage = () => {
     }
   }, [callState, overlayPage]);
 
-  // Show app download popup after 7s of waiting
+  // Track when connection just ended so we can label popup context.
+  useEffect(() => {
+    if (callState === "connected") {
+      lastConnectedEndRef.current = null;
+    } else if (callState !== "waiting" && lastConnectedEndRef.current === null) {
+      // leaving connected (or any non-waiting transition)
+      lastConnectedEndRef.current = Date.now();
+    }
+  }, [callState]);
+
+  // Show app download popup after a short wait. Track shows + 7-day decay.
   useEffect(() => {
     if (callState === "waiting") {
+      const ctx: "quiet_waiting_room" | "after_skip_no_match" =
+        lastConnectedEndRef.current && Date.now() - lastConnectedEndRef.current < 15000
+          ? "after_skip_no_match"
+          : "quiet_waiting_room";
+      setAppPopupContext(ctx);
       appDownloadTimerRef.current = setTimeout(() => {
-        const shown = parseInt(localStorage.getItem("c24_app_popup_count") || "0", 10);
-        const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-        if (shown < 5 && isMobile) {
+        // 7-day decay: reset shown counter if last show was >7 days ago
+        const lastShownAt = parseInt(localStorage.getItem("c24_app_popup_last_shown") || "0", 10);
+        const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+        let shown = parseInt(localStorage.getItem("c24_app_popup_count") || "0", 10);
+        if (lastShownAt && Date.now() - lastShownAt > SEVEN_DAYS) {
+          shown = 0;
+        }
+        if (shown < 5) {
           setShowAppDownloadPopup(true);
           localStorage.setItem("c24_app_popup_count", String(shown + 1));
+          localStorage.setItem("c24_app_popup_last_shown", String(Date.now()));
         }
       }, 7000);
     } else {
