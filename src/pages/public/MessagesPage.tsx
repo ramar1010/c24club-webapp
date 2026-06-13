@@ -180,7 +180,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
 
       for (const uid of otherUserIds) {
         const userRoles = roleMap.get(uid);
-        if (userRoles?.has("admin")) badges[uid] = "owner";
+        if (uid === "6f8bb0e2-a36a-4bc0-920f-312c340f7921") badges[uid] = "owner";
+        else if (userRoles?.has("admin")) badges[uid] = "owner";
         else if (vipSet.has(uid)) badges[uid] = "vip";
         else if (userRoles?.has("moderator")) badges[uid] = "mod";
         else badges[uid] = null;
