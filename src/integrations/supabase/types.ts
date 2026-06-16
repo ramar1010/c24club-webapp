@@ -698,6 +698,7 @@ export type Database = {
           created_at: string
           id: string
           minutes_amount: number
+          notes: string | null
           paypal_email: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -711,6 +712,7 @@ export type Database = {
           created_at?: string
           id?: string
           minutes_amount: number
+          notes?: string | null
           paypal_email: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -724,6 +726,7 @@ export type Database = {
           created_at?: string
           id?: string
           minutes_amount?: number
+          notes?: string | null
           paypal_email?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
