@@ -26,6 +26,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<CashoutRequest[]>([]);
   const [settings, setSettings] = useState<{
     rate_per_minute: number;
@@ -43,6 +44,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
   const fetchHistory = () => {
     if (!user) return;
+    setHistoryLoading(true);
     supabase
       .from("cashout_requests")
       .select("id, minutes_amount, cash_amount, paypal_email, status, created_at, notes")
@@ -51,6 +53,9 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
       .limit(20)
       .then(({ data }) => {
         if (data) setHistory(data);
+      })
+      .finally(() => {
+        setHistoryLoading(false);
       });
   };
 
@@ -214,11 +219,14 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
           Only gifted minutes can be cashed out — spin wins, chat earnings & rewards are store-only
         </p>
 
-        {/* Cashout History */}
-        {history.length > 0 && (
-          <div className="mt-5 border-t border-white/10 pt-4">
-            <h3 className="text-white/70 text-xs font-bold uppercase tracking-wider mb-3">Cashout History</h3>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+        <div className="mt-5 border-t border-white/10 pt-4">
+          <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">Cashout History</h3>
+          {historyLoading && history.length === 0 ? (
+            <p className="text-white/40 text-[11px] text-center py-3">Loading history...</p>
+          ) : history.length === 0 ? (
+            <p className="text-white/40 text-[11px] text-center py-3">No cashout requests yet.</p>
+          ) : (
+            <div className="space-y-2 max-h-44 overflow-y-auto">
               {history.map((req) => (
                 <div key={req.id} className="bg-white/5 rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between">
@@ -237,14 +245,14 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
                   </div>
                   {req.notes && (
                     <p className="text-white/40 text-[10px] mt-1.5 whitespace-pre-line leading-snug border-t border-white/5 pt-1.5">
-                      {req.notes}
+                      <span className="text-white/60 font-bold">Note:</span> {req.notes}
                     </p>
                   )}
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
