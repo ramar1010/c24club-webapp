@@ -18,6 +18,7 @@ interface CashoutRequest {
   paypal_email: string;
   status: string;
   created_at: string;
+  notes?: string | null;
 }
 
 const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
@@ -44,7 +45,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
     if (!user) return;
     supabase
       .from("cashout_requests")
-      .select("id, minutes_amount, cash_amount, paypal_email, status, created_at")
+      .select("id, minutes_amount, cash_amount, paypal_email, status, created_at, notes")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20)
@@ -219,19 +220,26 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
             <h3 className="text-white/70 text-xs font-bold uppercase tracking-wider mb-3">Cashout History</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {history.map((req) => (
-                <div key={req.id} className="bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between">
-                  <div>
-                    <p className="text-white text-xs font-bold">${Number(req.cash_amount).toFixed(2)}</p>
-                    <p className="text-white/30 text-[10px]">
-                      {req.minutes_amount} min • {new Date(req.created_at).toLocaleDateString()}
+                <div key={req.id} className="bg-white/5 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white text-xs font-bold">${Number(req.cash_amount).toFixed(2)}</p>
+                      <p className="text-white/30 text-[10px]">
+                        {req.minutes_amount} min • {new Date(req.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {statusIcon(req.status)}
+                      <span className={`text-[10px] font-bold uppercase ${statusColor(req.status)}`}>
+                        {req.status}
+                      </span>
+                    </div>
+                  </div>
+                  {req.notes && (
+                    <p className="text-white/40 text-[10px] mt-1.5 whitespace-pre-line leading-snug border-t border-white/5 pt-1.5">
+                      {req.notes}
                     </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {statusIcon(req.status)}
-                    <span className={`text-[10px] font-bold uppercase ${statusColor(req.status)}`}>
-                      {req.status}
-                    </span>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
