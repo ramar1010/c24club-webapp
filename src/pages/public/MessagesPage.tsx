@@ -365,6 +365,25 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  // Bounty earnings from this specific male partner (shown only to female)
+  const { data: bountyFromPartner } = useQuery({
+    queryKey: ["bounty-from-partner", user?.id, selectedConvo?.other_user?.id],
+    enabled: !!user && !!selectedConvo?.other_user?.id && isFemaleFromMale,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("bounty_earnings")
+        .select("amount_minutes, source, created_at")
+        .eq("female_id", user!.id)
+        .eq("male_id", selectedConvo!.other_user!.id)
+        .eq("clawed_back", false)
+        .order("created_at", { ascending: false });
+      const rows = data || [];
+      const total = rows.reduce((s: number, r: any) => s + (r.amount_minutes || 0), 0);
+      const tiers = new Set(rows.map((r: any) => r.source));
+      return { total, count: rows.length, tiers, latest: rows[0] };
+    },
+  });
+
   const handleBlockUser = async () => {
     if (!user || !selectedConvo?.other_user?.id || isBlockingUser) return;
 
