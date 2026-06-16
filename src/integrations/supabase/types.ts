@@ -497,6 +497,75 @@ export type Database = {
         }
         Relationships: []
       }
+      bounty_attributions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          female_id: string
+          id: string
+          interaction_type: string
+          last_interaction_at: string
+          male_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          female_id: string
+          id?: string
+          interaction_type: string
+          last_interaction_at?: string
+          male_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          female_id?: string
+          id?: string
+          interaction_type?: string
+          last_interaction_at?: string
+          male_id?: string
+        }
+        Relationships: []
+      }
+      bounty_earnings: {
+        Row: {
+          amount_cents: number
+          cashout_request_id: string | null
+          clawed_back: boolean
+          created_at: string
+          female_id: string
+          id: string
+          male_id: string
+          paid_out: boolean
+          source: string
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          cashout_request_id?: string | null
+          clawed_back?: boolean
+          created_at?: string
+          female_id: string
+          id?: string
+          male_id: string
+          paid_out?: boolean
+          source: string
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          cashout_request_id?: string | null
+          clawed_back?: boolean
+          created_at?: string
+          female_id?: string
+          id?: string
+          male_id?: string
+          paid_out?: boolean
+          source?: string
+          stripe_subscription_id?: string | null
+        }
+        Relationships: []
+      }
       call_minutes_log: {
         Row: {
           created_at: string
@@ -3180,6 +3249,15 @@ export type Database = {
           enabled: boolean
         }[]
       }
+      award_bounty_for_subscription: {
+        Args: {
+          p_is_renewal?: boolean
+          p_male_id: string
+          p_stripe_subscription_id: string
+          p_tier: string
+        }
+        Returns: Json
+      }
       claim_reddit_task: {
         Args: { p_code: string; p_worker_name: string }
         Returns: Json
@@ -3199,6 +3277,7 @@ export type Database = {
         Returns: number
       }
       get_admin_user_ids: { Args: never; Returns: string[] }
+      get_bounty_summary: { Args: never; Returns: Json }
       get_moderator_user_ids: { Args: never; Returns: string[] }
       get_partner_nsfw_strikes: { Args: { _user_id: string }; Returns: number }
       get_reddit_task_by_code: {
@@ -3251,6 +3330,14 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_bounty_interaction: {
+        Args: { p_interaction_type: string; p_male_id: string }
+        Returns: Json
+      }
+      request_bounty_cashout: {
+        Args: { p_cents: number; p_paypal_email: string }
+        Returns: Json
       }
       request_cashout: {
         Args: { p_minutes_amount: number; p_paypal_email: string }
