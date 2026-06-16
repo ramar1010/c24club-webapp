@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
+import { X, DollarSign, Clock, CheckCircle, XCircle, Gift, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,15 @@ interface CashoutRequest {
   notes?: string | null;
 }
 
+interface MinuteSource {
+  id: string;
+  kind: "gift" | "bounty";
+  minutes: number;
+  created_at: string;
+  label: string;
+  sublabel?: string;
+}
+
 const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
   const { user } = useAuth();
   const [minutes, setMinutes] = useState(100);
@@ -28,6 +37,8 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<CashoutRequest[]>([]);
+  const [sources, setSources] = useState<MinuteSource[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(false);
   const [settings, setSettings] = useState<{
     rate_per_minute: number;
     min_cashout_minutes: number;
@@ -59,6 +70,84 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
 
   useEffect(() => {
     fetchHistory();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchSources = async () => {
+      if (!user) return;
+      setSourcesLoading(true);
+      try {
+        const [giftsRes, bountiesRes] = await Promise.all([
+          supabase
+            .from("gift_transactions")
+            .select("id, sender_id, minutes_amount, created_at")
+            .eq("recipient_id", user.id)
+            .eq("status", "completed")
+            .order("created_at", { ascending: false })
+            .limit(25),
+          supabase
+            .from("bounty_earnings")
+            .select("id, male_id, amount_minutes, source, created_at, clawed_back")
+            .eq("female_id", user.id)
+            .eq("clawed_back", false)
+            .gt("amount_minutes", 0)
+            .order("created_at", { ascending: false })
+            .limit(25),
+        ]);
+
+        const gifts = giftsRes.data || [];
+        const bounties = bountiesRes.data || [];
+
+        const senderIds = Array.from(
+          new Set([
+            ...gifts.map((g: any) => g.sender_id),
+            ...bounties.map((b: any) => b.male_id),
+          ])
+        );
+
+        let namesById: Record<string, string> = {};
+        if (senderIds.length > 0) {
+          const { data: mems } = await supabase
+            .from("members")
+            .select("id, name")
+            .in("id", senderIds);
+          namesById = Object.fromEntries((mems || []).map((m: any) => [m.id, m.name || "Member"]));
+        }
+
+        const combined: MinuteSource[] = [
+          ...gifts.map((g: any) => ({
+            id: `g-${g.id}`,
+            kind: "gift" as const,
+            minutes: g.minutes_amount,
+            created_at: g.created_at,
+            label: `Gift from ${namesById[g.sender_id] || "Member"}`,
+          })),
+          ...bounties.map((b: any) => {
+            const tierLabel =
+              b.source === "premium"
+                ? "Premium VIP"
+                : b.source === "basic"
+                ? "Basic VIP"
+                : b.source === "renewal"
+                ? "VIP Renewal"
+                : "Streak Bonus";
+            return {
+              id: `b-${b.id}`,
+              kind: "bounty" as const,
+              minutes: b.amount_minutes,
+              created_at: b.created_at,
+              label: `Bounty: ${namesById[b.male_id] || "Member"}`,
+              sublabel: tierLabel,
+            };
+          }),
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setSources(combined);
+      } finally {
+        setSourcesLoading(false);
+      }
+    };
+    fetchSources();
   }, [user]);
 
   useEffect(() => {
@@ -218,6 +307,47 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
         </p>
 
         <div className="mt-5 border-t border-white/10 pt-4">
+          <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-1">
+            Where your gifted minutes came from
+          </h3>
+          <p className="text-white/40 text-[10px] mb-3">
+            Recent gifts & bounties credited to your cashable balance
+          </p>
+          {sourcesLoading && sources.length === 0 ? (
+            <p className="text-white/40 text-[11px] text-center py-3">Loading sources...</p>
+          ) : sources.length === 0 ? (
+            <p className="text-white/40 text-[11px] text-center py-3">
+              No gifted minutes received yet.
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-44 overflow-y-auto mb-4">
+              {sources.map((s) => (
+                <div
+                  key={s.id}
+                  className="bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {s.kind === "gift" ? (
+                      <Gift className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                    ) : (
+                      <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-white text-xs font-bold truncate">{s.label}</p>
+                      <p className="text-white/30 text-[10px]">
+                        {s.sublabel ? `${s.sublabel} • ` : ""}
+                        {new Date(s.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-emerald-400 font-bold text-xs shrink-0">
+                    +{s.minutes} min
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">Cashout History</h3>
           {historyLoading && history.length === 0 ? (
             <p className="text-white/40 text-[11px] text-center py-3">Loading history...</p>
