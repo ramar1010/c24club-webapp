@@ -86,6 +86,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
+  const [showBountyGuide, setShowBountyGuide] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
   const [showDmPaywall, setShowDmPaywall] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
