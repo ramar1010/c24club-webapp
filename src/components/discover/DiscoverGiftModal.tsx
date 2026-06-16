@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -56,10 +57,13 @@ const DiscoverGiftModal = ({ recipientId, recipientName, onClose }: DiscoverGift
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center px-4" onClick={onClose}>
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center px-4 overflow-y-auto py-6"
+      onClick={onClose}
+    >
       <div
-        className="bg-neutral-900 border border-white/10 rounded-2xl p-5 w-full max-w-xs relative"
+        className="bg-neutral-900 border border-white/10 rounded-2xl p-5 w-full max-w-xs relative my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 right-3 text-white/40 hover:text-white">
@@ -104,7 +108,8 @@ const DiscoverGiftModal = ({ recipientId, recipientName, onClose }: DiscoverGift
           NO REFUND POLICY
         </p>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
