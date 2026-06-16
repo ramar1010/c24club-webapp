@@ -152,6 +152,22 @@ serve(async (req) => {
         stripe_customer_id: customerId,
       }, { onConflict: "user_id" });
 
+    // Instant bounty award: if user just became VIP, credit the female who attributed him
+    if (hasActive && vipTier && !currentMinutes?.is_vip) {
+      try {
+        const subId = subscriptions.data[0]?.id;
+        const { data: bountyResult } = await supabaseClient.rpc("award_bounty_for_subscription", {
+          p_male_id: user.id,
+          p_tier: vipTier,
+          p_stripe_subscription_id: subId,
+          p_is_renewal: false,
+        });
+        logStep("Bounty award attempted", { result: bountyResult });
+      } catch (bountyErr: any) {
+        logStep("Bounty award error", { error: bountyErr.message });
+      }
+    }
+
     return new Response(JSON.stringify({
       subscribed: hasActive,
       vip_tier: vipTier,
