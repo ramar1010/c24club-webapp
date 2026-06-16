@@ -530,6 +530,7 @@ export type Database = {
       bounty_earnings: {
         Row: {
           amount_cents: number
+          amount_minutes: number
           cashout_request_id: string | null
           clawed_back: boolean
           created_at: string
@@ -542,6 +543,7 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          amount_minutes?: number
           cashout_request_id?: string | null
           clawed_back?: boolean
           created_at?: string
@@ -554,6 +556,7 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          amount_minutes?: number
           cashout_request_id?: string | null
           clawed_back?: boolean
           created_at?: string
@@ -3333,10 +3336,6 @@ export type Database = {
       }
       record_bounty_interaction: {
         Args: { p_interaction_type: string; p_male_id: string }
-        Returns: Json
-      }
-      request_bounty_cashout: {
-        Args: { p_cents: number; p_paypal_email: string }
         Returns: Json
       }
       request_cashout: {
