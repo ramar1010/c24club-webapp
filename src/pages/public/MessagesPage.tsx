@@ -365,6 +365,25 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  // Bounty earnings from this specific male partner (shown only to female)
+  const { data: bountyFromPartner } = useQuery({
+    queryKey: ["bounty-from-partner", user?.id, selectedConvo?.other_user?.id],
+    enabled: !!user && !!selectedConvo?.other_user?.id && isFemaleFromMale,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("bounty_earnings")
+        .select("amount_minutes, source, created_at")
+        .eq("female_id", user!.id)
+        .eq("male_id", selectedConvo!.other_user!.id)
+        .eq("clawed_back", false)
+        .order("created_at", { ascending: false });
+      const rows = data || [];
+      const total = rows.reduce((s: number, r: any) => s + (r.amount_minutes || 0), 0);
+      const tiers = new Set(rows.map((r: any) => r.source));
+      return { total, count: rows.length, tiers, latest: rows[0] };
+    },
+  });
+
   const handleBlockUser = async () => {
     if (!user || !selectedConvo?.other_user?.id || isBlockingUser) return;
 
@@ -873,6 +892,37 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 </span>
               </div>
             )}
+
+            {isFemaleFromMale && bountyFromPartner && bountyFromPartner.total > 0 && (() => {
+              const tierLabel = bountyFromPartner.tiers.has("premium")
+                ? "Premium VIP"
+                : bountyFromPartner.tiers.has("basic")
+                ? "Basic VIP"
+                : bountyFromPartner.tiers.has("renewal")
+                ? "VIP Renewal"
+                : "VIP";
+              return (
+                <div className="mx-4 mt-2 mb-1 rounded-xl bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/30 px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl leading-none">🎉</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-emerald-200">
+                        Bounty Win! +{bountyFromPartner.total} gifted minutes
+                      </p>
+                      <p className="text-[11px] text-emerald-100/80 mt-0.5">
+                        {selectedConvo?.other_user?.name} subscribed to {tierLabel} — you converted them! Cash out your gifted minutes for PayPal.
+                      </p>
+                      <button
+                        onClick={() => setShowCashout(true)}
+                        className="mt-2 inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
