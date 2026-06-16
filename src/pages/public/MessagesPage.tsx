@@ -893,6 +893,37 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
               </div>
             )}
 
+            {isFemaleFromMale && bountyFromPartner && bountyFromPartner.total > 0 && (() => {
+              const tierLabel = bountyFromPartner.tiers.has("premium")
+                ? "Premium VIP"
+                : bountyFromPartner.tiers.has("basic")
+                ? "Basic VIP"
+                : bountyFromPartner.tiers.has("renewal")
+                ? "VIP Renewal"
+                : "VIP";
+              return (
+                <div className="mx-4 mt-2 mb-1 rounded-xl bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/30 px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl leading-none">🎉</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-emerald-200">
+                        Bounty Win! +{bountyFromPartner.total} gifted minutes
+                      </p>
+                      <p className="text-[11px] text-emerald-100/80 mt-0.5">
+                        {selectedConvo?.other_user?.name} subscribed to {tierLabel} — you converted them! Cash out your gifted minutes for PayPal.
+                      </p>
+                      <button
+                        onClick={() => setShowCashout(true)}
+                        className="mt-2 inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
               {loadingMessages ? (
                 <div className="flex items-center justify-center py-20 text-white/40">
