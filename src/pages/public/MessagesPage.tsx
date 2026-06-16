@@ -574,6 +574,16 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             Cash Out
           </button>
         )}
+        {/* Earn Guide button - show for females when not in a convo thread */}
+        {!selectedConvo && myGender === "female" && (
+          <button
+            onClick={() => setShowBountyGuide(true)}
+            className="flex items-center gap-1.5 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-pink-500/30"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            Earn Guide
+          </button>
+        )}
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
