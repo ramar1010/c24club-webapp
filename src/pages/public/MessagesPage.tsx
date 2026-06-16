@@ -15,6 +15,7 @@ import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import CashoutModal from "@/components/discover/CashoutModal";
+import BountyGuideModal from "@/components/discover/BountyGuideModal";
 import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
