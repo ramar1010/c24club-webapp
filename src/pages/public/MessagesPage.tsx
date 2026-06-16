@@ -924,12 +924,20 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       <p className="text-[11px] text-emerald-100/80 mt-0.5">
                         {selectedConvo?.other_user?.name} subscribed to {tierLabel} — you converted them! Cash out your gifted minutes for PayPal.
                       </p>
-                      <button
-                        onClick={() => setShowCashout(true)}
-                        className="mt-2 inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
-                      </button>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => setShowCashout(true)}
+                          className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
+                        </button>
+                        <button
+                          onClick={() => setShowBountyGuide(true)}
+                          className="text-[11px] text-emerald-300/70 hover:text-emerald-200 underline transition-colors"
+                        >
+                          How does this work?
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
