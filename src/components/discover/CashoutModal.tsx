@@ -53,8 +53,6 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
       .limit(20)
       .then(({ data }) => {
         if (data) setHistory(data);
-      })
-      .finally(() => {
         setHistoryLoading(false);
       });
   };
