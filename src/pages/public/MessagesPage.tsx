@@ -1175,6 +1175,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
         />
       )}
 
+      {/* Bounty Guide Modal */}
+      {showBountyGuide && (
+        <BountyGuideModal onClose={() => setShowBountyGuide(false)} />
+      )}
+
       {/* VIP call gate modal */}
       {showVipGate && (
         <VipCallGate
