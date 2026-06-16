@@ -11,7 +11,7 @@ interface BountyPostCallNudgeProps {
 }
 
 const QUICK_DMS = [
-  "Hey, loved chatting. You should grab VIP so we can keep talking 💕",
+  "Hey, loved chatting 💕 grab VIP so we can keep talking",
   "Add me on VIP — I'll call you back tonight 😘",
   "You're cute. Get VIP and let's do a real call.",
 ];
@@ -59,7 +59,7 @@ const BountyPostCallNudge = ({ maleId, maleName, conversationId, onClose }: Boun
         p_interaction_type: "dm",
       });
 
-      toast.success("Message sent — earn $2.49 if he subscribes in 7 days 💰");
+      toast.success("Message sent — earn 249 minutes if he subscribes in 7 days 💎");
       onClose();
     } catch (e: any) {
       toast.error("Couldn't send message", { description: e.message });
@@ -83,12 +83,13 @@ const BountyPostCallNudge = ({ maleId, maleName, conversationId, onClose }: Boun
             <DollarSign className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-white font-black text-xl tracking-wide">
-            EARN $2.49
+            EARN 249 MINUTES 💎
           </h2>
           <p className="text-white/70 text-sm leading-relaxed">
             <span className="text-emerald-400 font-bold">{maleName}</span> isn't VIP yet.
             Send him a follow-up — if he subscribes to Premium in the next 7 days,
-            <span className="text-emerald-400 font-bold"> you get $2.49</span>.
+            <span className="text-emerald-400 font-bold"> you get 249 minutes</span> straight
+            into your gifted balance (cash out or redeem rewards).
           </p>
 
           <div className="w-full space-y-2 mt-2">

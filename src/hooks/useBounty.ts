@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface BountyConvert {
-  amount_cents: number;
+  amount_minutes: number;
   source: "basic" | "premium" | "renewal" | "streak";
   created_at: string;
   male_name: string | null;
@@ -10,8 +10,7 @@ export interface BountyConvert {
 }
 
 export interface BountySummary {
-  pending_cents: number;
-  lifetime_cents: number;
+  lifetime_minutes: number;
   streak_count: number;
   streak_needed: number;
   recent_converts: BountyConvert[];
@@ -44,18 +43,5 @@ export function useBounty(userId: string | null) {
     []
   );
 
-  const requestCashout = useCallback(
-    async (cents: number, paypalEmail: string) => {
-      const { data, error } = await supabase.rpc("request_bounty_cashout", {
-        p_cents: cents,
-        p_paypal_email: paypalEmail,
-      });
-      if (error) throw error;
-      await refresh();
-      return data as { success: boolean; error?: string; cash_amount?: number };
-    },
-    [refresh]
-  );
-
-  return { summary, loading, refresh, recordInteraction, requestCashout };
+  return { summary, loading, refresh, recordInteraction };
 }
