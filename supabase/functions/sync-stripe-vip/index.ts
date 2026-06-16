@@ -86,6 +86,21 @@ serve(async (req) => {
         stripe_customer_id: customer.id,
       }, { onConflict: "user_id" });
 
+      // Award bounty to the female who last interacted with this male
+      try {
+        const { data: bountyResult } = await supabase.rpc("award_bounty_for_subscription", {
+          p_male_id: member.id,
+          p_tier: vipTier,
+          p_stripe_subscription_id: sub.id,
+          p_is_renewal: false,
+        });
+        if (bountyResult?.success) {
+          logStep("Bounty awarded", { female_id: bountyResult.female_id, minutes: bountyResult.minutes });
+        }
+      } catch (bountyErr) {
+        logStep("Bounty award skipped/error", { male_id: member.id, error: bountyErr.message });
+      }
+
       synced++;
     }
 
