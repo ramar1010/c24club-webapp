@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield, Search } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield, Search, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +15,7 @@ import { isOnlineNow, getTimeAgo } from "@/hooks/useDiscover";
 import DirectCallModal from "@/components/discover/DirectCallModal";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
 import CashoutModal from "@/components/discover/CashoutModal";
+import BountyGuideModal from "@/components/discover/BountyGuideModal";
 import VipCallGate, { shouldBlockCall } from "@/components/discover/VipCallGate";
 import DmPaywall from "@/components/discover/DmPaywall";
 import { useVipStatus } from "@/hooks/useVipStatus";
@@ -85,6 +86,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const [startingCall, setStartingCall] = useState(false);
   const [showGiftOverlay, setShowGiftOverlay] = useState(false);
   const [showCashout, setShowCashout] = useState(false);
+  const [showBountyGuide, setShowBountyGuide] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
   const [showDmPaywall, setShowDmPaywall] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
@@ -572,6 +574,16 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             Cash Out
           </button>
         )}
+        {/* Earn Guide button - show for females when not in a convo thread */}
+        {!selectedConvo && myGender === "female" && (
+          <button
+            onClick={() => setShowBountyGuide(true)}
+            className="flex items-center gap-1.5 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-pink-500/30"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            Earn Guide
+          </button>
+        )}
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
@@ -912,12 +924,20 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       <p className="text-[11px] text-emerald-100/80 mt-0.5">
                         {selectedConvo?.other_user?.name} subscribed to {tierLabel} — you converted them! Cash out your gifted minutes for PayPal.
                       </p>
-                      <button
-                        onClick={() => setShowCashout(true)}
-                        className="mt-2 inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
-                      </button>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => setShowCashout(true)}
+                          className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" /> Cash out minutes
+                        </button>
+                        <button
+                          onClick={() => setShowBountyGuide(true)}
+                          className="text-[11px] text-emerald-300/70 hover:text-emerald-200 underline transition-colors"
+                        >
+                          How does this work?
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1161,6 +1181,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           giftedMinutes={minutesData?.gifted_minutes ?? 0}
           onSuccess={() => refetchMinutes()}
         />
+      )}
+
+      {/* Bounty Guide Modal */}
+      {showBountyGuide && (
+        <BountyGuideModal onClose={() => setShowBountyGuide(false)} />
       )}
 
       {/* VIP call gate modal */}
