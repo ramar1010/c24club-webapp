@@ -12,8 +12,9 @@ interface EarnStats {
 }
 
 interface LogEntry {
-  session_date: string;
-  minutes_earned: number;
+  date: string;
+  minutes: number;
+  description: string;
 }
 
 const EarnHistoryPage = () => {
@@ -51,24 +52,58 @@ const EarnHistoryPage = () => {
       thirtyDaysAgo.setDate(now.getDate() - 30);
       const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
 
-      // Fetch all logs for this month (covers all needed ranges)
-      const { data: allLogs } = await supabase
-        .from("call_minutes_log")
-        .select("session_date, minutes_earned")
-        .eq("user_id", user.id)
-        .gte("session_date", thirtyDaysAgoStr)
-        .order("session_date", { ascending: false });
+      // Fetch all earn sources for the last 30 days.
+      const [callLogsRes, bountyRes] = await Promise.all([
+        supabase
+          .from("call_minutes_log")
+          .select("session_date, minutes_earned")
+          .eq("user_id", user.id)
+          .gte("session_date", thirtyDaysAgoStr)
+          .order("session_date", { ascending: false }),
+        supabase
+          .from("bounty_earnings")
+          .select("created_at, amount_minutes, source, male_id, clawed_back")
+          .eq("female_id", user.id)
+          .eq("clawed_back", false)
+          .gt("amount_minutes", 0)
+          .gte("created_at", thirtyDaysAgo.toISOString())
+          .order("created_at", { ascending: false }),
+      ]);
 
-      const entries = allLogs ?? [];
+      const callEntries: LogEntry[] = (callLogsRes.data ?? []).map((entry) => ({
+        date: entry.session_date,
+        minutes: entry.minutes_earned,
+        description: `${entry.minutes_earned} minutes added for a video call.`,
+      }));
+
+      const bountyEntries: LogEntry[] = (bountyRes.data ?? []).map((entry) => {
+        const date = entry.created_at.slice(0, 10);
+        const tierLabel =
+          entry.source === "premium"
+            ? "Premium VIP bounty"
+            : entry.source === "basic"
+            ? "Basic VIP bounty"
+            : entry.source === "renewal"
+            ? "VIP renewal bounty"
+            : "Bounty streak bonus";
+
+        return {
+          date,
+          minutes: entry.amount_minutes,
+          description: `${entry.amount_minutes} gifted minutes added from ${tierLabel}.`,
+        };
+      });
+
+      const entries = [...callEntries, ...bountyEntries].sort((a, b) => b.date.localeCompare(a.date));
 
       let thisMonth = 0, thisWeek = 0, yesterdayTotal = 0, todayTotal = 0;
 
       for (const e of entries) {
-        const d = e.session_date;
-        if (d >= monthStartStr) thisMonth += e.minutes_earned;
-        if (d >= weekStartStr) thisWeek += e.minutes_earned;
-        if (d === yesterdayStr) yesterdayTotal += e.minutes_earned;
-        if (d === todayStr) todayTotal += e.minutes_earned;
+        const d = e.date;
+        if (d >= monthStartStr) thisMonth += e.minutes;
+        if (d >= weekStartStr) thisWeek += e.minutes;
+        if (d === yesterdayStr) yesterdayTotal += e.minutes;
+        if (d === todayStr) todayTotal += e.minutes;
       }
 
       setStats({ thisMonth, thisWeek, yesterday: yesterdayTotal, today: todayTotal });
@@ -120,8 +155,8 @@ const EarnHistoryPage = () => {
               ) : (
                 logs.map((entry, i) => (
                   <div key={i} className="flex items-center px-4 py-2 text-sm gap-4">
-                    <span className="font-bold whitespace-nowrap">{entry.session_date}</span>
-                    <span>- {entry.minutes_earned} minutes added for a video call.</span>
+                    <span className="font-bold whitespace-nowrap">{entry.date}</span>
+                    <span>- {entry.description}</span>
                   </div>
                 ))
               )}
