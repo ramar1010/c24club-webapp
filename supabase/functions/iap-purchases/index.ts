@@ -106,10 +106,35 @@ Deno.serve(async (req) => {
       if (!sku) throw new Error("Missing sku");
       await verifyReceipt();
       const tier = sku === "c24_premium_vip" || sku === "premiumvip" ? "premium" : "basic";
+
+      // Detect whether this is a NEW activation (so we know to award bounty)
+      const { data: priorMinutes } = await supabaseAdmin
+        .from("member_minutes")
+        .select("is_vip")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const wasAlreadyVip = !!priorMinutes?.is_vip;
+
       const { error } = await supabaseAdmin
         .from("member_minutes")
         .upsert({ user_id: user.id, is_vip: true, vip_tier: tier }, { onConflict: "user_id" });
       if (error) throw error;
+
+      // Persist the IAP receipt so session-init recognises the active mobile
+      // subscription on subsequent app launches and does NOT overwrite is_vip
+      // back to false when no Stripe customer exists.
+      try {
+        await supabaseAdmin.from("iap_purchases").insert({
+          user_id: user.id,
+          action: "verify-subscription",
+          sku,
+          platform: platform ?? null,
+          vip_tier: tier,
+          purchase_token: purchaseToken ?? null,
+        });
+      } catch (iapErr) {
+        console.error("[iap-purchases] failed to log iap_purchases row:", iapErr);
+      }
 
       // KPI: log to vip_purchase_intents so the admin analytics dashboard
       // shows native (iOS / Android) purchases alongside Stripe web purchases.
@@ -129,6 +154,20 @@ Deno.serve(async (req) => {
           });
         } catch (logErr) {
           console.error("[iap-purchases] failed to log vip_purchase_intents:", logErr);
+        }
+
+        // Award bounty to the attributing female (first-time activation only)
+        if (!wasAlreadyVip) {
+          try {
+            await supabaseAdmin.rpc("award_bounty_for_subscription", {
+              p_male_id: user.id,
+              p_tier: tier,
+              p_stripe_subscription_id: `iap:${platform ?? "native"}:${purchaseToken?.slice(0, 32) ?? sku}`,
+              p_is_renewal: false,
+            });
+          } catch (bountyErr) {
+            console.error("[iap-purchases] bounty award failed:", bountyErr);
+          }
         }
       }
 
