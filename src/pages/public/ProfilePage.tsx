@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import EventsPage from "@/pages/public/EventsPage";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
+import BountyEarningsPanel from "@/components/discover/BountyEarningsPanel";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -73,7 +74,21 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     },
   });
 
+  const { data: memberProfile } = useQuery({
+    queryKey: ["profile-member-gender", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", user!.id)
+        .single();
+      return data;
+    },
+  });
+
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
+  const isFemale = (memberProfile?.gender ?? "").toLowerCase() === "female";
 
   const handleLogout = async () => {
     await signOut();
@@ -138,6 +153,12 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
       <p className="text-sm font-bold text-neutral-300 mb-8">
         {balance?.minutes ?? 0} Minutes | {balance?.adPoints ?? 0} Ad Points
       </p>
+
+      {isFemale && (
+        <div className="w-full max-w-sm mb-8">
+          <BountyEarningsPanel userId={user?.id ?? null} />
+        </div>
+      )}
 
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
