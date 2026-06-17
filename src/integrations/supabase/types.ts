@@ -567,7 +567,22 @@ export type Database = {
           source?: string
           stripe_subscription_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bounty_earnings_female_id_fkey"
+            columns: ["female_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bounty_earnings_male_id_fkey"
+            columns: ["male_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       call_minutes_log: {
         Row: {
