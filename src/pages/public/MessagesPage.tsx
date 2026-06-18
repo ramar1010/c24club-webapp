@@ -367,6 +367,21 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  // Female-side: check if the male partner has hit their free-message limit (and is not VIP)
+  const partnerIdForLimit = isFemaleFromMale ? selectedConvo?.other_user?.id ?? null : null;
+  const { data: partnerMsgStatus } = useQuery({
+    queryKey: ["partner-free-msg-status", partnerIdForLimit],
+    enabled: !!partnerIdForLimit,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_user_free_msg_status", {
+        target_user_id: partnerIdForLimit!,
+      });
+      if (error) return null;
+      return data as { is_vip: boolean; used_count: number; has_reached_limit: boolean } | null;
+    },
+  });
+
   // Bounty earnings from this specific male partner (shown only to female)
   const { data: bountyFromPartner } = useQuery({
     queryKey: ["bounty-from-partner", user?.id, selectedConvo?.other_user?.id],
