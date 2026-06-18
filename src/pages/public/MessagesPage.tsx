@@ -367,6 +367,21 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   // Female-side: detect if male partner is likely blocked
   const isFemaleFromMale = myGender === "female" && selectedConvo?.other_user?.gender?.toLowerCase() === "male";
 
+  // Female-side: check if the male partner has hit their free-message limit (and is not VIP)
+  const partnerIdForLimit = isFemaleFromMale ? selectedConvo?.other_user?.id ?? null : null;
+  const { data: partnerMsgStatus } = useQuery({
+    queryKey: ["partner-free-msg-status", partnerIdForLimit],
+    enabled: !!partnerIdForLimit,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_user_free_msg_status", {
+        target_user_id: partnerIdForLimit!,
+      });
+      if (error) return null;
+      return data as { is_vip: boolean; used_count: number; has_reached_limit: boolean } | null;
+    },
+  });
+
   // Bounty earnings from this specific male partner (shown only to female)
   const { data: bountyFromPartner } = useQuery({
     queryKey: ["bounty-from-partner", user?.id, selectedConvo?.other_user?.id],
@@ -985,21 +1000,23 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             </div>
 
             {/* Female-side notice: male partner may have hit DM limit */}
-            {isFemaleFromMale && (() => {
-              const partnerSentCount = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).length;
-              const partnerLastMsg = messages.filter((m) => m.sender_id === selectedConvo?.other_user?.id).at(-1);
-              const myLastMsg = messages.filter((m) => m.sender_id === user?.id).at(-1);
-              const partnerStopped = partnerSentCount >= 3 && myLastMsg && (!partnerLastMsg || new Date(partnerLastMsg.created_at) < new Date(myLastMsg.created_at));
-              if (!partnerStopped || threadBlocked) return null;
-              return (
-                <div className="mx-3 mb-1 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5">
-                  <Lock className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="text-xs text-amber-300/90">
-                    {selectedConvo?.other_user?.name} may have reached their free message limit. They'll need to subscribe to VIP to continue chatting with you.
-                  </span>
+            {isFemaleFromMale && partnerMsgStatus?.has_reached_limit && !threadBlocked && (
+              <div className="mx-3 mb-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-amber-400">⚠️</span>
+                  <p className="text-sm font-bold text-amber-300">Message Limit Reached</p>
                 </div>
-              );
-            })()}
+                <p className="text-xs text-amber-200/80 leading-relaxed mb-2.5">
+                  {selectedConvo?.other_user?.name} cannot chat until he is VIP. Convince him to upgrade to earn commission!
+                </p>
+                <button
+                  onClick={() => setShowBountyGuide(true)}
+                  className="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  View Earning Guide →
+                </button>
+              </div>
+            )}
 
             {/* Input or DM paywall */}
             {dmBlocked ? (
