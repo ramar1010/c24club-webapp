@@ -1,18 +1,28 @@
 import { useState } from "react";
-import { X, MessageCircle, Video, Crown, DollarSign, ChevronRight, Star } from "lucide-react";
+import { X, MessageCircle, Crown, DollarSign, ChevronRight, Star, Check } from "lucide-react";
 
 interface BountyGuideModalProps {
   onClose: () => void;
 }
 
-const steps = [
+type Step = {
+  icon: typeof MessageCircle;
+  color: string;
+  bg: string;
+  border: string;
+  title: string;
+  desc: string;
+  bullets?: string[];
+};
+
+const steps: Step[] = [
   {
     icon: MessageCircle,
     color: "text-pink-400",
     bg: "bg-pink-500/10",
     border: "border-pink-500/20",
     title: "Chat with guys",
-    desc: "Be fun and engaging in DMs and video calls. The more you chat, the more chances you have.",
+    desc: "Be engaging in DMs and on video calls. Real, fun conversations are what keep guys coming back.",
   },
   {
     icon: Crown,
@@ -20,7 +30,7 @@ const steps = [
     bg: "bg-amber-500/10",
     border: "border-amber-500/20",
     title: "Convince them to subscribe",
-    desc: "Encourage guys to upgrade to Basic or Premium VIP so they can unlock unlimited calls and DMs with you.",
+    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership.",
   },
   {
     icon: Star,
@@ -28,7 +38,13 @@ const steps = [
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
     title: "You automatically earn minutes",
-    desc: "When a guy you recently chatted with subscribes, you get gifted minutes as a bounty reward — no extra steps needed!",
+    desc: "When a guy you've chatted with goes VIP, gifted minutes land in your balance instantly — no action needed.",
+    bullets: [
+      "125 minutes when they subscribe to Basic VIP",
+      "500 minutes when they subscribe to Premium VIP",
+      "First-time subscriptions only",
+      "Bonus: +500 streak bonus for 3 subscriptions in 7 days",
+    ],
   },
   {
     icon: DollarSign,
@@ -36,18 +52,26 @@ const steps = [
     bg: "bg-blue-500/10",
     border: "border-blue-500/20",
     title: "Cash out to PayPal",
-    desc: "Go to My Rewards → Cashout Minutes to convert your gifted minutes into real cash sent to your PayPal.",
+    desc: "Head to My Profile → Redeem My Minutes and turn your gifted minutes into real cash.",
+    bullets: [
+      "Redeem minutes at $0.02 per minute",
+      "Payments sent directly to your PayPal",
+      "Go above & beyond: Get gifted 100, 400, 600, or 1000 minutes by members to earn even faster!",
+    ],
   },
 ];
 
 const tips = [
-  "Last-touch wins: the girl who chatted with him most recently (within 7 days) gets the bounty.",
-  "Video calls count too — private call gifts even give you a 20% bonus!",
-  "There is no limit to how many guys you can convert. More chats = more earnings.",
+  "Be genuine and engaging — authentic conversations convert the best.",
+  "The more guys you talk to, the more chances they go VIP and pay you.",
+  "Keep a streak going: 3 subscriptions within 7 days unlocks a +500 minute bonus.",
+  "First-time payments award the bounty — recurring renewals do not.",
+  "Go above and beyond: You can also get gifted directly by members (100, 400, 600, or 1000 minutes) to boost your earnings!",
 ];
 
 export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
   const [activeStep, setActiveStep] = useState(0);
+  const step = steps[activeStep];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
@@ -60,11 +84,13 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
           >
             <X className="w-4 h-4 text-white/70" />
           </button>
-          <div className="text-3xl mb-2">💰</div>
-          <h2 className="text-lg font-bold text-white">How to Earn Gifted Minutes</h2>
-          <p className="text-sm text-white/50 mt-1">
-            Turn casual chats into real cash — here is the simple formula.
-          </p>
+          <div className="text-center">
+            <div className="text-3xl mb-2">💰</div>
+            <h2 className="text-lg font-bold text-white">Earn Money DMing Guys</h2>
+            <p className="text-sm text-white/50 mt-1">
+              Get paid in cash when the guys you chat with go VIP.
+            </p>
+          </div>
         </div>
 
         {/* Stepper */}
@@ -99,20 +125,31 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
         {/* Active Step Card */}
         <div className="px-6 pb-4">
           <div
-            className={`rounded-xl border px-5 py-4 transition-all ${steps[activeStep].bg} ${steps[activeStep].border}`}
+            className={`rounded-xl border px-5 py-4 transition-all ${step.bg} ${step.border}`}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`p-2 rounded-lg bg-white/5 ${steps[activeStep].color}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className={`p-2 rounded-lg bg-white/5 ${step.color}`}>
                 {(() => {
-                  const Icon = steps[activeStep].icon;
+                  const Icon = step.icon;
                   return <Icon className="w-5 h-5" />;
                 })()}
               </div>
-              <h3 className="font-bold text-white text-sm">{steps[activeStep].title}</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400 border border-pink-400/40 rounded-full px-2.5 py-0.5">
+                Step {activeStep + 1}
+              </span>
             </div>
-            <p className="text-sm text-white/70 leading-relaxed">
-              {steps[activeStep].desc}
-            </p>
+            <h3 className="font-bold text-white text-base mb-1.5">{step.title}</h3>
+            <p className="text-sm text-white/70 leading-relaxed">{step.desc}</p>
+            {step.bullets && (
+              <ul className="mt-3 space-y-1.5">
+                {step.bullets.map((b, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-white/80">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Navigation */}
@@ -139,8 +176,8 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
         {/* Pro Tips */}
         <div className="px-6 pb-6">
           <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-            <p className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-              Pro Tips
+            <p className="text-xs font-bold text-amber-300/90 uppercase tracking-wider mb-2">
+              ✨ Pro Tips
             </p>
             <ul className="space-y-2">
               {tips.map((tip, i) => (
@@ -151,6 +188,9 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
               ))}
             </ul>
           </div>
+          <p className="text-[11px] text-white/40 text-center mt-3">
+            Earnings are paid in gifted minutes redeemable for cash via PayPal. Learn more at c24club.com.
+          </p>
         </div>
       </div>
     </div>
