@@ -3317,6 +3317,10 @@ export type Database = {
           thread_url: string
         }[]
       }
+      get_user_free_msg_status: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_vip_user_ids: { Args: never; Returns: string[] }
       has_role: {
         Args: {
