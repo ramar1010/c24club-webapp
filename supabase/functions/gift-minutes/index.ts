@@ -161,10 +161,13 @@ serve(async (req) => {
       const totalCashValue = isDirectCall ? cashValue * (1 + DIRECT_CALL_BONUS_RATE) : cashValue;
       const cashableGiftedMinutes = Math.floor(totalCashValue / ratePerMinute);
 
-      // Credit recipient atomically — creates the balance row if missing and never overwrites existing gifted minutes.
+      // Credit recipient atomically — gifts ONLY credit gifted_minutes (cashable balance).
+      // They must NOT increase total_minutes ("earn chatting") otherwise the two balances
+      // get intertwined in the Profile screen.
+      void totalMinutesForRecipient;
       await supabaseAdmin.rpc("atomic_increment_member_balances", {
         p_user_id: recipientId,
-        p_total_amount: totalMinutesForRecipient,
+        p_total_amount: 0,
         p_gifted_amount: cashableGiftedMinutes,
       });
 
