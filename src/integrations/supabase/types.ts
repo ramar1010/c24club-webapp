@@ -3311,6 +3311,22 @@ export type Database = {
       get_admin_user_ids: { Args: never; Returns: string[] }
       get_bounty_summary: { Args: never; Returns: Json }
       get_moderator_user_ids: { Args: never; Returns: string[] }
+      get_my_gift_history: {
+        Args: { p_direction?: string }
+        Returns: {
+          created_at: string
+          id: string
+          minutes_amount: number
+          price_cents: number
+          recipient_id: string
+          recipient_image_url: string
+          recipient_name: string
+          sender_id: string
+          sender_image_url: string
+          sender_name: string
+          status: string
+        }[]
+      }
       get_partner_nsfw_strikes: { Args: { _user_id: string }; Returns: number }
       get_reddit_task_by_code: {
         Args: { p_code: string }
