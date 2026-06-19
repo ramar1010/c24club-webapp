@@ -161,36 +161,20 @@ serve(async (req) => {
       const totalCashValue = isDirectCall ? cashValue * (1 + DIRECT_CALL_BONUS_RATE) : cashValue;
       const cashableGiftedMinutes = Math.floor(totalCashValue / ratePerMinute);
 
-      // Credit recipient — minutes for chatting, gifted_minutes for cashout
-      const { data: recipientMinutes } = await supabaseAdmin
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", recipientId)
-        .single();
-
-      if (recipientMinutes) {
-        await supabaseAdmin
-          .from("member_minutes")
-          .update({
-            total_minutes: (recipientMinutes.total_minutes || 0) + totalMinutesForRecipient,
-            gifted_minutes: (recipientMinutes.gifted_minutes || 0) + cashableGiftedMinutes,
-          })
-          .eq("user_id", recipientId);
-      }
+      // Credit recipient atomically — creates the balance row if missing and never overwrites existing gifted minutes.
+      await supabaseAdmin.rpc("atomic_increment_member_balances", {
+        p_user_id: recipientId,
+        p_total_amount: totalMinutesForRecipient,
+        p_gifted_amount: cashableGiftedMinutes,
+      });
 
       // Credit sender bonus
       if (senderBonus > 0) {
-        const { data: senderMinutes } = await supabaseAdmin
-          .from("member_minutes")
-          .select("total_minutes")
-          .eq("user_id", gift.sender_id)
-          .single();
-        if (senderMinutes) {
-          await supabaseAdmin
-            .from("member_minutes")
-            .update({ total_minutes: (senderMinutes.total_minutes || 0) + senderBonus })
-            .eq("user_id", gift.sender_id);
-        }
+        await supabaseAdmin.rpc("atomic_increment_member_balances", {
+          p_user_id: gift.sender_id,
+          p_total_amount: senderBonus,
+          p_gifted_amount: 0,
+        });
       }
 
       await supabaseAdmin
@@ -259,28 +243,19 @@ serve(async (req) => {
         throw new Error("Insufficient minutes balance");
       }
 
-      // Deduct from sender's total_minutes, reduce gifted_minutes proportionally
-      const senderGifted = senderMinutes.gifted_minutes ?? 0;
+      // Deduct only calling minutes. gifted_minutes is a separate cashout balance and must not be reset by gifting.
       const newSenderMinutes = (senderMinutes.total_minutes || 0) - giftMinutes;
-      const newSenderGifted = Math.min(Math.max(0, senderGifted - giftMinutes), newSenderMinutes);
       await supabaseAdmin
         .from("member_minutes")
-        .update({ total_minutes: newSenderMinutes, gifted_minutes: newSenderGifted })
+        .update({ total_minutes: newSenderMinutes })
         .eq("user_id", user.id);
 
       // Credit recipient's total_minutes
-      const { data: recipientMins } = await supabaseAdmin
-        .from("member_minutes")
-        .select("total_minutes")
-        .eq("user_id", recipient_id)
-        .single();
-
-      if (recipientMins) {
-        await supabaseAdmin
-          .from("member_minutes")
-          .update({ total_minutes: (recipientMins.total_minutes || 0) + giftMinutes })
-          .eq("user_id", recipient_id);
-      }
+      await supabaseAdmin.rpc("atomic_increment_member_balances", {
+        p_user_id: recipient_id,
+        p_total_amount: giftMinutes,
+        p_gifted_amount: 0,
+      });
 
       await supabaseAdmin.from("gift_transactions").insert({
         sender_id: user.id,

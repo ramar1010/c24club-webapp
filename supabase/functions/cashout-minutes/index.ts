@@ -75,7 +75,7 @@ serve(async (req) => {
 
       const { data: memberMinutes, error: fetchError } = await supabaseAdmin
         .from("member_minutes")
-        .select("gifted_minutes, minutes")
+        .select("gifted_minutes")
         .eq("user_id", user.id)
         .single();
 
@@ -101,7 +101,7 @@ serve(async (req) => {
         user_id: user.id,
         minutes_amount,
         paypal_email,
-        cashout_amount: cashAmount,
+        cash_amount: cashAmount,
         status: "pending",
       });
 

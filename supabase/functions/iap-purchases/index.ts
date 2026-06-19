@@ -38,6 +38,22 @@ const CASH_VALUE_MAP: Record<string, number> = {
   "1000minutes": 10.0,
 };
 
+const PRICE_CENTS_MAP: Record<string, number> = {
+  c24_gift_100_minutes: 199,
+  c24_gift_400_minutes: 499,
+  c24_gift_600_minutes: 799,
+  c24_gift_1000_minutes: 1299,
+  "100minutes": 199,
+  "400minutes": 499,
+  "600minutes": 799,
+  "1000minutes": 1299,
+};
+
+const tokenFingerprint = async (token: string) => {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(bytes)).map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -189,40 +205,51 @@ Deno.serve(async (req) => {
 
       await verifyReceipt();
 
-      const { data: recipientData } = await supabaseAdmin
-        .from("member_minutes")
-        .select("gifted_minutes")
-        .eq("user_id", recipient_id)
-        .maybeSingle();
-      if (recipientData) {
-        await supabaseAdmin
-          .from("member_minutes")
-          .update({ gifted_minutes: (recipientData.gifted_minutes ?? 0) + minutesToGift })
-          .eq("user_id", recipient_id);
+      const purchaseTokenHash = purchaseToken ? await tokenFingerprint(purchaseToken) : null;
+      if (purchaseTokenHash) {
+        const { data: existingGift } = await supabaseAdmin
+          .from("iap_purchases")
+          .select("id")
+          .eq("action", "verify-gift")
+          .eq("purchase_token_hash", purchaseTokenHash)
+          .maybeSingle();
+        if (existingGift) {
+          return new Response(JSON.stringify({ success: true, already_processed: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
 
-      await supabaseAdmin
-        .from("gift_transactions")
-        .insert({
-          sender_id: user.id,
-          recipient_id,
-          minutes: minutesToGift,
-          cash_value: cashValue,
-          status: "completed",
-        });
+      await supabaseAdmin.rpc("atomic_increment_member_balances", {
+        p_user_id: recipient_id,
+        p_total_amount: minutesToGift,
+        p_gifted_amount: minutesToGift,
+      });
+
+      await supabaseAdmin.from("gift_transactions").insert({
+        sender_id: user.id,
+        recipient_id,
+        minutes_amount: minutesToGift,
+        price_cents: PRICE_CENTS_MAP[sku] ?? Math.round(cashValue * 100),
+        status: "completed",
+      });
+
+      await supabaseAdmin.from("iap_purchases").insert({
+        user_id: user.id,
+        action: "verify-gift",
+        sku,
+        platform: platform ?? "native",
+        recipient_id,
+        minutes_added: minutesToGift,
+        purchase_token_hash: purchaseTokenHash,
+      });
 
       if (senderBonus > 0) {
-        const { data: senderData } = await supabaseAdmin
-          .from("member_minutes")
-          .select("minutes")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (senderData) {
-          await supabaseAdmin
-            .from("member_minutes")
-            .update({ minutes: (senderData.minutes ?? 0) + senderBonus })
-            .eq("user_id", user.id);
-        }
+        await supabaseAdmin.rpc("atomic_increment_member_balances", {
+          p_user_id: user.id,
+          p_total_amount: senderBonus,
+          p_gifted_amount: 0,
+        });
       }
 
       return new Response(JSON.stringify({ success: true, minutes_gifted: minutesToGift, sender_bonus: senderBonus }), {
@@ -287,14 +314,11 @@ Deno.serve(async (req) => {
       const minutesToAdd = MINUTE_MAP[sku];
       if (!minutesToAdd) throw new Error(`Unknown product sku: ${sku}`);
       await verifyReceipt();
-      const { data: current } = await supabaseAdmin
-        .from("member_minutes")
-        .select("minutes")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      const { error } = await supabaseAdmin
-        .from("member_minutes")
-        .upsert({ user_id: user.id, minutes: (current?.minutes ?? 0) + minutesToAdd }, { onConflict: "user_id" });
+      const { error } = await supabaseAdmin.rpc("atomic_increment_member_balances", {
+        p_user_id: user.id,
+        p_total_amount: minutesToAdd,
+        p_gifted_amount: 0,
+      });
       if (error) throw error;
       return new Response(JSON.stringify({ success: true, minutes_added: minutesToAdd }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
