@@ -3259,6 +3259,17 @@ export type Database = {
         Args: { p_seconds: number; p_state: string }
         Returns: Json
       }
+      atomic_increment_member_balances: {
+        Args: {
+          p_gifted_amount?: number
+          p_total_amount?: number
+          p_user_id: string
+        }
+        Returns: {
+          gifted_minutes: number
+          total_minutes: number
+        }[]
+      }
       atomic_increment_minutes: {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
