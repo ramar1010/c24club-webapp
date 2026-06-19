@@ -101,7 +101,7 @@ const MyRewardsPage = ({ onClose }: { onClose?: () => void }) => {
 
   const { data: giftsReceived = [], isLoading: giftsLoading } = useQuery({
     queryKey: ["gifts-received", user?.id],
-    enabled: !!user && subscribed,
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gift_transactions")
