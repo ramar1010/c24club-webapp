@@ -220,9 +220,11 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Gifts must ONLY credit gifted_minutes (cashable balance).
+      // They must NOT increase total_minutes ("earn chatting") to keep balances separate.
       await supabaseAdmin.rpc("atomic_increment_member_balances", {
         p_user_id: recipient_id,
-        p_total_amount: minutesToGift,
+        p_total_amount: 0,
         p_gifted_amount: minutesToGift,
       });
 
