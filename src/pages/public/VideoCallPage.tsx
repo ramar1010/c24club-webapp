@@ -1882,6 +1882,11 @@ const VideoCallPage = () => {
 
       }
 
+      {/* Bounty Guide Modal */}
+      {showBountyGuide && (
+        <BountyGuideModal onClose={() => setShowBountyGuide(false)} />
+      )}
+
       {/* Report User Overlay */}
       {showReportOverlay && currentPartnerId &&
       <ReportUserOverlay
