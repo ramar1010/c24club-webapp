@@ -1655,6 +1655,47 @@ const VideoCallPage = () => {
         </div>
       }
 
+      {/* Bounty: Male "Message Me" button — opens DM with female partner */}
+      {isActive && callState === "connected" && currentPartnerId && !isFemale && partnerGender?.toLowerCase() === "female" && (
+        <div className="px-4 pt-2 pb-1">
+          <button
+            onClick={() => { setDmTargetId(currentPartnerId); setOverlayPage("messages"); }}
+            className="w-full max-w-md mx-auto flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-base py-3.5 rounded-full shadow-[0_0_24px_rgba(250,204,21,0.55)] active:scale-[0.98] transition-all"
+          >
+            <span className="text-lg">💬</span>
+            MESSAGE ME
+          </button>
+        </div>
+      )}
+
+      {/* Bounty: Female banner — encourages partner to message her */}
+      {isActive && callState === "connected" && currentPartnerId && isFemale && partnerGender?.toLowerCase() === "male" && (
+        <div className="px-4 pt-2 pb-1">
+          <button
+            type="button"
+            onClick={() => setShowBountyGuide(true)}
+            className="w-full max-w-md mx-auto block bg-gradient-to-r from-pink-600/30 to-purple-600/30 border border-pink-400/40 rounded-2xl px-4 py-3 text-center hover:from-pink-600/40 hover:to-purple-600/40 transition-all"
+          >
+            <p className="text-pink-200 text-sm font-bold leading-snug">
+              Tell him to "Message Me" to keep chatting and earn cash bounties! 💰💬
+            </p>
+          </button>
+        </div>
+      )}
+
+      {/* Bounty: Female mobile-only "Earn Money DMing Guys" entry button */}
+      {isFemale && isMobile && !showRedeem && (
+        <div className="px-4 pt-1 pb-2">
+          <button
+            onClick={() => setShowBountyGuide(true)}
+            className="w-full max-w-md mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white font-black text-base py-3.5 rounded-full shadow-lg shadow-pink-500/30 active:scale-[0.98] transition-all"
+          >
+            <span className="text-lg">👛</span>
+            Earn Money DMing Guys
+          </button>
+        </div>
+      )}
+
       {/* Female "Pick an Item" button — below video boxes */}
       {/* Mini app download banner for male Android users on idle screen */}
       {!isActive && (
