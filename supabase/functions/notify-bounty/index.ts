@@ -94,19 +94,30 @@ serve(async (req) => {
         .eq("id", conversationId);
     }
 
-    const pushResp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceRoleKey}` },
-      body: JSON.stringify({
-        user_id: bounty.female_id,
-        title,
-        body,
-        data: { type: "bounty_awarded", screen: "/profile", bounty_earning_id: bounty.id },
-        notification_type: `bounty_awarded:${bounty.id}`,
-        force_send: true,
-      }),
-    });
-    const pushResult = await pushResp.json().catch(() => ({}));
+    const notificationType = `bounty_awarded:${bounty.id}`;
+    const { data: previousPush } = await supabase
+      .from("push_notification_log")
+      .select("last_sent_at")
+      .eq("user_id", bounty.female_id)
+      .eq("notification_type", notificationType)
+      .maybeSingle();
+
+    let pushResult: Record<string, unknown> = { skipped: true, reason: "Already sent" };
+    if (!previousPush?.last_sent_at) {
+      const pushResp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({
+          user_id: bounty.female_id,
+          title,
+          body,
+          data: { type: "bounty_awarded", screen: "/profile", bounty_earning_id: bounty.id },
+          notification_type: notificationType,
+          force_send: true,
+        }),
+      });
+      pushResult = await pushResp.json().catch(() => ({}));
+    }
 
     console.log("[notify-bounty] sent", { bounty_earning_id, female_id: bounty.female_id, pushResult });
     return json({ success: true, push: pushResult });
