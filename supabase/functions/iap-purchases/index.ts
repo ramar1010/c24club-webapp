@@ -246,12 +246,23 @@ Deno.serve(async (req) => {
         // Award bounty to the attributing female (first-time activation only)
         if (!wasAlreadyVip) {
           try {
-            await supabaseAdmin.rpc("award_bounty_for_subscription", {
+            const { data: bountyResult } = await supabaseAdmin.rpc("award_bounty_for_subscription", {
               p_male_id: user.id,
               p_tier: tier,
               p_stripe_subscription_id: `iap:${platform ?? "native"}:${purchaseToken?.slice(0, 32) ?? sku}`,
               p_is_renewal: false,
             });
+            console.log("[iap-purchases] bounty rpc:", { userId: user.id, tier, bountyResult });
+
+            const br: any = bountyResult;
+            if (br?.success && br?.female_id && br?.minutes) {
+              await sendBountyNotifications(supabaseAdmin, {
+                femaleId: br.female_id,
+                minutes: br.minutes,
+                streakAwarded: br.streak_count === 3,
+                tier,
+              });
+            }
           } catch (bountyErr) {
             console.error("[iap-purchases] bounty award failed:", bountyErr);
           }
