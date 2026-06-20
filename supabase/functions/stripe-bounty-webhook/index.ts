@@ -17,6 +17,77 @@ const log = (step: string, details?: any) => {
   console.log(`[STRIPE-BOUNTY-WEBHOOK] ${step}${d}`);
 };
 
+const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
+
+async function sendBountyNotifications(
+  supabase: any,
+  args: { femaleId: string; minutes: number; streakAwarded: boolean; tier: string }
+) {
+  const { femaleId, minutes, streakAwarded, tier } = args;
+  const cash = (minutes * 0.01).toFixed(2);
+  const tierLabel = tier === "premium" ? "Premium VIP" : "Basic VIP";
+  const title = "🎉 Bounty awarded!";
+  const body = streakAwarded
+    ? `You earned ${minutes} minutes ($${cash}) + a 500-min streak bonus from a ${tierLabel} signup!`
+    : `You earned ${minutes} minutes ($${cash}) from a ${tierLabel} signup. Cashable in your Profile.`;
+
+  // 1) System DM from owner
+  try {
+    let convId: string | null = null;
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(
+        `and(participant_1.eq.${OWNER_ID},participant_2.eq.${femaleId}),and(participant_1.eq.${femaleId},participant_2.eq.${OWNER_ID})`
+      )
+      .maybeSingle();
+    if (existing?.id) {
+      convId = existing.id;
+    } else {
+      const { data: created } = await supabase
+        .from("conversations")
+        .insert({ participant_1: OWNER_ID, participant_2: femaleId })
+        .select("id")
+        .single();
+      convId = created?.id ?? null;
+    }
+    if (convId) {
+      await supabase.from("dm_messages").insert({
+        conversation_id: convId,
+        sender_id: OWNER_ID,
+        content: `💰 ${body} Check your Profile → Bounty History.`,
+      });
+    }
+  } catch (err: any) {
+    log("DM insert error", { message: err?.message });
+  }
+
+  // 2) Push notification
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        user_id: femaleId,
+        title,
+        body,
+        data: { type: "bounty_awarded", screen: "/profile" },
+        notification_type: "bounty_awarded",
+        force_send: true,
+      }),
+    });
+    const result = await resp.json().catch(() => ({}));
+    log("Bounty push", { femaleId, result });
+  } catch (err: any) {
+    log("Push error", { message: err?.message });
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
