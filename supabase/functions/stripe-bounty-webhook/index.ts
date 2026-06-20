@@ -80,6 +80,21 @@ serve(async (req) => {
         p_is_renewal: isRenewal,
       });
       log("Bounty rpc", { maleId, vipTier, isRenewal, bountyResult });
+
+      // Real-time bounty notification: push + system DM to the female
+      try {
+        const br: any = bountyResult;
+        if (br?.success && br?.female_id && br?.minutes) {
+          await sendBountyNotifications(supabase, {
+            femaleId: br.female_id,
+            minutes: br.minutes,
+            streakAwarded: br.streak_count === 3,
+            tier: vipTier,
+          });
+        }
+      } catch (notifyErr: any) {
+        log("Bounty notification error", { message: notifyErr?.message });
+      }
     };
 
     switch (event.type) {
