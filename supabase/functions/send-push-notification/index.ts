@@ -219,7 +219,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { user_id, title, body, data = {}, notification_type, cooldown_minutes } = await req.json();
+    const { user_id, title, body, data = {}, notification_type, cooldown_minutes, force_send = false } = await req.json();
 
     if (!user_id || !title) {
       return new Response(JSON.stringify({ success: false, reason: "Missing required fields" }), {
@@ -237,7 +237,7 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!member.notify_enabled) {
+    if (!member.notify_enabled && !force_send) {
       return new Response(JSON.stringify({ success: false, skipped: true, reason: "Notifications disabled" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
