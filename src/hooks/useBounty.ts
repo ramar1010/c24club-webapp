@@ -1,19 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface BountyConvert {
+export interface BountyEarningLog {
+  id: string;
   amount_minutes: number;
   source: "basic" | "premium" | "renewal" | "streak";
   created_at: string;
-  male_name: string | null;
-  male_avatar: string | null;
+  paid_out: boolean;
+  partner_name: string | null;
+  partner_image_url: string | null;
+}
+
+export interface BountyPendingLog {
+  id: string;
+  partner_name: string | null;
+  partner_image_url: string | null;
+  last_interaction_at: string;
+  expires_at: string;
+  interaction_type: "call" | "dm";
 }
 
 export interface BountySummary {
-  lifetime_minutes: number;
-  streak_count: number;
-  streak_needed: number;
-  recent_converts: BountyConvert[];
+  total_minutes_earned: number;
+  total_usd_earned: number;
+  active_links_count: number;
+  recent_logs: BountyEarningLog[];
+  pending_logs: BountyPendingLog[];
 }
 
 export function useBounty(userId: string | null) {
