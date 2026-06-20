@@ -49,6 +49,8 @@ const PRICE_CENTS_MAP: Record<string, number> = {
   "1000minutes": 1299,
 };
 
+const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
+
 const tokenFingerprint = async (token: string) => {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
   return Array.from(new Uint8Array(bytes)).map((b) => b.toString(16).padStart(2, "0")).join("");
