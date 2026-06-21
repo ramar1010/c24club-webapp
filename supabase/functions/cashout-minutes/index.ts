@@ -83,14 +83,48 @@ serve(async (req) => {
 
       const giftedBalance = memberMinutes.gifted_minutes ?? 0;
 
-      if (giftedBalance < minutes_amount) {
-        throw new Error(`Insufficient gifted minutes. You have ${giftedBalance} gifted minutes available.`);
+      // Also count unpaid bounty earnings as cashable
+      const { data: bountyEarnings } = await supabaseAdmin
+        .from("bounty_earnings")
+        .select("id, amount_minutes")
+        .eq("female_id", user.id)
+        .eq("clawed_back", false)
+        .eq("paid_out", false)
+        .gt("amount_minutes", 0)
+        .order("created_at", { ascending: true });
+
+      const bountyBalance = (bountyEarnings || []).reduce((sum, b) => sum + (b.amount_minutes ?? 0), 0);
+      const totalCashable = giftedBalance + bountyBalance;
+
+      if (totalCashable < minutes_amount) {
+        throw new Error(`Insufficient cashable minutes. You have ${totalCashable} available (${giftedBalance} gifted + ${bountyBalance} bounty).`);
       }
 
-      // Deduct ONLY from gifted_minutes — never touch the `minutes` (earned chatting) column
+      // Deduct from bounty earnings first (oldest first), then gifted_minutes
+      let remainingToDeduct = minutes_amount;
+      const bountyIdsToMark: string[] = [];
+
+      for (const bounty of bountyEarnings || []) {
+        if (remainingToDeduct <= 0) break;
+        const deduct = Math.min(bounty.amount_minutes ?? 0, remainingToDeduct);
+        remainingToDeduct -= deduct;
+        bountyIdsToMark.push(bounty.id);
+      }
+
+      // Mark bounty earnings as paid out
+      if (bountyIdsToMark.length > 0) {
+        const { error: bountyUpdateError } = await supabaseAdmin
+          .from("bounty_earnings")
+          .update({ paid_out: true })
+          .in("id", bountyIdsToMark);
+        if (bountyUpdateError) throw new Error("Failed to mark bounty earnings: " + bountyUpdateError.message);
+      }
+
+      // Deduct remainder from gifted_minutes
+      const newGiftedBalance = Math.max(0, giftedBalance - remainingToDeduct);
       const { error: updateError } = await supabaseAdmin
         .from("member_minutes")
-        .update({ gifted_minutes: giftedBalance - minutes_amount })
+        .update({ gifted_minutes: newGiftedBalance })
         .eq("user_id", user.id);
 
       if (updateError) throw new Error("Failed to deduct gifted minutes: " + updateError.message);
