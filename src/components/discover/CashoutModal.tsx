@@ -232,16 +232,22 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes = 
         {/* Balance overview */}
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4 space-y-1.5">
           <div className="flex justify-between items-center">
-            <span className="text-white/50 text-xs">🎁 Your Gifted Minutes</span>
+            <span className="text-white/50 text-xs">🎁 Gifted Minutes</span>
             <span className="text-emerald-400 font-bold text-sm">{giftedMinutes} min</span>
           </div>
+          {bountyMinutes > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-xs">👑 Bounty Earnings</span>
+              <span className="text-amber-400 font-bold text-sm">{bountyMinutes} min</span>
+            </div>
+          )}
           <div className="flex justify-between items-center">
             <span className="text-white/50 text-xs">💵 Each Minute is Worth</span>
             <span className="text-white font-bold text-sm">${settings.rate_per_minute}</span>
           </div>
           <div className="border-t border-white/10 pt-1.5 flex justify-between items-center">
-            <span className="text-white/50 text-xs">💰 Full Balance Value</span>
-            <span className="text-emerald-400 font-bold text-sm">${(giftedMinutes * settings.rate_per_minute).toFixed(2)}</span>
+            <span className="text-white/50 text-xs">💰 Total Cashable Value</span>
+            <span className="text-emerald-400 font-bold text-sm">${(totalCashable * settings.rate_per_minute).toFixed(2)}</span>
           </div>
         </div>
 
