@@ -161,15 +161,23 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
             >
               Back
             </button>
-            <button
-              onClick={() =>
-                setActiveStep((s) => Math.min(steps.length - 1, s + 1))
-              }
-              disabled={activeStep === steps.length - 1}
-              className="flex items-center gap-1 text-sm font-semibold text-pink-400 hover:text-pink-300 disabled:opacity-30 transition-colors"
-            >
-              Next <ChevronRight className="w-4 h-4" />
-            </button>
+            {activeStep === steps.length - 1 ? (
+              <button
+                onClick={onClose}
+                className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                View My Earnings <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() =>
+                  setActiveStep((s) => Math.min(steps.length - 1, s + 1))
+                }
+                className="flex items-center gap-1 text-sm font-semibold text-pink-400 hover:text-pink-300 transition-colors"
+              >
+                Next <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
