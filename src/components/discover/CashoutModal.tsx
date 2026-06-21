@@ -286,16 +286,16 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes = 
           />
         </div>
 
-        {giftedMinutes < settings.min_cashout_minutes && (
+        {totalCashable < settings.min_cashout_minutes && (
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-4">
             <p className="text-amber-400 text-xs font-bold mb-1">⚠️ Not enough cashable minutes</p>
             <p className="text-white/50 text-[11px] leading-relaxed">
-              You need at least <span className="text-white font-bold">{settings.min_cashout_minutes} gifted minutes</span> to cash out. 
-              You currently have <span className="text-white font-bold">{giftedMinutes}</span>.
+              You need at least <span className="text-white font-bold">{settings.min_cashout_minutes} cashable minutes</span> (gifted + bounties) to cash out.
+              You currently have <span className="text-white font-bold">{totalCashable}</span>.
             </p>
-            {currentMinutes > giftedMinutes && (
+            {currentMinutes > totalCashable && (
               <p className="text-white/40 text-[10px] mt-1.5 leading-relaxed">
-                💡 Your other {currentMinutes - giftedMinutes} minutes (from spins, rewards, or chatting) can be used in the Reward Store but <span className="text-white/60 font-bold">cannot be cashed out</span> — only gifted minutes are cashable.
+                💡 Your other {currentMinutes - totalCashable} minutes (from spins, rewards, or chatting) can be used in the Reward Store but <span className="text-white/60 font-bold">cannot be cashed out</span> — only gifted minutes and bounty earnings are cashable.
               </p>
             )}
           </div>
@@ -303,7 +303,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes = 
 
         <button
           onClick={handleCashout}
-          disabled={loading || hasPending || minutes < settings.min_cashout_minutes || giftedMinutes < settings.min_cashout_minutes}
+          disabled={loading || hasPending || minutes < settings.min_cashout_minutes || totalCashable < settings.min_cashout_minutes}
           className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
         >
           {loading ? "Submitting..." : hasPending ? "Pending Request..." : `Cash Out $${cashValue}`}
@@ -313,7 +313,7 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes = 
           Paid via PayPal • Admin approval required
         </p>
         <p className="text-white/20 text-[9px] text-center mt-1">
-          Only gifted minutes can be cashed out — spin wins, chat earnings & rewards are store-only
+          Gifted minutes & bounty earnings can be cashed out — spin wins, chat earnings & rewards are store-only
         </p>
 
         <div className="mt-5 border-t border-white/10 pt-4">
