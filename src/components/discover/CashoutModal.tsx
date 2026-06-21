@@ -8,8 +8,10 @@ interface CashoutModalProps {
   onClose: () => void;
   currentMinutes: number;
   giftedMinutes: number;
+  bountyMinutes: number;
   onSuccess: () => void;
 }
+
 
 interface CashoutRequest {
   id: string;
@@ -30,7 +32,7 @@ interface MinuteSource {
   sublabel?: string;
 }
 
-const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: CashoutModalProps) => {
+const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes, onSuccess }: CashoutModalProps) => {
   const { user } = useAuth();
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
@@ -156,10 +158,11 @@ const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, onSuccess }: Cas
     return () => clearInterval(poll);
   }, [user]);
 
+  const totalCashable = giftedMinutes + bountyMinutes;
   const cashValue = settings ? (minutes * settings.rate_per_minute).toFixed(2) : "—";
   const maxAllowed = settings
-    ? Math.min(giftedMinutes, settings.max_cashout_minutes)
-    : giftedMinutes;
+    ? Math.min(totalCashable, settings.max_cashout_minutes)
+    : totalCashable;
 
   const hasPending = history.some((h) => h.status === "pending");
 
