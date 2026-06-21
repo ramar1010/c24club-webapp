@@ -97,12 +97,23 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     queryKey: ["profile-cashout-balance", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .single();
-      return { total: data?.total_minutes ?? 0, gifted: (data as any)?.gifted_minutes ?? 0 };
+      const [{ data: minutesData }, { data: bountyData }] = await Promise.all([
+        supabase
+          .from("member_minutes")
+          .select("total_minutes, gifted_minutes")
+          .eq("user_id", user!.id)
+          .single(),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false)
+          .eq("paid_out", false)
+          .gt("amount_minutes", 0),
+      ]);
+      const gifted = (minutesData as any)?.gifted_minutes ?? 0;
+      const bountyTotal = (bountyData || []).reduce((sum: number, b: any) => sum + (b.amount_minutes || 0), 0);
+      return { total: minutesData?.total_minutes ?? 0, gifted, bounty: bountyTotal };
     },
   });
 
@@ -183,7 +194,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
           className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-black text-sm py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/30"
         >
           <DollarSign className="w-5 h-5" />
-          REDEEM MINUTES FOR CASH ({cashoutBalance?.total ?? 0} available)
+          REDEEM MINUTES FOR CASH ({(cashoutBalance?.gifted ?? 0) + (cashoutBalance?.bounty ?? 0)} cashable)
         </button>
         <p className="text-[11px] text-neutral-400 text-center mt-1.5 font-bold">
           Cash out your earned minutes via PayPal
@@ -253,6 +264,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
           onClose={() => setShowCashout(false)}
           currentMinutes={cashoutBalance?.total ?? 0}
           giftedMinutes={cashoutBalance?.gifted ?? 0}
+          bountyMinutes={cashoutBalance?.bounty ?? 0}
           onSuccess={() => refetchCashout()}
         />
       )}
