@@ -194,7 +194,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
           className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-black text-sm py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/30"
         >
           <DollarSign className="w-5 h-5" />
-          REDEEM MINUTES FOR CASH ({cashoutBalance?.total ?? 0} available)
+          REDEEM MINUTES FOR CASH ({(cashoutBalance?.gifted ?? 0) + (cashoutBalance?.bounty ?? 0)} cashable)
         </button>
         <p className="text-[11px] text-neutral-400 text-center mt-1.5 font-bold">
           Cash out your earned minutes via PayPal
