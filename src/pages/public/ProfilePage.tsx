@@ -97,12 +97,23 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
     queryKey: ["profile-cashout-balance", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("member_minutes")
-        .select("total_minutes, gifted_minutes")
-        .eq("user_id", user!.id)
-        .single();
-      return { total: data?.total_minutes ?? 0, gifted: (data as any)?.gifted_minutes ?? 0 };
+      const [{ data: minutesData }, { data: bountyData }] = await Promise.all([
+        supabase
+          .from("member_minutes")
+          .select("total_minutes, gifted_minutes")
+          .eq("user_id", user!.id)
+          .single(),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false)
+          .eq("paid_out", false)
+          .gt("amount_minutes", 0),
+      ]);
+      const gifted = (minutesData as any)?.gifted_minutes ?? 0;
+      const bountyTotal = (bountyData || []).reduce((sum: number, b: any) => sum + (b.amount_minutes || 0), 0);
+      return { total: minutesData?.total_minutes ?? 0, gifted, bounty: bountyTotal };
     },
   });
 
