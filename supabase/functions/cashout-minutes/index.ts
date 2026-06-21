@@ -100,49 +100,66 @@ serve(async (req) => {
         throw new Error(`Insufficient cashable minutes. You have ${totalCashable} available (${giftedBalance} gifted + ${bountyBalance} bounty).`);
       }
 
-      // Deduct from bounty earnings first (oldest first), then gifted_minutes
+      // Calculate how much to deduct from each pool (bounty first, then gifted)
       let remainingToDeduct = minutes_amount;
       const bountyIdsToMark: string[] = [];
-
       for (const bounty of bountyEarnings || []) {
         if (remainingToDeduct <= 0) break;
         const deduct = Math.min(bounty.amount_minutes ?? 0, remainingToDeduct);
         remainingToDeduct -= deduct;
         bountyIdsToMark.push(bounty.id);
       }
-
-      // Mark bounty earnings as paid out
-      if (bountyIdsToMark.length > 0) {
-        const { error: bountyUpdateError } = await supabaseAdmin
-          .from("bounty_earnings")
-          .update({ paid_out: true })
-          .in("id", bountyIdsToMark);
-        if (bountyUpdateError) throw new Error("Failed to mark bounty earnings: " + bountyUpdateError.message);
-      }
-
-      // Deduct remainder from gifted_minutes
       const newGiftedBalance = Math.max(0, giftedBalance - remainingToDeduct);
-      const { error: updateError } = await supabaseAdmin
-        .from("member_minutes")
-        .update({ gifted_minutes: newGiftedBalance })
-        .eq("user_id", user.id);
-
-      if (updateError) throw new Error("Failed to deduct gifted minutes: " + updateError.message);
 
       const cashAmount = minutes_amount * ratePerMinute;
 
-      const { error: insertError } = await supabaseAdmin.from("cashout_requests").insert({
-        user_id: user.id,
-        minutes_amount,
-        paypal_email,
-        cash_amount: cashAmount,
-        status: "pending",
-      });
+      // Step 1: Create cashout request first (so we can reference its ID)
+      const { data: insertedRequest, error: insertError } = await supabaseAdmin
+        .from("cashout_requests")
+        .insert({
+          user_id: user.id,
+          minutes_amount,
+          paypal_email,
+          cash_amount: cashAmount,
+          status: "pending",
+        })
+        .select("id")
+        .single();
 
-      if (insertError) {
-        // Rollback if insert fails
+      if (insertError || !insertedRequest) {
+        throw new Error("Failed to create cashout request: " + (insertError?.message || "unknown"));
+      }
+
+      const requestId = insertedRequest.id;
+
+      try {
+        // Step 2: Mark bounty earnings as paid out
+        if (bountyIdsToMark.length > 0) {
+          const { error: bountyUpdateError } = await supabaseAdmin
+            .from("bounty_earnings")
+            .update({ paid_out: true, cashout_request_id: requestId })
+            .in("id", bountyIdsToMark);
+          if (bountyUpdateError) throw new Error("Failed to mark bounty earnings: " + bountyUpdateError.message);
+        }
+
+        // Step 3: Deduct remainder from gifted_minutes
+        const { error: updateError } = await supabaseAdmin
+          .from("member_minutes")
+          .update({ gifted_minutes: newGiftedBalance })
+          .eq("user_id", user.id);
+
+        if (updateError) throw new Error("Failed to deduct gifted minutes: " + updateError.message);
+      } catch (rollbackTrigger: any) {
+        // Rollback: restore bounty earnings and gifted minutes, then delete request
+        if (bountyIdsToMark.length > 0) {
+          await supabaseAdmin
+            .from("bounty_earnings")
+            .update({ paid_out: false, cashout_request_id: null })
+            .in("id", bountyIdsToMark);
+        }
         await supabaseAdmin.from("member_minutes").update({ gifted_minutes: giftedBalance }).eq("user_id", user.id);
-        throw new Error("Failed to create cashout request: " + insertError.message);
+        await supabaseAdmin.from("cashout_requests").delete().eq("id", requestId);
+        throw rollbackTrigger;
       }
 
       return new Response(
