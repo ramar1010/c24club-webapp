@@ -33,7 +33,7 @@ interface MinuteSource {
   sublabel?: string;
 }
 
-const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes, onSuccess }: CashoutModalProps) => {
+const CashoutModal = ({ onClose, currentMinutes, giftedMinutes, bountyMinutes = 0, onSuccess }: CashoutModalProps) => {
   const { user } = useAuth();
   const [minutes, setMinutes] = useState(100);
   const [paypalEmail, setPaypalEmail] = useState("");
