@@ -8,9 +8,10 @@ interface CashoutModalProps {
   onClose: () => void;
   currentMinutes: number;
   giftedMinutes: number;
-  bountyMinutes: number;
+  bountyMinutes?: number;
   onSuccess: () => void;
 }
+
 
 
 interface CashoutRequest {
