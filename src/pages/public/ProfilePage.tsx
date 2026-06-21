@@ -264,6 +264,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
           onClose={() => setShowCashout(false)}
           currentMinutes={cashoutBalance?.total ?? 0}
           giftedMinutes={cashoutBalance?.gifted ?? 0}
+          bountyMinutes={cashoutBalance?.bounty ?? 0}
           onSuccess={() => refetchCashout()}
         />
       )}
