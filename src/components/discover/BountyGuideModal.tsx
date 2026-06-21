@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, MessageCircle, Crown, DollarSign, ChevronRight, Star, Check } from "lucide-react";
 
 interface BountyGuideModalProps {
@@ -70,6 +71,7 @@ const tips = [
 ];
 
 export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const step = steps[activeStep];
 
@@ -163,7 +165,10 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
             </button>
             {activeStep === steps.length - 1 ? (
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  navigate("/profile");
+                }}
                 className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 View My Earnings <ChevronRight className="w-4 h-4" />
