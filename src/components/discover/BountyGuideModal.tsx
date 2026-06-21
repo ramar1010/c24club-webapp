@@ -77,12 +77,12 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
       <div className="w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 py-5 border-b border-white/10">
+        <div className="relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 pt-7 pb-5 border-b border-white/10">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            className="absolute top-6 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           >
-            <X className="w-4 h-4 text-white/70" />
+            <X className="w-5 h-5 text-white/70" />
           </button>
           <div className="text-center">
             <div className="text-3xl mb-2">💰</div>
