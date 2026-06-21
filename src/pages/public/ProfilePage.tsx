@@ -247,6 +247,15 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         <span>|</span>
         <a href="/how-to-guide" className="hover:text-white transition-colors">How To Guide</a>
       </div>
+
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={cashoutBalance?.total ?? 0}
+          giftedMinutes={cashoutBalance?.gifted ?? 0}
+          onSuccess={() => refetchCashout()}
+        />
+      )}
     </div>
   );
 };
