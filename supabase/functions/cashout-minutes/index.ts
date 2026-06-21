@@ -61,8 +61,8 @@ serve(async (req) => {
       const maxCashout = settings?.max_cashout_minutes ?? 5000;
       const ratePerMinute = settings?.rate_per_minute ?? 0.02;
 
-      if (minutes_amount < minCashout) throw new Error(`Minimum cashout is ${minCashout} gifted minutes`);
-      if (minutes_amount > maxCashout) throw new Error(`Maximum cashout is ${maxCashout} gifted minutes`);
+      if (minutes_amount < minCashout) throw new Error(`Minimum cashout is ${minCashout} cashable minutes`);
+      if (minutes_amount > maxCashout) throw new Error(`Maximum cashout is ${maxCashout} cashable minutes`);
 
       const { data: pendingRequest } = await supabaseAdmin
         .from("cashout_requests")
