@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import EventsPage from "@/pages/public/EventsPage";
 import VipSettingsOverlay from "@/components/videocall/VipSettingsOverlay";
 import BountyEarningsPanel from "@/components/discover/BountyEarningsPanel";
+import CashoutModal from "@/components/discover/CashoutModal";
+import { DollarSign } from "lucide-react";
 import eventsIcon from "@/assets/profile/slot-machine.png";
 import myRewardsIcon from "@/assets/profile/rewards-gift.png";
 import vipSettingsIcon from "@/assets/profile/vip-rocket.png";
@@ -25,6 +27,7 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
   const [showEvents, setShowEvents] = useState(false);
   const [eventsInitialView, setEventsInitialView] = useState<"hub" | "spin" | "challenges">("hub");
   const [showVipSettings, setShowVipSettings] = useState(false);
+  const [showCashout, setShowCashout] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -89,6 +92,19 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
 
   const chanceEnhancer = ceData?.chance_enhancer ?? 10;
   const isFemale = (memberProfile?.gender ?? "").toLowerCase() === "female";
+
+  const { data: cashoutBalance, refetch: refetchCashout } = useQuery({
+    queryKey: ["profile-cashout-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes")
+        .eq("user_id", user!.id)
+        .single();
+      return { total: data?.total_minutes ?? 0, gifted: (data as any)?.gifted_minutes ?? 0 };
+    },
+  });
 
   const handleLogout = async () => {
     await signOut();
@@ -160,6 +176,20 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         </div>
       )}
 
+      {/* Redeem Minutes (Cash Out) */}
+      <div className="w-full max-w-sm mb-8">
+        <button
+          onClick={() => setShowCashout(true)}
+          className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-black text-sm py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/30"
+        >
+          <DollarSign className="w-5 h-5" />
+          REDEEM MINUTES FOR CASH ({cashoutBalance?.total ?? 0} available)
+        </button>
+        <p className="text-[11px] text-neutral-400 text-center mt-1.5 font-bold">
+          Cash out your earned minutes via PayPal
+        </p>
+      </div>
+
       {/* Row 1: Events, My Rewards, VIP Settings */}
       <div className="flex justify-center gap-8 mb-8">
         <IconButton src={eventsIcon} label="EVENTS" onClick={() => { setEventsInitialView("hub"); setShowEvents(true); }} />
@@ -217,6 +247,15 @@ const ProfilePage = ({ onClose }: { onClose?: () => void }) => {
         <span>|</span>
         <a href="/how-to-guide" className="hover:text-white transition-colors">How To Guide</a>
       </div>
+
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={cashoutBalance?.total ?? 0}
+          giftedMinutes={cashoutBalance?.gifted ?? 0}
+          onSuccess={() => refetchCashout()}
+        />
+      )}
     </div>
   );
 };
