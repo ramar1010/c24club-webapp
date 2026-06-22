@@ -205,9 +205,9 @@ export const adminMenu: MenuItem[] = [
   {
     key: "anchor-user-rewards",
     icon: Anchor,
-    title: "Anchor User Rewards",
+    title: "Payout Settings",
     submenu: [
-      { key: "anchor-settings", label: "Anchor Settings", path: "/admin/anchor-rewards/cashouts" },
+      { key: "anchor-settings", label: "Payout Settings", path: "/admin/anchor-rewards/cashouts" },
       { key: "anchor-user-queue", label: "Anchor Users Queue", path: "/admin/anchor-rewards/queue" },
     ],
   },
