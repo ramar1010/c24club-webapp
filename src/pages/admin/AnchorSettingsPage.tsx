@@ -257,63 +257,7 @@ const AnchorSettingsPage = () => {
 
   return (
     <div className="p-6 space-y-8 max-w-4xl">
-      <h1 className="text-2xl font-bold text-foreground">Female Earning System</h1>
-
-      {/* System Kill Switch */}
-      <div className={`rounded-xl border p-6 space-y-3 ${anchorDisabled ? "bg-destructive/10 border-destructive/30" : "bg-emerald-500/10 border-emerald-500/30"}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              {anchorDisabled ? "🔴 System Disabled" : "🟢 System Active"}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {anchorDisabled
-                ? "Female earning is offline. Users see a 'Down for Maintenance' notice."
-                : "Female earning system is live and operational."}
-            </p>
-          </div>
-          <button
-            onClick={() => toggleDisabledMutation.mutate(!anchorDisabled)}
-            disabled={toggleDisabledMutation.isPending}
-            className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 ${
-              anchorDisabled
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-destructive hover:opacity-90 text-destructive-foreground"
-            }`}
-          >
-            {toggleDisabledMutation.isPending
-              ? "..."
-              : anchorDisabled
-              ? "✅ Re-Enable System"
-              : "⛔ Disable System"}
-          </button>
-        </div>
-      </div>
-
-      {/* Slot Cap */}
-      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Concurrent Earner Slots</h2>
-        <p className="text-sm text-muted-foreground">
-          Maximum number of female users who can earn simultaneously. Others will be queued.
-        </p>
-        <div className="max-w-xs">
-          <label className="block text-sm font-medium mb-1 text-foreground">Max Slots</label>
-          <input
-            type="number"
-            min={1}
-            value={maxCap}
-            onChange={(e) => setMaxCap(parseInt(e.target.value) || 5)}
-            className="w-full border border-input rounded-lg px-3 py-2 bg-background text-foreground"
-          />
-        </div>
-        <button
-          onClick={() => saveCapMutation.mutate()}
-          disabled={saveCapMutation.isPending}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
-        >
-          {saveCapMutation.isPending ? "Saving..." : "Save Slot Cap"}
-        </button>
-      </div>
+      <h1 className="text-2xl font-bold text-foreground">Payout Settings</h1>
 
       {/* Active/Idle Earning Rates */}
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
