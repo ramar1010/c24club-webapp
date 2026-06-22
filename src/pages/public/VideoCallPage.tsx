@@ -243,7 +243,7 @@ const VideoCallPage = () => {
     isActive: callState !== "idle" && !(isFemale && voiceMode)
   });
 
-  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId, 4000);
+  const { isBlurred: isPreBlurred } = usePreBlur(callState === "connected", currentPartnerId, 2000);
 
   const { isNsfwBlurred, showConfirmPrompt, confirmBan, dismissStrikes, manualUnblur } = useNsfwDetection({
     remoteVideoRef,
