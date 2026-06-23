@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield, Search, Lightbulb } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Video, X, Mail, Heart, Gift, DollarSign, Lock, Crown, Sparkles, Shield, Search, Lightbulb, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -70,6 +70,28 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const [searchQuery, setSearchQuery] = useState("");
   const CONVOS_PER_PAGE = 20;
   const [visibleCount, setVisibleCount] = useState(CONVOS_PER_PAGE);
+  // Pinned/favorite conversations (web-only). Stored per-user in localStorage.
+  const pinnedStorageKey = user ? `dm-pinned-convos:${user.id}` : null;
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!pinnedStorageKey) return;
+    try {
+      const raw = localStorage.getItem(pinnedStorageKey);
+      if (raw) setPinnedIds(new Set(JSON.parse(raw)));
+    } catch {}
+  }, [pinnedStorageKey]);
+  const togglePinned = (convoId: string) => {
+    if (!convoId || !pinnedStorageKey) return;
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(convoId)) next.delete(convoId);
+      else next.add(convoId);
+      try {
+        localStorage.setItem(pinnedStorageKey, JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  };
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toUserId = initialPartnerId || searchParams.get("to");
@@ -519,8 +541,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     // Pin owner conversation to the top
     const ownerConvo = list.find((c) => c.other_user?.id === OWNER_ID);
     const rest = list.filter((c) => c.other_user?.id !== OWNER_ID);
-    return ownerConvo ? [ownerConvo, ...rest] : rest;
-  }, [conversations, searchQuery]);
+    // Then user-favorited conversations pinned to top (after owner)
+    const favorites = rest.filter((c) => pinnedIds.has(c.id));
+    const others = rest.filter((c) => !pinnedIds.has(c.id));
+    return [...(ownerConvo ? [ownerConvo] : []), ...favorites, ...others];
+  }, [conversations, searchQuery, pinnedIds]);
 
   const paginatedConversations = useMemo(
     () => filteredConversations.slice(0, visibleCount),
@@ -702,6 +727,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       </div>
                     </button>
                   )}
+                  <div className="relative group">
                   <button
                     onClick={() => setSelectedConvo(convo)}
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
@@ -758,6 +784,24 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       </div>
                     </div>
                   </button>
+                  {/* Web-only pin/favorite button */}
+                  {!isMobile && convo.id && convo.other_user?.id !== OWNER_ID && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePinned(convo.id);
+                      }}
+                      title={pinnedIds.has(convo.id) ? "Unpin chat" : "Pin chat to top"}
+                      className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-md transition-all ${
+                        pinnedIds.has(convo.id)
+                          ? "text-yellow-400 opacity-100"
+                          : "text-white/40 opacity-0 group-hover:opacity-100 hover:text-yellow-300 hover:bg-white/10"
+                      }`}
+                    >
+                      <Star className={`w-4 h-4 ${pinnedIds.has(convo.id) ? "fill-yellow-400" : ""}`} />
+                    </button>
+                  )}
+                  </div>
                 </div>
               ))}
               {hasMore && (
