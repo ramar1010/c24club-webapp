@@ -727,6 +727,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       </div>
                     </button>
                   )}
+                  <div className="relative group">
                   <button
                     onClick={() => setSelectedConvo(convo)}
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left w-full ${
@@ -783,6 +784,24 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                       </div>
                     </div>
                   </button>
+                  {/* Web-only pin/favorite button */}
+                  {!isMobile && convo.id && convo.other_user?.id !== OWNER_ID && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePinned(convo.id);
+                      }}
+                      title={pinnedIds.has(convo.id) ? "Unpin chat" : "Pin chat to top"}
+                      className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-md transition-all ${
+                        pinnedIds.has(convo.id)
+                          ? "text-yellow-400 opacity-100"
+                          : "text-white/40 opacity-0 group-hover:opacity-100 hover:text-yellow-300 hover:bg-white/10"
+                      }`}
+                    >
+                      <Star className={`w-4 h-4 ${pinnedIds.has(convo.id) ? "fill-yellow-400" : ""}`} />
+                    </button>
+                  )}
+                  </div>
                 </div>
               ))}
               {hasMore && (
