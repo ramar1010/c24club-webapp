@@ -541,9 +541,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     // Pin owner conversation to the top
     const ownerConvo = list.find((c) => c.other_user?.id === OWNER_ID);
     const rest = list.filter((c) => c.other_user?.id !== OWNER_ID);
-    // Then user-favorited conversations pinned to top (after owner)
-    const favorites = rest.filter((c) => pinnedIds.has(c.id));
-    const others = rest.filter((c) => !pinnedIds.has(c.id));
+    // Then user-favorited conversations pinned to top (after owner).
+    // Key by other_user.id so pins survive even if conversation rows are
+    // re-created or convo.id is momentarily missing.
+    const favorites = rest.filter((c) => c.other_user?.id && pinnedIds.has(c.other_user.id));
+    const others = rest.filter((c) => !(c.other_user?.id && pinnedIds.has(c.other_user.id)));
     return [...(ownerConvo ? [ownerConvo] : []), ...favorites, ...others];
   }, [conversations, searchQuery, pinnedIds]);
 
@@ -785,20 +787,20 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                     </div>
                   </button>
                   {/* Web-only pin/favorite button */}
-                  {!isMobile && convo.id && convo.other_user?.id !== OWNER_ID && (
+                  {!isMobile && convo.other_user?.id && convo.other_user.id !== OWNER_ID && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        togglePinned(convo.id);
+                        togglePinned(convo.other_user!.id);
                       }}
-                      title={pinnedIds.has(convo.id) ? "Unpin chat" : "Pin chat to top"}
+                      title={pinnedIds.has(convo.other_user.id) ? "Unpin chat" : "Pin chat to top"}
                       className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-md transition-all ${
-                        pinnedIds.has(convo.id)
+                        pinnedIds.has(convo.other_user.id)
                           ? "text-yellow-400 opacity-100"
                           : "text-white/40 opacity-0 group-hover:opacity-100 hover:text-yellow-300 hover:bg-white/10"
                       }`}
                     >
-                      <Star className={`w-4 h-4 ${pinnedIds.has(convo.id) ? "fill-yellow-400" : ""}`} />
+                      <Star className={`w-4 h-4 ${pinnedIds.has(convo.other_user.id) ? "fill-yellow-400" : ""}`} />
                     </button>
                   )}
                   </div>
