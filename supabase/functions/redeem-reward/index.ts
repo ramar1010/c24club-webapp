@@ -36,6 +36,14 @@ Deno.serve(async (req) => {
     const getReward = async (id: string) => {
       const { data, error } = await supabase.from("rewards").select("*").eq("id", id).single();
       if (error || !data) throw new Error("Reward not found");
+      // Sanitize title — guard against legacy rewards whose title was saved as the
+      // string "undefined"/"null" (from old AI/scrape imports). Without this, the
+      // bad title would be snapshotted into member_redemptions forever.
+      const rawTitle = typeof data.title === "string" ? data.title.trim() : "";
+      if (!rawTitle || rawTitle.toLowerCase() === "undefined" || rawTitle.toLowerCase() === "null") {
+        throw new Error("This reward is misconfigured (missing title). Please contact support.");
+      }
+      data.title = rawTitle;
       return data;
     };
 
