@@ -1,0 +1,1 @@
+UPDATE public.member_minutes SET vip_unfreezes_used = 0, vip_unfreezes_reset_at = now(), is_frozen = false, freeze_free_until = now() + interval '7 days', updated_at = now() WHERE user_id = '6f8bb0e2-a36a-4bc0-920f-312c340f7921';

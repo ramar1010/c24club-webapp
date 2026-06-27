@@ -51,7 +51,23 @@ const MinutesFrozenPopup = ({ onDismiss, onSnooze, onGoToChallenges, isVip, onPu
       const { data, error } = await supabase.functions.invoke("unfreeze-purchase", {
         body: { action: "vip_unfreeze" },
       });
-      if (error) throw error;
+      if (error) {
+        // Try to read the real error message from the function response body
+        let msg = error.message;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx?.json) {
+            const j = await ctx.json();
+            if (j?.error) msg = j.error;
+          } else if (ctx?.text) {
+            const t = await ctx.text();
+            try { const j = JSON.parse(t); if (j?.error) msg = j.error; } catch {}
+          }
+        } catch {}
+        toast.error(msg);
+        setLoading(false);
+        return;
+      }
       if (data?.success) {
         toast.success("🎉 Minutes unfrozen!", {
           description: `${data.remaining} VIP unfreezes remaining this month`,
