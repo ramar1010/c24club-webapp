@@ -31,7 +31,8 @@ const steps: Step[] = [
     bg: "bg-amber-500/10",
     border: "border-amber-500/20",
     title: "Convince them to subscribe",
-    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership.",
+    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership. Guys can only send 3 free messages before they must buy VIP to keep chatting — so a flirty follow-up often converts.",
+  },
   },
   {
     icon: Star,
