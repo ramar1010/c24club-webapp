@@ -33,7 +33,6 @@ const steps: Step[] = [
     title: "Convince them to subscribe",
     desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership. Guys can only send 3 free messages before they must buy VIP to keep chatting — so a flirty follow-up often converts.",
   },
-  },
   {
     icon: Star,
     color: "text-emerald-400",
