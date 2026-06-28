@@ -31,7 +31,7 @@ const steps: Step[] = [
     bg: "bg-amber-500/10",
     border: "border-amber-500/20",
     title: "Convince them to subscribe",
-    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership.",
+    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership. Guys can only send 3 free messages before they must buy VIP to keep chatting — so a flirty follow-up often converts.",
   },
   {
     icon: Star,
@@ -64,6 +64,7 @@ const steps: Step[] = [
 
 const tips = [
   "Be genuine and engaging — authentic conversations convert the best.",
+  "The 3-message limit makes conversions easy: after his free messages run out, he must buy VIP to keep chatting with you.",
   "The more guys you talk to, the more chances they go VIP and pay you.",
   "Keep a streak going: 3 subscriptions within 7 days unlocks a +500 minute bonus.",
   "First-time payments award the bounty — recurring renewals do not.",
