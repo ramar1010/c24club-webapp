@@ -114,7 +114,22 @@ export const useDiscover = () => {
     return (data ?? []) as DiscoverableMember[];
   }, []);
 
-  // Sort members: admins first, mods second, VIP third, rest by order
+  // Sort: Admin > Mod first. Then bucket by recent activity so the most active
+  // members surface to the top regardless of VIP status. Within each activity
+  // bucket, VIPs rank above non-VIPs, then by most recent activity.
+  // Buckets: 0 = online (<5m), 1 = recent (<1h), 2 = today (<24h),
+  //          3 = this week (<7d), 4 = older / unknown.
+  const activityBucket = (lastActive: string | null): number => {
+    if (!lastActive) return 4;
+    const ageMs = Date.now() - new Date(lastActive).getTime();
+    const mins = ageMs / 60_000;
+    if (mins < 5) return 0;
+    if (mins < 60) return 1;
+    if (mins < 60 * 24) return 2;
+    if (mins < 60 * 24 * 7) return 3;
+    return 4;
+  };
+
   const sortMembers = useCallback((list: DiscoverableMember[], adminIds: Set<string>, vipIds: Set<string>, modIds?: Set<string>) => {
     return [...list].sort((a, b) => {
       const aAdmin = adminIds.has(a.id) ? 0 : 1;
@@ -123,10 +138,21 @@ export const useDiscover = () => {
       const amod = modIds?.has(a.id) ? 0 : 1;
       const bmod = modIds?.has(b.id) ? 0 : 1;
       if (amod !== bmod) return amod - bmod;
+
+      // Activity bucket — most active first
+      const aBucket = activityBucket(a.last_active_at);
+      const bBucket = activityBucket(b.last_active_at);
+      if (aBucket !== bBucket) return aBucket - bBucket;
+
+      // Within the same activity bucket, VIPs first
       const aVip = vipIds.has(a.id) ? 0 : 1;
       const bVip = vipIds.has(b.id) ? 0 : 1;
       if (aVip !== bVip) return aVip - bVip;
-      return 0;
+
+      // Tie-break by most recent activity
+      const aTime = a.last_active_at ? new Date(a.last_active_at).getTime() : 0;
+      const bTime = b.last_active_at ? new Date(b.last_active_at).getTime() : 0;
+      return bTime - aTime;
     });
   }, []);
 
