@@ -1022,7 +1022,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                     isFromOwner &&
                     myGender === "female" &&
                     typeof msg.content === "string" &&
-                    /earn money dming guys/i.test(msg.content);
+                    /welcome to c24 club/i.test(msg.content);
                   return (
                     <div
                       key={msg.id}
