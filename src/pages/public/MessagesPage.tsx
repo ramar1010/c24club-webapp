@@ -1017,26 +1017,42 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.sender_id === user?.id;
+                  const isFromOwner = msg.sender_id === OWNER_ID;
+                  const showEarnCta =
+                    isFromOwner &&
+                    myGender === "female" &&
+                    typeof msg.content === "string" &&
+                    /earn money dming guys/i.test(msg.content);
                   return (
                     <div
                       key={msg.id}
                       className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                     >
-                      <div
-                        className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
-                          isMine
-                            ? "bg-blue-600 text-white rounded-br-md"
-                            : "bg-white/10 text-white/90 rounded-bl-md"
-                        }`}
-                      >
-                        <p className="break-words whitespace-pre-wrap">{msg.content}</p>
-                        <p
-                          className={`text-[10px] mt-1 ${
-                            isMine ? "text-blue-200/60" : "text-white/25"
+                      <div className={`max-w-[75%] ${isMine ? "items-end" : "items-start"} flex flex-col gap-2`}>
+                        <div
+                          className={`px-3 py-2 rounded-2xl text-sm ${
+                            isMine
+                              ? "bg-blue-600 text-white rounded-br-md"
+                              : "bg-white/10 text-white/90 rounded-bl-md"
                           }`}
                         >
-                          {formatTime(msg.created_at)}
-                        </p>
+                          <p className="break-words whitespace-pre-wrap">{msg.content}</p>
+                          <p
+                            className={`text-[10px] mt-1 ${
+                              isMine ? "text-blue-200/60" : "text-white/25"
+                            }`}
+                          >
+                            {formatTime(msg.created_at)}
+                          </p>
+                        </div>
+                        {showEarnCta && (
+                          <button
+                            onClick={() => setShowBountyGuide(true)}
+                            className="self-start inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 text-black text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/30 transition-all"
+                          >
+                            💸 Earn money DMing guys →
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
