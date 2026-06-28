@@ -92,6 +92,15 @@ const BountyPostCallNudge = ({ maleId, maleName, conversationId, onClose }: Boun
             into your gifted balance (cash out or redeem rewards).
           </p>
 
+          <div className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3 text-left">
+            <p className="text-emerald-300 text-sm font-semibold mb-1">
+              Why it's easy to convert him 💡
+            </p>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Guys can only send <span className="text-white font-bold">3 free messages</span> to female members. After that, they <span className="text-white font-bold">must buy VIP</span> to keep chatting — so a flirty follow-up is often all it takes.
+            </p>
+          </div>
+
           <div className="w-full space-y-2 mt-2">
             {QUICK_DMS.map((msg) => (
               <button
