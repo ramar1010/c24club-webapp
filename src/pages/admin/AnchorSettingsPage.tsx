@@ -63,6 +63,32 @@ const AnchorSettingsPage = () => {
     },
   });
 
+  const { data: converters } = useQuery({
+    queryKey: ["female-converters"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("bounty_earnings")
+        .select("female_id, male_id, amount_minutes, source, created_at, clawed_back")
+        .eq("clawed_back", false)
+        .in("source", ["basic", "premium"])
+        .order("created_at", { ascending: false });
+      const map = new Map<string, { female_id: string; males: Set<string>; minutes: number; basic: number; premium: number; last: string }>();
+      for (const row of data ?? []) {
+        const key = row.female_id as string;
+        const entry = map.get(key) ?? { female_id: key, males: new Set(), minutes: 0, basic: 0, premium: 0, last: row.created_at as string };
+        entry.males.add(row.male_id as string);
+        entry.minutes += row.amount_minutes ?? 0;
+        if (row.source === "basic") entry.basic += 1;
+        if (row.source === "premium") entry.premium += 1;
+        if ((row.created_at as string) > entry.last) entry.last = row.created_at as string;
+        map.set(key, entry);
+      }
+      return Array.from(map.values())
+        .map((e) => ({ ...e, males_count: e.males.size }))
+        .sort((a, b) => b.males_count - a.males_count || b.minutes - a.minutes);
+    },
+  });
+
   const { data: members } = useQuery({
     queryKey: ["admin-members-lookup-anchor"],
     queryFn: async () => {
@@ -211,6 +237,46 @@ const AnchorSettingsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Top Female Converters */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-bold mb-1 text-foreground">Female Converters</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Females who converted male users to VIP (bounty earnings). Ranked by unique guys converted.
+        </p>
+        {!converters || converters.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No conversions yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-3">Female</th>
+                  <th className="py-2 pr-3">Guys Converted</th>
+                  <th className="py-2 pr-3">Basic</th>
+                  <th className="py-2 pr-3">Premium</th>
+                  <th className="py-2 pr-3">Total Minutes</th>
+                  <th className="py-2 pr-3">Cash Value</th>
+                  <th className="py-2 pr-3">Last Conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {converters.map((c) => (
+                  <tr key={c.female_id} className="border-b border-border/50">
+                    <td className="py-2 pr-3 font-bold text-foreground">{memberName(c.female_id)}</td>
+                    <td className="py-2 pr-3">{c.males_count}</td>
+                    <td className="py-2 pr-3">{c.basic}</td>
+                    <td className="py-2 pr-3">{c.premium}</td>
+                    <td className="py-2 pr-3">{c.minutes}</td>
+                    <td className="py-2 pr-3 text-success font-bold">${(c.minutes * 0.02).toFixed(2)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(c.last).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
