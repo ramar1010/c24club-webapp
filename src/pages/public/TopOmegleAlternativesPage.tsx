@@ -123,6 +123,29 @@ const alternatives: Alternative[] = [
     rating: 2.6,
     blogSlug: "c24-club-vs-vooz-video-chat",
   },
+  {
+    rank: 9,
+    name: "OmegleWeb",
+    tagline: "No-signup Omegle-style text & video chat with interest matching",
+    description:
+      "OmegleWeb is a modern, no-signup Omegle clone offering both text and video random chat with optional interest tags to match faster. It markets itself as 18+ only with basic reporting and moderation tools, works in the browser on all devices, and supports multiple languages. Like most straight Omegle replacements, it has no rewards system, no gamification, and no long-term reason to stick around after the novelty wears off.",
+    tags: ["No Signup", "Text + Video", "Interest Matching", "18+", "Multi-Language"],
+    pros: [
+      "No account or download required",
+      "Both text and video chat modes",
+      "Interest tags for faster matching",
+      "Multi-language interface",
+      "Works on any device browser",
+    ],
+    cons: [
+      "No rewards or earning system",
+      "Light moderation compared to C24 Club",
+      "Not affiliated with the original Omegle",
+      "No community, profiles, or social features",
+    ],
+    rating: 2.7,
+    externalUrl: "https://omegleweb.com/",
+  },
 ];
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -255,6 +278,7 @@ const featureData: Record<string, Record<string, boolean>> = {
   "Uhmegle":           { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: false, groupChat: false, filters: false, free: true },
   "Emerald Chat":      { rewards: false, moderation: true,  mobileApp: false, noSignup: false, interestMatch: true,  groupChat: true,  filters: true,  free: true },
   "Vooz Video Chat":   { rewards: false, moderation: false, mobileApp: true,  noSignup: false, interestMatch: true,  groupChat: true,  filters: false, free: true },
+  "OmegleWeb":         { rewards: false, moderation: false, mobileApp: false, noSignup: true,  interestMatch: true,  groupChat: false, filters: false, free: true },
 };
 
 const ComparisonTable = () => {
@@ -335,9 +359,9 @@ const ComparisonTable = () => {
 
 const TopOmegleAlternativesPage = () => {
   usePageMeta({
-    title: "8 Best Omegle Alternatives — Tested 2026 | C24 Club",
+    title: "9 Best Omegle Alternatives — Tested 2026 | C24 Club",
     description:
-      "Compare the top 8 Omegle alternatives: C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat & Vooz. Find the best random video chat.",
+      "Compare the top 9 Omegle alternatives: C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, Vooz & OmegleWeb. Find the best random video chat.",
     path: "/top-omegle-alternatives",
   });
 
@@ -349,13 +373,13 @@ const TopOmegleAlternativesPage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            headline: "Top 8 Omegle Alternatives in 2026",
+            headline: "Top 9 Omegle Alternatives in 2026",
             description:
-              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, and Vooz Video Chat.",
+              "Compare the best Omegle alternatives including C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, Vooz Video Chat, and OmegleWeb.",
             author: { "@type": "Organization", name: "C24 Club" },
             publisher: { "@type": "Organization", name: "C24 Club", url: "https://c24club.com" },
             datePublished: "2026-01-15",
-            dateModified: "2026-04-24",
+            dateModified: "2026-07-12",
           }),
         }}
       />
@@ -365,7 +389,7 @@ const TopOmegleAlternativesPage = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ItemList",
-            name: "Top 8 Omegle Alternatives in 2026",
+            name: "Top 9 Omegle Alternatives in 2026",
             description:
               "A ranked list of the best Omegle alternatives for random video chat in 2026.",
             url: "https://c24club.com/top-omegle-alternatives",
@@ -397,12 +421,12 @@ const TopOmegleAlternativesPage = () => {
 
       {/* Hero */}
       <section className="pt-28 pb-12 px-4 text-center">
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">UPDATED JUNE 2026</p>
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-400 mb-4">UPDATED JULY 2026</p>
         <h1
           className="text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight max-w-4xl mx-auto"
           style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
         >
-          <span className="text-white">Top 8 </span>
+          <span className="text-white">Top 9 </span>
           <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
             Omegle Alternatives
           </span>
