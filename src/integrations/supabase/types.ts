@@ -3304,6 +3304,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
