@@ -270,10 +270,13 @@ export const useDiscover = () => {
       setMyInterests(interestsMap);
 
       // Fetch who is interested in me
+      const INTEREST_MAX_AGE_DAYS = 30;
+      const cutoffIso = new Date(Date.now() - INTEREST_MAX_AGE_DAYS * 86400000).toISOString();
       const { data: incomingInterests } = await supabase
         .from("member_interests")
         .select("user_id, icebreaker_message, created_at")
         .eq("interested_in_user_id", user.id)
+        .gte("created_at", cutoffIso)
         .order("created_at", { ascending: false });
 
       const incomingUserIds = (incomingInterests || []).map((i: any) => i.user_id);
