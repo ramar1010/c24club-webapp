@@ -47,6 +47,7 @@ const AdminDmMonitorPage = () => {
   // conversation_id -> { initiator, replied }
   const [replyMap, setReplyMap] = useState<Map<string, { initiator: string; replied: boolean }>>(new Map());
   const [overallStats, setOverallStats] = useState<{ total: number; replied: number } | null>(null);
+  const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "no_reply">("all");
 
   // Fetch reply status for a batch of conversations
   const fetchReplyStatus = async (convoIds: string[]) => {
@@ -189,6 +190,12 @@ const AdminDmMonitorPage = () => {
   const getMemberThumb = (id: string) => members.get(id)?.image_thumb_url;
 
   const filteredConvos = conversations.filter((c) => {
+    if (replyFilter !== "all") {
+      const r = replyMap.get(c.id);
+      const replied = !!r?.replied;
+      if (replyFilter === "replied" && !replied) return false;
+      if (replyFilter === "no_reply" && replied) return false;
+    }
     if (!search) return true;
     const q = search.toLowerCase();
     const n1 = getMemberName(c.participant_1).toLowerCase();
@@ -226,6 +233,19 @@ const AdminDmMonitorPage = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
+            </div>
+            <div className="flex gap-1 mt-2">
+              {(["all", "replied", "no_reply"] as const).map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={replyFilter === f ? "default" : "outline"}
+                  className="h-7 text-xs flex-1"
+                  onClick={() => setReplyFilter(f)}
+                >
+                  {f === "all" ? "All" : f === "replied" ? "Replied" : "No reply"}
+                </Button>
+              ))}
             </div>
           </div>
           <ScrollArea className="flex-1">
