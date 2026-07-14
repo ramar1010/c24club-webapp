@@ -1,4 +1,4 @@
-import { Filter, Globe, Wifi } from "lucide-react";
+import { Filter, Wifi } from "lucide-react";
 import type { DiscoverFilter } from "@/hooks/useDiscover";
 
 interface DiscoverFiltersProps {
@@ -27,23 +27,6 @@ const DiscoverFilters = ({ filters, onFilterChange, countries, totalCount, filte
             </button>
           ))}
         </div>
-
-        {/* Country filter */}
-        {countries.length > 0 && (
-          <div className="relative">
-            <select
-              value={filters.country}
-              onChange={(e) => onFilterChange({ ...filters, country: e.target.value })}
-              className="appearance-none bg-white/5 border border-white/10 rounded-lg text-xs text-white/80 pl-7 pr-6 py-1.5 focus:outline-none focus:border-pink-500/50"
-            >
-              <option value="" className="bg-[#222]">All Countries</option>
-              {countries.map(c => (
-                <option key={c} value={c} className="bg-[#222]">{c}</option>
-              ))}
-            </select>
-            <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
-          </div>
-        )}
 
         {/* Online only toggle */}
         <button
