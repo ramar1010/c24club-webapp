@@ -44,6 +44,58 @@ const AdminDmMonitorPage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [msgLoading, setMsgLoading] = useState(false);
+  // conversation_id -> { initiator, replied }
+  const [replyMap, setReplyMap] = useState<Map<string, { initiator: string; replied: boolean }>>(new Map());
+  const [overallStats, setOverallStats] = useState<{ total: number; replied: number } | null>(null);
+
+  // Fetch reply status for a batch of conversations
+  const fetchReplyStatus = async (convoIds: string[]) => {
+    if (convoIds.length === 0) return new Map();
+    const { data } = await supabase
+      .from("dm_messages")
+      .select("conversation_id, sender_id, created_at")
+      .in("conversation_id", convoIds)
+      .order("created_at", { ascending: true });
+
+    const map = new Map<string, { initiator: string; replied: boolean; senders: Set<string> }>();
+    (data || []).forEach((m: any) => {
+      const cur = map.get(m.conversation_id);
+      if (!cur) {
+        map.set(m.conversation_id, { initiator: m.sender_id, replied: false, senders: new Set([m.sender_id]) });
+      } else {
+        cur.senders.add(m.sender_id);
+        if (cur.senders.size > 1) cur.replied = true;
+      }
+    });
+    return map;
+  };
+
+  // Fetch overall response rate across ALL non-admin conversations
+  useEffect(() => {
+    const loadOverall = async () => {
+      // Get all conversation IDs (excluding admin ones)
+      const { data: allConvos } = await supabase
+        .from("conversations")
+        .select("id")
+        .neq("participant_1", ADMIN_USER_ID)
+        .neq("participant_2", ADMIN_USER_ID);
+
+      if (!allConvos) return;
+      const ids = allConvos.map((c: any) => c.id);
+      const total = ids.length;
+
+      // Fetch in chunks to avoid URL limits
+      const chunkSize = 200;
+      let replied = 0;
+      for (let i = 0; i < ids.length; i += chunkSize) {
+        const chunk = ids.slice(i, i + chunkSize);
+        const map = await fetchReplyStatus(chunk);
+        map.forEach((v) => { if (v.replied) replied += 1; });
+      }
+      setOverallStats({ total, replied });
+    };
+    loadOverall();
+  }, []);
 
   const fetchMemberInfo = async (convos: ConversationRow[], existingMap: Map<string, MemberInfo>) => {
     const userIds = new Set<string>();
@@ -80,6 +132,10 @@ const AdminDmMonitorPage = () => {
         setHasMore(convos.length === PAGE_SIZE);
         const map = await fetchMemberInfo(convos, new Map());
         setMembers(map);
+        const rMap = await fetchReplyStatus(convos.map((c: any) => c.id));
+        const simplified = new Map<string, { initiator: string; replied: boolean }>();
+        rMap.forEach((v, k) => simplified.set(k, { initiator: v.initiator, replied: v.replied }));
+        setReplyMap(simplified);
       }
       setLoading(false);
     };
@@ -101,6 +157,12 @@ const AdminDmMonitorPage = () => {
       setHasMore(convos.length === PAGE_SIZE);
       const map = await fetchMemberInfo(convos, members);
       setMembers(map);
+      const rMap = await fetchReplyStatus(convos.map((c: any) => c.id));
+      setReplyMap((prev) => {
+        const next = new Map(prev);
+        rMap.forEach((v, k) => next.set(k, { initiator: v.initiator, replied: v.replied }));
+        return next;
+      });
     }
     setLoadingMore(false);
   };
@@ -144,6 +206,12 @@ const AdminDmMonitorPage = () => {
         <MessageSquare className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold text-foreground">DM Monitor</h1>
         <Badge variant="secondary">{conversations.length} conversations</Badge>
+        {overallStats && overallStats.total > 0 && (
+          <Badge variant="outline" className="border-emerald-500/40 text-emerald-500">
+            Response rate: {Math.round((overallStats.replied / overallStats.total) * 100)}%
+            <span className="ml-1 opacity-70">({overallStats.replied}/{overallStats.total})</span>
+          </Badge>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
@@ -206,6 +274,18 @@ const AdminDmMonitorPage = () => {
                             : "No messages"}
                         </p>
                       </div>
+                      {replyMap.get(c.id) && (
+                        <Badge
+                          variant="outline"
+                          className={
+                            replyMap.get(c.id)!.replied
+                              ? "border-emerald-500/40 text-emerald-500 text-[10px] px-1.5 py-0"
+                              : "border-amber-500/40 text-amber-500 text-[10px] px-1.5 py-0"
+                          }
+                        >
+                          {replyMap.get(c.id)!.replied ? "Replied" : "No reply"}
+                        </Badge>
+                      )}
                     </div>
                   </button>
                 ))}
