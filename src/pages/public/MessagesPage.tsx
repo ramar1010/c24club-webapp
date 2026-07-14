@@ -32,6 +32,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
+/* ─── Auto-link URLs in message content ─── */
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+const renderMessageContent = (text: string) => {
+  if (typeof text !== "string") return text;
+  const parts = text.split(URL_REGEX);
+  return parts.map((part, i) => {
+    if (URL_REGEX.test(part)) {
+      URL_REGEX.lastIndex = 0;
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-blue-300 hover:text-blue-200 break-all"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 /* ─── Role badge component matching Discover style ─── */
 const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
   if (role === "owner")
