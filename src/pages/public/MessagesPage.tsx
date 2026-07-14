@@ -1036,7 +1036,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                               : "bg-white/10 text-white/90 rounded-bl-md"
                           }`}
                         >
-                          <p className="break-words whitespace-pre-wrap">{msg.content}</p>
+                          <p className="break-words whitespace-pre-wrap">{renderMessageContent(msg.content)}</p>
                           <p
                             className={`text-[10px] mt-1 ${
                               isMine ? "text-blue-200/60" : "text-white/25"
