@@ -48,6 +48,7 @@ const AdminDmMonitorPage = () => {
   const [replyMap, setReplyMap] = useState<Map<string, { initiator: string; replied: boolean }>>(new Map());
   const [overallStats, setOverallStats] = useState<{ total: number; replied: number } | null>(null);
   const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "no_reply">("all");
+  const [viewMode, setViewMode] = useState<"users" | "admin_replies">("users");
 
   // Fetch reply status for a batch of conversations
   const fetchReplyStatus = async (convoIds: string[]) => {
@@ -120,20 +121,41 @@ const AdminDmMonitorPage = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const { data: convos } = await supabase
+      let query = supabase
         .from("conversations")
         .select("*")
-        .neq("participant_1", ADMIN_USER_ID)
-        .neq("participant_2", ADMIN_USER_ID)
-        .order("last_message_at", { ascending: false, nullsFirst: false })
-        .range(0, PAGE_SIZE - 1);
+        .order("last_message_at", { ascending: false, nullsFirst: false });
+
+      if (viewMode === "users") {
+        query = query
+          .neq("participant_1", ADMIN_USER_ID)
+          .neq("participant_2", ADMIN_USER_ID)
+          .range(0, PAGE_SIZE - 1);
+      } else {
+        // Admin conversations — fetch more since we'll filter to replies-only
+        query = query
+          .or(`participant_1.eq.${ADMIN_USER_ID},participant_2.eq.${ADMIN_USER_ID}`)
+          .range(0, 199);
+      }
+
+      const { data: convos } = await query;
 
       if (convos) {
-        setConversations(convos);
-        setHasMore(convos.length === PAGE_SIZE);
-        const map = await fetchMemberInfo(convos, new Map());
-        setMembers(map);
         const rMap = await fetchReplyStatus(convos.map((c: any) => c.id));
+        let filtered = convos;
+        if (viewMode === "admin_replies") {
+          // Keep only convos where someone other than admin has sent a message
+          filtered = convos.filter((c: any) => {
+            const r = rMap.get(c.id);
+            if (!r) return false;
+            // Replied by non-admin: either initiator isn't admin, OR admin initiated and got a reply
+            return r.senders && Array.from(r.senders).some((s: any) => s !== ADMIN_USER_ID);
+          });
+        }
+        setConversations(filtered);
+        setHasMore(viewMode === "users" && convos.length === PAGE_SIZE);
+        const map = await fetchMemberInfo(filtered, new Map());
+        setMembers(map);
         const simplified = new Map<string, { initiator: string; replied: boolean }>();
         rMap.forEach((v, k) => simplified.set(k, { initiator: v.initiator, replied: v.replied }));
         setReplyMap(simplified);
@@ -141,7 +163,7 @@ const AdminDmMonitorPage = () => {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [viewMode]);
 
   const loadMore = async () => {
     setLoadingMore(true);
@@ -219,6 +241,23 @@ const AdminDmMonitorPage = () => {
             <span className="ml-1 opacity-70">({overallStats.replied}/{overallStats.total})</span>
           </Badge>
         )}
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant={viewMode === "users" ? "default" : "outline"}
+          onClick={() => { setViewMode("users"); setSelectedConvo(null); }}
+        >
+          User Conversations
+        </Button>
+        <Button
+          size="sm"
+          variant={viewMode === "admin_replies" ? "default" : "outline"}
+          onClick={() => { setViewMode("admin_replies"); setSelectedConvo(null); }}
+        >
+          Replies to Me (Admin)
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
