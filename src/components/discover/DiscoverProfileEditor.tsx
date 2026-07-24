@@ -144,6 +144,11 @@ const DiscoverProfileEditor = ({ userId }: DiscoverProfileEditorProps) => {
         {expanded ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
       </button>
 
+      {/* Tip */}
+      <p className="mt-2 text-[11px] font-bold text-amber-400/90 text-center px-2">
+        💡 Active users & VIP users stay at the top of the discover! More chats more rewards
+      </p>
+
       {expanded && (
         <div className="mt-2 p-3 rounded-xl bg-white/5 border border-white/10 space-y-3">
           {/* Bio */}
