@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
+import { Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isOnlineNow, isNewListing, getTimeAgo, isFakeOnline } from "@/hooks/useDiscover";
@@ -62,6 +63,9 @@ const DiscoverMemberCard = ({
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
   const online = realOnline || (!isSelf && isFakeOnline(member.id, member.gender));
+  // "Very Active" = seen within the last hour, but not currently online (online badge takes precedence)
+  const isVeryActive = !online && !!member.last_active_at &&
+    Date.now() - new Date(member.last_active_at).getTime() < 60 * 60 * 1000;
 
   // Track profile view (fire-and-forget, once per mount)
   const viewTracked = useRef(false);
@@ -113,6 +117,12 @@ const DiscoverMemberCard = ({
             <span className="flex items-center gap-0.5 bg-emerald-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">
               <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white animate-pulse" />
               Online
+            </span>
+          )}
+          {isVeryActive && (
+            <span className="flex items-center gap-0.5 bg-orange-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm shadow-lg">
+              <Zap className="w-2 h-2 sm:w-2.5 sm:h-2.5 fill-current" />
+              Very Active
             </span>
           )}
           {isNew && (
