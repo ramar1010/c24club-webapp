@@ -102,6 +102,11 @@ const AnchorSettingsPage = () => {
     return m?.name || m?.email || id?.slice(0, 8) + "...";
   };
 
+  const memberEmail = (id: string) => {
+    const m = members?.find((m) => m.id === id);
+    return m?.email || "—";
+  };
+
   const updateCashoutMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
@@ -252,6 +257,7 @@ const AnchorSettingsPage = () => {
               <thead>
                 <tr className="text-left text-xs uppercase text-muted-foreground border-b border-border">
                   <th className="py-2 pr-3">Female</th>
+                  <th className="py-2 pr-3">Email</th>
                   <th className="py-2 pr-3">Guys Converted</th>
                   <th className="py-2 pr-3">Basic</th>
                   <th className="py-2 pr-3">Premium</th>
@@ -264,6 +270,7 @@ const AnchorSettingsPage = () => {
                 {converters.map((c) => (
                   <tr key={c.female_id} className="border-b border-border/50">
                     <td className="py-2 pr-3 font-bold text-foreground">{memberName(c.female_id)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{memberEmail(c.female_id)}</td>
                     <td className="py-2 pr-3">{c.males_count}</td>
                     <td className="py-2 pr-3">{c.basic}</td>
                     <td className="py-2 pr-3">{c.premium}</td>
