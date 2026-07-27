@@ -268,7 +268,7 @@ const AnchorSettingsPage = () => {
                     <td className="py-2 pr-3">{c.basic}</td>
                     <td className="py-2 pr-3">{c.premium}</td>
                     <td className="py-2 pr-3">{c.minutes}</td>
-                    <td className="py-2 pr-3 text-success font-bold">${(c.minutes * 0.02).toFixed(2)}</td>
+                    <td className="py-2 pr-3 text-success font-bold">${(c.minutes * 0.01).toFixed(2)}</td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(c.last).toLocaleDateString()}</td>
                   </tr>
                 ))}
