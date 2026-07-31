@@ -39,14 +39,33 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!target?.id) return json({ success: false, error: `No member found for ${testEmail}` }, 404);
       const existing = rows.find((r: any) => r.female_id === target.id);
-      rows = [existing ?? {
-        female_id: target.id,
-        female_name: target.name ?? "there",
-        yesterday_minutes: 0,
-        cashable_minutes: 0,
-        near_limit_count: 0,
-        near_limit_names: [],
-      }];
+      if (existing) {
+        rows = [existing];
+      } else {
+        const { data: bal } = await supabase
+          .from("member_minutes")
+          .select("gifted_minutes")
+          .eq("user_id", target.id)
+          .maybeSingle();
+        const { data: recentBounties } = await supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", target.id)
+          .eq("clawed_back", false)
+          .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+        const recentMinutes = (recentBounties ?? []).reduce(
+          (sum: number, b: any) => sum + Number(b.amount_minutes ?? 0),
+          0,
+        );
+        rows = [{
+          female_id: target.id,
+          female_name: target.name ?? "there",
+          yesterday_minutes: recentMinutes,
+          cashable_minutes: Number(bal?.gifted_minutes ?? 0),
+          near_limit_count: 0,
+          near_limit_names: [],
+        }];
+      }
     }
 
     const today = new Date().toISOString().slice(0, 10);
