@@ -63,9 +63,9 @@ const DiscoverMemberCard = ({
   const isNew = isNewListing(member.created_at);
   const isFemale = member.gender?.toLowerCase() === "female";
   const online = realOnline || (!isSelf && isFakeOnline(member.id, member.gender));
-  // "Very Active" = seen within the last hour, but not currently online (online badge takes precedence)
+  // "Very Active" = seen within the last 24h, but not currently online (online badge takes precedence)
   const isVeryActive = !online && !!member.last_active_at &&
-    Date.now() - new Date(member.last_active_at).getTime() < 60 * 60 * 1000;
+    Date.now() - new Date(member.last_active_at).getTime() < 24 * 60 * 60 * 1000;
 
   // Track profile view (fire-and-forget, once per mount)
   const viewTracked = useRef(false);
