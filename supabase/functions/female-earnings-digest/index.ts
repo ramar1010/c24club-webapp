@@ -20,9 +20,53 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
+  let testEmail: string | null = null;
   try {
-    const { data: rows, error } = await supabase.rpc("get_female_earnings_digest");
+    const payload = await req.json().catch(() => ({}));
+    testEmail = payload?.test_email ?? null;
+  } catch (_) { /* no body */ }
+
+  try {
+    const { data: allRows, error } = await supabase.rpc("get_female_earnings_digest");
     if (error) throw error;
+
+    let rows = allRows ?? [];
+    if (testEmail) {
+      const { data: target } = await supabase
+        .from("members")
+        .select("id, name")
+        .ilike("email", testEmail)
+        .maybeSingle();
+      if (!target?.id) return json({ success: false, error: `No member found for ${testEmail}` }, 404);
+      const existing = rows.find((r: any) => r.female_id === target.id);
+      if (existing) {
+        rows = [existing];
+      } else {
+        const { data: bal } = await supabase
+          .from("member_minutes")
+          .select("gifted_minutes")
+          .eq("user_id", target.id)
+          .maybeSingle();
+        const { data: recentBounties } = await supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", target.id)
+          .eq("clawed_back", false)
+          .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+        const recentMinutes = (recentBounties ?? []).reduce(
+          (sum: number, b: any) => sum + Number(b.amount_minutes ?? 0),
+          0,
+        );
+        rows = [{
+          female_id: target.id,
+          female_name: target.name ?? "there",
+          yesterday_minutes: recentMinutes,
+          cashable_minutes: Number(bal?.gifted_minutes ?? 0),
+          near_limit_count: 0,
+          near_limit_names: [],
+        }];
+      }
+    }
 
     const today = new Date().toISOString().slice(0, 10);
     let sent = 0;
@@ -37,7 +81,7 @@ Deno.serve(async (req) => {
       const names: string[] = row.near_limit_names ?? [];
 
       const notificationType = `earnings_digest:${today}`;
-      const { data: alreadySent } = await supabase
+      const { data: alreadySent } = testEmail ? { data: null } : await supabase
         .from("push_notification_log")
         .select("last_sent_at")
         .eq("user_id", femaleId)
