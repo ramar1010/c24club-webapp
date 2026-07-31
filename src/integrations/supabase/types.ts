@@ -3311,6 +3311,17 @@ export type Database = {
       }
       get_admin_user_ids: { Args: never; Returns: string[] }
       get_bounty_summary: { Args: never; Returns: Json }
+      get_female_earnings_digest: {
+        Args: never
+        Returns: {
+          cashable_minutes: number
+          female_id: string
+          female_name: string
+          near_limit_count: number
+          near_limit_names: string[]
+          yesterday_minutes: number
+        }[]
+      }
       get_moderator_user_ids: { Args: never; Returns: string[] }
       get_my_gift_history: {
         Args: { p_direction?: string }
