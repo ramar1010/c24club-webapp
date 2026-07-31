@@ -92,8 +92,20 @@ const AnchorSettingsPage = () => {
   const { data: members } = useQuery({
     queryKey: ["admin-members-lookup-anchor"],
     queryFn: async () => {
-      const { data } = await supabase.from("members").select("id, name, email");
-      return data ?? [];
+      // PostgREST caps responses at 1000 rows — page through all members
+      const all: { id: string; name: string | null; email: string | null }[] = [];
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("members")
+          .select("id, name, email")
+          .order("id", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        all.push(...(data ?? []));
+        if (!data || data.length < PAGE) break;
+      }
+      return all;
     },
   });
 
