@@ -162,6 +162,7 @@ const App = () => (
               <Route path="/gift-success" element={<GiftSuccessPage />} />
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
               <Route path="/call/:slug" element={<CallMePage />} />
+              <Route path="/open" element={<OpenAppPage />} />
 
               {/* Hidden worker portal (noindex) */}
               <Route path="/work/c24" element={<WorkerRedditTaskPage />} />
