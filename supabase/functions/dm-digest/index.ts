@@ -58,7 +58,7 @@ function buildDigestHtml(
         ` : ""}
 
         <tr><td style="padding:0 24px 28px;" align="center">
-          <a href="${SITE_URL}/messages" style="display:inline-block;padding:14px 32px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:15px;font-weight:600;border-radius:8px;text-decoration:none;">
+          <a href="${SITE_URL}/open?p=/messages" style="display:inline-block;padding:14px 32px;background-color:hsl(205,65%,45%);color:#ffffff;font-size:15px;font-weight:600;border-radius:8px;text-decoration:none;">
             See What They Said
           </a>
         </td></tr>
