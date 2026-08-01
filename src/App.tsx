@@ -77,6 +77,7 @@ const RulesPage = lazy(() => import("@/pages/public/RulesPage"));
 const DiscoverPage = lazy(() => import("@/pages/public/DiscoverPage"));
 const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
 const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
+const OpenAppPage = lazy(() => import("@/pages/public/OpenAppPage"));
 const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
 const SafetyCenterPage = lazy(() => import("@/pages/public/SafetyCenterPage"));
