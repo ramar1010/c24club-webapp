@@ -70,6 +70,7 @@ export const adminMenu: MenuItem[] = [
     title: "DM Monitor",
     submenu: [
       { key: "dm-conversations", label: "All Conversations", path: "/admin/dm-monitor" },
+      { key: "announcements", label: "Send Announcement", path: "/admin/announcements" },
     ],
   },
   {
