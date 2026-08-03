@@ -76,6 +76,7 @@ const EarnHistoryPage = lazy(() => import("@/pages/public/EarnHistoryPage"));
 const RulesPage = lazy(() => import("@/pages/public/RulesPage"));
 const DiscoverPage = lazy(() => import("@/pages/public/DiscoverPage"));
 const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
+const EarningsChatPage = lazy(() => import("@/pages/public/EarningsChatPage"));
 const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
 const OpenAppPage = lazy(() => import("@/pages/public/OpenAppPage"));
 const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
@@ -158,6 +159,7 @@ const App = () => (
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/earn-history" element={<EarnHistoryPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/earnings-chat" element={<EarningsChatPage />} />
               <Route path="/referral" element={<ReferralPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/gift-success" element={<GiftSuccessPage />} />
