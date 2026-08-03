@@ -100,6 +100,21 @@ Only first names are used — never show emails or user IDs in this chat.
 ## 7. Entry points
 
 - Discover screen: green banner for female users → `💸 Girls Earnings Chat — see what other verified girls are making today`.
+- **DM / Messages list (required):** for female users, render a **pinned "Girls Only Earnings Chat" row at the very top of the conversation list**, above all real DMs (including the admin/owner conversation). Tapping it opens the group chat screen.
+  - Avatar: gradient circle (emerald → pink) with a `💸` glyph — not a member photo.
+  - Title: `Girls Only Earnings Chat` plus a small `VERIFIED` pill badge.
+  - Preview line: the **body of the most recent `group_chat_messages` row**, truncated to one line; fall back to `See what other girls are earning 💰` when the table is empty.
+  - Right side: relative timestamp of that latest message, formatted like the other conversation rows.
+  - It must render even when the user has zero conversations (don't hide it behind the "No messages yet" empty state), and it must not be filtered out by the search box or affected by pinning/favorites logic.
+  - Preview query:
+    ```ts
+    supabase.from('group_chat_messages')
+      .select('body, created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    ```
+    Only run it for `gender ILIKE 'female'`; cache ~60s and refresh when the messages list is focused/refetched.
 - Optional: entry on the Profile / earnings screen next to Bounty History.
 - Optional: push notification when a system earnings message posts, throttled to at most one per few hours.
 
@@ -109,3 +124,4 @@ Only first names are used — never show emails or user IDs in this chat.
 - A verified female sees history + live updates without reloading.
 - Pasting a link or `@handle` results in `[removed]` in the stored row.
 - A real bounty award appears in both web and native chat within seconds of being written.
+- A female user opening the Messages tab sees the pinned Girls Only Earnings Chat row at the top with the latest message as its preview; a male user does not see the row at all.
