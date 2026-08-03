@@ -168,11 +168,11 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
               <button
                 onClick={() => {
                   onClose();
-                  navigate("/profile");
+                  navigate("/discover");
                 }}
                 className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
               >
-                View My Earnings <ChevronRight className="w-4 h-4" />
+                Start Chatting With Guys <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <button
