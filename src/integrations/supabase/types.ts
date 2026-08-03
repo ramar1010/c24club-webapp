@@ -1337,6 +1337,36 @@ export type Database = {
         }
         Relationships: []
       }
+      group_chat_messages: {
+        Row: {
+          amount_cents: number | null
+          body: string
+          created_at: string
+          id: string
+          is_system: boolean
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          body: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          body?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       iap_purchases: {
         Row: {
           action: string
@@ -3374,6 +3404,7 @@ export type Database = {
       }
       is_blocked_by: { Args: { partner_id: string }; Returns: boolean }
       is_user_vip: { Args: { _user_id: string }; Returns: boolean }
+      is_verified_female: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
