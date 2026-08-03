@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign, Shuffle } from "lucide-react";
+import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
@@ -149,6 +149,16 @@ const DiscoverPage = () => {
 
       {/* Female VIP promo banner */}
       {myGender === "female" && (
+        <>
+        <button
+          onClick={() => navigate("/earnings-chat")}
+          className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition text-left"
+        >
+          <Users className="w-5 h-5 text-emerald-400 shrink-0" />
+          <p className="text-sm font-semibold text-emerald-300 leading-snug">
+            💸 Girls Earnings Chat — see what other verified girls are making today
+          </p>
+        </button>
         <button
           onClick={async () => {
             const { VIP_TIERS } = await import("@/config/vip-tiers");
@@ -165,6 +175,7 @@ const DiscoverPage = () => {
             <Sparkles className="w-5 h-5 text-yellow-200 shrink-0" />
           </div>
         </button>
+        </>
       )}
 
       {/* Not discoverable banner */}
