@@ -554,6 +554,22 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
 
   const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
 
+  // Girls-only earnings group chat preview (females only)
+  const { data: groupChatPreview } = useQuery({
+    queryKey: ["group-chat-preview", myGender],
+    enabled: myGender === "female",
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("group_chat_messages")
+        .select("body, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data as { body: string; created_at: string } | null;
+    },
+  });
+
   const filteredConversations = useMemo(() => {
     let list = conversations;
     if (searchQuery.trim()) {
