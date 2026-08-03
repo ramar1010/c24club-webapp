@@ -109,6 +109,39 @@ const AnchorSettingsPage = () => {
     },
   });
 
+  const { data: pendingMessengers } = useQuery({
+    queryKey: ["female-pending-messengers"],
+    queryFn: async () => {
+      // Page through attributions (PostgREST caps at 1000 rows)
+      const rows: { female_id: string; male_id: string; last_interaction_at: string; expires_at: string | null }[] = [];
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("bounty_attributions")
+          .select("female_id, male_id, last_interaction_at, expires_at")
+          .order("last_interaction_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        rows.push(...((data ?? []) as any));
+        if (!data || data.length < PAGE) break;
+      }
+      const now = Date.now();
+      const map = new Map<string, { female_id: string; males: Set<string>; active: number; last: string }>();
+      for (const row of rows) {
+        const key = row.female_id;
+        const entry = map.get(key) ?? { female_id: key, males: new Set<string>(), active: 0, last: row.last_interaction_at };
+        entry.males.add(row.male_id);
+        if (!row.expires_at || new Date(row.expires_at).getTime() > now) entry.active += 1;
+        if (row.last_interaction_at > entry.last) entry.last = row.last_interaction_at;
+        map.set(key, entry);
+      }
+      return Array.from(map.values())
+        .map((e) => ({ female_id: e.female_id, guys: e.males.size, active: e.active, last: e.last }))
+        .sort((a, b) => b.guys - a.guys)
+        .slice(0, 30);
+    },
+  });
+
   const memberName = (id: string) => {
     const m = members?.find((m) => m.id === id);
     return m?.name || m?.email || id?.slice(0, 8) + "...";
