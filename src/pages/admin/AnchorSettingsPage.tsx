@@ -109,6 +109,39 @@ const AnchorSettingsPage = () => {
     },
   });
 
+  const { data: pendingMessengers } = useQuery({
+    queryKey: ["female-pending-messengers"],
+    queryFn: async () => {
+      // Page through attributions (PostgREST caps at 1000 rows)
+      const rows: { female_id: string; male_id: string; last_interaction_at: string; expires_at: string | null }[] = [];
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("bounty_attributions")
+          .select("female_id, male_id, last_interaction_at, expires_at")
+          .order("last_interaction_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        rows.push(...((data ?? []) as any));
+        if (!data || data.length < PAGE) break;
+      }
+      const now = Date.now();
+      const map = new Map<string, { female_id: string; males: Set<string>; active: number; last: string }>();
+      for (const row of rows) {
+        const key = row.female_id;
+        const entry = map.get(key) ?? { female_id: key, males: new Set<string>(), active: 0, last: row.last_interaction_at };
+        entry.males.add(row.male_id);
+        if (!row.expires_at || new Date(row.expires_at).getTime() > now) entry.active += 1;
+        if (row.last_interaction_at > entry.last) entry.last = row.last_interaction_at;
+        map.set(key, entry);
+      }
+      return Array.from(map.values())
+        .map((e) => ({ female_id: e.female_id, guys: e.males.size, active: e.active, last: e.last }))
+        .sort((a, b) => b.guys - a.guys)
+        .slice(0, 30);
+    },
+  });
+
   const memberName = (id: string) => {
     const m = members?.find((m) => m.id === id);
     return m?.name || m?.email || id?.slice(0, 8) + "...";
@@ -296,8 +329,47 @@ const AnchorSettingsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Pending / Top Messengers */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-bold mb-1 text-foreground">Top Messengers (Pending)</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Females actively DMing guys who haven't converted yet. Ranked by unique guys messaged.
+        </p>
+        {!pendingMessengers || pendingMessengers.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No pending attributions yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-3">Female</th>
+                  <th className="py-2 pr-3">Email</th>
+                  <th className="py-2 pr-3">Guys Messaged</th>
+                  <th className="py-2 pr-3">Still Active</th>
+                  <th className="py-2 pr-3">Potential (Basic)</th>
+                  <th className="py-2 pr-3">Last Activity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingMessengers.map((p) => (
+                  <tr key={p.female_id} className="border-b border-border/50">
+                    <td className="py-2 pr-3 font-bold text-foreground">{memberName(p.female_id)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{memberEmail(p.female_id)}</td>
+                    <td className="py-2 pr-3">{p.guys}</td>
+                    <td className="py-2 pr-3">{p.active}</td>
+                    <td className="py-2 pr-3 text-muted-foreground">${(p.active * 125 * 0.01).toFixed(2)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(p.last).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
 
 export default AnchorSettingsPage;
