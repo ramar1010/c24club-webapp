@@ -329,6 +329,44 @@ const AnchorSettingsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Pending / Top Messengers */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-bold mb-1 text-foreground">Top Messengers (Pending)</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Females actively DMing guys who haven't converted yet. Ranked by unique guys messaged.
+        </p>
+        {!pendingMessengers || pendingMessengers.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No pending attributions yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-3">Female</th>
+                  <th className="py-2 pr-3">Email</th>
+                  <th className="py-2 pr-3">Guys Messaged</th>
+                  <th className="py-2 pr-3">Still Active</th>
+                  <th className="py-2 pr-3">Potential (Basic)</th>
+                  <th className="py-2 pr-3">Last Activity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingMessengers.map((p) => (
+                  <tr key={p.female_id} className="border-b border-border/50">
+                    <td className="py-2 pr-3 font-bold text-foreground">{memberName(p.female_id)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{memberEmail(p.female_id)}</td>
+                    <td className="py-2 pr-3">{p.guys}</td>
+                    <td className="py-2 pr-3">{p.active}</td>
+                    <td className="py-2 pr-3 text-muted-foreground">${(p.active * 125 * 0.01).toFixed(2)}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(p.last).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
