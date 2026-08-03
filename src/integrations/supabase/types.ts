@@ -3320,6 +3320,7 @@ export type Database = {
         }
         Returns: Json
       }
+      chat_display_name: { Args: { _user_id: string }; Returns: string }
       claim_reddit_task: {
         Args: { p_code: string; p_worker_name: string }
         Returns: Json
