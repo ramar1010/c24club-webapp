@@ -734,7 +734,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             </div>
 
             <div className="flex-1 overflow-y-auto">
-            {myGender === "female" && (
+            {canSeeGroupChat && (
               <button
                 onClick={() => navigate("/earnings-chat")}
                 className="flex items-center gap-3 px-4 py-3 w-full text-left border-b border-white/10 bg-gradient-to-r from-emerald-500/15 to-pink-500/10 hover:brightness-125 transition"
