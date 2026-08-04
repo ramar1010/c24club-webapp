@@ -78,7 +78,7 @@ const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
 };
 
 const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; initialPartnerId?: string }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin, isModerator } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
