@@ -78,7 +78,7 @@ const RoleBadge = ({ role }: { role: "owner" | "vip" | "mod" }) => {
 };
 
 const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; initialPartnerId?: string }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin, isModerator } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -555,9 +555,10 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
 
   // Girls-only earnings group chat preview (females only)
+  const canSeeGroupChat = myGender === "female" || isAdmin || isModerator;
   const { data: groupChatPreview } = useQuery({
-    queryKey: ["group-chat-preview", myGender],
-    enabled: myGender === "female",
+    queryKey: ["group-chat-preview", myGender, isAdmin, isModerator],
+    enabled: canSeeGroupChat,
     staleTime: 60_000,
     queryFn: async () => {
       const { data } = await supabase
@@ -733,7 +734,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             </div>
 
             <div className="flex-1 overflow-y-auto">
-            {myGender === "female" && (
+            {canSeeGroupChat && (
               <button
                 onClick={() => navigate("/earnings-chat")}
                 className="flex items-center gap-3 px-4 py-3 w-full text-left border-b border-white/10 bg-gradient-to-r from-emerald-500/15 to-pink-500/10 hover:brightness-125 transition"
