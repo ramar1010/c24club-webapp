@@ -73,6 +73,7 @@ const RewardStorePage = lazy(() => import("@/pages/public/RewardStorePage"));
 const ProfilePage = lazy(() => import("@/pages/public/ProfilePage"));
 const MyRewardsPage = lazy(() => import("@/pages/public/MyRewardsPage"));
 const SettingsPage = lazy(() => import("@/pages/public/SettingsPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/public/ResetPasswordPage"));
 const EarnHistoryPage = lazy(() => import("@/pages/public/EarnHistoryPage"));
 const RulesPage = lazy(() => import("@/pages/public/RulesPage"));
 const DiscoverPage = lazy(() => import("@/pages/public/DiscoverPage"));
@@ -158,6 +159,7 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/my-rewards" element={<MyRewardsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/earn-history" element={<EarnHistoryPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/earnings-chat" element={<EarningsChatPage />} />
