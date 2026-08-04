@@ -220,10 +220,30 @@ async function handleWebhook(req: Request): Promise<Response> {
   // Build template props from payload.data (HookData structure)
   // Rewrite confirmation URLs to use the custom domain instead of the lovable.app staging URL
   const rawUrl = payload.data.url || ''
-  const confirmationUrl = rawUrl.replace(
-    /https:\/\/[^/]*\.lovable\.app/,
-    `https://${ROOT_DOMAIN}`
-  )
+  const buildConfirmationUrl = (url: string, type: string): string => {
+    if (!url) return `https://${ROOT_DOMAIN}`
+    try {
+      const parsed = new URL(url)
+      // Rewrite the verify host if it points at the staging domain
+      const redirectRaw = parsed.searchParams.get('redirect_to') || `https://${ROOT_DOMAIN}`
+      const redirect = new URL(redirectRaw)
+      // Always send users to the production domain
+      if (redirect.hostname.endsWith('.lovable.app')) {
+        redirect.hostname = ROOT_DOMAIN
+        redirect.protocol = 'https:'
+      }
+      // Recovery links must land on the page that handles the recovery session
+      if (type === 'recovery' && redirect.pathname.replace(/\/$/, '') !== '/reset-password') {
+        redirect.pathname = '/reset-password'
+      }
+      parsed.searchParams.set('redirect_to', redirect.toString())
+      return parsed.toString()
+    } catch (_e) {
+      return url.replace(/https:\/\/[^/]*\.lovable\.app/g, `https://${ROOT_DOMAIN}`)
+    }
+  }
+
+  const confirmationUrl = buildConfirmationUrl(rawUrl, emailType)
 
   const templateProps = {
     siteName: SITE_NAME,
