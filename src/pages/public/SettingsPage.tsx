@@ -46,10 +46,10 @@ const SettingsPage = () => {
     setResetSending(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/settings`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast.success("Password reset link sent to your email!");
+      toast.success("Password reset link sent! Open it within 1 hour.");
     } catch {
       toast.error("Failed to send reset link. Try again later.");
     } finally {
