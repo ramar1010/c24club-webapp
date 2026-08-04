@@ -555,9 +555,10 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
 
   // Girls-only earnings group chat preview (females only)
+  const canSeeGroupChat = myGender === "female" || isAdmin || isModerator;
   const { data: groupChatPreview } = useQuery({
-    queryKey: ["group-chat-preview", myGender],
-    enabled: myGender === "female",
+    queryKey: ["group-chat-preview", myGender, isAdmin, isModerator],
+    enabled: canSeeGroupChat,
     staleTime: 60_000,
     queryFn: async () => {
       const { data } = await supabase
