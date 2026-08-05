@@ -60,7 +60,7 @@ const DiscoverMemberCard = ({
   const [showVipGate, setShowVipGate] = useState(false);
   const [showRechargeGate, setShowRechargeGate] = useState(false);
   const { user } = useAuth();
-  const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
+  const { vipTier, loading: vipLoading, startCheckout } = useVipStatus(user?.id ?? null);
   const { data: rechargeMinutes = 0, refetch: refetchRecharge } = useRechargeMinutes(user?.id ?? null);
   const navigate = useNavigate();
   const realOnline = isOnlineNow(member.last_active_at);
@@ -87,10 +87,22 @@ const DiscoverMemberCard = ({
 
   const handleVideoChat = async () => {
     if (!user) return;
-    // Block non-premium males from calling females
-    if (shouldBlockCall(myGender, member.gender, vipTier)) {
-      setShowVipGate(true);
-      return;
+    // Block non-VIP males from calling females.
+    // vipTier can still be loading (or served from a stale cache), so confirm
+    // against the database before showing the gate.
+    if (shouldBlockCall(myGender, member.gender, vipLoading ? null : vipTier)) {
+      const { data: mm } = await supabase
+        .from("member_minutes")
+        .select("is_vip, vip_tier, admin_granted_vip")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const dbTier = (mm?.is_vip || mm?.admin_granted_vip)
+        ? ((mm?.vip_tier as string | null) ?? "premium")
+        : null;
+      if (shouldBlockCall(myGender, member.gender, dbTier)) {
+        setShowVipGate(true);
+        return;
+      }
     }
     // Calling a female costs purchased call minutes
     if (myGender?.toLowerCase() === "male" && isFemale) {
