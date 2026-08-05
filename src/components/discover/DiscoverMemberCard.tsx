@@ -70,6 +70,8 @@ const DiscoverMemberCard = ({
   // "Very Active" = seen within the last 24h, but not currently online (online badge takes precedence)
   const isVeryActive = !online && !!member.last_active_at &&
     Date.now() - new Date(member.last_active_at).getTime() < 24 * 60 * 60 * 1000;
+  // Calls to females cost purchased call minutes for male users — show the live balance
+  const showsRechargeBadge = !isSelf && myGender?.toLowerCase() === "male" && isFemale;
 
   // Track profile view (fire-and-forget, once per mount)
   const viewTracked = useRef(false);
@@ -218,16 +220,32 @@ const DiscoverMemberCard = ({
           {!isSelf && (
           <div className="flex items-center gap-1 sm:gap-1.5">
             {/* Video Chat */}
+            <div className="relative">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 void handleVideoChat();
               }}
               className="w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-emerald-500/80 hover:bg-emerald-500 text-white transition-all"
-              title="Request Video Chat"
+              title={
+                showsRechargeBadge
+                  ? `Request Video Chat — ${rechargeMinutes} call minutes left`
+                  : "Request Video Chat"
+              }
             >
               <Video className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
+            {showsRechargeBadge && (
+              <span
+                className={`absolute -top-1.5 -right-1.5 min-w-[16px] px-1 h-4 rounded-full flex items-center justify-center text-[9px] font-black leading-none border border-black/40 ${
+                  rechargeMinutes > 0 ? "bg-emerald-400 text-black" : "bg-red-500 text-white"
+                }`}
+                title={`${rechargeMinutes} call minutes left`}
+              >
+                {rechargeMinutes}
+              </span>
+            )}
+            </div>
 
             {/* DM */}
             <button
