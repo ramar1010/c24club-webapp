@@ -1,84 +1,111 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, MessageCircle, Crown, DollarSign, ChevronRight, Star, Check } from "lucide-react";
+import { X, Crown, Gift, Video, DollarSign, ChevronRight, ChevronLeft, Check } from "lucide-react";
 
 interface BountyGuideModalProps {
   onClose: () => void;
 }
 
-type Step = {
-  icon: typeof MessageCircle;
+type Method = {
+  icon: typeof Crown;
   color: string;
   bg: string;
   border: string;
   title: string;
-  desc: string;
-  bullets?: string[];
+  short: string;
+  payout: string;
+  how: string[];
+  tips: string[];
 };
 
-const steps: Step[] = [
-  {
-    icon: MessageCircle,
-    color: "text-pink-400",
-    bg: "bg-pink-500/10",
-    border: "border-pink-500/20",
-    title: "Chat with guys",
-    desc: "Be engaging in DMs and on video calls. Real, fun conversations are what keep guys coming back.",
-  },
+const methods: Method[] = [
   {
     icon: Crown,
     color: "text-amber-400",
     bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    title: "Convince them to subscribe",
-    desc: "Encourage the guys you talk to to upgrade to Basic or Premium VIP membership. Guys can only send 3 free messages before they must buy VIP to keep chatting — so a flirty follow-up often converts.",
+    border: "border-amber-500/30",
+    title: "1. Get guys to go VIP",
+    short: "Biggest payout. Up to 500 minutes each.",
+    payout: "125 – 500 minutes",
+    how: [
+      "DM guys and be fun and engaging.",
+      "He only gets 3 free messages — after that he must buy VIP to keep talking to you.",
+      "When he subscribes, minutes land in your balance automatically.",
+    ],
+    tips: [
+      "125 minutes when he buys Basic VIP",
+      "500 minutes when he buys Premium VIP",
+      "First-time subscriptions only (not renewals)",
+      "+500 bonus if 3 guys subscribe within 7 days",
+    ],
   },
   {
-    icon: Star,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    title: "You automatically earn minutes",
-    desc: "When a guy you've chatted with goes VIP, gifted minutes land in your balance instantly — no action needed.",
-    bullets: [
-      "125 minutes when they subscribe to Basic VIP",
-      "500 minutes when they subscribe to Premium VIP",
-      "First-time subscriptions only",
-      "Bonus: +500 streak bonus for 3 subscriptions in 7 days",
+    icon: Gift,
+    color: "text-pink-400",
+    bg: "bg-pink-500/10",
+    border: "border-pink-500/30",
+    title: "2. Get gifted minutes",
+    short: "Guys send you minutes directly during calls or DMs.",
+    payout: "100 – 1000 minutes per gift",
+    how: [
+      "Guys can gift you minutes while video calling or messaging you.",
+      "Gifts go straight into your balance — nothing for you to claim.",
+      "The nicer the vibe, the bigger the gifts.",
+    ],
+    tips: [
+      "Gift tiers: 100, 400, 600 or 1000 minutes",
+      "Thank him — repeat gifters are the best earners",
+      "Being verified in Discover gets you way more gifts",
+    ],
+  },
+  {
+    icon: Video,
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/30",
+    title: "3. Guys recharge minutes",
+    short: "He buys minutes, you earn them while you talk.",
+    payout: "Earn minutes every minute on call",
+    how: [
+      "Guys buy (recharge) minutes so they can keep video calling.",
+      "When you video call him, you collect minutes as the call goes on.",
+      "Longer calls = more minutes for you. No extra steps.",
+    ],
+    tips: [
+      "Stay on the call — quick skips cut your earnings",
+      "Regulars who recharge often are your best income",
+      "Answer calls from Discover to get more call time",
     ],
   },
   {
     icon: DollarSign,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    title: "Cash out to PayPal",
-    desc: "Head to My Profile → Redeem My Minutes and turn your gifted minutes into real cash.",
-    bullets: [
-      "Redeem minutes at $0.02 per minute",
-      "Payments sent directly to your PayPal",
-      "Go above & beyond: Get gifted 100, 400, 600, or 1000 minutes by members to earn even faster!",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/30",
+    title: "4. Cash out to PayPal",
+    short: "Turn the minutes you earned into real money.",
+    payout: "$0.02 per minute",
+    how: [
+      "Go to My Profile → Redeem My Minutes.",
+      "Choose how many minutes to cash out.",
+      "Money is sent straight to your PayPal.",
+    ],
+    tips: [
+      "500 minutes = $10",
+      "You can also spend minutes in the Reward Store instead",
+      "Only gifted / earned minutes are cashable",
     ],
   },
 ];
 
-const tips = [
-  "Be genuine and engaging — authentic conversations convert the best.",
-  "The 3-message limit makes conversions easy: after his free messages run out, he must buy VIP to keep chatting with you.",
-  "The more guys you talk to, the more chances they go VIP and pay you.",
-  "Keep a streak going: 3 subscriptions within 7 days unlocks a +500 minute bonus.",
-  "First-time payments award the bounty — recurring renewals do not.",
-  "Go above and beyond: You can also get gifted directly by members (100, 400, 600, or 1000 minutes) to boost your earnings!",
-];
-
 export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(0);
-  const step = steps[activeStep];
+  const [selected, setSelected] = useState<number | null>(null);
+  const method = selected !== null ? methods[selected] : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl">
         {/* Header */}
         <div className="relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-6 pt-7 pb-5 border-b border-white/10">
           <button
@@ -89,123 +116,116 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
           </button>
           <div className="text-center">
             <div className="text-3xl mb-2">💰</div>
-            <h2 className="text-lg font-bold text-white">Earn Money DMing Guys</h2>
+            <h2 className="text-lg font-bold text-white">4 Ways To Earn Money</h2>
             <p className="text-sm text-white/50 mt-1">
-              Get paid in cash when the guys you chat with go VIP.
+              Tap any way below to see exactly how it works.
             </p>
           </div>
         </div>
 
-        {/* Stepper */}
-        <div className="px-6 pt-5 pb-2">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((_, idx) => (
-              <div key={idx} className="flex items-center flex-1 last:flex-none">
+        {/* Menu */}
+        {method === null && (
+          <div className="px-5 py-5 space-y-3">
+            {methods.map((m, idx) => {
+              const Icon = m.icon;
+              return (
                 <button
-                  onClick={() => setActiveStep(idx)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    idx === activeStep
-                      ? "bg-pink-500 text-white shadow-lg shadow-pink-500/30"
-                      : idx < activeStep
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-white/10 text-white/40"
-                  }`}
+                  key={idx}
+                  onClick={() => setSelected(idx)}
+                  className={`w-full text-left rounded-xl border px-4 py-4 flex items-center gap-3 transition-all hover:brightness-125 ${m.bg} ${m.border}`}
                 >
-                  {idx < activeStep ? "✓" : idx + 1}
+                  <div className={`p-2.5 rounded-lg bg-white/5 shrink-0 ${m.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-white text-sm">{m.title}</h3>
+                    <p className="text-xs text-white/60 mt-0.5">{m.short}</p>
+                    <p className={`text-xs font-semibold mt-1.5 ${m.color}`}>{m.payout}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/40 shrink-0" />
                 </button>
-                {idx < steps.length - 1 && (
-                  <div
-                    className={`h-0.5 flex-1 mx-1 rounded-full transition-colors ${
-                      idx < activeStep ? "bg-emerald-500/40" : "bg-white/10"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+              );
+            })}
 
-        {/* Active Step Card */}
-        <div className="px-6 pb-4">
-          <div
-            className={`rounded-xl border px-5 py-4 transition-all ${step.bg} ${step.border}`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className={`p-2 rounded-lg bg-white/5 ${step.color}`}>
-                {(() => {
-                  const Icon = step.icon;
-                  return <Icon className="w-5 h-5" />;
-                })()}
+            <button
+              onClick={() => {
+                onClose();
+                navigate("/discover");
+              }}
+              className="w-full mt-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm py-3 transition-colors"
+            >
+              Start Chatting With Guys
+            </button>
+            <p className="text-[11px] text-white/40 text-center">
+              You can also earn extra minutes from Weekly Challenges, Spin to Win, and inviting friends.
+            </p>
+          </div>
+        )}
+
+        {/* Detail */}
+        {method && (
+          <div className="px-5 py-5">
+            <button
+              onClick={() => setSelected(null)}
+              className="flex items-center gap-1 text-xs text-white/50 hover:text-white/80 mb-3 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> All ways to earn
+            </button>
+
+            <div className={`rounded-xl border px-5 py-4 ${method.bg} ${method.border}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 rounded-lg bg-white/5 ${method.color}`}>
+                  {(() => {
+                    const Icon = method.icon;
+                    return <Icon className="w-5 h-5" />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base">{method.title}</h3>
+                  <p className={`text-xs font-semibold ${method.color}`}>{method.payout}</p>
+                </div>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400 border border-pink-400/40 rounded-full px-2.5 py-0.5">
-                Step {activeStep + 1}
-              </span>
+
+              <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-2">
+                How it works
+              </p>
+              <ol className="space-y-2">
+                {method.how.map((h, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-white/80">
+                    <span className="w-5 h-5 shrink-0 rounded-full bg-white/10 text-[11px] font-bold flex items-center justify-center text-white/70">
+                      {i + 1}
+                    </span>
+                    <span className="leading-snug">{h}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <h3 className="font-bold text-white text-base mb-1.5">{step.title}</h3>
-            <p className="text-sm text-white/70 leading-relaxed">{step.desc}</p>
-            {step.bullets && (
-              <ul className="mt-3 space-y-1.5">
-                {step.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-white/80">
+
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 mt-3">
+              <p className="text-xs font-bold text-amber-300/90 uppercase tracking-wider mb-2">
+                ✨ Good to know
+              </p>
+              <ul className="space-y-2">
+                {method.tips.map((t, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-white/60">
                     <Check className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
-                    <span>{b}</span>
+                    <span>{t}</span>
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
+            </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-4">
             <button
-              onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
-              disabled={activeStep === 0}
-              className="text-sm text-white/40 hover:text-white/70 disabled:opacity-30 transition-colors"
+              onClick={() => {
+                onClose();
+                navigate("/discover");
+              }}
+              className="w-full mt-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm py-3 transition-colors"
             >
-              Back
+              Start Chatting With Guys
             </button>
-            {activeStep === steps.length - 1 ? (
-              <button
-                onClick={() => {
-                  onClose();
-                  navigate("/discover");
-                }}
-                className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                Start Chatting With Guys <ChevronRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  setActiveStep((s) => Math.min(steps.length - 1, s + 1))
-                }
-                className="flex items-center gap-1 text-sm font-semibold text-pink-400 hover:text-pink-300 transition-colors"
-              >
-                Next <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
           </div>
-        </div>
-
-        {/* Pro Tips */}
-        <div className="px-6 pb-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-            <p className="text-xs font-bold text-amber-300/90 uppercase tracking-wider mb-2">
-              ✨ Pro Tips
-            </p>
-            <ul className="space-y-2">
-              {tips.map((tip, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-white/50">
-                  <span className="text-pink-400 mt-0.5">•</span>
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="text-[11px] text-white/40 text-center mt-3">
-            Earnings are paid in gifted minutes redeemable for cash via PayPal. Learn more at c24club.com.
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );
