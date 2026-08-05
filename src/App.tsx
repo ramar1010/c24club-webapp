@@ -86,6 +86,7 @@ const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"))
 const SafetyCenterPage = lazy(() => import("@/pages/public/SafetyCenterPage"));
 const ReferralPage = lazy(() => import("@/pages/public/ReferralPage"));
 const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
+const RechargeSuccessPage = lazy(() => import("@/pages/public/RechargeSuccessPage"));
 const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
 const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
@@ -166,6 +167,7 @@ const App = () => (
               <Route path="/referral" element={<ReferralPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/gift-success" element={<GiftSuccessPage />} />
+              <Route path="/recharge-success" element={<RechargeSuccessPage />} />
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
               <Route path="/call/:slug" element={<CallMePage />} />
               <Route path="/open" element={<OpenAppPage />} />
