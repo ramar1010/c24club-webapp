@@ -10,7 +10,6 @@ import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
-import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { useVipStatus } from "@/hooks/useVipStatus";
@@ -213,15 +212,6 @@ const DiscoverPage = () => {
 
       {/* Profile editor (for discoverable users) */}
       {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
-
-      {/* Incoming interests */}
-      <IncomingInterests
-        interests={incomingInterestsList}
-        myInterests={myInterests}
-        onInterestBack={(id) => handleInterest(id)}
-        sendingInterest={sendingInterest}
-        onOpenDm={(userId) => setShowMessages(userId)}
-      />
 
       {/* Members grid */}
       <div className="p-4">
