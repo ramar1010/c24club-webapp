@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { Crown, Video, X } from "lucide-react";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import { VIP_TIERS } from "@/config/vip-tiers";
@@ -9,7 +10,7 @@ interface VipCallGateProps {
 }
 
 const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4"
       onClick={(e) => {
@@ -73,7 +74,8 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 
