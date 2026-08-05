@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Crown, Gift, Video, DollarSign, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { X, Crown, Gift, Video, DollarSign, ChevronRight, ChevronLeft, Check, MessageCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 interface BountyGuideModalProps {
   onClose: () => void;
@@ -100,8 +104,39 @@ const methods: Method[] = [
 
 export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selected, setSelected] = useState<number | null>(null);
+  const [showCashout, setShowCashout] = useState(false);
   const method = selected !== null ? methods[selected] : null;
+
+  const { data: cashoutBalance, refetch: refetchCashout } = useQuery({
+    queryKey: ["bounty-guide-cashout-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [{ data: minutesData }, { data: bountyData }] = await Promise.all([
+        supabase
+          .from("member_minutes")
+          .select("total_minutes, gifted_minutes")
+          .eq("user_id", user!.id)
+          .maybeSingle(),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false)
+          .eq("paid_out", false)
+          .gt("amount_minutes", 0),
+      ]);
+      const gifted = (minutesData as any)?.gifted_minutes ?? 0;
+      const bountyTotal = (bountyData || []).reduce(
+        (sum: number, b: any) => sum + (b.amount_minutes || 0),
+        0,
+      );
+      return { total: minutesData?.total_minutes ?? 0, gifted, bounty: bountyTotal };
+    },
+  });
+
+  const cashableMinutes = (cashoutBalance?.gifted ?? 0) + (cashoutBalance?.bounty ?? 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
@@ -148,11 +183,30 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
             })}
 
             <button
+              onClick={() => setShowCashout(true)}
+              className="w-full mt-2 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-black text-sm py-3 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            >
+              <DollarSign className="w-4 h-4" />
+              REDEEM MINUTES FOR CASH ({cashableMinutes} cashable)
+            </button>
+
+            <button
+              onClick={() => {
+                onClose();
+                navigate("/earnings-chat");
+              }}
+              className="w-full rounded-xl bg-pink-500/15 border border-pink-500/40 text-pink-300 font-bold text-sm py-3 flex items-center justify-center gap-2 hover:bg-pink-500/25 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Girls Only Earnings Chat
+            </button>
+
+            <button
               onClick={() => {
                 onClose();
                 navigate("/discover");
               }}
-              className="w-full mt-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm py-3 transition-colors"
+              className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm py-3 transition-colors"
             >
               Start Chatting With Guys
             </button>
@@ -215,18 +269,37 @@ export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
               </ul>
             </div>
 
-            <button
-              onClick={() => {
-                onClose();
-                navigate("/discover");
-              }}
-              className="w-full mt-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm py-3 transition-colors"
-            >
-              Start Chatting With Guys
-            </button>
+            <div className="mt-4 space-y-3">
+              <button
+                onClick={() => setShowCashout(true)}
+                className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-black text-sm py-3 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+              >
+                <DollarSign className="w-4 h-4" />
+                REDEEM MINUTES FOR CASH ({cashableMinutes} cashable)
+              </button>
+              <button
+                onClick={() => {
+                  onClose();
+                  navigate("/discover");
+                }}
+                className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm py-3 transition-colors"
+              >
+                Start Chatting With Guys
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {showCashout && (
+        <CashoutModal
+          onClose={() => setShowCashout(false)}
+          currentMinutes={cashoutBalance?.total ?? 0}
+          giftedMinutes={cashoutBalance?.gifted ?? 0}
+          bountyMinutes={cashoutBalance?.bounty ?? 0}
+          onSuccess={() => refetchCashout()}
+        />
+      )}
     </div>
   );
 }
