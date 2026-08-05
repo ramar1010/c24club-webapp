@@ -754,6 +754,7 @@ export type Database = {
       }
       cashout_settings: {
         Row: {
+          call_rate_per_minute: number
           id: string
           max_cashout_minutes: number
           min_cashout_minutes: number
@@ -761,6 +762,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          call_rate_per_minute?: number
           id?: string
           max_cashout_minutes?: number
           min_cashout_minutes?: number
@@ -768,6 +770,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          call_rate_per_minute?: number
           id?: string
           max_cashout_minutes?: number
           min_cashout_minutes?: number
@@ -1543,6 +1546,7 @@ export type Database = {
         Row: {
           ad_points: number
           admin_granted_vip: boolean
+          call_earned_minutes: number
           cap_popup_shown: boolean
           ce_minutes_checkpoint: number
           chance_enhancer: number
@@ -1573,6 +1577,7 @@ export type Database = {
         Insert: {
           ad_points?: number
           admin_granted_vip?: boolean
+          call_earned_minutes?: number
           cap_popup_shown?: boolean
           ce_minutes_checkpoint?: number
           chance_enhancer?: number
@@ -1603,6 +1608,7 @@ export type Database = {
         Update: {
           ad_points?: number
           admin_granted_vip?: boolean
+          call_earned_minutes?: number
           cap_popup_shown?: boolean
           ce_minutes_checkpoint?: number
           chance_enhancer?: number
