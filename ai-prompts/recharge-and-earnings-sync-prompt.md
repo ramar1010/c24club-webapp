@@ -73,8 +73,10 @@ the existing `verify-iap-purchase` edge function, then credit via
 ## 4. Native UI to build
 
 ### 4a. Recharge gate on the call button
-On each Discover member card, the video-call button for a **male** user must:
-- show a small badge with his remaining `recharge_minutes`
+This applies to the **male viewer** (the person browsing Discover and paying for
+call time), not the female on the card. On each Discover member card, the
+video-call button, when the signed-in user is male, must:
+- show a small badge with the **viewer's own** remaining `recharge_minutes`
   (green when > 0, red when 0);
 - when balance is 0, open a **Recharge** sheet listing the three packs instead of
   starting the call;
