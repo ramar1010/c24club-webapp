@@ -56,18 +56,15 @@ serve(async (req: Request) => {
       );
     }
 
-    // This function is intended to be called only by the database trigger
-    // or another trusted server-side function.
-    const authorization = req.headers.get("authorization");
-    if (authorization !== `Bearer ${serviceRoleKey}`) {
-      return jsonResponse({ success: false, reason: "Unauthorized" }, 401);
-    }
+    // Accepts the standard Supabase Database Webhook payload:
+    // { type, table, schema, record, old_record }
+    const payload = await req.json().catch(() => ({}));
+    const record = payload?.record ?? null;
+    const messageId = record?.id ?? payload?.message_id ?? null;
 
-    const { message_id } = await req.json();
-
-    if (!message_id) {
+    if (!messageId) {
       return jsonResponse(
-        { success: false, reason: "Missing message_id" },
+        { success: false, reason: "Missing record.id / message_id" },
         400,
       );
     }
@@ -80,7 +77,7 @@ serve(async (req: Request) => {
     const { data: message, error: messageError } = await supabaseAdmin
       .from("group_chat_messages")
       .select("id, user_id, body, is_system, created_at")
-      .eq("id", message_id)
+      .eq("id", messageId)
       .maybeSingle();
 
     if (messageError) {
