@@ -56,18 +56,15 @@ serve(async (req: Request) => {
       );
     }
 
-    // This function is intended to be called only by the database trigger
-    // or another trusted server-side function.
-    const authorization = req.headers.get("authorization");
-    if (authorization !== `Bearer ${serviceRoleKey}`) {
-      return jsonResponse({ success: false, reason: "Unauthorized" }, 401);
-    }
+    // Accepts the standard Supabase Database Webhook payload:
+    // { type, table, schema, record, old_record }
+    const payload = await req.json().catch(() => ({}));
+    const record = payload?.record ?? null;
+    const messageId = record?.id ?? payload?.message_id ?? null;
 
-    const { message_id } = await req.json();
-
-    if (!message_id) {
+    if (!messageId) {
       return jsonResponse(
-        { success: false, reason: "Missing message_id" },
+        { success: false, reason: "Missing record.id / message_id" },
         400,
       );
     }
@@ -80,7 +77,7 @@ serve(async (req: Request) => {
     const { data: message, error: messageError } = await supabaseAdmin
       .from("group_chat_messages")
       .select("id, user_id, body, is_system, created_at")
-      .eq("id", message_id)
+      .eq("id", messageId)
       .maybeSingle();
 
     if (messageError) {
@@ -185,39 +182,50 @@ serve(async (req: Request) => {
     let skipped = 0;
     let failed = 0;
 
-    // Send in small batches so a large female audience does not overwhelm
-    // the Edge Function or Expo.
-    for (let start = 0; start < eligibleMembers.length; start += 25) {
-      const batch = eligibleMembers.slice(start, start + 25);
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    const invokePush = async (memberId: string): Promise<any> => {
+      let lastErr: unknown = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const result = await supabaseAdmin.functions.invoke(
+          "send-push-notification",
+          {
+            body: {
+              user_id: memberId,
+              title: "Girls Only Earnings Chat",
+              body: notificationBody,
+              data: {
+                type: "girls_earnings_chat",
+                screen: "/messages/girls-earnings",
+                deepLink: "/messages/girls-earnings",
+                messageId: String(chatMessage.id),
+              },
+              notification_type: "girls_earnings_chat",
+              channel_id: "default",
+              priority: "high",
+            },
+          },
+        );
+
+        if (!result.error) return result.data;
+
+        lastErr = result.error;
+        const retryAfter = (result.error as any)?.context?.retryAfterMs;
+        if (typeof retryAfter !== "number" || attempt === 3) break;
+        await sleep(Math.min(retryAfter + 250, 30000));
+      }
+      throw lastErr;
+    };
+
+    // Send in small batches so a large female audience does not trip
+    // the per-function invocation rate limit.
+    const batchSize = 5;
+    for (let start = 0; start < eligibleMembers.length; start += batchSize) {
+      const batch = eligibleMembers.slice(start, start + batchSize);
+      if (start > 0) await sleep(250);
 
       const results = await Promise.allSettled(
-        batch.map(async (member) => {
-          const result = await supabaseAdmin.functions.invoke(
-            "send-push-notification",
-            {
-              body: {
-                user_id: member.id,
-                title: "Girls Only Earnings Chat",
-                body: notificationBody,
-                data: {
-                  type: "girls_earnings_chat",
-                  screen: "/messages/girls-earnings",
-                  deepLink: "/messages/girls-earnings",
-                  messageId: String(chatMessage.id),
-                },
-                notification_type: "girls_earnings_chat",
-                channel_id: "default",
-                priority: "high",
-              },
-            },
-          );
-
-          if (result.error) {
-            throw result.error;
-          }
-
-          return result.data;
-        }),
+        batch.map((member) => invokePush(member.id)),
       );
 
       for (const result of results) {
