@@ -182,39 +182,50 @@ serve(async (req: Request) => {
     let skipped = 0;
     let failed = 0;
 
-    // Send in small batches so a large female audience does not overwhelm
-    // the Edge Function or Expo.
-    for (let start = 0; start < eligibleMembers.length; start += 25) {
-      const batch = eligibleMembers.slice(start, start + 25);
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    const invokePush = async (memberId: string): Promise<any> => {
+      let lastErr: unknown = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const result = await supabaseAdmin.functions.invoke(
+          "send-push-notification",
+          {
+            body: {
+              user_id: memberId,
+              title: "Girls Only Earnings Chat",
+              body: notificationBody,
+              data: {
+                type: "girls_earnings_chat",
+                screen: "/messages/girls-earnings",
+                deepLink: "/messages/girls-earnings",
+                messageId: String(chatMessage.id),
+              },
+              notification_type: "girls_earnings_chat",
+              channel_id: "default",
+              priority: "high",
+            },
+          },
+        );
+
+        if (!result.error) return result.data;
+
+        lastErr = result.error;
+        const retryAfter = (result.error as any)?.context?.retryAfterMs;
+        if (typeof retryAfter !== "number" || attempt === 3) break;
+        await sleep(Math.min(retryAfter + 250, 30000));
+      }
+      throw lastErr;
+    };
+
+    // Send in small batches so a large female audience does not trip
+    // the per-function invocation rate limit.
+    const batchSize = 5;
+    for (let start = 0; start < eligibleMembers.length; start += batchSize) {
+      const batch = eligibleMembers.slice(start, start + batchSize);
+      if (start > 0) await sleep(250);
 
       const results = await Promise.allSettled(
-        batch.map(async (member) => {
-          const result = await supabaseAdmin.functions.invoke(
-            "send-push-notification",
-            {
-              body: {
-                user_id: member.id,
-                title: "Girls Only Earnings Chat",
-                body: notificationBody,
-                data: {
-                  type: "girls_earnings_chat",
-                  screen: "/messages/girls-earnings",
-                  deepLink: "/messages/girls-earnings",
-                  messageId: String(chatMessage.id),
-                },
-                notification_type: "girls_earnings_chat",
-                channel_id: "default",
-                priority: "high",
-              },
-            },
-          );
-
-          if (result.error) {
-            throw result.error;
-          }
-
-          return result.data;
-        }),
+        batch.map((member) => invokePush(member.id)),
       );
 
       for (const result of results) {
