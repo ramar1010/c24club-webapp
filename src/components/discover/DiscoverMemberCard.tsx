@@ -70,6 +70,8 @@ const DiscoverMemberCard = ({
   // "Very Active" = seen within the last 24h, but not currently online (online badge takes precedence)
   const isVeryActive = !online && !!member.last_active_at &&
     Date.now() - new Date(member.last_active_at).getTime() < 24 * 60 * 60 * 1000;
+  // Calls to females cost purchased call minutes for male users — show the live balance
+  const showsRechargeBadge = !isSelf && myGender?.toLowerCase() === "male" && isFemale;
 
   // Track profile view (fire-and-forget, once per mount)
   const viewTracked = useRef(false);
