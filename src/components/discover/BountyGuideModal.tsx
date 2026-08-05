@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Crown, Gift, Video, DollarSign, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { X, Crown, Gift, Video, DollarSign, ChevronRight, ChevronLeft, Check, MessageCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import CashoutModal from "@/components/discover/CashoutModal";
 
 interface BountyGuideModalProps {
   onClose: () => void;
