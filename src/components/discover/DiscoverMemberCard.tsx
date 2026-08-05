@@ -336,6 +336,11 @@ const DiscoverMemberCard = ({
         />
       )}
 
+      {/* Out of call minutes gate */}
+      {showRechargeGate && (
+        <RechargeGate balance={rechargeMinutes} onClose={() => setShowRechargeGate(false)} />
+      )}
+
       {/* Full image viewer */}
       {showFullImage && member.image_url && typeof document !== "undefined" && createPortal(
         <div
