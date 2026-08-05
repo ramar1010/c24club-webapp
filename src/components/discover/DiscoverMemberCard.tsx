@@ -9,6 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useVipStatus } from "@/hooks/useVipStatus";
 import VipCallGate, { shouldBlockCall } from "./VipCallGate";
+import RechargeGate from "./RechargeGate";
+import { useRechargeMinutes } from "@/hooks/useRechargeMinutes";
 import { transformImage, transformImageSrcSet } from "@/lib/imageTransform";
 
 import PinnedSocialsDisplay from "../videocall/PinnedSocialsDisplay";
@@ -56,8 +58,10 @@ const DiscoverMemberCard = ({
   const [showGift, setShowGift] = useState(false);
   const [showFullImage, setShowFullImage] = useState(false);
   const [showVipGate, setShowVipGate] = useState(false);
+  const [showRechargeGate, setShowRechargeGate] = useState(false);
   const { user } = useAuth();
   const { vipTier, startCheckout } = useVipStatus(user?.id ?? null);
+  const { data: rechargeMinutes = 0, refetch: refetchRecharge } = useRechargeMinutes(user?.id ?? null);
   const navigate = useNavigate();
   const realOnline = isOnlineNow(member.last_active_at);
   const isNew = isNewListing(member.created_at);
@@ -85,6 +89,14 @@ const DiscoverMemberCard = ({
     if (shouldBlockCall(myGender, member.gender, vipTier)) {
       setShowVipGate(true);
       return;
+    }
+    // Calling a female costs purchased call minutes
+    if (myGender?.toLowerCase() === "male" && isFemale) {
+      const { data: fresh } = await refetchRecharge();
+      if ((fresh ?? rechargeMinutes) <= 0) {
+        setShowRechargeGate(true);
+        return;
+      }
     }
     try {
       const { data, error } = await supabase.from("direct_call_invites").insert({
@@ -322,6 +334,11 @@ const DiscoverMemberCard = ({
             void startCheckout(VIP_TIERS.premium.price_id, "discover_card_vip_call_gate");
           }}
         />
+      )}
+
+      {/* Out of call minutes gate */}
+      {showRechargeGate && (
+        <RechargeGate balance={rechargeMinutes} onClose={() => setShowRechargeGate(false)} />
       )}
 
       {/* Full image viewer */}

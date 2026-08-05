@@ -286,6 +286,25 @@ Deno.serve(async (req) => {
         const partnerIsFemale = partnerGenderCheck?.gender?.toLowerCase() === "female";
 
         if (!partnerIsFemale) {
+          // Recharge economy: spend the guy's purchased call minutes and pay the
+          // female the same amount as cashable (gifted) minutes.
+          const { data: spendResult } = await supabase.rpc("spend_recharge_minutes", {
+            p_user_id: partnerId,
+            p_amount: safeCapped,
+          });
+          const spent = Array.isArray(spendResult)
+            ? (spendResult[0]?.spent ?? 0)
+            : (spendResult?.spent ?? 0);
+
+          if (spent > 0) {
+            await supabase.rpc("atomic_increment_member_balances", {
+              p_user_id: userId,
+              p_total_amount: 0,
+              p_gifted_amount: spent,
+            });
+            updatedGiftedMinutes += spent;
+          }
+
           const { data: activeSession } = await supabase
             .from("anchor_sessions")
             .select("id")
@@ -293,12 +312,13 @@ Deno.serve(async (req) => {
             .eq("status", "active")
             .maybeSingle();
 
-          if (activeSession) {
+          if (activeSession && spent <= 0) {
+            await supabase.rpc("atomic_increment_member_balances", {
+              p_user_id: userId,
+              p_total_amount: 0,
+              p_gifted_amount: safeCapped,
+            });
             updatedGiftedMinutes += safeCapped;
-            await supabase
-              .from("member_minutes")
-              .update({ gifted_minutes: updatedGiftedMinutes })
-              .eq("user_id", userId);
           }
         }
       }
