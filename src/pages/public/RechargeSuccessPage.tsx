@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { broadcastRechargeUpdate } from "@/hooks/useRechargeMinutes";
 
 const RechargeSuccessPage = () => {
   const [searchParams] = useSearchParams();
@@ -24,6 +25,7 @@ const RechargeSuccessPage = () => {
           body: { action: "verify", session_id: sessionId },
         });
         setMinutes(data?.minutes ?? 0);
+        broadcastRechargeUpdate();
       } catch {
         // fall through
       }
