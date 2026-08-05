@@ -214,15 +214,6 @@ const DiscoverPage = () => {
       {/* Profile editor (for discoverable users) */}
       {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
 
-      {/* Incoming interests */}
-      <IncomingInterests
-        interests={incomingInterestsList}
-        myInterests={myInterests}
-        onInterestBack={(id) => handleInterest(id)}
-        sendingInterest={sendingInterest}
-        onOpenDm={(userId) => setShowMessages(userId)}
-      />
-
       {/* Members grid */}
       <div className="p-4">
         {loading ? (
