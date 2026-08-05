@@ -1558,6 +1558,7 @@ export type Database = {
           login_streak: number
           nsfw_strikes: number
           purchased_spins: number
+          recharge_minutes: number
           streak_rewards_claimed: Json
           stripe_customer_id: string | null
           subscription_end: string | null
@@ -1587,6 +1588,7 @@ export type Database = {
           login_streak?: number
           nsfw_strikes?: number
           purchased_spins?: number
+          recharge_minutes?: number
           streak_rewards_claimed?: Json
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -1616,6 +1618,7 @@ export type Database = {
           login_streak?: number
           nsfw_strikes?: number
           purchased_spins?: number
+          recharge_minutes?: number
           streak_rewards_claimed?: Json
           stripe_customer_id?: string | null
           subscription_end?: string | null
@@ -2142,6 +2145,42 @@ export type Database = {
           notification_type?: string | null
           opened_at?: string
           platform?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recharge_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          minutes: number
+          pack_key: string
+          price_cents: number
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          minutes: number
+          pack_key: string
+          price_cents: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minutes?: number
+          pack_key?: string
+          price_cents?: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -3289,6 +3328,10 @@ export type Database = {
         Args: { p_seconds: number; p_state: string }
         Returns: Json
       }
+      add_recharge_minutes: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
       atomic_increment_member_balances: {
         Args: {
           p_gifted_amount?: number
@@ -3438,6 +3481,13 @@ export type Database = {
       request_female_retention_cashout: {
         Args: { p_cents: number; p_paypal_email: string }
         Returns: Json
+      }
+      spend_recharge_minutes: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: {
+          remaining: number
+          spent: number
+        }[]
       }
       submit_reddit_task: {
         Args: {
