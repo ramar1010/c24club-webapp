@@ -1771,6 +1771,7 @@ export type Database = {
           membership: string | null
           name: string
           notify_enabled: boolean
+          notify_girls_earnings_chat: boolean
           phone_number: string | null
           profession: string | null
           push_token: string | null
@@ -1802,6 +1803,7 @@ export type Database = {
           membership?: string | null
           name: string
           notify_enabled?: boolean
+          notify_girls_earnings_chat?: boolean
           phone_number?: string | null
           profession?: string | null
           push_token?: string | null
@@ -1833,6 +1835,7 @@ export type Database = {
           membership?: string | null
           name?: string
           notify_enabled?: boolean
+          notify_girls_earnings_chat?: boolean
           phone_number?: string | null
           profession?: string | null
           push_token?: string | null
