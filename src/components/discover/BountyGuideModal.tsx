@@ -104,8 +104,39 @@ const methods: Method[] = [
 
 export default function BountyGuideModal({ onClose }: BountyGuideModalProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selected, setSelected] = useState<number | null>(null);
+  const [showCashout, setShowCashout] = useState(false);
   const method = selected !== null ? methods[selected] : null;
+
+  const { data: cashoutBalance, refetch: refetchCashout } = useQuery({
+    queryKey: ["bounty-guide-cashout-balance", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [{ data: minutesData }, { data: bountyData }] = await Promise.all([
+        supabase
+          .from("member_minutes")
+          .select("total_minutes, gifted_minutes")
+          .eq("user_id", user!.id)
+          .maybeSingle(),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false)
+          .eq("paid_out", false)
+          .gt("amount_minutes", 0),
+      ]);
+      const gifted = (minutesData as any)?.gifted_minutes ?? 0;
+      const bountyTotal = (bountyData || []).reduce(
+        (sum: number, b: any) => sum + (b.amount_minutes || 0),
+        0,
+      );
+      return { total: minutesData?.total_minutes ?? 0, gifted, bounty: bountyTotal };
+    },
+  });
+
+  const cashableMinutes = (cashoutBalance?.gifted ?? 0) + (cashoutBalance?.bounty ?? 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
