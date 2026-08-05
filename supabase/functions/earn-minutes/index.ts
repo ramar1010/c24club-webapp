@@ -297,12 +297,33 @@ Deno.serve(async (req) => {
             : (spendResult?.spent ?? 0);
 
           if (spent > 0) {
+            // Discover call minutes pay a much higher rate than gift/bounty
+            // minutes. We store everything in the same $0.01 cashable unit,
+            // so credit spent * (call_rate / base_rate) gifted minutes.
+            const { data: rateRow } = await supabase
+              .from("cashout_settings")
+              .select("rate_per_minute, call_rate_per_minute")
+              .limit(1)
+              .maybeSingle();
+            const baseRate = Number(rateRow?.rate_per_minute) || 0.01;
+            const callRate = Number(rateRow?.call_rate_per_minute) || 0.2;
+            const multiplier = Math.max(1, Math.round(callRate / baseRate));
+            const payout = spent * multiplier;
+
             await supabase.rpc("atomic_increment_member_balances", {
               p_user_id: userId,
               p_total_amount: 0,
-              p_gifted_amount: spent,
+              p_gifted_amount: payout,
             });
-            updatedGiftedMinutes += spent;
+            updatedGiftedMinutes += payout;
+
+            await supabase
+              .from("member_minutes")
+              .update({
+                call_earned_minutes:
+                  (memberData?.call_earned_minutes ?? 0) + spent,
+              })
+              .eq("user_id", userId);
           }
 
           const { data: activeSession } = await supabase
