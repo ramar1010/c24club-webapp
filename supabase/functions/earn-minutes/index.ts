@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
 
       const { data: memberData } = await supabase
         .from("member_minutes")
-         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes")
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes, call_earned_minutes")
          .eq("user_id", userId)
          .maybeSingle();
 
