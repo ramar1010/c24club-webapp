@@ -2,6 +2,7 @@ import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Gift } from "lucide-reac
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useDirectCall } from "@/hooks/useDirectCall";
+import { useCallMinutes } from "@/hooks/useCallMinutes";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SendGiftOverlay from "@/components/videocall/SendGiftOverlay";
@@ -26,6 +27,7 @@ const DirectCallModal = ({
 }: DirectCallModalProps) => {
   const [showGift, setShowGift] = useState(false);
   const navigate = useNavigate();
+  const [showEarnings, setShowEarnings] = useState(false);
 
   const {
     callState,
@@ -37,6 +39,39 @@ const DirectCallModal = ({
     toggleCamera,
     endCall,
   } = useDirectCall({ myUserId, partnerId, inviteId, isInitiator });
+
+  // Live earnings ticker: only for female users on a call with a non-female partner
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, gender")
+        .in("id", [myUserId, partnerId]);
+      if (cancelled || !data) return;
+      const me = data.find((m) => m.id === myUserId)?.gender?.toLowerCase();
+      const them = data.find((m) => m.id === partnerId)?.gender?.toLowerCase();
+      setShowEarnings(me === "female" && them !== "female");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [myUserId, partnerId]);
+
+  const { giftedMinutes, elapsedSeconds, flushMinutes } = useCallMinutes({
+    userId: showEarnings ? myUserId : "anonymous",
+    partnerId,
+    isConnected: showEarnings && callState === "connected",
+  });
+
+  const baselineRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (showEarnings && callState === "connected" && baselineRef.current === null) {
+      baselineRef.current = giftedMinutes;
+    }
+  }, [showEarnings, callState, giftedMinutes]);
+  const sessionMinutes = Math.max(0, giftedMinutes - (baselineRef.current ?? giftedMinutes));
+  const sessionCash = (sessionMinutes * 0.01).toFixed(2);
 
   // Track direct call connection for anchor bonus challenges
   const trackedRef = useRef(false);
@@ -98,6 +133,7 @@ const DirectCallModal = ({
         duration: 5000,
       });
     }
+    if (showEarnings) flushMinutes();
     endCall();
     onClose();
   };
@@ -118,6 +154,23 @@ const DirectCallModal = ({
           </p>
         )}
       </div>
+
+      {/* Live earnings ticker (females only) */}
+      {showEarnings && callState === "connected" && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-20 rounded-2xl border border-emerald-400/50 bg-emerald-500/15 backdrop-blur px-4 py-2 text-center shadow-lg">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-200">
+            Earning right now
+          </div>
+          <div className="text-2xl font-black text-emerald-300 leading-tight">
+            ${sessionCash}
+          </div>
+          <div className="text-[11px] text-emerald-100/90 font-semibold">
+            {sessionMinutes} min earned · {Math.floor(elapsedSeconds / 60)}:
+            {String(elapsedSeconds % 60).padStart(2, "0")} on call
+          </div>
+          <div className="text-[10px] text-emerald-100/70">Stay on the call to keep earning</div>
+        </div>
+      )}
 
       {/* Videos */}
       <div className="flex-1 w-full flex items-center justify-center gap-4 p-4">
