@@ -10,7 +10,6 @@ import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
-import IncomingInterests from "@/components/discover/IncomingInterests";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { useVipStatus } from "@/hooks/useVipStatus";
