@@ -50,6 +50,16 @@ const VipFeaturesOverlay = ({ onClose, currentTier, onPurchase, onManage }: VipF
         </h1>
         <p className="text-white text-sm font-black tracking-wider mb-4">INCLUDED</p>
 
+        {/* Highlight: free Discover call minutes */}
+        <div className="w-full max-w-sm mb-5 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3 text-center">
+          <p className="text-emerald-300 text-sm font-black tracking-wide uppercase">
+            ⏱️ 5 Free Discover Call Minutes
+          </p>
+          <p className="text-neutral-300 text-[11px] font-bold mt-0.5">
+            Added to your balance every renewal — use them to video call on Discover
+          </p>
+        </div>
+
         {/* VIP Settings Link - only visible for VIP users */}
         {onManage && currentTier && (
           <button
