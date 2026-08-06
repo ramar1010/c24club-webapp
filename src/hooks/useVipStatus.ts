@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { VipTier } from "@/config/vip-tiers";
+import { broadcastRechargeUpdate } from "@/hooks/useRechargeMinutes";
 
 interface VipStatus {
   subscribed: boolean;
@@ -47,6 +48,9 @@ export function useVipStatus(userId: string | null) {
       if (error) throw error;
 
       sessionStorage.setItem(`vip_status_${userId}`, JSON.stringify({ data, ts: Date.now() }));
+
+      // VIP purchases/renewals credit 5 free call minutes server-side — refresh balances.
+      if (data?.subscribed) broadcastRechargeUpdate();
 
       setStatus({
         subscribed: data?.subscribed ?? false,
