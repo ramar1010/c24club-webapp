@@ -31,6 +31,7 @@ export const VIP_TIERS = {
     product_id: "prod_U8FATJpBAXNSXy",
     features: [
       { label: "Choose a Gender to Connect With", icon: genderSelectIcon },
+      { label: "5 Free Call Minutes Every Renewal", icon: stopwatchIcon },
       { label: "Add Custom Topics", icon: customTopicsIcon },
       { label: "50 Ad Points a Week", icon: starEyesIcon },
       { label: "Auto-Unfreeze Minutes", icon: frozenFaceIcon },
@@ -45,6 +46,7 @@ export const VIP_TIERS = {
     product_id: "prod_U8FBD9R49k8Kvd",
     features: [
       { label: "Video Call & DM Females from Discover", icon: undefined },
+      { label: "5 Free Call Minutes Every Renewal", icon: stopwatchIcon },
       { label: "Choose a Gender to Connect With", icon: genderSelectIcon },
       { label: "Top of Discover Feed", icon: discoverIcon },
       { label: "Get Gifted by Anyone", icon: getGiftedIcon },
