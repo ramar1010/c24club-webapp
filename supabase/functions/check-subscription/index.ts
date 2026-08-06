@@ -168,6 +168,24 @@ serve(async (req) => {
       }
     }
 
+    // Free 5 recharge (call) minutes per VIP purchase / renewal period.
+    // Idempotent: keyed on subscription id + current period end.
+    if (hasActive && vipTier) {
+      try {
+        const sub = subscriptions.data[0];
+        const periodKey = subscriptionEnd ?? String(sub.current_period_end ?? "unknown");
+        const { data: grantResult } = await supabaseClient.rpc("grant_vip_recharge_minutes", {
+          p_user_id: user.id,
+          p_grant_key: `stripe:${sub.id}:${periodKey}`,
+          p_minutes: 5,
+          p_source: `stripe_${vipTier}`,
+        });
+        logStep("VIP free minutes grant", { result: grantResult });
+      } catch (grantErr: any) {
+        logStep("VIP free minutes grant error", { error: grantErr.message });
+      }
+    }
+
     return new Response(JSON.stringify({
       subscribed: hasActive,
       vip_tier: vipTier,
