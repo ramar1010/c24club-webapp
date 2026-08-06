@@ -3046,6 +3046,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_minute_grants: {
+        Row: {
+          created_at: string
+          grant_key: string
+          id: string
+          minutes: number
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grant_key: string
+          id?: string
+          minutes: number
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grant_key?: string
+          id?: string
+          minutes?: number
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vip_purchase_intents: {
         Row: {
           completed: boolean
@@ -3444,6 +3471,15 @@ export type Database = {
         Returns: Json
       }
       get_vip_user_ids: { Args: never; Returns: string[] }
+      grant_vip_recharge_minutes: {
+        Args: {
+          p_grant_key: string
+          p_minutes?: number
+          p_source?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

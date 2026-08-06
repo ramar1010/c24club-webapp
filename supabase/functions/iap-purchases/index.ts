@@ -223,6 +223,22 @@ Deno.serve(async (req) => {
         console.error("[iap-purchases] failed to log iap_purchases row:", iapErr);
       }
 
+      // Free 5 recharge (call) minutes per VIP purchase / renewal.
+      // Idempotent: keyed on the platform transaction token, so duplicate
+      // callbacks from the app, Apple or Google can never double-credit.
+      try {
+        const txKey = body.transactionId ?? body.originalTransactionId ?? purchaseToken ?? sku;
+        const { data: grantResult } = await supabaseAdmin.rpc("grant_vip_recharge_minutes", {
+          p_user_id: user.id,
+          p_grant_key: `iap:${platform ?? "native"}:${String(txKey).slice(0, 128)}`,
+          p_minutes: 5,
+          p_source: `iap_${platform ?? "native"}_${tier}`,
+        });
+        console.log("[iap-purchases] VIP free minutes grant:", grantResult);
+      } catch (grantErr) {
+        console.error("[iap-purchases] VIP free minutes grant failed:", grantErr);
+      }
+
       // KPI: log to vip_purchase_intents so the admin analytics dashboard
       // shows native (iOS / Android) purchases alongside Stripe web purchases.
       // Skip pure restores so they don't inflate "new purchase" counts.

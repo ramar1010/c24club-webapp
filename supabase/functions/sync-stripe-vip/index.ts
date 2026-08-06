@@ -88,6 +88,18 @@ serve(async (req) => {
 
       // Award bounty to the female who last interacted with this male
       try {
+        // Free 5 recharge minutes per purchase/renewal period (idempotent)
+        await supabase.rpc("grant_vip_recharge_minutes", {
+          p_user_id: member.id,
+          p_grant_key: `stripe:${sub.id}:${subscriptionEnd ?? String(sub.current_period_end ?? "unknown")}`,
+          p_minutes: 5,
+          p_source: `stripe_sync_${vipTier}`,
+        });
+      } catch (grantErr) {
+        logStep("VIP free minutes grant error", { male_id: member.id, error: grantErr.message });
+      }
+
+      try {
         const { data: bountyResult } = await supabase.rpc("award_bounty_for_subscription", {
           p_male_id: member.id,
           p_tier: vipTier,
