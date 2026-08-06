@@ -18,15 +18,19 @@ export function useVipStatus(userId: string | null) {
     loading: true,
   });
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
     if (!userId) {
       setStatus({ subscribed: false, vipTier: null, subscriptionEnd: null, loading: false });
       return;
     }
 
     // Check session-init cache first (set by useAuth on page load)
-    const sessionInitCache = sessionStorage.getItem("vip_status_session_init");
-    const userCache = sessionStorage.getItem(`vip_status_${userId}`);
+    if (force) {
+      sessionStorage.removeItem("vip_status_session_init");
+      sessionStorage.removeItem(`vip_status_${userId}`);
+    }
+    const sessionInitCache = force ? null : sessionStorage.getItem("vip_status_session_init");
+    const userCache = force ? null : sessionStorage.getItem(`vip_status_${userId}`);
     const cached = userCache || sessionInitCache;
     if (cached) {
       try {
@@ -77,8 +81,37 @@ export function useVipStatus(userId: string | null) {
   }, [userId]);
 
   useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
+    // Coming back from Stripe checkout — bypass the 5-minute cache.
+    const pending = userId ? sessionStorage.getItem(`vip_pending_${userId}`) : null;
+    checkSubscription(!!pending);
+  }, [checkSubscription, userId]);
+
+  // If a checkout was started, keep re-checking until VIP shows up (or 3 min).
+  useEffect(() => {
+    if (!userId) return;
+    if (!sessionStorage.getItem(`vip_pending_${userId}`)) return;
+
+    if (status.subscribed) {
+      sessionStorage.removeItem(`vip_pending_${userId}`);
+      return;
+    }
+
+    const startedAt = Number(sessionStorage.getItem(`vip_pending_${userId}`)) || Date.now();
+    if (Date.now() - startedAt > 3 * 60_000) {
+      sessionStorage.removeItem(`vip_pending_${userId}`);
+      return;
+    }
+
+    const poll = setInterval(() => checkSubscription(true), 5000);
+    const onFocus = () => checkSubscription(true);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      clearInterval(poll);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [userId, status.subscribed, checkSubscription]);
 
   // Auto-refresh every 5 minutes (matches cache TTL)
   useEffect(() => {
@@ -92,6 +125,11 @@ export function useVipStatus(userId: string | null) {
       priceId === "price_1T9ygOA5n8uAZoY1tzoTfeMH"
         ? "basic"
         : "premium";
+    if (userId) {
+      sessionStorage.setItem(`vip_pending_${userId}`, String(Date.now()));
+      sessionStorage.removeItem(`vip_status_${userId}`);
+      sessionStorage.removeItem("vip_status_session_init");
+    }
     const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: { priceId, source, tier },
     });
@@ -99,7 +137,7 @@ export function useVipStatus(userId: string | null) {
     if (data?.url) {
       window.location.href = data.url;
     }
-  }, []);
+  }, [userId]);
 
   const openPortal = useCallback(async () => {
     const { data, error } = await supabase.functions.invoke("customer-portal");
