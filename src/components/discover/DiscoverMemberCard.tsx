@@ -358,10 +358,9 @@ const DiscoverMemberCard = ({
       {showVipGate && (
         <VipCallGate
           onClose={() => setShowVipGate(false)}
-          onSubscribe={async () => {
+          onSubscribe={(priceId) => {
             setShowVipGate(false);
-            const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.premium.price_id, "discover_card_vip_call_gate");
+            void startCheckout(priceId, "discover_card_vip_call_gate");
           }}
         />
       )}

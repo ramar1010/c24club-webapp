@@ -1,15 +1,17 @@
+import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Crown, Video, X } from "lucide-react";
-import { useVipStatus } from "@/hooks/useVipStatus";
+import { Video, X } from "lucide-react";
 import { VIP_TIERS } from "@/config/vip-tiers";
 
 interface VipCallGateProps {
   onClose: () => void;
-  onSubscribe: () => void;
+  onSubscribe: (priceId: string) => void;
   loading?: boolean;
 }
 
 const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
+  const [tier, setTier] = useState<"basic" | "premium">("premium");
+  const selected = VIP_TIERS[tier];
   return createPortal(
     <div
       className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4"
@@ -40,12 +42,35 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
             Subscribe to any VIP plan to unlock video calls with anyone!
           </p>
 
+          {/* Plan options */}
+          <div className="w-full grid grid-cols-2 gap-2">
+            {(["basic", "premium"] as const).map((key) => {
+              const t = VIP_TIERS[key];
+              const active = tier === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setTier(key)}
+                  className={`rounded-xl border-2 p-3 text-left transition-all ${
+                    active
+                      ? "border-purple-400 bg-purple-500/15"
+                      : "border-white/10 bg-white/5 hover:border-white/25"
+                  }`}
+                >
+                  <p className="text-white font-bold text-lg leading-none">{t.price}</p>
+                  <p className="text-white/50 text-[11px] mt-1">per {t.interval}</p>
+                  <p className="text-white/80 text-xs font-semibold mt-1">{t.name}</p>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Feature highlights */}
           <div className="w-full bg-white/5 rounded-xl p-4 text-left space-y-2">
             <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-2">
-              Premium VIP includes:
+              {selected.name} includes:
             </p>
-            {VIP_TIERS.basic.features.slice(0, 5).map((f, i) => (
+            {selected.features.slice(0, 5).map((f, i) => (
               <div key={i} className="flex items-center gap-2 text-white/70 text-sm">
                 {f.icon ? (
                   <img src={f.icon} alt="" className="w-4 h-4" />
@@ -59,11 +84,11 @@ const VipCallGate = ({ onClose, onSubscribe, loading }: VipCallGateProps) => {
           </div>
 
           <button
-            onClick={onSubscribe}
+            onClick={() => onSubscribe(selected.price_id)}
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50"
           >
-            {loading ? "Loading..." : `Subscribe — ${VIP_TIERS.basic.price}/week`}
+            {loading ? "Loading..." : `Subscribe — ${selected.price}/${selected.interval}`}
           </button>
 
           <button
