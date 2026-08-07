@@ -209,6 +209,128 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Resolve verified roles up front. The payer is ALWAYS the male
+      // participant and the earner is ALWAYS the female participant — never
+      // assume the authenticated reporter is one or the other.
+      const { data: participantRows, error: participantsError } = await supabase
+        .from("members")
+        .select("id, gender")
+        .in("id", [userId, resolvedPartnerId]);
+
+      if (participantsError) {
+        console.error("[earn-minutes] participants_lookup_failed", {
+          authUserId: authedUserId,
+          userId,
+          partnerId,
+          resolvedPartnerId,
+          sessionId: sessionId ?? null,
+          dbErrorCode: participantsError.code ?? null,
+          dbErrorMessage: participantsError.message ?? null,
+          dbErrorDetails: participantsError.details ?? null,
+        });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "participants_lookup_failed",
+            reason: "participants_lookup_failed",
+            errorCode: "PARTICIPANTS_LOOKUP_FAILED",
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const genderOf = (id: string) =>
+        participantRows
+          ?.find((m: { id: string }) => m.id === id)
+          ?.gender?.toLowerCase() ?? null;
+
+      const reporterGender = genderOf(userId);
+      const partnerGender = genderOf(resolvedPartnerId);
+
+      let payerId: string | null = null;
+      let earnerId: string | null = null;
+      if (reporterGender === "male" && partnerGender === "female") {
+        payerId = userId;
+        earnerId = resolvedPartnerId;
+      } else if (reporterGender === "female" && partnerGender === "male") {
+        payerId = resolvedPartnerId;
+        earnerId = userId;
+      }
+
+      const isPrivateBilling = isDirectCall && !!payerId && !!earnerId;
+
+      // Look up the PAYER's recharge balance (never the caller's) before any
+      // cap decision. Errors and missing rows must never be treated as zero.
+      let payerRechargeBefore = 0;
+      if (isPrivateBilling) {
+        const { data: payerRow, error: payerError } = await supabase
+          .from("member_minutes")
+          .select("recharge_minutes")
+          .eq("user_id", payerId)
+          .maybeSingle();
+
+        if (payerError) {
+          console.error("[earn-minutes] payer_balance_lookup_failed", {
+            authUserId: authedUserId,
+            payerId,
+            earnerId,
+            targetUserId: targetUserId ?? null,
+            partnerId,
+            resolvedPartnerId,
+            sessionId: sessionId ?? null,
+            requestedMinutes: minutesEarned,
+            dbErrorCode: payerError.code ?? null,
+            dbErrorMessage: payerError.message ?? null,
+            dbErrorDetails: payerError.details ?? null,
+          });
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: "payer_balance_lookup_failed",
+              reason: "payer_balance_lookup_failed",
+              errorCode: "PAYER_BALANCE_LOOKUP_FAILED",
+              payerId,
+              earnerId,
+            }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        if (!payerRow) {
+          console.error("[earn-minutes] payer_balance_row_missing", {
+            authUserId: authedUserId,
+            payerId,
+            earnerId,
+            targetUserId: targetUserId ?? null,
+            partnerId,
+            resolvedPartnerId,
+            sessionId: sessionId ?? null,
+            requestedMinutes: minutesEarned,
+          });
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: "payer_balance_row_missing",
+              reason: "payer_balance_row_missing",
+              errorCode: "PAYER_BALANCE_ROW_MISSING",
+              payerId,
+              earnerId,
+            }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        payerRechargeBefore = Number(payerRow.recharge_minutes) || 0;
+        console.log("[earn-minutes] private_call_payer_balance", {
+          authUserId: authedUserId,
+          payerId,
+          earnerId,
+          sessionId: sessionId ?? null,
+          requestedMinutes: minutesEarned,
+          payerRechargeBefore,
+        });
+      }
+
       const { data: memberData } = await supabase
         .from("member_minutes")
          .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes, recharge_minutes, call_earned_minutes")
@@ -247,6 +369,36 @@ Deno.serve(async (req) => {
       const alreadyEarned = logData?.minutes_earned ?? 0;
       const remaining = Math.max(0, cap - alreadyEarned);
       const actualEarned = Math.min(minutesEarned, remaining);
+
+      // Private calls: cap_reached is ONLY valid when the payer row was found
+      // and its real recharge balance is exhausted.
+      if (isPrivateBilling && payerRechargeBefore <= 0) {
+        console.log("[earn-minutes] payer_balance_zero", {
+          authUserId: authedUserId,
+          payerId,
+          earnerId,
+          sessionId: sessionId ?? null,
+          requestedMinutes: minutesEarned,
+          payerRechargeBefore,
+        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: "cap_reached",
+            reason: "payer_balance_zero",
+            errorCode: "PAYER_BALANCE_ZERO",
+            payerId,
+            earnerId,
+            payerRechargeBefore,
+            payerRechargeAfter: payerRechargeBefore,
+            earned: 0,
+            cap,
+            isVip,
+            isFrozen: freezeInfo.isFrozen,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       if (actualEarned <= 0) {
         const currentTotal = memberData?.total_minutes ?? 0;
@@ -297,42 +449,56 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
-      // The earning timer runs on the female side on both web and native. Settle
-      // from that report: deduct the male caller's refill minute and credit the
-      // reporting female. Restricting settlement to the female report also keeps
-      // a second peer report from charging the same minute twice.
-      const { data: participants } = await supabase
-        .from("members")
-        .select("id, gender")
-        .in("id", [userId, resolvedPartnerId]);
-
-      const reporterGender = participants
-        ?.find((member: { id: string }) => member.id === userId)
-        ?.gender?.toLowerCase();
-      const partnerGender = participants
-        ?.find((member: { id: string }) => member.id === resolvedPartnerId)
-        ?.gender?.toLowerCase();
-
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       let remainingRechargeMinutes = memberData?.recharge_minutes ?? 0;
       let updatedCallEarnedMinutes = memberData?.call_earned_minutes ?? 0;
-      // Only paid Discover/direct calls settle against the male's refill balance
-      // and count toward "earned calls". Random roulette chats stay free and are
-      // credited as regular chat minutes (total_minutes) only.
-      if (isDirectCall && reporterGender === "female" && partnerGender === "male") {
+      let privateBillingResult: Record<string, unknown> | null = null;
+      // Only paid Discover/direct (private) calls settle against the MALE
+      // payer's refill balance and count toward "earned calls". Random roulette
+      // chats stay free and only credit chat minutes (total_minutes).
+      if (isPrivateBilling) {
           const { data: spendResult, error: spendError } = await supabase.rpc("spend_recharge_minutes", {
-            p_user_id: resolvedPartnerId,
+            p_user_id: payerId,
             p_amount: safeCapped,
           });
-          if (spendError) throw spendError;
 
-          const spent = Array.isArray(spendResult)
-            ? (spendResult[0]?.spent ?? 0)
-            : (spendResult?.spent ?? 0);
-          remainingRechargeMinutes = Array.isArray(spendResult)
-            ? (spendResult[0]?.remaining ?? remainingRechargeMinutes)
-            : (spendResult?.remaining ?? remainingRechargeMinutes);
+          const spendRow = Array.isArray(spendResult) ? spendResult[0] : spendResult;
 
+          if (spendError || !spendRow) {
+            console.error("[earn-minutes] private_billing_failed", {
+              authUserId: authedUserId,
+              payerId,
+              earnerId,
+              targetUserId: targetUserId ?? null,
+              partnerId,
+              resolvedPartnerId,
+              sessionId: sessionId ?? null,
+              requestedMinutes: minutesEarned,
+              chargeMinutes: safeCapped,
+              payerRechargeBefore,
+              dbErrorCode: spendError?.code ?? null,
+              dbErrorMessage: spendError?.message ?? null,
+              dbErrorDetails: spendError?.details ?? null,
+            });
+            return new Response(
+              JSON.stringify({
+                success: false,
+                message: spendError ? "private_billing_failed" : "private_billing_no_rows",
+                reason: spendError ? "private_billing_failed" : "private_billing_no_rows",
+                errorCode: spendError ? "PRIVATE_BILLING_FAILED" : "PRIVATE_BILLING_NO_ROWS",
+                payerId,
+                earnerId,
+                payerRechargeBefore,
+              }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          const spent = spendRow.spent ?? 0;
+          const payerRemaining = spendRow.payer_remaining ?? spendRow.remaining ?? Math.max(0, payerRechargeBefore - spent);
+          remainingRechargeMinutes = payerRemaining;
+
+          let creditedGiftedMinutes = 0;
           if (spent > 0) {
             // Discover call minutes pay a much higher rate than gift/bounty
             // minutes. We store everything in the same $0.01 cashable unit,
@@ -348,22 +514,65 @@ Deno.serve(async (req) => {
             const payout = spent * multiplier;
 
             const { error: payoutError } = await supabase.rpc("atomic_increment_member_balances", {
-              p_user_id: userId,
+              p_user_id: earnerId,
               p_total_amount: 0,
               p_gifted_amount: payout,
             });
             if (payoutError) throw payoutError;
 
-            updatedGiftedMinutes += payout;
-            updatedCallEarnedMinutes += spent;
+            creditedGiftedMinutes = payout;
+
+            const { data: earnerRow } = await supabase
+              .from("member_minutes")
+              .select("call_earned_minutes")
+              .eq("user_id", earnerId)
+              .maybeSingle();
+
             const { error: callEarnedError } = await supabase
               .from("member_minutes")
               .update({
-                call_earned_minutes: updatedCallEarnedMinutes,
+                call_earned_minutes: (earnerRow?.call_earned_minutes ?? 0) + spent,
               })
-              .eq("user_id", userId);
+              .eq("user_id", earnerId);
             if (callEarnedError) throw callEarnedError;
           }
+
+          // Return the EARNER's balances (not automatically the caller's).
+          const { data: earnerBalances } = await supabase
+            .from("member_minutes")
+            .select("total_minutes, gifted_minutes, call_earned_minutes, recharge_minutes")
+            .eq("user_id", earnerId)
+            .maybeSingle();
+
+          updatedGiftedMinutes = earnerBalances?.gifted_minutes ?? updatedGiftedMinutes;
+          updatedCallEarnedMinutes = earnerBalances?.call_earned_minutes ?? updatedCallEarnedMinutes;
+
+          privateBillingResult = {
+            payerId,
+            earnerId,
+            payerRechargeBefore,
+            payerRechargeAfter: payerRemaining,
+            spent,
+            remaining: payerRemaining,
+            creditedCallMinutes: spent,
+            creditedGiftedMinutes,
+          };
+
+          console.log("[earn-minutes] private_billing_settled", {
+            authUserId: authedUserId,
+            payerId,
+            earnerId,
+            targetUserId: targetUserId ?? null,
+            partnerId,
+            resolvedPartnerId,
+            sessionId: sessionId ?? null,
+            requestedMinutes: minutesEarned,
+            chargeMinutes: safeCapped,
+            payerRechargeBefore,
+            payerRechargeAfter: payerRemaining,
+            spent,
+            creditedGiftedMinutes,
+          });
       }
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
@@ -406,6 +615,7 @@ Deno.serve(async (req) => {
           cap,
           isVip,
           isFrozen: freezeInfo.isFrozen,
+          ...(privateBillingResult ?? {}),
           showCapPopup: shouldShowCapPopup,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
