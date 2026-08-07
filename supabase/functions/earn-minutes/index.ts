@@ -346,7 +346,11 @@ Deno.serve(async (req) => {
       // Voice mode females earn at reduced rate (5 min cap instead of 10)
       const voiceModeCap = 5;
       let cap: number;
-      if (freezeInfo.isFrozen) {
+      if (isPrivateBilling) {
+        // Paid private calls are limited ONLY by the payer's purchased balance.
+        // Freeze/voice/VIP chat caps must never throttle cash earnings.
+        cap = Math.max(payerRechargeBefore, minutesEarned);
+      } else if (freezeInfo.isFrozen) {
         cap = freezeInfo.earnRate;
       } else if (voiceMode) {
         cap = voiceModeCap;
