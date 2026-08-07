@@ -435,6 +435,7 @@ Deno.serve(async (req) => {
         success: true,
         redemptionId: redemption.id,
         requiresShipping: true,
+        balances: await getBalances(),
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
