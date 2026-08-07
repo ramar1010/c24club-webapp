@@ -80,11 +80,12 @@ Deno.serve(async (req) => {
       .lt("expires_at", new Date().toISOString());
     results.expired_pending_invites = expiredInvites || 0;
 
-    // 8. Delete discover profile views older than 30 days (high-volume analytics table)
+    // 8. Delete discover profile views older than 8 days
+    // (weekly digest only reads a 7-day window; keeping more is pure waste)
     const { count: viewCount } = await supabase
       .from("discover_profile_views")
       .delete({ count: "exact" })
-      .lt("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+      .lt("created_at", new Date(Date.now() - 8 * 86400000).toISOString());
     results.old_profile_views = viewCount || 0;
 
     // 9. Delete push notification logs older than 60 days
