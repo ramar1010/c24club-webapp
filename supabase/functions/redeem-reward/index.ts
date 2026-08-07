@@ -78,6 +78,24 @@ Deno.serve(async (req) => {
       return { isVip: data?.is_vip ?? false, vipTier: data?.vip_tier ?? null };
     };
 
+    // Post-operation balance snapshot (includes call_earned_minutes, which the DB
+    // resets to 0 for female users on any successful minutes-costing redemption).
+    const getBalances = async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes, recharge_minutes, call_earned_minutes, purchased_spins, ad_points")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return {
+        total_minutes: data?.total_minutes ?? 0,
+        gifted_minutes: data?.gifted_minutes ?? 0,
+        recharge_minutes: data?.recharge_minutes ?? 0,
+        call_earned_minutes: data?.call_earned_minutes ?? 0,
+        purchased_spins: data?.purchased_spins ?? 0,
+        ad_points: data?.ad_points ?? 0,
+      };
+    };
+
     const createStripeCheckout = async (shippingFee: number, rewardTitle: string, redemptionId: string) => {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
       const customers = await stripe.customers.list({ email: user!.email!, limit: 1 });
@@ -153,7 +171,7 @@ Deno.serve(async (req) => {
       // Reset the cashout value on the reward to $0
       await supabase.from("rewards").update({ cashout_value: 0 }).eq("id", reward.id);
 
-      return new Response(JSON.stringify({ success: true, cashoutAmount: cashoutValue }), {
+      return new Response(JSON.stringify({ success: true, cashoutAmount: cashoutValue, balances: await getBalances() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -199,11 +217,11 @@ Deno.serve(async (req) => {
 
       if (shippingFee > 0) {
         const session = await createStripeCheckout(shippingFee, reward.title, redemption.id);
-        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id, balances: await getBalances() }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       await supabase.from("member_redemptions").update({ status: "processing" }).eq("id", redemption.id);
-      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id, balances: await getBalances() }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // ─── ACTION: create-free-redemption (link clicks reward, no minutes cost) ───
@@ -249,11 +267,11 @@ Deno.serve(async (req) => {
 
       if (shippingFee > 0) {
         const session = await createStripeCheckout(shippingFee, reward.title, redemption.id);
-        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true, requiresPayment: true, checkoutUrl: session.url, redemptionId: redemption.id, balances: await getBalances() }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       await supabase.from("member_redemptions").update({ status: "processing" }).eq("id", redemption.id);
-      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: true, requiresPayment: false, redemptionId: redemption.id, balances: await getBalances() }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // ─── ACTION: redeem-instant (spins or ad points, no shipping) ───
@@ -318,7 +336,7 @@ Deno.serve(async (req) => {
         throw insertErr;
       }
 
-      return new Response(JSON.stringify({ success: true, grantAmount, grantType: rewardType }), {
+      return new Response(JSON.stringify({ success: true, grantAmount, grantType: rewardType, balances: await getBalances() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -417,6 +435,7 @@ Deno.serve(async (req) => {
         success: true,
         redemptionId: redemption.id,
         requiresShipping: true,
+        balances: await getBalances(),
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

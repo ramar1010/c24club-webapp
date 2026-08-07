@@ -122,11 +122,25 @@ serve(async (req) => {
         notes: `Code: ${card.code}`,
       });
 
+      // The redemption insert above atomically resets call_earned_minutes to 0
+      // for female users (DB trigger). Return the fresh balances.
+      const { data: balanceRow } = await supabaseAdmin
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes, recharge_minutes, call_earned_minutes")
+        .eq("user_id", userId)
+        .maybeSingle();
+
       return new Response(JSON.stringify({
         success: true,
         code: card.code,
         brand: card.brand,
         value_amount: card.value_amount,
+        balances: {
+          total_minutes: balanceRow?.total_minutes ?? 0,
+          gifted_minutes: balanceRow?.gifted_minutes ?? 0,
+          recharge_minutes: balanceRow?.recharge_minutes ?? 0,
+          call_earned_minutes: balanceRow?.call_earned_minutes ?? 0,
+        },
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
