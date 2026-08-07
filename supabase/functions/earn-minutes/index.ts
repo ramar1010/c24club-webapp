@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
 
       const { data: memberData } = await supabase
         .from("member_minutes")
-         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes, call_earned_minutes")
+         .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes, recharge_minutes, call_earned_minutes")
          .eq("user_id", userId)
          .maybeSingle();
 
@@ -278,6 +278,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
+      let remainingRechargeMinutes = memberData?.recharge_minutes ?? 0;
       if (genderCheck?.gender?.toLowerCase() === "male") {
         const { data: femalePartner } = await supabase
           .from("members")
@@ -295,6 +296,9 @@ Deno.serve(async (req) => {
           const spent = Array.isArray(spendResult)
             ? (spendResult[0]?.spent ?? 0)
             : (spendResult?.spent ?? 0);
+          remainingRechargeMinutes = Array.isArray(spendResult)
+            ? (spendResult[0]?.remaining ?? remainingRechargeMinutes)
+            : (spendResult?.remaining ?? remainingRechargeMinutes);
 
           if (spent > 0) {
             // Discover call minutes pay a much higher rate than gift/bounty
@@ -368,6 +372,7 @@ Deno.serve(async (req) => {
           earned: safeCapped,
           totalMinutes: newTotal,
           giftedMinutes: updatedGiftedMinutes,
+          rechargeMinutes: remainingRechargeMinutes,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
           isVip,
