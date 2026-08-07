@@ -9,20 +9,30 @@ const corsHeaders = {
 };
 
 export const RECHARGE_PACKS = {
-  "20": { price_id: "price_1U12e2A5n8uAZoY1rMo8dP1u", minutes: 20, cents: 699 },
-  "60": { price_id: "price_1U12eWA5n8uAZoY1qsuLh8fi", minutes: 60, cents: 1799 },
-  "150": { price_id: "price_1U12eoA5n8uAZoY1qaUrgQ3v", minutes: 150, cents: 3499 },
+  "10": { price_id: "price_1U1vl0A5n8uAZoY1FDyTN2GA", minutes: 10, cents: 699 },
+  "30": { price_id: "price_1U1vlZA5n8uAZoY1fVA113Zm", minutes: 30, cents: 1799 },
+  "60": { price_id: "price_1U1vm4A5n8uAZoY1dil1JmTB", minutes: 60, cents: 3499 },
 } as const;
+
+type PackKey = keyof typeof RECHARGE_PACKS;
+
+/** Legacy pack keys / SKUs from older app builds → current pack key. */
+const LEGACY_PACK_MAP: Record<string, PackKey> = {
+  "20": "10",  // $6.99 tier
+  "150": "60", // $34.99 tier
+};
 
 const APP_ORIGIN = "https://c24club.com";
 
 /** Native IAP SKUs → pack key. Accepts the many shapes the mobile app may send. */
-function resolvePackKey(raw: string | undefined | null): "20" | "60" | "150" | null {
+function resolvePackKey(raw: string | undefined | null): PackKey | null {
   if (!raw) return null;
   const s = String(raw).toLowerCase();
-  const m = s.match(/(20|60|150)/);
+  const m = s.match(/(150|10|20|30|60)/);
   if (!m) return null;
-  return m[1] as "20" | "60" | "150";
+  const found = m[1];
+  if (found in RECHARGE_PACKS) return found as PackKey;
+  return LEGACY_PACK_MAP[found] ?? null;
 }
 
 async function sha256Hex(input: string) {
@@ -99,7 +109,9 @@ serve(async (req) => {
     }
 
     if (action === "create-checkout") {
-      const selected = RECHARGE_PACKS[String(pack) as keyof typeof RECHARGE_PACKS];
+      const packKey =
+        (String(pack) in RECHARGE_PACKS ? (String(pack) as PackKey) : LEGACY_PACK_MAP[String(pack)]) ?? null;
+      const selected = packKey ? RECHARGE_PACKS[packKey] : undefined;
       if (!selected) throw new Error("Invalid pack");
 
       const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -110,7 +122,7 @@ serve(async (req) => {
         .from("recharge_purchases")
         .insert({
           user_id: user.id,
-          pack_key: String(pack),
+          pack_key: packKey!,
           minutes: selected.minutes,
           price_cents: selected.cents,
           status: "pending",

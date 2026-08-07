@@ -165,7 +165,7 @@ const DirectCallModal = ({
             +{sessionMinutes} cash minutes · {Math.floor(elapsedSeconds / 60)}:
             {String(elapsedSeconds % 60).padStart(2, "0")} on call
           </div>
-          <div className="text-[10px] text-emerald-100/70">$0.20 per call minute — stay on to keep earning</div>
+          <div className="text-[10px] text-emerald-100/70">$0.30 per call minute — stay on to keep earning</div>
         </div>
       )}
 

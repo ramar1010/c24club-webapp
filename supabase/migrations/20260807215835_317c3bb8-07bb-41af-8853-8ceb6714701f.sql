@@ -1,0 +1,1 @@
+update public.cashout_settings set call_rate_per_minute = 0.30, updated_at = now();
