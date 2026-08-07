@@ -615,6 +615,7 @@ Deno.serve(async (req) => {
           cap,
           isVip,
           isFrozen: freezeInfo.isFrozen,
+          ...(privateBillingResult ?? {}),
           showCapPopup: shouldShowCapPopup,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
