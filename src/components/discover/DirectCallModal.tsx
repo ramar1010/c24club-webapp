@@ -58,19 +58,16 @@ const DirectCallModal = ({
     };
   }, [myUserId, partnerId]);
 
-  const { giftedMinutes, elapsedSeconds, flushMinutes } = useCallMinutes({
+  const { sessionGiftedMinutes, elapsedSeconds, flushMinutes } = useCallMinutes({
     userId: showEarnings ? myUserId : "anonymous",
     partnerId,
+    sessionId: inviteId,
     isConnected: showEarnings && callState === "connected",
   });
 
-  const baselineRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (showEarnings && callState === "connected" && baselineRef.current === null) {
-      baselineRef.current = giftedMinutes;
-    }
-  }, [showEarnings, callState, giftedMinutes]);
-  const sessionMinutes = Math.max(0, giftedMinutes - (baselineRef.current ?? giftedMinutes));
+  // Server-confirmed earnings for THIS call only (cash minutes credited by the
+  // paid-call settlement), so the ticker keeps climbing every minute.
+  const sessionMinutes = sessionGiftedMinutes;
   const sessionCash = (sessionMinutes * 0.01).toFixed(2);
 
   // Track direct call connection for anchor bonus challenges
