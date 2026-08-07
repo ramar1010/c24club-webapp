@@ -10,6 +10,8 @@ interface UseCallMinutesOptions {
   partnerId: string | null;
   isConnected: boolean;
   voiceMode?: boolean;
+  /** Direct/Discover calls: pass the invite id so the server settles paid billing. */
+  sessionId?: string | null;
 }
 
 interface CapInfo {
@@ -22,9 +24,11 @@ interface FreezeInfo {
   earnRate: number;
 }
 
-export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false }: UseCallMinutesOptions) {
+export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = false, sessionId }: UseCallMinutesOptions) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [giftedMinutes, setGiftedMinutes] = useState(0);
+  const [sessionEarnedMinutes, setSessionEarnedMinutes] = useState(0);
+  const [sessionGiftedMinutes, setSessionGiftedMinutes] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [capReached, setCapReached] = useState(false);
   const [capInfo, setCapInfo] = useState<CapInfo | null>(null);
@@ -36,7 +40,12 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
   const lastReportedRef = useRef(0);
   const partnerIdRef = useRef(partnerId);
   const capReachedRef = useRef(false);
-  const sessionIdRef = useRef(generateSessionId());
+  const sessionIdRef = useRef(sessionId || generateSessionId());
+
+  // Keep the session id aligned with the direct-call invite when provided.
+  useEffect(() => {
+    if (sessionId) sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -72,8 +81,10 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
     setCapReached(false);
     capReachedRef.current = false;
     setShowCapPopup(false);
-    sessionIdRef.current = generateSessionId();
-  }, [partnerId]);
+    setSessionEarnedMinutes(0);
+    setSessionGiftedMinutes(0);
+    sessionIdRef.current = sessionId || generateSessionId();
+  }, [partnerId, sessionId]);
 
   // Report earned minutes to the server
   const reportMinutes = useCallback(async (minutes: number) => {
@@ -96,6 +107,12 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
     if (data?.success) {
       setTotalMinutes(data.totalMinutes);
       if (data.giftedMinutes !== undefined) setGiftedMinutes(data.giftedMinutes);
+      if (typeof data.earned === "number" && data.earned > 0) {
+        setSessionEarnedMinutes((prev) => prev + data.earned);
+      }
+      if (typeof data.creditedGiftedMinutes === "number" && data.creditedGiftedMinutes > 0) {
+        setSessionGiftedMinutes((prev) => prev + data.creditedGiftedMinutes);
+      }
 
       // For frozen users: only show popup when server explicitly says to (once ever)
       // For normal users: show popup on first cap_reached per partner
@@ -115,7 +132,7 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
         setShowCapPopup(true);
       }
     }
-  }, [userId]);
+  }, [userId, voiceMode]);
 
   // Timer: track elapsed seconds while connected
   useEffect(() => {
@@ -159,6 +176,8 @@ export function useCallMinutes({ userId, partnerId, isConnected, voiceMode = fal
   return {
     totalMinutes,
     giftedMinutes,
+    sessionEarnedMinutes,
+    sessionGiftedMinutes,
     elapsedSeconds,
     capReached,
     capInfo,
