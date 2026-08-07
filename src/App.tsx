@@ -81,6 +81,7 @@ const MessagesPage = lazy(() => import("@/pages/public/MessagesPage"));
 const EarningsChatPage = lazy(() => import("@/pages/public/EarningsChatPage"));
 const HowToGuidePage = lazy(() => import("@/pages/public/HowToGuidePage"));
 const OpenAppPage = lazy(() => import("@/pages/public/OpenAppPage"));
+const EarnMoneyPage = lazy(() => import("@/pages/public/EarnMoneyPage"));
 const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/public/PrivacyPolicyPage"));
 const SafetyCenterPage = lazy(() => import("@/pages/public/SafetyCenterPage"));
@@ -171,6 +172,7 @@ const App = () => (
               <Route path="/camera-unlock-success" element={<CameraUnlockSuccessPage />} />
               <Route path="/call/:slug" element={<CallMePage />} />
               <Route path="/open" element={<OpenAppPage />} />
+              <Route path="/earn-money" element={<EarnMoneyPage />} />
 
               {/* Hidden worker portal (noindex) */}
               <Route path="/work/c24" element={<WorkerRedditTaskPage />} />
