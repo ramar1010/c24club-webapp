@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Heart, DollarSign, Sparkles, Link2, Video, MessageCircle, Gift, Crown, Shield, X } from "lucide-react";
 import { Zap } from "lucide-react";
@@ -73,20 +73,21 @@ const DiscoverMemberCard = ({
   // Calls to females cost purchased call minutes for male users — show the live balance
   const showsRechargeBadge = !isSelf && myGender?.toLowerCase() === "male" && isFemale;
 
-  // Track profile view (fire-and-forget, once per mount)
+  // Track profile view only when the card is actually opened (not on render),
+  // fire-and-forget and at most once per card instance.
   const viewTracked = useRef(false);
-  useEffect(() => {
-    if (user && !isSelf && member.id && !viewTracked.current) {
-      viewTracked.current = true;
-      supabase.from("discover_profile_views").insert({
-        viewer_id: user.id,
-        viewed_member_id: member.id,
-      } as any).then(() => {});
-    }
-  }, [user, isSelf, member.id]);
+  const trackProfileView = () => {
+    if (!user || isSelf || !member.id || viewTracked.current) return;
+    viewTracked.current = true;
+    supabase.from("discover_profile_views").insert({
+      viewer_id: user.id,
+      viewed_member_id: member.id,
+    } as any).then(() => {});
+  };
 
   const handleVideoChat = async () => {
     if (!user) return;
+    trackProfileView();
     // Block non-VIP males from calling females.
     // vipTier can still be loading (or served from a stale cache), so confirm
     // against the database before showing the gate.
@@ -128,7 +129,10 @@ const DiscoverMemberCard = ({
   };
 
   const openFullImage = () => {
-    if (member.image_url) setShowFullImage(true);
+    if (member.image_url) {
+      trackProfileView();
+      setShowFullImage(true);
+    }
   };
 
   return (
@@ -263,6 +267,7 @@ const DiscoverMemberCard = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                trackProfileView();
                 navigate(`/messages?to=${member.id}`);
               }}
               className="w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-blue-500/80 hover:bg-blue-500 text-white transition-all"
