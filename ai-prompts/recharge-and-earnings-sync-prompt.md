@@ -35,20 +35,20 @@ Two different rates, one shared cashable unit:
 
 | Source | Rate | Notes |
 |---|---|---|
-| Discover private video call minutes | **$0.20 / min** | 20x credit |
+| Discover private video call minutes | **$0.30 / min** | 30x credit |
 | Gifted minutes | $0.01 / min | unchanged |
 | Bounty (VIP conversion) minutes | $0.01 / min | unchanged |
 
 Everything is stored in the same $0.01 cashable unit. So when a guy burns
 1 recharge minute on a call, the female is credited
-`spent * (call_rate_per_minute / rate_per_minute)` = **20 gifted minutes**
-(= $0.20). Her raw call minutes are separately tracked in `call_earned_minutes`.
+`spent * (call_rate_per_minute / rate_per_minute)` = **30 gifted minutes**
+(= $0.30). Her raw call minutes are separately tracked in `call_earned_minutes`.
 
-Example: guy buys the 20-minute pack ($6.99) and uses it all →
-female receives 400 cashable minutes = **$4.00**.
+Example: guy buys the 10-minute pack ($6.99) and uses it all →
+female receives 300 cashable minutes = **$3.00**.
 
-Do NOT hardcode 20 in the client. Read both rates from `cashout_settings` and
-compute the multiplier, defaulting to `0.01` / `0.20`.
+Do NOT hardcode 30 in the client. Read both rates from `cashout_settings` and
+compute the multiplier, defaulting to `0.01` / `0.30`.
 
 ---
 
@@ -56,9 +56,12 @@ compute the multiplier, defaulting to `0.01` / `0.20`.
 
 | Pack | Price | Per minute |
 |---|---|---|
-| 20 call minutes | $6.99 | $0.350 |
-| 60 call minutes | $17.99 | $0.300 |
-| 150 call minutes | $34.99 | $0.233 |
+| 10 call minutes | $6.99 | $0.700 |
+| 30 call minutes | $17.99 | $0.600 |
+| 60 call minutes | $34.99 | $0.583 |
+
+Pack keys sent to the backend are `"10"`, `"30"`, `"60"`. Legacy keys `20` and
+`150` still map to the $6.99 and $34.99 tiers for old builds.
 
 Bigger packs are laddered so the per-minute price drops.
 
@@ -94,7 +97,7 @@ partner is not female, show a live emerald ticker:
 ```text
 Earning right now
 +<sessionMinutes> cash minutes · <mm:ss> on call
-$0.20 per call minute — stay on to keep earning
+$0.30 per call minute — stay on to keep earning
 $<sessionCash>
 ```
 
@@ -109,7 +112,7 @@ short, plain-language explanation:
 
 1. **Convert guys to VIP** — he subscribes after talking to you, you get a bounty.
 2. **Gifted minutes** — guys send you minutes directly.
-3. **Video call recharges (new)** — guys buy call minutes; you earn $0.20 for
+3. **Video call recharges (new)** — guys buy call minutes; you earn $0.30 for
    every minute you're on a Discover video call with them.
 4. **Cash out via PayPal** — turn cashable minutes into real money.
 
@@ -130,7 +133,7 @@ cashable balance.
 
 - Male with 0 recharge minutes cannot start a Discover call; buying a pack unblocks
   it and the badge updates without restarting the app.
-- One minute of Discover call time increases the female's `gifted_minutes` by 20
+- One minute of Discover call time increases the female's `gifted_minutes` by 30
   and `call_earned_minutes` by 1, and decreases the male's `recharge_minutes` by 1.
 - Gift and bounty flows still credit at $0.01 — unchanged.
 - Ticker cash value matches `gifted_minutes` delta / 100.
