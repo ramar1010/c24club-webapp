@@ -78,6 +78,24 @@ Deno.serve(async (req) => {
       return { isVip: data?.is_vip ?? false, vipTier: data?.vip_tier ?? null };
     };
 
+    // Post-operation balance snapshot (includes call_earned_minutes, which the DB
+    // resets to 0 for female users on any successful minutes-costing redemption).
+    const getBalances = async () => {
+      const { data } = await supabase
+        .from("member_minutes")
+        .select("total_minutes, gifted_minutes, recharge_minutes, call_earned_minutes, purchased_spins, ad_points")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return {
+        total_minutes: data?.total_minutes ?? 0,
+        gifted_minutes: data?.gifted_minutes ?? 0,
+        recharge_minutes: data?.recharge_minutes ?? 0,
+        call_earned_minutes: data?.call_earned_minutes ?? 0,
+        purchased_spins: data?.purchased_spins ?? 0,
+        ad_points: data?.ad_points ?? 0,
+      };
+    };
+
     const createStripeCheckout = async (shippingFee: number, rewardTitle: string, redemptionId: string) => {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
       const customers = await stripe.customers.list({ email: user!.email!, limit: 1 });
