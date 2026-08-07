@@ -449,42 +449,56 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
-      // The earning timer runs on the female side on both web and native. Settle
-      // from that report: deduct the male caller's refill minute and credit the
-      // reporting female. Restricting settlement to the female report also keeps
-      // a second peer report from charging the same minute twice.
-      const { data: participants } = await supabase
-        .from("members")
-        .select("id, gender")
-        .in("id", [userId, resolvedPartnerId]);
-
-      const reporterGender = participants
-        ?.find((member: { id: string }) => member.id === userId)
-        ?.gender?.toLowerCase();
-      const partnerGender = participants
-        ?.find((member: { id: string }) => member.id === resolvedPartnerId)
-        ?.gender?.toLowerCase();
-
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       let remainingRechargeMinutes = memberData?.recharge_minutes ?? 0;
       let updatedCallEarnedMinutes = memberData?.call_earned_minutes ?? 0;
-      // Only paid Discover/direct calls settle against the male's refill balance
-      // and count toward "earned calls". Random roulette chats stay free and are
-      // credited as regular chat minutes (total_minutes) only.
-      if (isDirectCall && reporterGender === "female" && partnerGender === "male") {
+      let privateBillingResult: Record<string, unknown> | null = null;
+      // Only paid Discover/direct (private) calls settle against the MALE
+      // payer's refill balance and count toward "earned calls". Random roulette
+      // chats stay free and only credit chat minutes (total_minutes).
+      if (isPrivateBilling) {
           const { data: spendResult, error: spendError } = await supabase.rpc("spend_recharge_minutes", {
-            p_user_id: resolvedPartnerId,
+            p_user_id: payerId,
             p_amount: safeCapped,
           });
-          if (spendError) throw spendError;
 
-          const spent = Array.isArray(spendResult)
-            ? (spendResult[0]?.spent ?? 0)
-            : (spendResult?.spent ?? 0);
-          remainingRechargeMinutes = Array.isArray(spendResult)
-            ? (spendResult[0]?.remaining ?? remainingRechargeMinutes)
-            : (spendResult?.remaining ?? remainingRechargeMinutes);
+          const spendRow = Array.isArray(spendResult) ? spendResult[0] : spendResult;
 
+          if (spendError || !spendRow) {
+            console.error("[earn-minutes] private_billing_failed", {
+              authUserId: authedUserId,
+              payerId,
+              earnerId,
+              targetUserId: targetUserId ?? null,
+              partnerId,
+              resolvedPartnerId,
+              sessionId: sessionId ?? null,
+              requestedMinutes: minutesEarned,
+              chargeMinutes: safeCapped,
+              payerRechargeBefore,
+              dbErrorCode: spendError?.code ?? null,
+              dbErrorMessage: spendError?.message ?? null,
+              dbErrorDetails: spendError?.details ?? null,
+            });
+            return new Response(
+              JSON.stringify({
+                success: false,
+                message: spendError ? "private_billing_failed" : "private_billing_no_rows",
+                reason: spendError ? "private_billing_failed" : "private_billing_no_rows",
+                errorCode: spendError ? "PRIVATE_BILLING_FAILED" : "PRIVATE_BILLING_NO_ROWS",
+                payerId,
+                earnerId,
+                payerRechargeBefore,
+              }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          const spent = spendRow.spent ?? 0;
+          const payerRemaining = spendRow.payer_remaining ?? spendRow.remaining ?? Math.max(0, payerRechargeBefore - spent);
+          remainingRechargeMinutes = payerRemaining;
+
+          let creditedGiftedMinutes = 0;
           if (spent > 0) {
             // Discover call minutes pay a much higher rate than gift/bounty
             // minutes. We store everything in the same $0.01 cashable unit,
@@ -500,22 +514,65 @@ Deno.serve(async (req) => {
             const payout = spent * multiplier;
 
             const { error: payoutError } = await supabase.rpc("atomic_increment_member_balances", {
-              p_user_id: userId,
+              p_user_id: earnerId,
               p_total_amount: 0,
               p_gifted_amount: payout,
             });
             if (payoutError) throw payoutError;
 
-            updatedGiftedMinutes += payout;
-            updatedCallEarnedMinutes += spent;
+            creditedGiftedMinutes = payout;
+
+            const { data: earnerRow } = await supabase
+              .from("member_minutes")
+              .select("call_earned_minutes")
+              .eq("user_id", earnerId)
+              .maybeSingle();
+
             const { error: callEarnedError } = await supabase
               .from("member_minutes")
               .update({
-                call_earned_minutes: updatedCallEarnedMinutes,
+                call_earned_minutes: (earnerRow?.call_earned_minutes ?? 0) + spent,
               })
-              .eq("user_id", userId);
+              .eq("user_id", earnerId);
             if (callEarnedError) throw callEarnedError;
           }
+
+          // Return the EARNER's balances (not automatically the caller's).
+          const { data: earnerBalances } = await supabase
+            .from("member_minutes")
+            .select("total_minutes, gifted_minutes, call_earned_minutes, recharge_minutes")
+            .eq("user_id", earnerId)
+            .maybeSingle();
+
+          updatedGiftedMinutes = earnerBalances?.gifted_minutes ?? updatedGiftedMinutes;
+          updatedCallEarnedMinutes = earnerBalances?.call_earned_minutes ?? updatedCallEarnedMinutes;
+
+          privateBillingResult = {
+            payerId,
+            earnerId,
+            payerRechargeBefore,
+            payerRechargeAfter: payerRemaining,
+            spent,
+            remaining: payerRemaining,
+            creditedCallMinutes: spent,
+            creditedGiftedMinutes,
+          };
+
+          console.log("[earn-minutes] private_billing_settled", {
+            authUserId: authedUserId,
+            payerId,
+            earnerId,
+            targetUserId: targetUserId ?? null,
+            partnerId,
+            resolvedPartnerId,
+            sessionId: sessionId ?? null,
+            requestedMinutes: minutesEarned,
+            chargeMinutes: safeCapped,
+            payerRechargeBefore,
+            payerRechargeAfter: payerRemaining,
+            spent,
+            creditedGiftedMinutes,
+          });
       }
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
