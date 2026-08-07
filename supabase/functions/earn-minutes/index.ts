@@ -185,6 +185,7 @@ Deno.serve(async (req) => {
       // settling the call. Never trust a client-supplied counterpart when the
       // invite gives us an authoritative one.
       let resolvedPartnerId = partnerId;
+      let isDirectCall = false;
       if (sessionId) {
         const { data: directInvite } = await supabase
           .from("direct_call_invites")
@@ -194,8 +195,10 @@ Deno.serve(async (req) => {
 
         if (directInvite?.inviter_id === userId) {
           resolvedPartnerId = directInvite.invitee_id;
+          isDirectCall = true;
         } else if (directInvite?.invitee_id === userId) {
           resolvedPartnerId = directInvite.inviter_id;
+          isDirectCall = true;
         }
       }
 
@@ -313,7 +316,10 @@ Deno.serve(async (req) => {
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       let remainingRechargeMinutes = memberData?.recharge_minutes ?? 0;
       let updatedCallEarnedMinutes = memberData?.call_earned_minutes ?? 0;
-      if (reporterGender === "female" && partnerGender === "male") {
+      // Only paid Discover/direct calls settle against the male's refill balance
+      // and count toward "earned calls". Random roulette chats stay free and are
+      // credited as regular chat minutes (total_minutes) only.
+      if (isDirectCall && reporterGender === "female" && partnerGender === "male") {
           const { data: spendResult, error: spendError } = await supabase.rpc("spend_recharge_minutes", {
             p_user_id: resolvedPartnerId,
             p_amount: safeCapped,
