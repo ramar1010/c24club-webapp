@@ -16,6 +16,53 @@ export const RECHARGE_PACKS = {
 
 const APP_ORIGIN = "https://c24club.com";
 
+/** Native IAP SKUs → pack key. Accepts the many shapes the mobile app may send. */
+function resolvePackKey(raw: string | undefined | null): "20" | "60" | "150" | null {
+  if (!raw) return null;
+  const s = String(raw).toLowerCase();
+  const m = s.match(/(20|60|150)/);
+  if (!m) return null;
+  return m[1] as "20" | "60" | "150";
+}
+
+async function sha256Hex(input: string) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(bytes)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Validate an Apple / Google receipt. Mirrors iap-purchases behaviour. */
+async function verifyNativeReceipt(platform: string, purchaseToken: string) {
+  if (!purchaseToken) throw new Error("Missing purchaseToken");
+  if (platform === "ios") {
+    const secret = Deno.env.get("IOS_SHARED_SECRET");
+    if (!secret) {
+      console.warn("[recharge-minutes] IOS_SHARED_SECRET not set — skipping Apple verification");
+      return true;
+    }
+    const callApple = async (url: string) => {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "receipt-data": purchaseToken,
+          password: secret,
+          "exclude-old-transactions": true,
+        }),
+      });
+      return res.json();
+    };
+    let result = await callApple("https://buy.itunes.apple.com/verifyReceipt");
+    if (result.status === 21007) result = await callApple("https://sandbox.itunes.apple.com/verifyReceipt");
+    if (result.status !== 0) throw new Error(`Apple verification failed: status ${result.status}`);
+    return true;
+  }
+  if (platform === "android") {
+    console.warn("[recharge-minutes] Google verification not configured — skipping");
+    return true;
+  }
+  throw new Error("Unknown platform");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,7 +81,8 @@ serve(async (req) => {
     const user = authData.user;
     if (!user?.email) throw new Error("Not authenticated");
 
-    const { action, pack, session_id } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { action, pack, session_id, sku, purchaseToken, platform, transactionId } = body as any;
 
     const isTestMode = Deno.env.get("STRIPE_TEST_MODE") === "true";
     const stripeKey = isTestMode ? Deno.env.get("STRIPE_SECRET_KEY_TEST")! : Deno.env.get("STRIPE_SECRET_KEY")!;
@@ -96,7 +144,76 @@ serve(async (req) => {
     }
 
     if (action === "verify") {
-      if (!session_id) throw new Error("No session ID");
+      // ── Native in-app purchase (iOS / Android) ──────────────────────────
+      if (!session_id) {
+        const packKey = resolvePackKey(sku ?? pack);
+        if (!packKey) throw new Error("Invalid or missing sku");
+        const selected = RECHARGE_PACKS[packKey];
+
+        await verifyNativeReceipt(String(platform ?? "").toLowerCase(), purchaseToken);
+
+        // Idempotency: reuse the unique stripe_session_id index with an iap: key
+        const txKey = String(transactionId ?? purchaseToken ?? "").slice(0, 4096);
+        const idempotencyKey = `iap:${platform ?? "native"}:${packKey}:${(await sha256Hex(txKey)).slice(0, 40)}`;
+
+        const { data: existing } = await supabaseAdmin
+          .from("recharge_purchases")
+          .select("id, status")
+          .eq("stripe_session_id", idempotencyKey)
+          .maybeSingle();
+
+        if (existing) {
+          const { data: current } = await supabaseAdmin
+            .from("member_minutes")
+            .select("recharge_minutes")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          return new Response(
+            JSON.stringify({
+              success: true,
+              already_processed: true,
+              minutes: selected.minutes,
+              rechargeMinutes: current?.recharge_minutes ?? 0,
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const { error: insertError } = await supabaseAdmin.from("recharge_purchases").insert({
+          user_id: user.id,
+          pack_key: packKey,
+          minutes: selected.minutes,
+          price_cents: selected.cents,
+          status: "completed",
+          stripe_session_id: idempotencyKey,
+        });
+        if (insertError) {
+          // Unique violation = another concurrent verify already credited it
+          if ((insertError as any).code === "23505") {
+            return new Response(
+              JSON.stringify({ success: true, already_processed: true, minutes: selected.minutes }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+          throw new Error("Failed to record purchase");
+        }
+
+        const { data: newBalance } = await supabaseAdmin.rpc("add_recharge_minutes", {
+          p_user_id: user.id,
+          p_amount: selected.minutes,
+        });
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            minutes: selected.minutes,
+            rechargeMinutes: newBalance ?? selected.minutes,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // ── Stripe Checkout (web) ───────────────────────────────────────────
       const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
       const session = await stripe.checkout.sessions.retrieve(session_id);
 
