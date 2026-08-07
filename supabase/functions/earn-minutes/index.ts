@@ -371,7 +371,10 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       const alreadyEarned = logData?.minutes_earned ?? 0;
-      const remaining = Math.max(0, cap - alreadyEarned);
+      // Private billing: the only limit is the payer's remaining purchased minutes.
+      const remaining = isPrivateBilling
+        ? Math.max(0, payerRechargeBefore)
+        : Math.max(0, cap - alreadyEarned);
       const actualEarned = Math.min(minutesEarned, remaining);
 
       // Private calls: cap_reached is ONLY valid when the payer row was found
