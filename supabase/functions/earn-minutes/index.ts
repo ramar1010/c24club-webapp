@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     if (type === "get_balance") {
       const { data } = await supabase
         .from("member_minutes")
-        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier, gifted_minutes")
+        .select("total_minutes, is_vip, cap_popup_shown, ad_points, is_frozen, freeze_free_until, vip_tier, gifted_minutes, recharge_minutes, call_earned_minutes")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -136,6 +136,8 @@ Deno.serve(async (req) => {
           success: true,
           totalMinutes: data?.total_minutes ?? 0,
           giftedMinutes: data?.gifted_minutes ?? 0,
+          rechargeMinutes: data?.recharge_minutes ?? 0,
+          callEarnedMinutes: data?.call_earned_minutes ?? 0,
           adPoints: data?.ad_points ?? 0,
           isVip: data?.is_vip ?? false,
           vipTier: data?.vip_tier ?? null,
@@ -265,9 +267,10 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
-      // Female users: only increment gifted_minutes (cash-eligible) if they
-      // hold an ACTIVE anchor earning slot — queued females earn normal
-      // reward minutes but no cash until promoted.
+      // Discover-call settlement is driven by the authenticated MALE caller's
+      // report. Native clients can report from either peer and their session IDs
+      // are not shared, so settling from the female report caused missed charges
+      // whenever her report was absent or carried an incorrect partner ID.
       const { data: genderCheck } = await supabase
         .from("members")
         .select("gender")
@@ -275,23 +278,20 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
-      if (genderCheck?.gender?.toLowerCase() === "female") {
-        // Check partner gender — females don't earn cashable minutes from other females
-        const { data: partnerGenderCheck } = await supabase
+      if (genderCheck?.gender?.toLowerCase() === "male") {
+        const { data: femalePartner } = await supabase
           .from("members")
           .select("gender")
           .eq("id", partnerId)
           .maybeSingle();
 
-        const partnerIsFemale = partnerGenderCheck?.gender?.toLowerCase() === "female";
-
-        if (!partnerIsFemale) {
-          // Recharge economy: spend the guy's purchased call minutes and pay the
-          // female the same amount as cashable (gifted) minutes.
-          const { data: spendResult } = await supabase.rpc("spend_recharge_minutes", {
-            p_user_id: partnerId,
+        if (femalePartner?.gender?.toLowerCase() === "female") {
+          const { data: spendResult, error: spendError } = await supabase.rpc("spend_recharge_minutes", {
+            p_user_id: userId,
             p_amount: safeCapped,
           });
+          if (spendError) throw spendError;
+
           const spent = Array.isArray(spendResult)
             ? (spendResult[0]?.spent ?? 0)
             : (spendResult?.spent ?? 0);
@@ -310,36 +310,26 @@ Deno.serve(async (req) => {
             const multiplier = Math.max(1, Math.round(callRate / baseRate));
             const payout = spent * multiplier;
 
-            await supabase.rpc("atomic_increment_member_balances", {
-              p_user_id: userId,
+            const { error: payoutError } = await supabase.rpc("atomic_increment_member_balances", {
+              p_user_id: partnerId,
               p_total_amount: 0,
               p_gifted_amount: payout,
             });
-            updatedGiftedMinutes += payout;
+            if (payoutError) throw payoutError;
 
-            await supabase
+            const { data: partnerBalance } = await supabase
               .from("member_minutes")
-              .update({
-                call_earned_minutes:
-                  (memberData?.call_earned_minutes ?? 0) + spent,
-              })
-              .eq("user_id", userId);
-          }
-
-          const { data: activeSession } = await supabase
-            .from("anchor_sessions")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("status", "active")
+              .select("call_earned_minutes")
+              .eq("user_id", partnerId)
             .maybeSingle();
 
-          if (activeSession && spent <= 0) {
-            await supabase.rpc("atomic_increment_member_balances", {
-              p_user_id: userId,
-              p_total_amount: 0,
-              p_gifted_amount: safeCapped,
-            });
-            updatedGiftedMinutes += safeCapped;
+            const { error: callEarnedError } = await supabase
+              .from("member_minutes")
+              .update({
+                call_earned_minutes: (partnerBalance?.call_earned_minutes ?? 0) + spent,
+              })
+              .eq("user_id", partnerId);
+            if (callEarnedError) throw callEarnedError;
           }
         }
       }
