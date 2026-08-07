@@ -179,6 +179,33 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Native direct calls use the invite UUID as their session ID. Some app
+      // versions send the authenticated user's own ID as partnerId, so resolve
+      // the actual counterpart from the server-owned invite before logging or
+      // settling the call. Never trust a client-supplied counterpart when the
+      // invite gives us an authoritative one.
+      let resolvedPartnerId = partnerId;
+      if (sessionId) {
+        const { data: directInvite } = await supabase
+          .from("direct_call_invites")
+          .select("inviter_id, invitee_id")
+          .eq("id", sessionId)
+          .maybeSingle();
+
+        if (directInvite?.inviter_id === userId) {
+          resolvedPartnerId = directInvite.invitee_id;
+        } else if (directInvite?.invitee_id === userId) {
+          resolvedPartnerId = directInvite.inviter_id;
+        }
+      }
+
+      if (!resolvedPartnerId || resolvedPartnerId === userId) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Unable to resolve call partner" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const { data: memberData } = await supabase
         .from("member_minutes")
          .select("total_minutes, is_vip, cap_popup_shown, frozen_cap_popup_shown, ad_points, gifted_minutes, recharge_minutes, call_earned_minutes")
@@ -210,7 +237,7 @@ Deno.serve(async (req) => {
         .from("call_minutes_log")
         .select("minutes_earned")
         .eq("user_id", userId)
-        .eq("partner_id", partnerId)
+        .eq("partner_id", resolvedPartnerId)
         .eq("session_date", trackingSessionId)
         .maybeSingle();
 
@@ -253,7 +280,7 @@ Deno.serve(async (req) => {
         .upsert(
           {
             user_id: userId,
-            partner_id: partnerId,
+            partner_id: resolvedPartnerId,
             session_date: trackingSessionId,
             minutes_earned: alreadyEarned + safeCapped,
             updated_at: new Date().toISOString(),
@@ -267,28 +294,28 @@ Deno.serve(async (req) => {
         p_amount: safeCapped,
       });
 
-      // Discover-call settlement is driven by the authenticated MALE caller's
-      // report. Native clients can report from either peer and their session IDs
-      // are not shared, so settling from the female report caused missed charges
-      // whenever her report was absent or carried an incorrect partner ID.
-      const { data: genderCheck } = await supabase
+      // The earning timer runs on the female side on both web and native. Settle
+      // from that report: deduct the male caller's refill minute and credit the
+      // reporting female. Restricting settlement to the female report also keeps
+      // a second peer report from charging the same minute twice.
+      const { data: participants } = await supabase
         .from("members")
-        .select("gender")
-        .eq("id", userId)
-        .maybeSingle();
+        .select("id, gender")
+        .in("id", [userId, resolvedPartnerId]);
+
+      const reporterGender = participants
+        ?.find((member: { id: string }) => member.id === userId)
+        ?.gender?.toLowerCase();
+      const partnerGender = participants
+        ?.find((member: { id: string }) => member.id === resolvedPartnerId)
+        ?.gender?.toLowerCase();
 
       let updatedGiftedMinutes = memberData?.gifted_minutes ?? 0;
       let remainingRechargeMinutes = memberData?.recharge_minutes ?? 0;
-      if (genderCheck?.gender?.toLowerCase() === "male") {
-        const { data: femalePartner } = await supabase
-          .from("members")
-          .select("gender")
-          .eq("id", partnerId)
-          .maybeSingle();
-
-        if (femalePartner?.gender?.toLowerCase() === "female") {
+      let updatedCallEarnedMinutes = memberData?.call_earned_minutes ?? 0;
+      if (reporterGender === "female" && partnerGender === "male") {
           const { data: spendResult, error: spendError } = await supabase.rpc("spend_recharge_minutes", {
-            p_user_id: userId,
+            p_user_id: resolvedPartnerId,
             p_amount: safeCapped,
           });
           if (spendError) throw spendError;
@@ -315,27 +342,22 @@ Deno.serve(async (req) => {
             const payout = spent * multiplier;
 
             const { error: payoutError } = await supabase.rpc("atomic_increment_member_balances", {
-              p_user_id: partnerId,
+              p_user_id: userId,
               p_total_amount: 0,
               p_gifted_amount: payout,
             });
             if (payoutError) throw payoutError;
 
-            const { data: partnerBalance } = await supabase
-              .from("member_minutes")
-              .select("call_earned_minutes")
-              .eq("user_id", partnerId)
-            .maybeSingle();
-
+            updatedGiftedMinutes += payout;
+            updatedCallEarnedMinutes += spent;
             const { error: callEarnedError } = await supabase
               .from("member_minutes")
               .update({
-                call_earned_minutes: (partnerBalance?.call_earned_minutes ?? 0) + spent,
+                call_earned_minutes: updatedCallEarnedMinutes,
               })
-              .eq("user_id", partnerId);
+              .eq("user_id", userId);
             if (callEarnedError) throw callEarnedError;
           }
-        }
       }
 
       const newTotal = newTotalResult ?? (memberData?.total_minutes ?? 0) + safeCapped;
@@ -372,6 +394,7 @@ Deno.serve(async (req) => {
           earned: safeCapped,
           totalMinutes: newTotal,
           giftedMinutes: updatedGiftedMinutes,
+          callEarnedMinutes: updatedCallEarnedMinutes,
           rechargeMinutes: remainingRechargeMinutes,
           totalEarnedWithPartner: newTotalWithPartner,
           cap,
