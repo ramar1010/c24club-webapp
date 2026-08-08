@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
         );
         lines.push(`• Reply to them today. A single reply is often all it takes.`);
       }
-      lines.push(`Tip: Guide → https://c24club.com/how-to-guide`);
+      lines.push(`Tip: Guide → https://c24club.com/earn-money`);
       const dmContent = lines.join("\n");
 
       let conversationId: string | null = null;
