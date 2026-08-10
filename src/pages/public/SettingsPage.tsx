@@ -19,15 +19,36 @@ const SettingsPage = () => {
   const [bioLoaded, setBioLoaded] = useState(false);
   const [callSlug, setCallSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [emailNotifsSaving, setEmailNotifsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("members").select("bio, call_slug").eq("id", user.id).single().then(({ data }) => {
+    supabase.from("members").select("bio, call_slug, email_notifications_enabled").eq("id", user.id).single().then(({ data }) => {
       setBio((data as any)?.bio || "");
       setCallSlug((data as any)?.call_slug || "");
+      setEmailNotifs((data as any)?.email_notifications_enabled !== false);
       setBioLoaded(true);
     });
   }, [user]);
+
+  const handleToggleEmailNotifs = async () => {
+    if (!user || emailNotifsSaving) return;
+    const next = !emailNotifs;
+    setEmailNotifsSaving(true);
+    setEmailNotifs(next);
+    const { error } = await supabase
+      .from("members")
+      .update({ email_notifications_enabled: next } as any)
+      .eq("id", user.id);
+    if (error) {
+      setEmailNotifs(!next);
+      toast.error("Could not update email settings");
+    } else {
+      toast.success(next ? "Email notifications turned on" : "Email notifications turned off");
+    }
+    setEmailNotifsSaving(false);
+  };
 
   const handleSaveBio = async () => {
     if (!user) return;
