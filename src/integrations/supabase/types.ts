@@ -1757,6 +1757,7 @@ export type Database = {
           country: string | null
           created_at: string
           email: string | null
+          email_notifications_enabled: boolean
           found_us_via: string | null
           gender: string | null
           id: string
@@ -1789,6 +1790,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          email_notifications_enabled?: boolean
           found_us_via?: string | null
           gender?: string | null
           id?: string
@@ -1821,6 +1823,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          email_notifications_enabled?: boolean
           found_us_via?: string | null
           gender?: string | null
           id?: string

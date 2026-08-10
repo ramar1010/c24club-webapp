@@ -19,15 +19,36 @@ const SettingsPage = () => {
   const [bioLoaded, setBioLoaded] = useState(false);
   const [callSlug, setCallSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [emailNotifsSaving, setEmailNotifsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("members").select("bio, call_slug").eq("id", user.id).single().then(({ data }) => {
+    supabase.from("members").select("bio, call_slug, email_notifications_enabled").eq("id", user.id).single().then(({ data }) => {
       setBio((data as any)?.bio || "");
       setCallSlug((data as any)?.call_slug || "");
+      setEmailNotifs((data as any)?.email_notifications_enabled !== false);
       setBioLoaded(true);
     });
   }, [user]);
+
+  const handleToggleEmailNotifs = async () => {
+    if (!user || emailNotifsSaving) return;
+    const next = !emailNotifs;
+    setEmailNotifsSaving(true);
+    setEmailNotifs(next);
+    const { error } = await supabase
+      .from("members")
+      .update({ email_notifications_enabled: next } as any)
+      .eq("id", user.id);
+    if (error) {
+      setEmailNotifs(!next);
+      toast.error("Could not update email settings");
+    } else {
+      toast.success(next ? "Email notifications turned on" : "Email notifications turned off");
+    }
+    setEmailNotifsSaving(false);
+  };
 
   const handleSaveBio = async () => {
     if (!user) return;
@@ -157,6 +178,37 @@ const SettingsPage = () => {
           <p className="text-neutral-500 text-xs text-center mt-1.5">Share this link so others can call you directly</p>
         </div>
       )}
+
+      {/* Email Notifications */}
+      <div className="w-full max-w-sm mb-6">
+        <div className="flex items-center justify-between bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3">
+          <div className="flex items-start gap-2.5 pr-3">
+            <Mail className="w-4 h-4 mt-0.5 text-neutral-400 shrink-0" />
+            <div>
+              <p className="text-sm font-black tracking-wide">EMAIL NOTIFICATIONS</p>
+              <p className="text-xs text-neutral-500 leading-tight mt-0.5">
+                Updates, reminders and activity emails. Account &amp; security emails are always sent.
+              </p>
+            </div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={emailNotifs}
+            aria-label="Toggle email notifications"
+            onClick={handleToggleEmailNotifs}
+            disabled={emailNotifsSaving}
+            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 disabled:opacity-50 ${
+              emailNotifs ? "bg-emerald-500" : "bg-neutral-700"
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${
+                emailNotifs ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       {/* Get Help */}
       <div className="mb-6">
