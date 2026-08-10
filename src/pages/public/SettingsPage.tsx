@@ -181,6 +181,13 @@ const SettingsPage = () => {
 
       {/* Get Help */}
       <div className="mb-6">
+        {null}
+      </div>
+
+      {/* placeholder-anchor */}
+      <div className="hidden" />
+
+      <div className="mb-6">
         <button
           onClick={() => setHelpOpen(true)}
           className="bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-base py-2.5 px-6 rounded-full hover:opacity-90 transition-opacity shadow-lg tracking-wide border border-green-400/40"
