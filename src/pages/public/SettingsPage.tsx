@@ -179,14 +179,38 @@ const SettingsPage = () => {
         </div>
       )}
 
-      {/* Get Help */}
-      <div className="mb-6">
-        {null}
+      {/* Email Notifications */}
+      <div className="w-full max-w-sm mb-6">
+        <div className="flex items-center justify-between bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3">
+          <div className="flex items-start gap-2.5 pr-3">
+            <Mail className="w-4 h-4 mt-0.5 text-neutral-400 shrink-0" />
+            <div>
+              <p className="text-sm font-black tracking-wide">EMAIL NOTIFICATIONS</p>
+              <p className="text-xs text-neutral-500 leading-tight mt-0.5">
+                Updates, reminders and activity emails. Account &amp; security emails are always sent.
+              </p>
+            </div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={emailNotifs}
+            aria-label="Toggle email notifications"
+            onClick={handleToggleEmailNotifs}
+            disabled={emailNotifsSaving}
+            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 disabled:opacity-50 ${
+              emailNotifs ? "bg-emerald-500" : "bg-neutral-700"
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${
+                emailNotifs ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
-      {/* placeholder-anchor */}
-      <div className="hidden" />
-
+      {/* Get Help */}
       <div className="mb-6">
         <button
           onClick={() => setHelpOpen(true)}
