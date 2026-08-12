@@ -498,6 +498,7 @@ const MembersPage = () => {
 
       <DeleteDialog
         open={!!deleteId}
+
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={() => { if (deleteId) { deleteMutation.mutate(deleteId); setDeleteId(null); } }}
         title="this member"
