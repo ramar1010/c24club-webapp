@@ -444,7 +444,8 @@ const MembersPage = () => {
                             onClick={() => { setBanTarget(row); setBanType("standard"); setBanReason("Violation of terms"); setCustomReason(""); }}>
                             <ShieldX className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Rename user"
+                            onClick={() => { setRenameTarget(row); setRenameValue(row.name ?? ""); }}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}>
