@@ -84,6 +84,11 @@ const MembersPage = () => {
   const [savingVip, setSavingVip] = useState(false);
   const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
 
+  // Rename member
+  const [renameTarget, setRenameTarget] = useState<Member | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
+
   // Source filter + server-side pagination state
   const [sourceFilter, setSourceFilter] = useState<VipSource>("all");
   const [page, setPage] = useState(0);
@@ -210,6 +215,34 @@ const MembersPage = () => {
   };
 
   const handleBulkDelete = async () => {
+    return handleBulkDeleteInner();
+  };
+
+  const handleRename = async () => {
+    if (!renameTarget) return;
+    const newName = renameValue.trim();
+    if (newName.length < 2 || newName.length > 30) {
+      toast.error("Name must be 2–30 characters");
+      return;
+    }
+    setRenaming(true);
+    try {
+      const { error } = await supabase
+        .from("members")
+        .update({ name: newName } as any)
+        .eq("id", renameTarget.id);
+      if (error) throw error;
+      toast.success(`Renamed to "${newName}"`);
+      setRenameTarget(null);
+      qc.invalidateQueries({ queryKey: ["members"] });
+    } catch (err: any) {
+      toast.error("Failed to rename user", { description: err.message });
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const handleBulkDeleteInner = async () => {
     if (selectedIds.size === 0) return;
     setBulkDeleting(true);
     try {
