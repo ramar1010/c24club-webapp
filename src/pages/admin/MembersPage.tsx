@@ -496,9 +496,32 @@ const MembersPage = () => {
         )}
       </div>
 
+      <Dialog open={!!renameTarget} onOpenChange={(open) => !open && setRenameTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename user</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Display name</Label>
+            <Input
+              value={renameValue}
+              maxLength={30}
+              onChange={(e) => setRenameValue(e.target.value)}
+              placeholder="New username"
+            />
+            <p className="text-xs text-muted-foreground">
+              Use this to replace inappropriate usernames. Current: {renameTarget?.name ?? "—"}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button onClick={handleRename} disabled={renaming}>{renaming ? "Saving…" : "Save name"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <DeleteDialog
         open={!!deleteId}
-
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={() => { if (deleteId) { deleteMutation.mutate(deleteId); setDeleteId(null); } }}
         title="this member"
