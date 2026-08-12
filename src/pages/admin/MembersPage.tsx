@@ -84,6 +84,11 @@ const MembersPage = () => {
   const [savingVip, setSavingVip] = useState(false);
   const [currentVipInfo, setCurrentVipInfo] = useState<{ is_vip: boolean; vip_tier: string | null } | null>(null);
 
+  // Rename member
+  const [renameTarget, setRenameTarget] = useState<Member | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
+
   // Source filter + server-side pagination state
   const [sourceFilter, setSourceFilter] = useState<VipSource>("all");
   const [page, setPage] = useState(0);
@@ -210,6 +215,34 @@ const MembersPage = () => {
   };
 
   const handleBulkDelete = async () => {
+    return handleBulkDeleteInner();
+  };
+
+  const handleRename = async () => {
+    if (!renameTarget) return;
+    const newName = renameValue.trim();
+    if (newName.length < 2 || newName.length > 30) {
+      toast.error("Name must be 2–30 characters");
+      return;
+    }
+    setRenaming(true);
+    try {
+      const { error } = await supabase
+        .from("members")
+        .update({ name: newName } as any)
+        .eq("id", renameTarget.id);
+      if (error) throw error;
+      toast.success(`Renamed to "${newName}"`);
+      setRenameTarget(null);
+      qc.invalidateQueries({ queryKey: ["members"] });
+    } catch (err: any) {
+      toast.error("Failed to rename user", { description: err.message });
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const handleBulkDeleteInner = async () => {
     if (selectedIds.size === 0) return;
     setBulkDeleting(true);
     try {
@@ -411,7 +444,8 @@ const MembersPage = () => {
                             onClick={() => { setBanTarget(row); setBanType("standard"); setBanReason("Violation of terms"); setCustomReason(""); }}>
                             <ShieldX className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Rename user"
+                            onClick={() => { setRenameTarget(row); setRenameValue(row.name ?? ""); }}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}>
@@ -461,6 +495,30 @@ const MembersPage = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={!!renameTarget} onOpenChange={(open) => !open && setRenameTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename user</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Display name</Label>
+            <Input
+              value={renameValue}
+              maxLength={30}
+              onChange={(e) => setRenameValue(e.target.value)}
+              placeholder="New username"
+            />
+            <p className="text-xs text-muted-foreground">
+              Use this to replace inappropriate usernames. Current: {renameTarget?.name ?? "—"}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button onClick={handleRename} disabled={renaming}>{renaming ? "Saving…" : "Save name"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <DeleteDialog
         open={!!deleteId}
