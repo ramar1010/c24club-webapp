@@ -35,11 +35,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const ipCheckedRef = useRef(false);
 
   const ensureMemberRow = useCallback(async (authUser: User) => {
-    const fallbackName =
+    const rawName =
       authUser.user_metadata?.full_name ||
       authUser.user_metadata?.name ||
       authUser.email?.split("@")[0] ||
-      "Member";
+      "";
+    const isAppleRelay = /privaterelay\.appleid\.com$/i.test(authUser.email ?? "");
+    const looksRandom = /^[a-z0-9]{8,}$/.test(rawName) && !/[aeiou][a-z]*[aeiou]/.test(rawName);
+    const fallbackName =
+      isAppleRelay || looksRandom
+        ? `iphoneuser${1000 + Math.floor(Math.random() * 9000)}`
+        : rawName || "Member";
 
     const { error } = await supabase.from("members").upsert(
       {
