@@ -475,6 +475,7 @@ const VideoCallPage = () => {
   const [showPowerHourCountdown, setShowPowerHourCountdown] = useState(false);
   const [showPowerHourInvite, setShowPowerHourInvite] = useState(false);
   const [waitingTooLong, setWaitingTooLong] = useState(false);
+  const [bridgeDismissed, setBridgeDismissed] = useState(false);
   const [recaptureTargetId, setRecaptureTargetId] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -484,21 +485,26 @@ const VideoCallPage = () => {
     }
   }, []);
 
-  // ─── C: Power Hour invite after 15s in a random chat (once per session/day) ───
+  // ─── C: Power Hour invite on dead air — 30s waiting with no match (never mid-call) ───
+  // Priority: SkipRecapture > EmptyQueueBridge > PowerHour, so we only fire once the
+  // bridge is gone (dismissed) or was never shown.
   useEffect(() => {
-    if (callState !== "connected" || memberId === "anonymous") {
+    if (callState !== "waiting" || memberId === "anonymous") {
       setShowPowerHourInvite(false);
       return;
     }
+    if (recaptureTargetId) return;
+    if (waitingTooLong && !bridgeDismissed) return;
+
     const dayKey = `c24_ph_invite_${new Date().toISOString().slice(0, 10)}`;
     if (localStorage.getItem(dayKey)) return;
 
     const t = setTimeout(() => {
       localStorage.setItem(dayKey, "1");
       setShowPowerHourInvite(true);
-    }, 15000);
+    }, 30000);
     return () => clearTimeout(t);
-  }, [callState, memberId]);
+  }, [callState, memberId, waitingTooLong, bridgeDismissed, recaptureTargetId]);
 
   // ─── A: Empty queue bridge after 20s of waiting ───
   useEffect(() => {
@@ -506,6 +512,7 @@ const VideoCallPage = () => {
       setWaitingTooLong(false);
       return;
     }
+    setBridgeDismissed(false);
     const t = setTimeout(() => setWaitingTooLong(true), 20000);
     return () => clearTimeout(t);
   }, [callState]);
