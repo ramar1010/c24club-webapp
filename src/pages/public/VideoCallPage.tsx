@@ -64,6 +64,9 @@ import PickItemModal from "@/components/videocall/PickItemModal";
 import FemaleRetentionBar from "@/components/videocall/FemaleRetentionBar";
 import LuckySpinWidget from "@/components/videocall/LuckySpinWidget";
 import PowerHourCountdown from "@/components/videocall/PowerHourCountdown";
+import PowerHourInvite from "@/components/videocall/PowerHourInvite";
+import EmptyQueueBridge from "@/components/videocall/EmptyQueueBridge";
+import SkipRecaptureModal from "@/components/videocall/SkipRecaptureModal";
 import AppDownloadPopup from "@/components/videocall/AppDownloadPopup";
 import AppDownloadMiniBanner from "@/components/videocall/AppDownloadMiniBanner";
 import BountyGuideModal from "@/components/discover/BountyGuideModal";
@@ -470,6 +473,9 @@ const VideoCallPage = () => {
 
   // Show power hour countdown when arriving from email link
   const [showPowerHourCountdown, setShowPowerHourCountdown] = useState(false);
+  const [showPowerHourInvite, setShowPowerHourInvite] = useState(false);
+  const [waitingTooLong, setWaitingTooLong] = useState(false);
+  const [recaptureTargetId, setRecaptureTargetId] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("from") === "power_hour") {
@@ -477,6 +483,32 @@ const VideoCallPage = () => {
       window.history.replaceState({}, "", "/videocall");
     }
   }, []);
+
+  // ─── C: Power Hour invite after 15s in a random chat (once per session/day) ───
+  useEffect(() => {
+    if (callState !== "connected" || memberId === "anonymous") {
+      setShowPowerHourInvite(false);
+      return;
+    }
+    const dayKey = `c24_ph_invite_${new Date().toISOString().slice(0, 10)}`;
+    if (localStorage.getItem(dayKey)) return;
+
+    const t = setTimeout(() => {
+      localStorage.setItem(dayKey, "1");
+      setShowPowerHourInvite(true);
+    }, 15000);
+    return () => clearTimeout(t);
+  }, [callState, memberId]);
+
+  // ─── A: Empty queue bridge after 20s of waiting ───
+  useEffect(() => {
+    if (callState !== "waiting") {
+      setWaitingTooLong(false);
+      return;
+    }
+    const t = setTimeout(() => setWaitingTooLong(true), 20000);
+    return () => clearTimeout(t);
+  }, [callState]);
 
   const { data: hideCarousel } = useQuery({
     queryKey: ["lucky-spin-carousel-setting"],
@@ -1093,6 +1125,24 @@ const VideoCallPage = () => {
     const connectedDurationSec = connectedDurationMs / 1000;
     const isQuickSkip = connectedDurationSec < 5;
 
+    // --- F: Skip recapture — offer a one-tap DM to the partner we just left ---
+    const leavingPartnerId = currentPartnerId;
+    const leavingPartnerGender = (partnerGender ?? "").toLowerCase();
+    const myGenderLower = (memberGender ?? "").toLowerCase();
+    const recaptureShown = parseInt(sessionStorage.getItem("c24_recapture_count") || "0", 10);
+    if (
+      leavingPartnerId &&
+      connectedDurationSec < 90 &&
+      connectedDurationSec > 2 &&
+      leavingPartnerGender &&
+      myGenderLower &&
+      leavingPartnerGender !== myGenderLower &&
+      recaptureShown < 3
+    ) {
+      sessionStorage.setItem("c24_recapture_count", String(recaptureShown + 1));
+      setRecaptureTargetId(leavingPartnerId);
+    }
+
     // Only penalize non-VIP users
     if (isQuickSkip && !subscribed) {
       // Deduct 2 minutes server-side (only if they have minutes)
@@ -1364,6 +1414,16 @@ const VideoCallPage = () => {
                     onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                   />
                 )}
+                {waitingTooLong && memberId !== "anonymous" && (
+                  <div className="w-full max-w-xs px-2">
+                    <EmptyQueueBridge
+                      myUserId={memberId}
+                      myGender={memberGender ?? null}
+                      onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                      onOpenDiscover={() => setOverlayPage("discover")}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           }
@@ -1561,6 +1621,16 @@ const VideoCallPage = () => {
                         onOpenMessages={() => setOverlayPage("messages")}
                         onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                       />
+                    )}
+                    {waitingTooLong && memberId !== "anonymous" && (
+                      <div className="w-full max-w-xs px-2">
+                        <EmptyQueueBridge
+                          myUserId={memberId}
+                          myGender={memberGender ?? null}
+                          onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                          onOpenDiscover={() => setOverlayPage("discover")}
+                        />
+                      </div>
                     )}
                   </>}
                 </div>
@@ -1871,6 +1941,28 @@ const VideoCallPage = () => {
         <PowerHourCountdown
           onDismiss={() => setShowPowerHourCountdown(false)}
           isFemale={isFemale}
+        />
+      )}
+
+      {/* Power Hour invite — 15s into a random chat */}
+      {showPowerHourInvite && memberId !== "anonymous" && (
+        <PowerHourInvite
+          userId={memberId}
+          isFemale={isFemale}
+          onClose={() => setShowPowerHourInvite(false)}
+        />
+      )}
+
+      {/* Skip recapture — one-tap DM after a short call */}
+      {recaptureTargetId && (
+        <SkipRecaptureModal
+          partnerId={recaptureTargetId}
+          onMessage={(id) => {
+            setRecaptureTargetId(null);
+            setDmTargetId(id);
+            setOverlayPage("messages");
+          }}
+          onClose={() => setRecaptureTargetId(null)}
         />
       )}
 
