@@ -1944,6 +1944,28 @@ const VideoCallPage = () => {
         />
       )}
 
+      {/* Power Hour invite — 15s into a random chat */}
+      {showPowerHourInvite && memberId !== "anonymous" && (
+        <PowerHourInvite
+          userId={memberId}
+          isFemale={isFemale}
+          onClose={() => setShowPowerHourInvite(false)}
+        />
+      )}
+
+      {/* Skip recapture — one-tap DM after a short call */}
+      {recaptureTargetId && (
+        <SkipRecaptureModal
+          partnerId={recaptureTargetId}
+          onMessage={(id) => {
+            setRecaptureTargetId(null);
+            setDmTargetId(id);
+            setOverlayPage("messages");
+          }}
+          onClose={() => setRecaptureTargetId(null)}
+        />
+      )}
+
       {/* Send Gift Overlay */}
       {showGiftOverlay && currentPartnerId &&
       <SendGiftOverlay
