@@ -1427,6 +1427,7 @@ const VideoCallPage = () => {
                     myGender={memberGender ?? null}
                     onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                     onOpenDiscover={() => setOverlayPage("discover")}
+                    onDismiss={() => setBridgeDismissed(true)}
                   />
                 )}
               </div>
@@ -1633,6 +1634,7 @@ const VideoCallPage = () => {
                         myGender={memberGender ?? null}
                         onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                         onOpenDiscover={() => setOverlayPage("discover")}
+                        onDismiss={() => setBridgeDismissed(true)}
                       />
                     )}
                   </>}
@@ -1947,8 +1949,8 @@ const VideoCallPage = () => {
         />
       )}
 
-      {/* Power Hour invite — 15s into a random chat */}
-      {showPowerHourInvite && memberId !== "anonymous" && (
+      {/* Power Hour invite — dead air: 30s waiting with no match */}
+      {showPowerHourInvite && memberId !== "anonymous" && callState === "waiting" && !recaptureTargetId && (
         <PowerHourInvite
           userId={memberId}
           isFemale={isFemale}
