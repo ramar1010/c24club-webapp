@@ -1415,14 +1415,12 @@ const VideoCallPage = () => {
                   />
                 )}
                 {waitingTooLong && memberId !== "anonymous" && (
-                  <div className="w-full max-w-xs px-2">
-                    <EmptyQueueBridge
-                      myUserId={memberId}
-                      myGender={memberGender ?? null}
-                      onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
-                      onOpenDiscover={() => setOverlayPage("discover")}
-                    />
-                  </div>
+                  <EmptyQueueBridge
+                    myUserId={memberId}
+                    myGender={memberGender ?? null}
+                    onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                    onOpenDiscover={() => setOverlayPage("discover")}
+                  />
                 )}
               </div>
             </div>
@@ -1623,14 +1621,12 @@ const VideoCallPage = () => {
                       />
                     )}
                     {waitingTooLong && memberId !== "anonymous" && (
-                      <div className="w-full max-w-xs px-2">
-                        <EmptyQueueBridge
-                          myUserId={memberId}
-                          myGender={memberGender ?? null}
-                          onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
-                          onOpenDiscover={() => setOverlayPage("discover")}
-                        />
-                      </div>
+                      <EmptyQueueBridge
+                        myUserId={memberId}
+                        myGender={memberGender ?? null}
+                        onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                        onOpenDiscover={() => setOverlayPage("discover")}
+                      />
                     )}
                   </>}
                 </div>
