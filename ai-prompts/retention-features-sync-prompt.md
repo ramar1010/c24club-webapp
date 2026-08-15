@@ -49,6 +49,12 @@ counter instead of a plain spinner.
 Trigger: **15 seconds after a random chat connects**, once per user per day
 (persist a `ph_invite_<YYYY-MM-DD>` flag locally).
 
+Mutual exclusion with A: A only runs in the **waiting** state (no partner), C only runs in the
+**connected** state. On connect, cancel the A 10s/20s timers and close any A popup, then start C's
+15s timer. On disconnect/skip, cancel C's timer and close its popup. Never render two of these
+popups at once — enforce a single `activePopup` value with priority
+`SkipRecapture > PowerHour > EmptyQueueBridge`.
+
 Data:
 - Session times: `anchor_settings.power_hour_start` / `power_hour_end` (stored as UTC `HH:MM`).
   Compute the next upcoming start; if now is between start and end, it's LIVE.
