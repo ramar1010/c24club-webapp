@@ -1951,6 +1951,33 @@ export type Database = {
           },
         ]
       }
+      power_hour_optins: {
+        Row: {
+          created_at: string
+          gender: string | null
+          id: string
+          session_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gender?: string | null
+          id?: string
+          session_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gender?: string | null
+          id?: string
+          session_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       promo_analytics: {
         Row: {
           id: string
