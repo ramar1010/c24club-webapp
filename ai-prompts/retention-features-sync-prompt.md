@@ -46,14 +46,20 @@ Optional UI: while waiting, show an encouraging "Wait time: 0:23 — holding out
 counter instead of a plain spinner.
 
 ## C. Power Hour invite popup (new table)
-Trigger: **15 seconds after a random chat connects**, once per user per day
-(persist a `ph_invite_<YYYY-MM-DD>` flag locally).
+**Never show this during a connected call.** The point of Power Hour is to rescue users who can't
+find anyone — interrupting a live conversation to advertise a future session hurts the exact
+behavior we want. Show it only at "dead air" moments:
 
-Mutual exclusion with A: A only runs in the **waiting** state (no partner), C only runs in the
-**connected** state. On connect, cancel the A 10s/20s timers and close any A popup, then start C's
-15s timer. On disconnect/skip, cancel C's timer and close its popup. Never render two of these
-popups at once — enforce a single `activePopup` value with priority
-`SkipRecapture > PowerHour > EmptyQueueBridge`.
+Triggers (whichever comes first, once per user per day — persist a `ph_invite_<YYYY-MM-DD>` flag):
+1. **Empty queue, still waiting at 30 seconds** (i.e. the A2 waiting popup was dismissed or the user
+   is a female who kept waiting), or
+2. **Right after the user leaves the random chat tab / ends a session with no successful match**, or
+3. **On the Discover popup from A1** — if the male was auto-redirected because the queue was empty,
+   append a Power Hour line + "Save my spot" button to that same popup instead of a second modal.
+
+Mutual exclusion: enforce a single `activePopup` value with priority
+`SkipRecapture > EmptyQueueBridge > PowerHour`. While `callState === 'connected'`, all three are
+suppressed except SkipRecapture (which only renders after the call has ended).
 
 Data:
 - Session times: `anchor_settings.power_hour_start` / `power_hour_end` (stored as UTC `HH:MM`).
@@ -71,9 +77,20 @@ Popup content: ⚡ "Join the next Power Hour", subtitle "Everyone hops on at the
 is packed — no more empty queue", the local start time + a live countdown, the opposite-gender
 counter, primary button "NOTIFY ME & SAVE MY SPOT", secondary "Keep chatting".
 
-Push notification (app side): schedule/send a local or server push at the session start to every
-user in `power_hour_optins` for that date — title "⚡ Power Hour is LIVE", body
-"Guys and girls are hopping on right now — tap to join". Deep link straight to the random chat tab.
+### Power Hour reminder notifications (3 pushes)
+Send to every user in `power_hour_optins` for that `session_date`. All three deep link straight to
+the random chat tab. Dedupe per user per session per stage (store a sent-stage key so a retry can't
+double-send), and skip a stage if the user is already actively in a random chat.
+
+| When | Title | Body |
+| --- | --- | --- |
+| **30 min before start** | ⚡ Power Hour starts in 30 minutes | "Get ready — {N} {girls\|guys} are signed up for tonight's session." |
+| **5 min before start** | ⚡ Power Hour starts in 5 minutes | "Open the app now so you're in the queue the second it kicks off." |
+| **At start (LIVE)** | ⚡ Power Hour is LIVE | "Guys and girls are hopping on right now — tap to join." |
+
+Implementation: schedule local notifications on the device at opt-in time (so they fire even
+offline) **and** have the server cron fire the same three stages as a backstop for users whose
+local schedule was cleared. Cancel the local schedule if the user opts out.
 
 ## D. Skip Recapture (F)
 When a random chat ends (skip or partner left) and:
