@@ -174,28 +174,62 @@ Deno.serve(async (req) => {
         }
       }
 
-      let query = supabase
-        .from("waiting_queue")
-        .select("*")
-        .neq("member_id", memberId)
-        .order("created_at", { ascending: true })
-        .limit(1);
+      // ── Matching with male↔male suppression ──
+      // Guys matching guys is the #1 reason new male users bounce. We only allow a
+      // male↔male pairing once the queued male has been waiting a while, so the
+      // room never feels dead but the default experience stays opposite-gender.
+      const MM_MIN_WAIT_SECONDS = 45;
+      const myGender = (memberGender ?? "").toLowerCase();
+      const oppositeGender = myGender === "female" ? "male" : "female";
 
-      if (genderPreference === "Male" || genderPreference === "Female") {
-        query = query.eq("member_gender", genderPreference);
-      }
-
-      let { data: matches } = await query;
-
-      if ((!matches || matches.length === 0) && genderPreference !== "Both") {
-        const { data: anyMatches } = await supabase
+      const pickFromQueue = async (gender: string | null) => {
+        let q = supabase
           .from("waiting_queue")
           .select("*")
           .neq("member_id", memberId)
           .order("created_at", { ascending: true })
           .limit(1);
-        matches = anyMatches;
+        if (gender) q = q.ilike("member_gender", gender);
+        const { data } = await q;
+        return data && data.length > 0 ? data[0] : null;
+      };
+
+      let partnerRow: any = null;
+
+      // 1) Honour an explicit VIP gender preference first.
+      if (genderPreference === "Male" || genderPreference === "Female") {
+        partnerRow = await pickFromQueue(genderPreference);
       }
+
+      // 2) Default: prefer the opposite gender.
+      if (!partnerRow) {
+        partnerRow = await pickFromQueue(oppositeGender);
+      }
+
+      // 3) Same-gender fallback — suppressed for male↔male unless the queued guy
+      //    has already waited MM_MIN_WAIT_SECONDS.
+      if (!partnerRow) {
+        const sameGenderRow = await pickFromQueue(null);
+        if (sameGenderRow) {
+          const rowGender = (sameGenderRow.member_gender ?? "").toLowerCase();
+          const isMaleMale = myGender === "male" && rowGender === "male";
+          const waitedSeconds = sameGenderRow.created_at
+            ? (Date.now() - new Date(sameGenderRow.created_at).getTime()) / 1000
+            : 0;
+          if (!isMaleMale || waitedSeconds >= MM_MIN_WAIT_SECONDS) {
+            partnerRow = sameGenderRow;
+          } else {
+            console.log(JSON.stringify({
+              tag: "mm_suppressed",
+              joiner: memberId,
+              queued: sameGenderRow.member_id,
+              waited_seconds: Math.round(waitedSeconds),
+            }));
+          }
+        }
+      }
+
+      const matches = partnerRow ? [partnerRow] : [];
 
       if (matches && matches.length > 0) {
         const partner = matches[0];
