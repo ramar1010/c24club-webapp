@@ -9,6 +9,8 @@ interface EmptyQueueBridgeProps {
   myGender: string | null;
   onDmUser: (memberId: string) => void;
   onOpenDiscover: () => void;
+  /** Called when the user closes the popup (lets the parent unlock lower-priority popups). */
+  onDismiss?: () => void;
 }
 
 /**
@@ -17,7 +19,7 @@ interface EmptyQueueBridgeProps {
  * Rendered as a centered modal via portal so it overlays the video box rather than
  * displacing its content.
  */
-const EmptyQueueBridge = ({ myUserId, myGender, onDmUser, onOpenDiscover }: EmptyQueueBridgeProps) => {
+const EmptyQueueBridge = ({ myUserId, myGender, onDmUser, onOpenDiscover, onDismiss }: EmptyQueueBridgeProps) => {
   const [dismissed, setDismissed] = useState(false);
   const oppositeGender = myGender?.toLowerCase() === "female" ? "male" : "female";
 
@@ -52,7 +54,7 @@ const EmptyQueueBridge = ({ myUserId, myGender, onDmUser, onOpenDiscover }: Empt
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md rounded-3xl border border-pink-500/40 bg-gradient-to-b from-pink-500/15 to-[#1a0f1a] p-5 shadow-2xl">
         <button
-          onClick={() => setDismissed(true)}
+          onClick={() => { setDismissed(true); onDismiss?.(); }}
           aria-label="Dismiss"
           className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
         >
