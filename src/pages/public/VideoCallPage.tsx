@@ -1414,6 +1414,16 @@ const VideoCallPage = () => {
                     onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                   />
                 )}
+                {waitingTooLong && memberId !== "anonymous" && (
+                  <div className="w-full max-w-xs px-2">
+                    <EmptyQueueBridge
+                      myUserId={memberId}
+                      myGender={memberGender ?? null}
+                      onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                      onOpenDiscover={() => setOverlayPage("discover")}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           }
@@ -1611,6 +1621,16 @@ const VideoCallPage = () => {
                         onOpenMessages={() => setOverlayPage("messages")}
                         onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
                       />
+                    )}
+                    {waitingTooLong && memberId !== "anonymous" && (
+                      <div className="w-full max-w-xs px-2">
+                        <EmptyQueueBridge
+                          myUserId={memberId}
+                          myGender={memberGender ?? null}
+                          onDmUser={(id) => { setDmTargetId(id); setOverlayPage("messages"); }}
+                          onOpenDiscover={() => setOverlayPage("discover")}
+                        />
+                      </div>
                     )}
                   </>}
                 </div>
