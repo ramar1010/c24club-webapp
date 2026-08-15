@@ -1125,6 +1125,24 @@ const VideoCallPage = () => {
     const connectedDurationSec = connectedDurationMs / 1000;
     const isQuickSkip = connectedDurationSec < 5;
 
+    // --- F: Skip recapture — offer a one-tap DM to the partner we just left ---
+    const leavingPartnerId = currentPartnerId;
+    const leavingPartnerGender = (partnerGender ?? "").toLowerCase();
+    const myGenderLower = (memberGender ?? "").toLowerCase();
+    const recaptureShown = parseInt(sessionStorage.getItem("c24_recapture_count") || "0", 10);
+    if (
+      leavingPartnerId &&
+      connectedDurationSec < 90 &&
+      connectedDurationSec > 2 &&
+      leavingPartnerGender &&
+      myGenderLower &&
+      leavingPartnerGender !== myGenderLower &&
+      recaptureShown < 3
+    ) {
+      sessionStorage.setItem("c24_recapture_count", String(recaptureShown + 1));
+      setRecaptureTargetId(leavingPartnerId);
+    }
+
     // Only penalize non-VIP users
     if (isQuickSkip && !subscribed) {
       // Deduct 2 minutes server-side (only if they have minutes)
