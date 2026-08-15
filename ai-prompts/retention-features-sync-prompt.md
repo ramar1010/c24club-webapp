@@ -4,8 +4,28 @@ Backend is the existing Lovable/Supabase project (do NOT switch backends). All c
 already live on the server — the app only needs UI + calls.
 
 ## A. Empty Queue Bridge (client only)
-When the user has been in the random-chat "waiting" state for **20 seconds** with no match, render a
-panel inside the waiting screen instead of letting them bounce:
+
+### A1. Male auto-redirect to Discover after 10 seconds
+If the waiting user is **male**, do not let them sit in an empty queue:
+
+- After **10 seconds** in the random-chat "waiting" state with no match, automatically leave the
+  queue (clean queue-row removal, cancel matching) and navigate them to the **Discover** tab
+  filtered to girls (`gender ilike 'female'`, `is_discoverable = true`, `image_status = 'approved'`,
+  order `last_active_at desc nulls last`).
+- On arrival, immediately show a popup on Discover:
+  - Title: "Nobody's in the queue right now"
+  - Body: "Try DMing an active girl to get a chat going — she gets a notification instantly and can
+    hop on a video call with you."
+  - Primary button: "Message an active girl" → dismiss popup and scroll to the top of the list
+    (most recently active girls first).
+  - Secondary: "Back to random chat" → returns to the video tab and re-queues.
+- Show this auto-redirect at most **once every 10 minutes** per user (persist a local timestamp) so
+  it doesn't fight users who intentionally keep waiting.
+- Females are NOT auto-redirected; they keep waiting and see the panel in A2.
+
+### A2. Waiting panel (all other cases)
+When the user has been in the random-chat "waiting" state for **20 seconds** with no match, show a
+**centered popup modal** (not an inline box in the video frame), dismissable with an ✕:
 
 - Query: `members` where `is_discoverable = true`, `image_status = 'approved'`,
   `gender ilike <opposite gender>`, `id != me`, `image_url not null`,
