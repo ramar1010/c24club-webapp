@@ -473,6 +473,9 @@ const VideoCallPage = () => {
 
   // Show power hour countdown when arriving from email link
   const [showPowerHourCountdown, setShowPowerHourCountdown] = useState(false);
+  const [showPowerHourInvite, setShowPowerHourInvite] = useState(false);
+  const [waitingTooLong, setWaitingTooLong] = useState(false);
+  const [recaptureTargetId, setRecaptureTargetId] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("from") === "power_hour") {
@@ -480,6 +483,32 @@ const VideoCallPage = () => {
       window.history.replaceState({}, "", "/videocall");
     }
   }, []);
+
+  // ─── C: Power Hour invite after 15s in a random chat (once per session/day) ───
+  useEffect(() => {
+    if (callState !== "connected" || memberId === "anonymous") {
+      setShowPowerHourInvite(false);
+      return;
+    }
+    const dayKey = `c24_ph_invite_${new Date().toISOString().slice(0, 10)}`;
+    if (localStorage.getItem(dayKey)) return;
+
+    const t = setTimeout(() => {
+      localStorage.setItem(dayKey, "1");
+      setShowPowerHourInvite(true);
+    }, 15000);
+    return () => clearTimeout(t);
+  }, [callState, memberId]);
+
+  // ─── A: Empty queue bridge after 20s of waiting ───
+  useEffect(() => {
+    if (callState !== "waiting") {
+      setWaitingTooLong(false);
+      return;
+    }
+    const t = setTimeout(() => setWaitingTooLong(true), 20000);
+    return () => clearTimeout(t);
+  }, [callState]);
 
   const { data: hideCarousel } = useQuery({
     queryKey: ["lucky-spin-carousel-setting"],
