@@ -73,6 +73,16 @@ async function verifyNativeReceipt(platform: string, purchaseToken: string) {
   throw new Error("Unknown platform");
 }
 
+/** Read current recharge balance for a user (0 if no row). */
+async function readBalance(admin: any, userId: string): Promise<number> {
+  const { data } = await admin
+    .from("member_minutes")
+    .select("recharge_minutes")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data?.recharge_minutes ?? 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -98,12 +108,8 @@ serve(async (req) => {
     const stripeKey = isTestMode ? Deno.env.get("STRIPE_SECRET_KEY_TEST")! : Deno.env.get("STRIPE_SECRET_KEY")!;
 
     if (action === "balance") {
-      const { data } = await supabaseAdmin
-        .from("member_minutes")
-        .select("recharge_minutes")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return new Response(JSON.stringify({ success: true, rechargeMinutes: data?.recharge_minutes ?? 0 }), {
+      const bal = await readBalance(supabaseAdmin, user.id);
+      return new Response(JSON.stringify({ success: true, recharge_minutes: bal, rechargeMinutes: bal }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -175,17 +181,15 @@ serve(async (req) => {
           .maybeSingle();
 
         if (existing) {
-          const { data: current } = await supabaseAdmin
-            .from("member_minutes")
-            .select("recharge_minutes")
-            .eq("user_id", user.id)
-            .maybeSingle();
+          const current = await readBalance(supabaseAdmin, user.id);
           return new Response(
             JSON.stringify({
               success: true,
               already_processed: true,
               minutes: selected.minutes,
-              rechargeMinutes: current?.recharge_minutes ?? 0,
+              minutes_added: 0,
+              recharge_minutes: current,
+              rechargeMinutes: current,
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
@@ -202,8 +206,16 @@ serve(async (req) => {
         if (insertError) {
           // Unique violation = another concurrent verify already credited it
           if ((insertError as any).code === "23505") {
+            const current = await readBalance(supabaseAdmin, user.id);
             return new Response(
-              JSON.stringify({ success: true, already_processed: true, minutes: selected.minutes }),
+              JSON.stringify({
+                success: true,
+                already_processed: true,
+                minutes: selected.minutes,
+                minutes_added: 0,
+                recharge_minutes: current,
+                rechargeMinutes: current,
+              }),
               { headers: { ...corsHeaders, "Content-Type": "application/json" } },
             );
           }
@@ -219,6 +231,8 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             minutes: selected.minutes,
+            minutes_added: selected.minutes,
+            recharge_minutes: newBalance ?? (await readBalance(supabaseAdmin, user.id)),
             rechargeMinutes: newBalance ?? selected.minutes,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -247,9 +261,18 @@ serve(async (req) => {
       if (!purchase) throw new Error("Purchase not found");
 
       if (purchase.status === "completed") {
-        return new Response(JSON.stringify({ success: true, already_processed: true, minutes }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        const cur = await readBalance(supabaseAdmin, purchase.user_id);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            already_processed: true,
+            minutes,
+            minutes_added: 0,
+            recharge_minutes: cur,
+            rechargeMinutes: cur,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
 
       // Mark completed first (unique guard) so a double-verify can't double-credit
@@ -262,9 +285,18 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!claimed) {
-        return new Response(JSON.stringify({ success: true, already_processed: true, minutes }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        const cur = await readBalance(supabaseAdmin, purchase.user_id);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            already_processed: true,
+            minutes,
+            minutes_added: 0,
+            recharge_minutes: cur,
+            rechargeMinutes: cur,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
 
       const { data: newBalance } = await supabaseAdmin.rpc("add_recharge_minutes", {
@@ -272,15 +304,22 @@ serve(async (req) => {
         p_amount: minutes,
       });
 
-      return new Response(JSON.stringify({ success: true, minutes, rechargeMinutes: newBalance ?? minutes }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          minutes,
+          minutes_added: minutes,
+          recharge_minutes: newBalance ?? (await readBalance(supabaseAdmin, purchase.user_id)),
+          rechargeMinutes: newBalance ?? minutes,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     throw new Error("Unknown action");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
