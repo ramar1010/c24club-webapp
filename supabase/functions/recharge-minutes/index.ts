@@ -172,12 +172,18 @@ serve(async (req) => {
 
         // Idempotency: reuse the unique stripe_session_id index with an iap: key
         const txKey = String(transactionId ?? purchaseToken ?? "").slice(0, 4096);
-        const idempotencyKey = `iap:${platform ?? "native"}:${packKey}:${(await sha256Hex(txKey)).slice(0, 40)}`;
+        // NOTE: user.id must be part of the key — some clients send a shared/placeholder
+        // transaction token, which would otherwise make user B's purchase look like a
+        // duplicate of user A's and silently skip crediting minutes.
+        const idempotencyKey = `iap:${platform ?? "native"}:${packKey}:${(
+          await sha256Hex(`${user.id}:${txKey}`)
+        ).slice(0, 40)}`;
 
         const { data: existing } = await supabaseAdmin
           .from("recharge_purchases")
           .select("id, status")
           .eq("stripe_session_id", idempotencyKey)
+          .eq("user_id", user.id)
           .maybeSingle();
 
         if (existing) {
