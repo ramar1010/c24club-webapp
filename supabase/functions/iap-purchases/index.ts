@@ -191,8 +191,14 @@ Deno.serve(async (req) => {
     // ── verify-subscription ──────────────────────────────────────────────
     if (action === "verify-subscription" || action === "restore-subscription" || action === "restore_subscription") {
       if (!sku) throw new Error("Missing sku");
+      // Explicitly recognized VIP SKUs (iOS + Android, current + legacy).
+      const PREMIUM_SKUS = new Set(["c24_premium_vip", "premiumvip"]);
+      const BASIC_SKUS = new Set(["c24_basic_vip", "basicvip", "basicvip_weekly_v2"]);
+      if (!PREMIUM_SKUS.has(sku) && !BASIC_SKUS.has(sku)) {
+        console.warn(`[iap-purchases] Unrecognized VIP sku "${sku}" — defaulting to basic tier`);
+      }
       await verifyReceipt();
-      const tier = sku === "c24_premium_vip" || sku === "premiumvip" ? "premium" : "basic";
+      const tier = PREMIUM_SKUS.has(sku) ? "premium" : "basic";
 
       // Detect whether this is a NEW activation (so we know to award bounty)
       const { data: priorMinutes } = await supabaseAdmin
