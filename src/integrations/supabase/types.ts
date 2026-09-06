@@ -260,6 +260,7 @@ export type Database = {
           id: string
           idle_rate_cash: number
           idle_rate_time: number
+          live_match_slots: Json | null
           max_anchor_cap: number
           power_hour_end: string
           power_hour_start: string
@@ -277,6 +278,7 @@ export type Database = {
           id?: string
           idle_rate_cash?: number
           idle_rate_time?: number
+          live_match_slots?: Json | null
           max_anchor_cap?: number
           power_hour_end?: string
           power_hour_start?: string
@@ -294,6 +296,7 @@ export type Database = {
           id?: string
           idle_rate_cash?: number
           idle_rate_time?: number
+          live_match_slots?: Json | null
           max_anchor_cap?: number
           power_hour_end?: string
           power_hour_start?: string
@@ -1778,6 +1781,7 @@ export type Database = {
           push_token: string | null
           state: string | null
           stats: string | null
+          timezone: string | null
           title: string | null
           updated_at: string
           zip: string | null
@@ -1811,6 +1815,7 @@ export type Database = {
           push_token?: string | null
           state?: string | null
           stats?: string | null
+          timezone?: string | null
           title?: string | null
           updated_at?: string
           zip?: string | null
@@ -1844,6 +1849,7 @@ export type Database = {
           push_token?: string | null
           state?: string | null
           stats?: string | null
+          timezone?: string | null
           title?: string | null
           updated_at?: string
           zip?: string | null
@@ -1957,6 +1963,7 @@ export type Database = {
           gender: string | null
           id: string
           session_date: string
+          slot_key: string | null
           updated_at: string
           user_id: string
         }
@@ -1965,6 +1972,7 @@ export type Database = {
           gender?: string | null
           id?: string
           session_date: string
+          slot_key?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1973,6 +1981,7 @@ export type Database = {
           gender?: string | null
           id?: string
           session_date?: string
+          slot_key?: string | null
           updated_at?: string
           user_id?: string
         }
