@@ -194,10 +194,37 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    logStep("ERROR", { message: error.message });
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    logStep("ERROR", { message: error?.message });
+    // Never fail hard: fall back to the last known VIP state in the DB so paying
+    // members don't lose perks because of a Stripe/API hiccup.
+    try {
+      const authHeader = req.headers.get("Authorization");
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : null;
+      if (token) {
+        const { data: userData } = await supabaseClient.auth.getUser(token);
+        const uid = userData?.user?.id;
+        if (uid) {
+          const { data: mm } = await supabaseClient
+            .from("member_minutes")
+            .select("is_vip, vip_tier, subscription_end")
+            .eq("user_id", uid)
+            .maybeSingle();
+          return new Response(JSON.stringify({
+            subscribed: mm?.is_vip ?? false,
+            vip_tier: mm?.vip_tier ?? null,
+            subscription_end: mm?.subscription_end ?? null,
+            degraded: true,
+          }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      }
+    } catch (fallbackErr: any) {
+      logStep("Fallback lookup failed", { message: fallbackErr?.message });
+    }
+    return new Response(JSON.stringify({
+      subscribed: false,
+      vip_tier: null,
+      subscription_end: null,
+      degraded: true,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

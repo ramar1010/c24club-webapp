@@ -51,7 +51,10 @@ export function useVipStatus(userId: string | null) {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
 
-      sessionStorage.setItem(`vip_status_${userId}`, JSON.stringify({ data, ts: Date.now() }));
+      // Don't cache a degraded (fallback) response — retry sooner instead.
+      if (!data?.degraded) {
+        sessionStorage.setItem(`vip_status_${userId}`, JSON.stringify({ data, ts: Date.now() }));
+      }
 
       // VIP purchases/renewals credit 5 free call minutes server-side — refresh balances.
       if (data?.subscribed) broadcastRechargeUpdate();
