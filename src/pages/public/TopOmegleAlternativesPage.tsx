@@ -379,7 +379,7 @@ const TopOmegleAlternativesPage = () => {
             author: { "@type": "Organization", name: "C24 Club" },
             publisher: { "@type": "Organization", name: "C24 Club", url: "https://c24club.com" },
             datePublished: "2026-01-15",
-            dateModified: "2026-07-12",
+            dateModified: "2026-09-01",
           }),
         }}
       />
