@@ -237,9 +237,8 @@ const DiscoverPage = () => {
                   <Fragment key={member.id}>
                     {showReward && (
                       <DiscoverRewardCard
-                        key={`reward-${idx}`}
-
                         reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]}
+
                       />
                     )}
                     <DiscoverMemberCard
