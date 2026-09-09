@@ -31,6 +31,8 @@ const DiscoverPage = () => {
   const [isShuffling, setIsShuffling] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { startCheckout } = useVipStatus(user?.id ?? null);
+  const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
+
 
   const { user: authUser } = useAuth();
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
