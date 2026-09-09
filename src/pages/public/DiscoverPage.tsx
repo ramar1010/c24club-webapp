@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
+import DiscoverRewardCard, { useDiscoverRewards } from "@/components/discover/DiscoverRewardCard";
+
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
