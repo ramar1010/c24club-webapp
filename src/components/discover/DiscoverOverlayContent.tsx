@@ -157,20 +157,29 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
           </div>
         ) : (
           <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-opacity duration-300 ${isShuffling ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-            {shuffledMembers.map((member) => (
-              <DiscoverMemberCard
-                key={member.id}
-                member={member}
-                alreadyInterested={myInterests.has(member.id)}
-                isMutualMatch={isMutualMatch(member.id)}
-                sendingInterest={sendingInterest === member.id}
-                mutualSocials={mutualSocials.get(member.id)}
-                onInterest={handleInterest}
-                myGender={myGender}
-                isSelf={member.id === user?.id}
-              />
-            ))}
+            {shuffledMembers.map((member, idx) => {
+              const rewardIdx = Math.floor(idx / 6);
+              const showReward = idx > 0 && idx % 6 === 0 && inlineRewards.length > 0;
+              return (
+                <Fragment key={member.id}>
+                  {showReward && (
+                    <DiscoverRewardCard reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]} />
+                  )}
+                  <DiscoverMemberCard
+                    member={member}
+                    alreadyInterested={myInterests.has(member.id)}
+                    isMutualMatch={isMutualMatch(member.id)}
+                    sendingInterest={sendingInterest === member.id}
+                    mutualSocials={mutualSocials.get(member.id)}
+                    onInterest={handleInterest}
+                    myGender={myGender}
+                    isSelf={member.id === user?.id}
+                  />
+                </Fragment>
+              );
+            })}
           </div>
+
         )}
       </div>
 
