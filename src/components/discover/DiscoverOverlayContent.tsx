@@ -22,6 +22,8 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
+  const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
+
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState<string | null>(null);
   const [shuffleSeed, setShuffleSeed] = useState(0);
