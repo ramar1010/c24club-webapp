@@ -255,7 +255,8 @@ const DiscoverPage = () => {
                       isModerator={modUserIds.has(member.id)}
                       isSelf={member.id === user?.id}
                     />
-                  </>
+                  </Fragment>
+
                 );
               })}
             </div>
