@@ -234,10 +234,11 @@ const DiscoverPage = () => {
                 const rewardIdx = Math.floor(idx / 6);
                 const showReward = idx > 0 && idx % 6 === 0 && inlineRewards.length > 0;
                 return (
-                  <>
+                  <Fragment key={member.id}>
                     {showReward && (
                       <DiscoverRewardCard
-                        key={`reward-${inlineRewards[(rewardIdx - 1) % inlineRewards.length].id}-${idx}`}
+                        key={`reward-${idx}`}
+
                         reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]}
                       />
                     )}
