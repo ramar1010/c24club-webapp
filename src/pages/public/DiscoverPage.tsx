@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
 import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
+import DiscoverRewardCard, { useDiscoverRewards } from "@/components/discover/DiscoverRewardCard";
+
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
@@ -29,6 +31,8 @@ const DiscoverPage = () => {
   const [isShuffling, setIsShuffling] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { startCheckout } = useVipStatus(user?.id ?? null);
+  const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
+
 
   const { user: authUser } = useAuth();
   const { data: minutesData, refetch: refetchMinutes } = useQuery({
@@ -230,23 +234,37 @@ const DiscoverPage = () => {
         ) : (
           <>
             <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-all duration-300 ${isShuffling ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-              {shuffledMembers.map((member) => (
-                <DiscoverMemberCard
-                  key={member.id}
-                  member={member}
-                  alreadyInterested={myInterests.has(member.id)}
-                  isMutualMatch={isMutualMatch(member.id)}
-                  sendingInterest={sendingInterest === member.id}
-                  mutualSocials={mutualSocials.get(member.id)}
-                  onInterest={handleInterest}
-                  myGender={myGender}
-                  isOwner={adminUserIds.has(member.id)}
-                  isVip={vipUserIds.has(member.id)}
-                  isModerator={modUserIds.has(member.id)}
-                  isSelf={member.id === user?.id}
-                />
-              ))}
+              {shuffledMembers.map((member, idx) => {
+                const rewardIdx = Math.floor(idx / 6);
+                const showReward = idx > 0 && idx % 6 === 0 && inlineRewards.length > 0;
+                return (
+                  <Fragment key={member.id}>
+                    {showReward && (
+                      <DiscoverRewardCard
+                        reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]}
+
+                      />
+                    )}
+                    <DiscoverMemberCard
+                      key={member.id}
+                      member={member}
+                      alreadyInterested={myInterests.has(member.id)}
+                      isMutualMatch={isMutualMatch(member.id)}
+                      sendingInterest={sendingInterest === member.id}
+                      mutualSocials={mutualSocials.get(member.id)}
+                      onInterest={handleInterest}
+                      myGender={myGender}
+                      isOwner={adminUserIds.has(member.id)}
+                      isVip={vipUserIds.has(member.id)}
+                      isModerator={modUserIds.has(member.id)}
+                      isSelf={member.id === user?.id}
+                    />
+                  </Fragment>
+
+                );
+              })}
             </div>
+
 
             {/* Infinite scroll sentinel */}
             <div ref={sentinelRef} className="py-6 flex justify-center">

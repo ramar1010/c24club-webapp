@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, Fragment } from "react";
 import { Camera, Sparkles, Users, Trash2, MessageSquare, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
@@ -6,6 +6,8 @@ import { useUnreadCount } from "@/hooks/useMessages";
 import SelfieCaptureModal from "@/components/discover/SelfieCaptureModal";
 import DiscoverFilters from "@/components/discover/DiscoverFilters";
 import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
+import DiscoverRewardCard, { useDiscoverRewards } from "@/components/discover/DiscoverRewardCard";
+
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import MessagesPage from "@/pages/public/MessagesPage";
 
@@ -20,6 +22,8 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
+  const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
+
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState<string | null>(null);
   const [shuffleSeed, setShuffleSeed] = useState(0);
@@ -157,20 +161,29 @@ const DiscoverOverlayContent = ({ onClose }: DiscoverOverlayContentProps) => {
           </div>
         ) : (
           <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-opacity duration-300 ${isShuffling ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-            {shuffledMembers.map((member) => (
-              <DiscoverMemberCard
-                key={member.id}
-                member={member}
-                alreadyInterested={myInterests.has(member.id)}
-                isMutualMatch={isMutualMatch(member.id)}
-                sendingInterest={sendingInterest === member.id}
-                mutualSocials={mutualSocials.get(member.id)}
-                onInterest={handleInterest}
-                myGender={myGender}
-                isSelf={member.id === user?.id}
-              />
-            ))}
+            {shuffledMembers.map((member, idx) => {
+              const rewardIdx = Math.floor(idx / 6);
+              const showReward = idx > 0 && idx % 6 === 0 && inlineRewards.length > 0;
+              return (
+                <Fragment key={member.id}>
+                  {showReward && (
+                    <DiscoverRewardCard reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]} />
+                  )}
+                  <DiscoverMemberCard
+                    member={member}
+                    alreadyInterested={myInterests.has(member.id)}
+                    isMutualMatch={isMutualMatch(member.id)}
+                    sendingInterest={sendingInterest === member.id}
+                    mutualSocials={mutualSocials.get(member.id)}
+                    onInterest={handleInterest}
+                    myGender={myGender}
+                    isSelf={member.id === user?.id}
+                  />
+                </Fragment>
+              );
+            })}
           </div>
+
         )}
       </div>
 
