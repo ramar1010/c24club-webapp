@@ -171,33 +171,53 @@ Deno.serve(async (req) => {
 
     let pushSent = 0;
     let pushFailed = 0;
+    let pushSkipped = 0;
     let pushError: string | null = null;
-    const pushResults = await Promise.allSettled(
-      pushTargets.map((t) =>
-        supabase.functions.invoke("send-push-notification", {
-          body: {
-            user_id: t.id,
-            title: pushTitle,
-            body: pushBody,
-            data: { deepLink: "/(tabs)/chat" },
-            notification_type: pushNotificationType,
-            // 10-min cooldown — primary path (videocall-match) uses 2-5 min, so it
-            // always "wins" if it ran successfully. This only fires for users the
-            // primary missed.
-            cooldown_minutes: 10,
-          },
-        }),
-      ),
-    );
-    for (const r of pushResults) {
-      if (r.status === "fulfilled") {
-        const body: any = r.value?.data;
-        if (body?.success) pushSent++;
-        else if (body?.skipped) {/* cooldown / no token — not an error */}
-        else { pushFailed++; pushError = body?.reason || pushError; }
-      } else {
-        pushFailed++;
-        pushError = String(r.reason);
+    const errorCounts: Record<string, number> = {};
+
+    // Fan out in small batches — firing hundreds of concurrent edge-function
+    // invocations exhausts connection/concurrency limits and most calls fail.
+    const BATCH_SIZE = 20;
+    for (let i = 0; i < pushTargets.length; i += BATCH_SIZE) {
+      const batch = pushTargets.slice(i, i + BATCH_SIZE);
+      const pushResults = await Promise.allSettled(
+        batch.map((t) =>
+          supabase.functions.invoke("send-push-notification", {
+            body: {
+              user_id: t.id,
+              title: pushTitle,
+              body: pushBody,
+              data: { deepLink: "/(tabs)/chat" },
+              notification_type: pushNotificationType,
+              // 10-min cooldown — primary path (videocall-match) uses 2-5 min, so it
+              // always "wins" if it ran successfully. This only fires for users the
+              // primary missed.
+              cooldown_minutes: 10,
+            },
+          }),
+        ),
+      );
+      for (const r of pushResults) {
+        if (r.status === "fulfilled") {
+          const body: any = r.value?.data;
+          if (body?.success) pushSent++;
+          else if (body?.skipped) pushSkipped++;
+          else {
+            pushFailed++;
+            const reason = String(body?.reason ?? r.value?.error?.message ?? "unknown");
+            errorCounts[reason.slice(0, 120)] = (errorCounts[reason.slice(0, 120)] ?? 0) + 1;
+            pushError = reason;
+          }
+        } else {
+          pushFailed++;
+          const reason = String(r.reason).slice(0, 120);
+          errorCounts[reason] = (errorCounts[reason] ?? 0) + 1;
+          pushError = reason;
+        }
+      }
+      // Small pause between batches to stay under provider rate limits.
+      if (i + BATCH_SIZE < pushTargets.length) {
+        await new Promise((res) => setTimeout(res, 150));
       }
     }
     console.log(JSON.stringify({
@@ -207,7 +227,9 @@ Deno.serve(async (req) => {
       candidates: targets?.length ?? 0,
       eligible: pushTargets.length,
       sent: pushSent,
+      skipped: pushSkipped,
       failed: pushFailed,
+      error_counts: errorCounts,
     }));
 
     // Update cooldown and increment email counter
