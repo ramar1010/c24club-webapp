@@ -2,10 +2,10 @@ import SeoLandingLayout from "@/components/public/SeoLandingLayout";
 
 const MonkeyAppAlternativePage = () => (
   <SeoLandingLayout
-    title="Monkey App Alternative ,  Random Video Chat With Rewards | C24 Club"
-    metaDescription="Looking for a Monkey app alternative? C24 Club is a free, browser-based random video chat with stronger moderation, reward minutes, and no app store removals to worry about."
-    h1="Monkey App Alternative ,  Random Video Chat That Actually Stays Online"
-    intro="Monkey got pulled from the App Store and Google Play for safety issues. C24 Club is the modern alternative ,  same instant 1-on-1 video matching, but built for adults, browser-based, AI-moderated, and you earn real rewards every minute."
+    title="Monkey App Alternative — Random Video Chat With Rewards | C24 Club"
+    metaDescription="Monkey app alternative for adults: free browser-based random video chat with AI moderation, 18+ verification, and reward minutes you can cash out. No download, no app store removals."
+    h1="Monkey App Alternative — Random Video Chat That Actually Stays Online"
+    intro="Monkey got pulled from the App Store and Google Play for safety issues. C24 Club is the modern alternative — same instant 1-on-1 video matching, but built for adults, browser-based, AI-moderated, and you earn real rewards every minute."
     canonical="https://c24club.com/monkey-app-alternative"
     siblingLinks={[
       { label: "Ome TV Alternative", to: "/ome-tv-alternative" },
@@ -15,11 +15,25 @@ const MonkeyAppAlternativePage = () => (
       { label: "Talk to Strangers", to: "/talk-to-strangers" },
     ]}
   >
+    <h2>Safety features Monkey never had</h2>
+    <p>
+      Monkey's removals came down to one thing: minors and unmoderated streams. C24 Club is built
+      the other way around, with safeguards that run on every single match:
+    </p>
+    <ul>
+      <li><strong>18+ only.</strong> Age is verified at the gate and underage accounts are permanently removed under our CSAE policy.</li>
+      <li><strong>Real-time AI moderation.</strong> An NSFW model scans the incoming stream in your own browser and flags violations instantly. Video is never stored.</li>
+      <li><strong>Pre-blur on connect.</strong> The first moments of every match are blurred on both sides so nobody gets flashed.</li>
+      <li><strong>One-tap reporting.</strong> Reports trigger an immediate human review with a captured still frame as evidence.</li>
+      <li><strong>Encrypted connections.</strong> Calls use mandatory DTLS-SRTP, so no ISP or third party can decrypt the stream.</li>
+      <li><strong>Ban enforcement that sticks.</strong> Bans apply by IP and device, not just by account.</li>
+    </ul>
+
     <h2>Why people are looking for a Monkey app alternative</h2>
     <p>
       Monkey was the Snapchat-style 15-second random video chat app that exploded in 2020. It got
       pulled from the App Store and Google Play multiple times over child safety concerns and has
-      had a rocky history ever since. If you're searching for an alternative, you're not alone ,  the
+      had a rocky history ever since. If you're searching for an alternative, you're not alone — the
       install link is unreliable, the moderation has never been strong, and the format itself
       (mandatory 15-second cuts) makes real conversations almost impossible.
     </p>
@@ -79,7 +93,7 @@ const MonkeyAppAlternativePage = () => (
 
     <h2>Built for actual conversations, not 15-second cuts</h2>
     <p>
-      The 15-second timer was Monkey's defining feature ,  and its biggest weakness. You'd just start
+      The 15-second timer was Monkey's defining feature — and its biggest weakness. You'd just start
       reading someone's vibe and the call would end. C24 Club takes the opposite approach: matches
       last as long as both people want them to. Click <strong>NEXT</strong> when you're ready to
       move on. Stay for an hour if the conversation is good. The platform rewards the staying, not
@@ -91,7 +105,7 @@ const MonkeyAppAlternativePage = () => (
       Monkey has been removed from app stores so many times that searching for it brings up dozens
       of clones, lookalike apps, and outright scams. C24 Club lives on the open web at{" "}
       <a href="/">c24club.com</a>. There's no install link to lose, no app store review to fail, and
-      no way for a takedown to put the platform out of reach. It just works in any modern browser ,  
+      no way for a takedown to put the platform out of reach. It just works in any modern browser—
       desktop, tablet, or phone.
     </p>
 
@@ -120,7 +134,7 @@ const MonkeyAppAlternativePage = () => (
 
     <h2>Earn real rewards while you chat</h2>
     <p>
-      The biggest difference between C24 Club and Monkey ,  or any other random video chat product ,  
+      The biggest difference between C24 Club and Monkey — or any other random video chat product—
       is the reward economy. Every minute of conversation builds your minute balance in real time.
       You can watch the counter climb on screen. When you've earned enough you can:
     </p>
@@ -131,13 +145,13 @@ const MonkeyAppAlternativePage = () => (
       <li>Spin the Lucky Spin wheel for instant cash drops</li>
     </ul>
     <p>
-      Female users earn at boosted rates through the anchor program ,  a thank-you for keeping the
+      Female users earn at boosted rates through the anchor program — a thank-you for keeping the
       matchmaker balanced.
     </p>
 
     <h2>How to switch from Monkey in 10 seconds</h2>
     <ol>
-      <li>Open <a href="/">c24club.com</a> in any browser ,  no install needed.</li>
+      <li>Open <a href="/">c24club.com</a> in any browser — no install needed.</li>
       <li>Allow camera and microphone access.</li>
       <li>Click <strong>START</strong> and you're matched in 1, 2 seconds.</li>
       <li>Chat as long as you like. Watch reward minutes climb in real time.</li>
@@ -146,7 +160,7 @@ const MonkeyAppAlternativePage = () => (
     <h2>Ready for a real Monkey alternative?</h2>
     <p>
       C24 Club is the random video chat platform Monkey could have been if it had been built for
-      adults from day one ,  reliable, browser-based, properly moderated, and rewarding. Click START
+      adults from day one — reliable, browser-based, properly moderated, and rewarding. Click START
       and meet your first match.
     </p>
   </SeoLandingLayout>
