@@ -1,7 +1,40 @@
 import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import usePageMeta from "@/hooks/usePageMeta";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+
+const femaleEarnSection = {
+  title: "💰 Earning Money (For Girls)",
+  items: [
+    {
+      q: "How do girls earn real money?",
+      a: "Girls earn minutes that convert to real cash in four ways:\n\n1. **VIP Conversions** — When a guy you chat with subscribes to VIP, you earn a bounty ($2.50 for Basic, $10.00 for Premium).\n2. **Gifted Minutes** — Guys can send you minute gifts during video calls.\n3. **Video Call Recharges** — When a guy buys recharge minutes and calls you directly, you earn $0.30 for every minute of the call.\n4. **Random Chat Minutes** — Minutes collected from random video chats.",
+    },
+    {
+      q: "How do I convert guys to VIP?",
+      a: "Chat with guys in your DMs and on calls. When a guy you've been talking to subscribes to VIP, you automatically earn the bounty — it's tracked for you. The best strategy: reply to messages fast, stay active, and keep conversations going. Active and responsive girls convert the most!",
+    },
+    {
+      q: "What is the 'Message Limit' opportunity?",
+      a: "Non-VIP guys have a daily message limit. When a guy hits his limit, he'll see a prompt to subscribe — and if he's been chatting with you, YOU get credited with the conversion bounty. This is why replying to lots of guys pays off.",
+    },
+    {
+      q: "How do video call recharges work?",
+      a: "Guys can buy recharge minute packs and use them to call you directly from your Discover profile. You earn $0.30 per minute for the entire call, added to your cashable balance automatically. Keep your Discover profile active with an approved selfie so guys can find and call you!",
+    },
+    {
+      q: "How do I cash out?",
+      a: "Go to your Profile → Earnings to see your cashable balance. You can cash out via PayPal from the Reward Store. Only gifted/bounty/recharge minutes are cashable — random chat minutes are for store rewards.",
+    },
+    {
+      q: "How do I stay at the top of Discover?",
+      a: "Active users and VIP users stay at the top of Discover! Reply to messages, stay online, and keep your profile fresh. The more visible you are, the more guys message and call you — and the more you earn.",
+    },
+  ],
+};
 
 const sections = [
   {
@@ -145,6 +178,25 @@ const sections = [
 
 const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const { data: myGender } = useQuery({
+    queryKey: ["my-gender-howto", user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data?.gender?.toLowerCase() || null;
+    },
+  });
+
+  const visibleSections =
+    myGender === "female" ? [femaleEarnSection, ...sections] : sections;
+
   usePageMeta({
     title: "How To Guide — Earn Rewards | C24 Club",
     description:
@@ -155,7 +207,7 @@ const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: sections.flatMap((s) =>
+    mainEntity: visibleSections.flatMap((s) =>
       s.items.map((item) => ({
         "@type": "Question",
         name: item.q,
@@ -186,8 +238,18 @@ const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
           Everything you need to know about C24 Club — from collecting minutes to redeeming rewards and beyond.
         </p>
 
+        {myGender === "female" && (
+          <Link
+            to="/earn-money"
+            className="block mb-6 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/20 to-green-500/10 p-4 hover:from-emerald-500/30 transition-colors"
+          >
+            <p className="font-black text-emerald-400 text-sm tracking-wide">💰 WANT THE FULL EARNING GUIDE?</p>
+            <p className="text-neutral-300 text-xs mt-1">See exactly how girls turn chats and calls into real PayPal cash →</p>
+          </Link>
+        )}
+
         <Accordion type="multiple" className="space-y-3">
-          {sections.map((section, si) => (
+          {visibleSections.map((section, si) => (
             <div key={si} className="space-y-2">
               <h2 className="font-black text-base tracking-wide mt-4 mb-2">
                 {section.title}
