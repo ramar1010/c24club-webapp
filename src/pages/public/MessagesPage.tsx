@@ -803,8 +803,9 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white leading-none">
-                      ${(earningsSnapshot.cashable_minutes * 0.01).toFixed(2)}
+                      ${((minutesData?.gifted_minutes ?? 0) * 0.01).toFixed(2)}
                     </p>
+
                     <p className="text-[10px] text-white/45 mt-1">cashable balance</p>
                   </div>
                 </div>
