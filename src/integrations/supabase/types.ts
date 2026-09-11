@@ -44,6 +44,51 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_tasks: {
+        Row: {
+          category: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          platform: string
+          position: number
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+          position?: number
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+          position?: number
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       anchor_challenge_progress: {
         Row: {
           challenge_id: string
