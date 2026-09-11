@@ -1202,6 +1202,45 @@ export type Database = {
         }
         Relationships: []
       }
+      female_earnings_snapshots: {
+        Row: {
+          cashable_minutes: number
+          created_at: string
+          dm_last_posted_at: string | null
+          dm_message_id: string | null
+          earned_today_minutes: number
+          near_limit_count: number
+          near_limit_names: string[]
+          snapshot_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cashable_minutes?: number
+          created_at?: string
+          dm_last_posted_at?: string | null
+          dm_message_id?: string | null
+          earned_today_minutes?: number
+          near_limit_count?: number
+          near_limit_names?: string[]
+          snapshot_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cashable_minutes?: number
+          created_at?: string
+          dm_last_posted_at?: string | null
+          dm_message_id?: string | null
+          earned_today_minutes?: number
+          near_limit_count?: number
+          near_limit_names?: string[]
+          snapshot_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       female_retention_progress: {
         Row: {
           created_at: string

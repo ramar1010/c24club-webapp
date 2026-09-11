@@ -80,19 +80,7 @@ Deno.serve(async (req) => {
       const nearCount = Number(row.near_limit_count ?? 0);
       const names: string[] = row.near_limit_names ?? [];
 
-      const notificationType = `earnings_digest:${today}`;
-      const { data: alreadySent } = testEmail ? { data: null } : await supabase
-        .from("push_notification_log")
-        .select("last_sent_at")
-        .eq("user_id", femaleId)
-        .eq("notification_type", notificationType)
-        .maybeSingle();
-      if (alreadySent?.last_sent_at) {
-        skipped++;
-        continue;
-      }
-
-      const lines: string[] = [`💰 Your daily earnings update, ${name}:`];
+      const lines: string[] = [`💰 Your earnings update, ${name}:`];
       if (earned > 0) {
         lines.push(`• You earned ${earned} minutes ($${(earned * 0.01).toFixed(2)}) in the last 24 hours.`);
       }
@@ -109,6 +97,25 @@ Deno.serve(async (req) => {
       lines.push(`Tip: Guide → https://c24club.com/earn-money`);
       const dmContent = lines.join("\n");
 
+      // 1) Always refresh the pinned earnings card data (no chat spam).
+      const { data: prevSnapshot } = await supabase
+        .from("female_earnings_snapshots")
+        .select("dm_message_id, dm_last_posted_at")
+        .eq("user_id", femaleId)
+        .maybeSingle();
+
+      await supabase.from("female_earnings_snapshots").upsert({
+        user_id: femaleId,
+        snapshot_date: today,
+        earned_today_minutes: earned,
+        cashable_minutes: cashable,
+        near_limit_count: nearCount,
+        near_limit_names: names,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+
+      // 2) One reusable "earnings" DM: rewrite it in place daily,
+      //    and only post a brand new message once every 7 days.
       let conversationId: string | null = null;
       const { data: convo } = await supabase
         .from("conversations")
@@ -128,15 +135,57 @@ Deno.serve(async (req) => {
       }
 
       if (conversationId) {
-        await supabase.from("dm_messages").insert({
-          conversation_id: conversationId,
-          sender_id: OWNER_ID,
-          content: dmContent,
-        });
-        await supabase
-          .from("conversations")
-          .update({ last_message_at: new Date().toISOString() })
-          .eq("id", conversationId);
+        const lastPosted = prevSnapshot?.dm_last_posted_at
+          ? new Date(prevSnapshot.dm_last_posted_at).getTime()
+          : 0;
+        const weekElapsed = Date.now() - lastPosted >= 7 * 86400000;
+        let updatedInPlace = false;
+
+        if (prevSnapshot?.dm_message_id && !weekElapsed) {
+          const { error: updErr } = await supabase
+            .from("dm_messages")
+            .update({ content: dmContent })
+            .eq("id", prevSnapshot.dm_message_id);
+          updatedInPlace = !updErr;
+        }
+
+        if (!updatedInPlace) {
+          const { data: inserted } = await supabase
+            .from("dm_messages")
+            .insert({
+              conversation_id: conversationId,
+              sender_id: OWNER_ID,
+              content: dmContent,
+            })
+            .select("id")
+            .single();
+          if (inserted?.id) {
+            await supabase
+              .from("female_earnings_snapshots")
+              .update({
+                dm_message_id: inserted.id,
+                dm_last_posted_at: new Date().toISOString(),
+              })
+              .eq("user_id", femaleId);
+            await supabase
+              .from("conversations")
+              .update({ last_message_at: new Date().toISOString() })
+              .eq("id", conversationId);
+          }
+        }
+      }
+
+      // 3) Push notification stays daily (deduped per day).
+      const notificationType = `earnings_digest:${today}`;
+      const { data: alreadySent } = testEmail ? { data: null } : await supabase
+        .from("push_notification_log")
+        .select("last_sent_at")
+        .eq("user_id", femaleId)
+        .eq("notification_type", notificationType)
+        .maybeSingle();
+      if (alreadySent?.last_sent_at) {
+        skipped++;
+        continue;
       }
 
       const pushBody = nearCount > 0
