@@ -820,7 +820,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </p>
                 )}
                 <div className="mt-3 flex gap-2">
-                  {earningsSnapshot.cashable_minutes > 0 && (
+                  {(minutesData?.gifted_minutes ?? 0) > 0 && (
                     <button
                       onClick={() => setShowCashout(true)}
                       className="flex-1 text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-black hover:brightness-110 transition"
