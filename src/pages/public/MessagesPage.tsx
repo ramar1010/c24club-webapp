@@ -571,26 +571,54 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     },
   });
 
-  // Always-current earnings summary (females only) — replaces daily DM spam
+  // Always-current earnings summary (females only) — live values, snapshot only
+  // supplies the "near limit" hints (and is ignored once it goes stale).
   const { data: earningsSnapshot } = useQuery({
     queryKey: ["female-earnings-snapshot", user?.id],
     enabled: !!user && myGender === "female",
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("female_earnings_snapshots")
-        .select("earned_today_minutes, cashable_minutes, near_limit_count, near_limit_names, updated_at")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data as {
-        earned_today_minutes: number;
-        cashable_minutes: number;
-        near_limit_count: number;
-        near_limit_names: string[] | null;
-        updated_at: string;
-      } | null;
+      const startOfDayUtc = new Date();
+      startOfDayUtc.setUTCHours(0, 0, 0, 0);
+
+      const [snapRes, todayRes] = await Promise.all([
+        supabase
+          .from("female_earnings_snapshots")
+          .select("near_limit_count, near_limit_names, updated_at")
+          .eq("user_id", user!.id)
+          .maybeSingle(),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false)
+          .gte("created_at", startOfDayUtc.toISOString()),
+      ]);
+
+      const snap = snapRes.data as
+        | { near_limit_count: number; near_limit_names: string[] | null; updated_at: string }
+        | null;
+
+      const earnedToday = (todayRes.data ?? []).reduce(
+        (sum: number, r: any) => sum + Number(r.amount_minutes ?? 0),
+        0
+      );
+
+      // Only trust the near-limit hints while they're fresh (last 36h).
+      const snapFresh =
+        !!snap?.updated_at && Date.now() - new Date(snap.updated_at).getTime() < 36 * 3600_000;
+
+      return {
+        earned_today_minutes: earnedToday,
+        near_limit_count: snapFresh ? Number(snap?.near_limit_count ?? 0) : 0,
+        near_limit_names: snapFresh ? snap?.near_limit_names ?? [] : [],
+        updated_at: new Date().toISOString(),
+      };
     },
   });
+
 
   const filteredConversations = useMemo(() => {
     let list = conversations;
