@@ -1,7 +1,13 @@
+import usePageMeta from "@/hooks/usePageMeta";
 import { ChevronLeft, Shield, AlertTriangle, Phone, Flag, Lock, Eye, Users } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
 const CSAEPolicyPage = () => {
+  usePageMeta({
+    title: "CSAE Policy — Child Safety Standards | C24 Club",
+    description: "C24 Club's child sexual abuse and exploitation policy: zero tolerance, 18+ verification, immediate removal, and NCMEC reporting.",
+    path: "/csae-policy",
+  });
   const navigate = useNavigate();
 
   return (
