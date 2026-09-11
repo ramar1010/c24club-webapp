@@ -789,9 +789,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">
                     Your earnings today
                   </span>
-                  <span className="text-[10px] text-white/35">
-                    Updated {formatTime(earningsSnapshot.updated_at)} ago
-                  </span>
+                  <span className="text-[10px] text-white/35">Live</span>
+
                 </div>
                 <div className="mt-2 flex items-end gap-4">
                   <div>
