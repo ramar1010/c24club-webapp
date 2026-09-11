@@ -66,6 +66,7 @@ const AdminBlogPage = lazy(() => import("@/pages/admin/AdminBlogPage"));
 const AdminBlogEditorPage = lazy(() => import("@/pages/admin/AdminBlogEditorPage"));
 const WishlistSettingsPage = lazy(() => import("@/pages/admin/WishlistSettingsPage"));
 const AdminRedditTasksPage = lazy(() => import("@/pages/admin/AdminRedditTasksPage"));
+const AdminChecklistPage = lazy(() => import("@/pages/admin/AdminChecklistPage"));
 const AdminIapPurchasesPage = lazy(() => import("@/pages/admin/AdminIapPurchasesPage"));
 const VipPurchaseAnalyticsPage = lazy(() => import("@/pages/admin/VipPurchaseAnalyticsPage"));
 
