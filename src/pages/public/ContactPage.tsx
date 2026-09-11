@@ -1,3 +1,4 @@
+import usePageMeta from "@/hooks/usePageMeta";
 import { useState } from "react";
 import { Mail, Send, Loader2, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
@@ -12,6 +13,11 @@ const contactSchema = z.object({
 });
 
 const ContactPage = () => {
+  usePageMeta({
+    title: "Contact C24 Club — Support & Help",
+    description: "Get in touch with the C24 Club team for support with video chat, rewards, VIP, payouts, or account issues. We reply to every message.",
+    path: "/contact",
+  });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
