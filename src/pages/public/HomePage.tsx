@@ -122,9 +122,9 @@ const RewardCarousel = () => {
   );
 };
 
-const SideCard = ({ image }: { image: string }) => (
+const SideCard = ({ image, label }: { image: string; label: string }) => (
   <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md border border-white/10">
-    <img src={image} alt="Reward" className="w-full h-full object-cover" width="64" height="64" />
+    <img src={image} alt={label} className="w-full h-full object-cover" width="64" height="64" />
   </div>
 );
 
@@ -199,10 +199,10 @@ const MobileRewardSlider = () => {
         onPointerCancel={handlePointerUp}
       >
         <div ref={scrollRef} className="flex w-max will-change-transform select-none">
-          {items.map((img, i) => (
+          {items.map((r, i) => (
             <div key={i} className="flex-shrink-0 mx-1.5">
               <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <img src={img} alt="Reward" className="w-full h-full object-cover pointer-events-none" width="80" height="80" draggable={false} />
+                <img src={r.image} alt={r.label} className="w-full h-full object-cover pointer-events-none" width="80" height="80" draggable={false} />
               </div>
             </div>
           ))}
@@ -717,8 +717,8 @@ const HomePage = () => {
         {/* Hero card with side rewards */}
         <div className="max-w-4xl mx-auto flex items-center justify-center gap-1 lg:gap-2">
           <div className="hidden sm:flex flex-col gap-3">
-            {leftSideRewards.map((img, i) => (
-              <SideCard key={`l-${i}`} image={img} />
+            {leftSideRewards.map((r, i) => (
+              <SideCard key={`l-${i}`} image={r.image} label={r.label} />
             ))}
           </div>
 
@@ -736,8 +736,8 @@ const HomePage = () => {
           </div>
 
           <div className="hidden sm:flex flex-col gap-3">
-            {rightSideRewards.map((img, i) => (
-              <SideCard key={`r-${i}`} image={img} />
+            {rightSideRewards.map((r, i) => (
+              <SideCard key={`r-${i}`} image={r.image} label={r.label} />
             ))}
           </div>
         </div>
@@ -919,13 +919,20 @@ const HomePage = () => {
               {/* Reward grid visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
                 <div className="grid grid-cols-3 gap-2 h-full">
-                  {[bagImg, bag3, boots2, reward3, hat2, phonecase2].map((img, i) => (
+                  {[
+                    { label: "Luxury shoulder bag reward", image: bagImg },
+                    { label: "Designer bag reward", image: bag3 },
+                    { label: "Designer boots reward", image: boots2 },
+                    { label: "Streetwear reward item", image: reward3 },
+                    { label: "Bucket hat reward", image: hat2 },
+                    { label: "Designer phone case reward", image: phonecase2 },
+                  ].map((r, i) => (
                     <div
                       key={i}
                       className="rounded-xl overflow-hidden border border-white/10 shadow-lg hover:scale-110 transition-transform duration-300 hover:border-yellow-400/50"
                       style={{ animationDelay: `${i * 0.1}s` }}
                     >
-                      <img src={img} alt="Reward" className="w-full h-full object-cover" width="100" height="100" />
+                      <img src={r.image} alt={r.label} className="w-full h-full object-cover" width="100" height="100" />
                     </div>
                   ))}
                 </div>
