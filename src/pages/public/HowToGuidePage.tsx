@@ -207,7 +207,7 @@ const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: sections.flatMap((s) =>
+    mainEntity: visibleSections.flatMap((s) =>
       s.items.map((item) => ({
         "@type": "Question",
         name: item.q,
