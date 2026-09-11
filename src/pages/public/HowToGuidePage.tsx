@@ -238,8 +238,18 @@ const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
           Everything you need to know about C24 Club — from collecting minutes to redeeming rewards and beyond.
         </p>
 
+        {myGender === "female" && (
+          <Link
+            to="/earn-money"
+            className="block mb-6 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/20 to-green-500/10 p-4 hover:from-emerald-500/30 transition-colors"
+          >
+            <p className="font-black text-emerald-400 text-sm tracking-wide">💰 WANT THE FULL EARNING GUIDE?</p>
+            <p className="text-neutral-300 text-xs mt-1">See exactly how girls turn chats and calls into real PayPal cash →</p>
+          </Link>
+        )}
+
         <Accordion type="multiple" className="space-y-3">
-          {sections.map((section, si) => (
+          {visibleSections.map((section, si) => (
             <div key={si} className="space-y-2">
               <h2 className="font-black text-base tracking-wide mt-4 mb-2">
                 {section.title}
