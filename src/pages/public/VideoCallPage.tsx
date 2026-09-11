@@ -1,3 +1,4 @@
+import usePageMeta from "@/hooks/usePageMeta";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { resetIfStaleWeek, stampWeek } from "@/lib/weekUtils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,6 +95,11 @@ const genderMap: Record<GenderFilter, string> = {
 };
 
 const VideoCallPage = () => {
+  usePageMeta({
+    title: "Video Chat Now — Free 1-on-1 Random Chat | C24 Club",
+    description: "Start a free 1-on-1 random video chat instantly. Get matched in seconds, chat safely with AI moderation, and earn reward minutes as you go.",
+    path: "/videocall",
+  });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, loading, banInfo, recheckBan } = useAuth();

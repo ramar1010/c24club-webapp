@@ -1,7 +1,13 @@
+import usePageMeta from "@/hooks/usePageMeta";
 import { Shield, Eye, Lock, AlertTriangle, UserX, Camera, Clock, MessageCircle, Phone, Ban, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SafetyCenterPage = () => {
+  usePageMeta({
+    title: "Safety Center — How C24 Club Keeps You Safe",
+    description: "AI moderation, 18+ verification, encrypted calls, pre-blur on connect, and one-tap reporting. See how C24 Club protects you during video chat.",
+    path: "/safety",
+  });
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero */}
