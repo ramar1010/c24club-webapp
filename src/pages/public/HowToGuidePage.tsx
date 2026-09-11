@@ -178,6 +178,25 @@ const sections = [
 
 const HowToGuidePage = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const { data: myGender } = useQuery({
+    queryKey: ["my-gender-howto", user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("gender")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data?.gender?.toLowerCase() || null;
+    },
+  });
+
+  const visibleSections =
+    myGender === "female" ? [femaleEarnSection, ...sections] : sections;
+
   usePageMeta({
     title: "How To Guide — Earn Rewards | C24 Club",
     description:
