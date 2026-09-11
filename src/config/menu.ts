@@ -269,6 +269,14 @@ export const adminMenu: MenuItem[] = [
     ],
   },
   {
+    key: "checklist",
+    icon: ListChecks,
+    title: "Checklist",
+    submenu: [
+      { key: "checklist", label: "My Tasks", path: "/admin/checklist" },
+    ],
+  },
+  {
     key: "reddit-tasks",
     icon: MessagesSquare,
     title: "Reddit Tasks",
