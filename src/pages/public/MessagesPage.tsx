@@ -755,6 +755,60 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
             </div>
 
             <div className="flex-1 overflow-y-auto">
+            {myGender === "female" && earningsSnapshot && (
+              <div className="mx-3 mt-3 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">
+                    Your earnings today
+                  </span>
+                  <span className="text-[10px] text-white/35">
+                    Updated {formatTime(earningsSnapshot.updated_at)} ago
+                  </span>
+                </div>
+                <div className="mt-2 flex items-end gap-4">
+                  <div>
+                    <p className="text-2xl font-extrabold text-emerald-300 leading-none">
+                      ${(earningsSnapshot.earned_today_minutes * 0.01).toFixed(2)}
+                    </p>
+                    <p className="text-[10px] text-white/45 mt-1">
+                      {earningsSnapshot.earned_today_minutes} min earned
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white leading-none">
+                      ${(earningsSnapshot.cashable_minutes * 0.01).toFixed(2)}
+                    </p>
+                    <p className="text-[10px] text-white/45 mt-1">cashable balance</p>
+                  </div>
+                </div>
+                {earningsSnapshot.near_limit_count > 0 && (
+                  <p className="mt-2 text-[11px] text-amber-300 leading-snug">
+                    {earningsSnapshot.near_limit_count} guy
+                    {earningsSnapshot.near_limit_count > 1 ? "s are" : " is"} almost out of free messages
+                    {earningsSnapshot.near_limit_names?.length
+                      ? ` (${earningsSnapshot.near_limit_names.slice(0, 3).join(", ")})`
+                      : ""}
+                    . Reply today — you get paid when they upgrade.
+                  </p>
+                )}
+                <div className="mt-3 flex gap-2">
+                  {earningsSnapshot.cashable_minutes > 0 && (
+                    <button
+                      onClick={() => setShowCashout(true)}
+                      className="flex-1 text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-black hover:brightness-110 transition"
+                    >
+                      Cash Out
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowBountyGuide(true)}
+                    className="flex-1 text-xs font-semibold py-2 rounded-lg bg-white/10 text-white hover:bg-white/15 transition"
+                  >
+                    How to earn more
+                  </button>
+                </div>
+              </div>
+            )}
             {canSeeGroupChat && (
               <button
                 onClick={() => navigate("/earnings-chat")}
