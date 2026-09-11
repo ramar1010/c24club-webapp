@@ -68,8 +68,20 @@ const rewards = [
   { label: "Reward Item", minutes: 110, image: reward3 },
 ];
 
-const leftSideRewards = [bag3, boots2, shorts2, heartbag2, reward3];
-const rightSideRewards = [hat2, phonecase2, redbag2, slippers, bagImg];
+const leftSideRewards = [
+  { label: "Designer bag reward", image: bag3 },
+  { label: "Designer boots reward", image: boots2 },
+  { label: "Denim shorts reward", image: shorts2 },
+  { label: "Heart-shaped handbag reward", image: heartbag2 },
+  { label: "Streetwear reward item", image: reward3 },
+];
+const rightSideRewards = [
+  { label: "Bucket hat reward", image: hat2 },
+  { label: "Designer phone case reward", image: phonecase2 },
+  { label: "Red handbag reward", image: redbag2 },
+  { label: "Fluffy slippers reward", image: slippers },
+  { label: "Luxury shoulder bag reward", image: bagImg },
+];
 
 const RewardCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
