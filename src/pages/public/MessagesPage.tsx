@@ -571,6 +571,27 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     },
   });
 
+  // Always-current earnings summary (females only) — replaces daily DM spam
+  const { data: earningsSnapshot } = useQuery({
+    queryKey: ["female-earnings-snapshot", user?.id],
+    enabled: !!user && myGender === "female",
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("female_earnings_snapshots")
+        .select("earned_today_minutes, cashable_minutes, near_limit_count, near_limit_names, updated_at")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data as {
+        earned_today_minutes: number;
+        cashable_minutes: number;
+        near_limit_count: number;
+        near_limit_names: string[] | null;
+        updated_at: string;
+      } | null;
+    },
+  });
+
   const filteredConversations = useMemo(() => {
     let list = conversations;
     if (searchQuery.trim()) {
