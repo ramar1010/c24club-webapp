@@ -583,7 +583,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       const startOfDayUtc = new Date();
       startOfDayUtc.setUTCHours(0, 0, 0, 0);
 
-      const [snapRes, todayRes] = await Promise.all([
+      const [snapRes, todayRes, allTimeRes] = await Promise.all([
         supabase
           .from("female_earnings_snapshots")
           .select("near_limit_count, near_limit_names, updated_at")
@@ -595,6 +595,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           .eq("female_id", user!.id)
           .eq("clawed_back", false)
           .gte("created_at", startOfDayUtc.toISOString()),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false),
       ]);
 
       const snap = snapRes.data as
