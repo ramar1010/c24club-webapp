@@ -615,14 +615,23 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       const snapFresh =
         !!snap?.updated_at && Date.now() - new Date(snap.updated_at).getTime() < 36 * 3600_000;
 
+      const bountyTotal = (allTimeRes.data ?? []).reduce(
+        (sum: number, r: any) => sum + Number(r.amount_minutes ?? 0),
+        0
+      );
+
       return {
         earned_today_minutes: earnedToday,
+        bounty_minutes: bountyTotal,
         near_limit_count: snapFresh ? Number(snap?.near_limit_count ?? 0) : 0,
         near_limit_names: snapFresh ? snap?.near_limit_names ?? [] : [],
         updated_at: new Date().toISOString(),
       };
     },
   });
+
+  // Cashable = gifted minutes + bounty earnings (consistent with Profile page).
+  const cashableMinutes = (minutesData?.gifted_minutes ?? 0) + (earningsSnapshot?.bounty_minutes ?? 0);
 
 
   const filteredConversations = useMemo(() => {
