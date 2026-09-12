@@ -711,7 +711,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           ) : "Messages"}
         </h1>
         {/* Cash Out button - show when not in a convo thread */}
-        {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
+        {!selectedConvo && cashableMinutes > 0 && (
           <button
             onClick={() => setShowCashout(true)}
             className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-emerald-500/30"
@@ -733,7 +733,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
-            {(minutesData?.gifted_minutes ?? 0) > 0 && (
+            {cashableMinutes > 0 && (
               <button
                 onClick={() => setShowCashout(true)}
                 className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors"
