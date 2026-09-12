@@ -583,7 +583,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       const startOfDayUtc = new Date();
       startOfDayUtc.setUTCHours(0, 0, 0, 0);
 
-      const [snapRes, todayRes] = await Promise.all([
+      const [snapRes, todayRes, allTimeRes] = await Promise.all([
         supabase
           .from("female_earnings_snapshots")
           .select("near_limit_count, near_limit_names, updated_at")
@@ -595,6 +595,11 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           .eq("female_id", user!.id)
           .eq("clawed_back", false)
           .gte("created_at", startOfDayUtc.toISOString()),
+        supabase
+          .from("bounty_earnings")
+          .select("amount_minutes")
+          .eq("female_id", user!.id)
+          .eq("clawed_back", false),
       ]);
 
       const snap = snapRes.data as
@@ -610,14 +615,23 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       const snapFresh =
         !!snap?.updated_at && Date.now() - new Date(snap.updated_at).getTime() < 36 * 3600_000;
 
+      const bountyTotal = (allTimeRes.data ?? []).reduce(
+        (sum: number, r: any) => sum + Number(r.amount_minutes ?? 0),
+        0
+      );
+
       return {
         earned_today_minutes: earnedToday,
+        bounty_minutes: bountyTotal,
         near_limit_count: snapFresh ? Number(snap?.near_limit_count ?? 0) : 0,
         near_limit_names: snapFresh ? snap?.near_limit_names ?? [] : [],
         updated_at: new Date().toISOString(),
       };
     },
   });
+
+  // Cashable = gifted minutes + bounty earnings (consistent with Profile page).
+  const cashableMinutes = (minutesData?.gifted_minutes ?? 0) + (earningsSnapshot?.bounty_minutes ?? 0);
 
 
   const filteredConversations = useMemo(() => {
@@ -697,7 +711,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           ) : "Messages"}
         </h1>
         {/* Cash Out button - show when not in a convo thread */}
-        {!selectedConvo && (minutesData?.gifted_minutes ?? 0) > 0 && (
+        {!selectedConvo && cashableMinutes > 0 && (
           <button
             onClick={() => setShowCashout(true)}
             className="flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-emerald-500/30"
@@ -719,7 +733,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
         {/* Video call button in mobile header */}
         {selectedConvo && isMobile && (
           <>
-            {(minutesData?.gifted_minutes ?? 0) > 0 && (
+            {cashableMinutes > 0 && (
               <button
                 onClick={() => setShowCashout(true)}
                 className="w-9 h-9 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 flex items-center justify-center transition-colors"
@@ -803,7 +817,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white leading-none">
-                      ${((minutesData?.gifted_minutes ?? 0) * 0.01).toFixed(2)}
+                      ${(cashableMinutes * 0.01).toFixed(2)}
                     </p>
 
                     <p className="text-[10px] text-white/45 mt-1">cashable balance</p>
@@ -820,7 +834,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </p>
                 )}
                 <div className="mt-3 flex gap-2">
-                  {(minutesData?.gifted_minutes ?? 0) > 0 && (
+                  {cashableMinutes > 0 && (
                     <button
                       onClick={() => setShowCashout(true)}
                       className="flex-1 text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-black hover:brightness-110 transition"
@@ -1430,6 +1444,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           onClose={() => setShowCashout(false)}
           currentMinutes={minutesData?.total_minutes ?? 0}
           giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          bountyMinutes={earningsSnapshot?.bounty_minutes ?? 0}
           onSuccess={() => refetchMinutes()}
         />
       )}
