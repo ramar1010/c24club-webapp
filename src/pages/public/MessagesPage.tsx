@@ -817,7 +817,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white leading-none">
-                      ${((minutesData?.gifted_minutes ?? 0) * 0.01).toFixed(2)}
+                      ${(cashableMinutes * 0.01).toFixed(2)}
                     </p>
 
                     <p className="text-[10px] text-white/45 mt-1">cashable balance</p>
@@ -834,7 +834,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                   </p>
                 )}
                 <div className="mt-3 flex gap-2">
-                  {(minutesData?.gifted_minutes ?? 0) > 0 && (
+                  {cashableMinutes > 0 && (
                     <button
                       onClick={() => setShowCashout(true)}
                       className="flex-1 text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-black hover:brightness-110 transition"
@@ -1444,6 +1444,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           onClose={() => setShowCashout(false)}
           currentMinutes={minutesData?.total_minutes ?? 0}
           giftedMinutes={minutesData?.gifted_minutes ?? 0}
+          bountyMinutes={earningsSnapshot?.bounty_minutes ?? 0}
           onSuccess={() => refetchMinutes()}
         />
       )}
