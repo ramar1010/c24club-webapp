@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { Calendar, Clock, ArrowLeft, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { format } from "date-fns";
+
+// Consolidated Omegle content: these posts now redirect into the single hub page
+const CONSOLIDATED_REDIRECTS: Record<string, string> = {
+  "top-7-omegle-alternatives-to-try-in-2026": "/top-omegle-alternatives",
+  "alternative-sites-to-omegle": "/top-omegle-alternatives",
+};
 
 interface BlogPost {
   id: string;
@@ -23,6 +29,7 @@ interface BlogPost {
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
+  const redirectTo = slug ? CONSOLIDATED_REDIRECTS[slug] : undefined;
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,6 +100,10 @@ const BlogPostPage = () => {
       script?.remove();
     };
   }, [post]);
+
+  if (redirectTo) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
   const estimateReadTime = (content: string) => {
     const words = content.split(/\s+/).length;

@@ -9,7 +9,7 @@ const MonkeyAppAlternativePage = () => (
     canonical="https://c24club.com/monkey-app-alternative"
     siblingLinks={[
       { label: "Ome TV Alternative", to: "/ome-tv-alternative" },
-      { label: "Omegle Alternative", to: "/omegle-alternative" },
+      { label: "Omegle Alternative", to: "/top-omegle-alternatives" },
       { label: "Top Omegle Alternatives", to: "/top-omegle-alternatives" },
       { label: "Random Video Chat", to: "/random-video-chat" },
       { label: "Talk to Strangers", to: "/talk-to-strangers" },

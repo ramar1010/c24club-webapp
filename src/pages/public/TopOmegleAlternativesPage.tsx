@@ -357,11 +357,38 @@ const ComparisonTable = () => {
   );
 };
 
+const faqs = [
+  {
+    q: "What is the best Omegle alternative in 2026?",
+    a: "C24 Club is considered the best alternative to Omegle as it includes a rewards program along with random video chat. You collect minutes by having conversations on C24 Club. Those minutes can be redeemed for gift cards, products, and other prizes in the Reward Store.",
+  },
+  {
+    q: "Is C24 Club free to use?",
+    a: "Yes, C24 Club is free to join and use. You can video chat and collect rewards by chatting with strangers. You don't need to pay anything to join C24 Club.",
+  },
+  {
+    q: "Is C24 Club safer than Omegle?",
+    a: "Yes, C24 Club is a lot safer compared to Omegle. C24 Club uses NSFW detection, a report feature, IP blocking, and moderation. The age limit to join C24 Club is 18+, and the user must agree to the community guidelines. Omegle was not moderated before it was shut down.",
+  },
+  {
+    q: "How does C24 Club compare to other Omegle alternatives like Chatroulette?",
+    a: "Chatroulette and OmeTV are video chat alternatives to Omegle. C24 Club stands out because it has a built-in rewards program for video chatting. You can collect minutes and redeem them for prizes. No other alternative to Omegle offers this.",
+  },
+  {
+    q: "Can I get rewards on C24 Club?",
+    a: "Yes! Every minute of video chat collects reward minutes. Once you hit the threshold, you can redeem them in the Reward Store for gift cards, products, and other prizes. Female users get bonus rewards through the dedicated earnings program.",
+  },
+  {
+    q: "Does C24 Club work on mobile?",
+    a: "Yes, C24 Club works on any device with a browser and camera — phones, tablets, laptops, and desktops. As of June 2026, we also have native iOS and Android apps on the App Store and Google Play for the best mobile experience with push notifications and one-tap calling.",
+  },
+];
+
 const TopOmegleAlternativesPage = () => {
   usePageMeta({
-    title: "9 Best Omegle Alternatives — Tested 2026 | C24 Club",
+    title: "Best Omegle Alternative: 9 Sites Tested (2026) | C24 Club",
     description:
-      "Compare the top 9 Omegle alternatives: C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, Vooz & OmegleWeb. Find the best random video chat.",
+      "The best Omegle alternative in 2026, ranked. We tested 9 random video chat sites — C24 Club, Monkey App, Chatroulette, OmeTV, Emerald Chat and more — on safety, matching and rewards.",
     path: "/top-omegle-alternatives",
   });
 
@@ -413,6 +440,20 @@ const TopOmegleAlternativesPage = () => {
                   ratingCount: 100,
                 },
               },
+            })),
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
             })),
           }),
         }}
@@ -498,8 +539,8 @@ const TopOmegleAlternativesPage = () => {
                 <ChevronRight className="h-4 w-4 text-white/30 ml-auto group-hover:text-orange-400 transition-colors" />
               </Link>
             ))}
-          <Link
-            to="/omegle-alternative"
+          <a
+            href="#why-c24-club"
             className="flex items-center gap-3 px-5 py-4 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 transition-all group"
           >
             <Gift className="h-5 w-5 text-orange-400 flex-shrink-0" />
@@ -507,7 +548,70 @@ const TopOmegleAlternativesPage = () => {
               Why C24 Club Is The Best Omegle Alternative
             </span>
             <ChevronRight className="h-4 w-4 text-orange-400/50 ml-auto group-hover:text-orange-400 transition-colors" />
-          </Link>
+          </a>
+        </div>
+      </section>
+
+      {/* Why C24 Club (merged from the old Omegle alternative page) */}
+      <section id="why-c24-club" className="px-4 py-16 max-w-4xl mx-auto border-t border-white/10">
+        <h2
+          className="text-3xl md:text-4xl font-black text-white text-center mb-6"
+          style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+        >
+          Why C24 Club Is The Best <span className="text-yellow-400">Omegle Alternative</span>
+        </h2>
+        <div className="text-white/60 text-base md:text-lg leading-relaxed space-y-4 text-center max-w-3xl mx-auto">
+          <p>
+            After Omegle shut down in November 2023, millions of users worldwide went looking for the next great random
+            video chat site. C24 Club fills that void, and then some. We are not just another Omegle clone; we are a{" "}
+            <strong className="text-white">video chat site that rewards you</strong> for socializing.
+          </p>
+          <p>
+            Every minute you spend in a video call collects reward minutes. Redeem those minutes for{" "}
+            <strong className="text-white">gift cards, designer bags, clothing, tech accessories</strong>, and over 100
+            other prizes in our Reward Store.
+          </p>
+          <p>
+            Whether you called it Omegle, Chatroulette, OmeTV, or just "that random video chat site," C24 Club is here
+            and better in every way — safer moderation, smarter matching, real rewards for your time, and native iOS and
+            Android apps as of June 2026.
+          </p>
+        </div>
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { title: "Random 1-on-1 video chat", body: "Connect instantly with strangers worldwide. Nothing to download — click and chat." },
+            { title: "Collect real rewards", body: "Unlike Omegle, every minute of conversation earns minutes you can redeem for prizes and gift cards." },
+            { title: "Safer than Omegle", body: "AI moderation, NSFW detection, reporting and a strict 18+ community policy keep the platform clean." },
+            { title: "Active community", body: "Scheduled live sessions mean there are real people online instead of an empty lobby." },
+            { title: "Female earnings program", body: "Women earn cashable minutes for chatting and video calls, payable out through PayPal." },
+            { title: "Native iOS & Android apps", body: "Push notifications, smoother video and one-tap calling on the App Store and Google Play." },
+          ].map((f) => (
+            <div key={f.title} className="bg-[#1a1a2e] rounded-2xl p-5 border border-white/10">
+              <h3 className="text-base font-black text-white mb-2">{f.title}</h3>
+              <p className="text-white/50 text-sm leading-relaxed">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-4 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-black text-white text-center mb-10"
+          style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}
+        >
+          Frequently Asked Questions About <span className="text-orange-400">Omegle Alternatives</span>
+        </h2>
+        <div className="space-y-4">
+          {faqs.map((faq, i) => (
+            <details key={i} className="group bg-[#1a1a2e] rounded-2xl border border-white/10 overflow-hidden">
+              <summary className="flex items-center justify-between cursor-pointer px-6 py-5 text-white font-bold text-base hover:text-orange-400 transition-colors list-none">
+                {faq.q}
+                <ChevronRight className="h-5 w-5 text-white/30 group-open:rotate-90 transition-transform flex-shrink-0 ml-4" />
+              </summary>
+              <div className="px-6 pb-5 text-white/60 text-sm leading-relaxed">{faq.a}</div>
+            </details>
+          ))}
         </div>
       </section>
 
