@@ -357,6 +357,33 @@ const ComparisonTable = () => {
   );
 };
 
+const faqs = [
+  {
+    q: "What is the best Omegle alternative in 2026?",
+    a: "C24 Club is considered the best alternative to Omegle as it includes a rewards program along with random video chat. You collect minutes by having conversations on C24 Club. Those minutes can be redeemed for gift cards, products, and other prizes in the Reward Store.",
+  },
+  {
+    q: "Is C24 Club free to use?",
+    a: "Yes, C24 Club is free to join and use. You can video chat and collect rewards by chatting with strangers. You don't need to pay anything to join C24 Club.",
+  },
+  {
+    q: "Is C24 Club safer than Omegle?",
+    a: "Yes, C24 Club is a lot safer compared to Omegle. C24 Club uses NSFW detection, a report feature, IP blocking, and moderation. The age limit to join C24 Club is 18+, and the user must agree to the community guidelines. Omegle was not moderated before it was shut down.",
+  },
+  {
+    q: "How does C24 Club compare to other Omegle alternatives like Chatroulette?",
+    a: "Chatroulette and OmeTV are video chat alternatives to Omegle. C24 Club stands out because it has a built-in rewards program for video chatting. You can collect minutes and redeem them for prizes. No other alternative to Omegle offers this.",
+  },
+  {
+    q: "Can I get rewards on C24 Club?",
+    a: "Yes! Every minute of video chat collects reward minutes. Once you hit the threshold, you can redeem them in the Reward Store for gift cards, products, and other prizes. Female users get bonus rewards through the dedicated earnings program.",
+  },
+  {
+    q: "Does C24 Club work on mobile?",
+    a: "Yes, C24 Club works on any device with a browser and camera — phones, tablets, laptops, and desktops. As of June 2026, we also have native iOS and Android apps on the App Store and Google Play for the best mobile experience with push notifications and one-tap calling.",
+  },
+];
+
 const TopOmegleAlternativesPage = () => {
   usePageMeta({
     title: "9 Best Omegle Alternatives — Tested 2026 | C24 Club",
