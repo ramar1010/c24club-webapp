@@ -386,9 +386,9 @@ const faqs = [
 
 const TopOmegleAlternativesPage = () => {
   usePageMeta({
-    title: "9 Best Omegle Alternatives — Tested 2026 | C24 Club",
+    title: "Best Omegle Alternative: 9 Sites Tested (2026) | C24 Club",
     description:
-      "Compare the top 9 Omegle alternatives: C24 Club, Monkey App, Chatroulette, OmeTV, Tinychat, Uhmegle, Emerald Chat, Vooz & OmegleWeb. Find the best random video chat.",
+      "The best Omegle alternative in 2026, ranked. We tested 9 random video chat sites — C24 Club, Monkey App, Chatroulette, OmeTV, Emerald Chat and more — on safety, matching and rewards.",
     path: "/top-omegle-alternatives",
   });
 
