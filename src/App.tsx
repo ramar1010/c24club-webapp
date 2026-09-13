@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -91,7 +91,6 @@ const GiftSuccessPage = lazy(() => import("@/pages/public/GiftSuccessPage"));
 const RechargeSuccessPage = lazy(() => import("@/pages/public/RechargeSuccessPage"));
 const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/public/BlogPostPage"));
-const OmegleAlternativePage = lazy(() => import("@/pages/public/OmegleAlternativePage"));
 const TopOmegleAlternativesPage = lazy(() => import("@/pages/public/TopOmegleAlternativesPage"));
 const VideoChatWithStrangersPage = lazy(() => import("@/pages/public/seo/VideoChatWithStrangersPage"));
 const RandomVideoChatPage = lazy(() => import("@/pages/public/seo/RandomVideoChatPage"));
@@ -142,7 +141,7 @@ const App = () => (
                 <Route path="safety" element={<SafetyCenterPage />} />
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogPostPage />} />
-                <Route path="omegle-alternative" element={<OmegleAlternativePage />} />
+                <Route path="omegle-alternative" element={<Navigate to="/top-omegle-alternatives" replace />} />
                 <Route path="top-omegle-alternatives" element={<TopOmegleAlternativesPage />} />
                 <Route path="video-chat-with-strangers" element={<VideoChatWithStrangersPage />} />
                 <Route path="random-video-chat" element={<RandomVideoChatPage />} />
