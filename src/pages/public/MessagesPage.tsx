@@ -599,7 +599,8 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
           .from("bounty_earnings")
           .select("amount_minutes")
           .eq("female_id", user!.id)
-          .eq("clawed_back", false),
+          .eq("clawed_back", false)
+          .eq("paid_out", false),
       ]);
 
       const snap = snapRes.data as
