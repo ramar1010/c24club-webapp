@@ -1203,6 +1203,49 @@ const VideoCallPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-['Antigone',sans-serif] flex flex-col">
+      {/* Mode selection overlay — shown every time the user enters C24Club */}
+      {!loading && user && !needsSelfie && showModeSelection && (
+        <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center p-4 md:p-8">
+          <div className="text-center mb-8 md:mb-12">
+            <h1 className="text-3xl md:text-5xl font-black text-white mb-3">How do you want to connect?</h1>
+            <p className="text-neutral-400 text-sm md:text-base">Pick what feels right right now.</p>
+          </div>
+
+          <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Random video call */}
+            <button
+              onClick={() => setShowModeSelection(false)}
+              className="group relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-neutral-700 bg-neutral-900 p-8 md:p-12 transition-all hover:border-red-500/50 hover:bg-neutral-800"
+            >
+              <div className="flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-red-600/20 text-red-500">
+                <Video className="h-8 w-8 md:h-10 md:w-10" />
+              </div>
+              <span className="text-xl md:text-2xl font-black text-white">Start random video call</span>
+              <span className="text-sm text-neutral-400">Get matched face-to-face instantly</span>
+            </button>
+
+            {/* Text chat — highlighted as more active */}
+            <button
+              onClick={() => navigate("/discover")}
+              className="group relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-green-500/30 bg-green-950/30 p-8 md:p-12 transition-all hover:border-green-500/60 hover:bg-green-950/50"
+            >
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-400">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+                </span>
+                More active
+              </div>
+              <div className="flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-green-600/20 text-green-500">
+                <MessageCircle className="h-8 w-8 md:h-10 md:w-10" />
+              </div>
+              <span className="text-xl md:text-2xl font-black text-white">Start text chat with someone</span>
+              <span className="text-sm text-neutral-400">More people are texting right now</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Stats Bar */}
       <div className="flex items-center justify-between px-3 py-2 md:relative">
         <div className="flex items-center gap-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
