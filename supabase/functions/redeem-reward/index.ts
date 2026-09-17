@@ -136,6 +136,13 @@ Deno.serve(async (req) => {
         throw new Error("Only Premium VIP members can cash out legendary items");
       }
 
+      // Female-only: legendary cash rewards are earning payouts, so only
+      // female members may convert them to cash.
+      const { data: memberRow } = await supabase.from("members").select("gender").eq("id", user.id).maybeSingle();
+      if (memberRow?.gender?.toLowerCase() !== "female") {
+        throw new Error("Cash rewards are only available to female members");
+      }
+
       // Deduct minutes (and proportionally reduce gifted_minutes)
       const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, gifted_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;

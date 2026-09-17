@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_female_only_cashout() FROM anon, authenticated, public;
