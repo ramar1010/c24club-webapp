@@ -259,6 +259,37 @@ Deno.serve(async (req) => {
 
       const isPrivateBilling = isDirectCall && !!payerId && !!earnerId;
 
+      // Random / generic chat no longer credits minutes. Only paid private
+      // (direct) calls earn — the male payer's recharge balance funds the
+      // call and the female participant receives the gifted-minutes credit.
+      // Soft success so existing web/native clients stop earning gracefully.
+      if (!isDirectCall) {
+        const { data: bal } = await supabase
+          .from("member_minutes")
+          .select("total_minutes, gifted_minutes, recharge_minutes")
+          .eq("user_id", userId)
+          .maybeSingle();
+        console.log("[earn-minutes] random_chat_earning_rejected", {
+          authUserId: authedUserId,
+          userId,
+          partnerId,
+          sessionId: sessionId ?? null,
+          requestedMinutes: minutesEarned,
+        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            earned: 0,
+            message: "random_chat_earning_disabled",
+            reason: "random_chat_earning_disabled",
+            totalMinutes: bal?.total_minutes ?? 0,
+            giftedMinutes: bal?.gifted_minutes ?? 0,
+            rechargeMinutes: bal?.recharge_minutes ?? 0,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Look up the PAYER's recharge balance (never the caller's) before any
       // cap decision. Errors and missing rows must never be treated as zero.
       let payerRechargeBefore = 0;
