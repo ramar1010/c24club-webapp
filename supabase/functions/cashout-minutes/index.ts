@@ -51,6 +51,21 @@ serve(async (req) => {
       if (!minutes_amount || minutes_amount <= 0) throw new Error("Invalid minutes amount");
       if (!paypal_email) throw new Error("PayPal email is required");
 
+      // Female-only: cashing out to PayPal is an earning payout, so only
+      // female members may request it. Males can still redeem store rewards.
+      const { data: member } = await supabaseAdmin
+        .from("members")
+        .select("gender")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (member?.gender?.toLowerCase() !== "female") {
+        return new Response(
+          JSON.stringify({ error: "Cash out is only available to female members" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 },
+        );
+      }
+
       const { data: settings } = await supabaseAdmin
         .from("cashout_settings")
         .select("min_cashout_minutes, max_cashout_minutes, rate_per_minute")
