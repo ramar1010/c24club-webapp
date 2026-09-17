@@ -1001,6 +1001,11 @@ const VideoCallPage = () => {
   // Check for unban/checkout/gift success in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    // Returning from a payment/email flow — skip the mode chooser so the
+    // relevant overlay/result isn't hidden beneath it.
+    if (["unban", "checkout", "unfreeze", "unfreeze_partner", "gift", "camera_unlock", "from"].some((k) => params.get(k))) {
+      setShowModeSelection(false);
+    }
     if (params.get("unban") === "success" && banInfo) {
       recheckBan();
       window.history.replaceState({}, "", "/videocall");
@@ -1044,6 +1049,7 @@ const VideoCallPage = () => {
   const location = useLocation();
   useEffect(() => {
     if ((location.state as any)?.openVip) {
+      setShowModeSelection(false);
       setOverlayPage("vip");
       // Clear the state so it doesn't re-trigger
       window.history.replaceState({}, "", "/videocall");
