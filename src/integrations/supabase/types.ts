@@ -3169,6 +3169,24 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_bounty_payout_claims: {
+        Row: {
+          claimed_at: string
+          female_id: string | null
+          male_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          female_id?: string | null
+          male_id: string
+        }
+        Update: {
+          claimed_at?: string
+          female_id?: string | null
+          male_id?: string
+        }
+        Relationships: []
+      }
       vip_minute_grants: {
         Row: {
           created_at: string

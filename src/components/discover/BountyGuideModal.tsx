@@ -32,13 +32,14 @@ const methods: Method[] = [
     short: "Biggest payout. Up to 500 minutes each.",
     payout: "125 – 500 minutes",
     how: [
-      "DM guys and be fun and engaging.",
+      "When a guy messages you first and you reply once, he's locked to you for 30 days.",
       "He only gets 3 free messages — after that he must buy VIP to keep talking to you.",
       "When he subscribes, minutes land in your balance automatically.",
     ],
     tips: [
       "125 minutes when he buys Basic VIP",
       "500 minutes when he buys Premium VIP",
+      "Your reply locks him in for 30 days — nothing can take it away",
       "First-time subscriptions only (not renewals)",
       "+500 bonus if 3 guys subscribe within 7 days",
     ],
