@@ -67,10 +67,12 @@ const BountyEarningsPanel = ({ userId }: BountyEarningsPanelProps) => {
         <div className="space-y-2">
           <div className="text-white font-bold text-sm">Pending Tracker</div>
           <p className="text-white/40 text-xs">
-            You'll earn a bounty if these guys go VIP in the next 7 days.
+            You'll earn a bounty if these guys go VIP before their track expires.
           </p>
           <p className="text-white/40 text-[11px] italic">
-            Note: Only the partner with the most recent interaction gets the bounty!
+            When a guy messages you first and you reply once, he's locked to you for 30 days — going
+            offline, unmatching or blocking won't take it away. Call-only tracks still go to the
+            partner with the most recent interaction.
           </p>
 
           {pending.length === 0 ? (
