@@ -279,111 +279,11 @@ Deno.serve(async (req) => {
         voice_mode: voiceMode ?? false,
       });
 
-      // 🔔 Female joined — notify eligible male users
-      if (memberGender?.toLowerCase() === "female") {
-        const { data: activeRoomsM } = await supabase.from("rooms").select("member1, member2").eq("status", "active");
-        const activeIdsM = new Set<string>();
-        if (activeRoomsM) {
-          for (const r of activeRoomsM) {
-            if (r.member1) activeIdsM.add(r.member1);
-            if (r.member2) activeIdsM.add(r.member2);
-          }
-        }
-
-        const { data: maleUsers } = await supabase
-          .from("members")
-          .select("id, name, push_token, last_active_at")
-          .ilike("gender", "male")
-          .eq("notify_enabled", true)
-          .eq("is_test_account", false)
-          .not("push_token", "is", null)
-          .neq("id", memberId)
-          .order("last_active_at", { ascending: false, nullsFirst: false })
-          .limit(500);
-
-        const eligibleMales = (maleUsers ?? []).filter((u) => !activeIdsM.has(u.id) && u.push_token);
-        const excludedActive = (maleUsers ?? []).filter((u) => activeIdsM.has(u.id)).map((u) => u.id);
-        console.log(JSON.stringify({
-          tag: "fanout_female_joined",
-          joiner: memberId,
-          candidates: maleUsers?.length ?? 0,
-          eligible: eligibleMales.length,
-          excluded_active: excludedActive.length,
-          eligible_ids: eligibleMales.map((u) => u.id),
-        }));
-
-        if (eligibleMales.length > 0) {
-          chunkedPushFanout(supabase, eligibleMales, "female_searching", {
-            title: "🔥 A girl is looking for a video chat!",
-            body: "Hurry before she leaves — tap to join now!",
-            cooldown_minutes: 2,
-          }).catch(console.error);
-        }
-      }
-
-      // 🔔 Male joined — notify eligible female users
-      if (memberGender?.toLowerCase() === "male") {
-        const { data: activeRooms } = await supabase.from("rooms").select("member1, member2").eq("status", "active");
-
-        const activeIds = new Set<string>();
-        if (activeRooms) {
-          for (const r of activeRooms) {
-            if (r.member1) activeIds.add(r.member1);
-            if (r.member2) activeIds.add(r.member2);
-          }
-        }
-
-        const { data: femaleUsers } = await supabase
-          .from("members")
-          .select("id, name, male_search_notify_mode, push_token, last_active_at")
-          .ilike("gender", "female")
-          .eq("notify_enabled", true)
-          .eq("is_test_account", false)
-          .neq("male_search_notify_mode", "off")
-          .order("last_active_at", { ascending: false, nullsFirst: false })
-          .limit(500);
-
-        if (femaleUsers && femaleUsers.length > 0) {
-          const everyUsers = femaleUsers.filter(
-            (f) => f.male_search_notify_mode === "every" && !activeIds.has(f.id) && f.push_token,
-          );
-          const batchedUsers = femaleUsers.filter(
-            (f) => f.male_search_notify_mode === "batched" && !activeIds.has(f.id),
-          );
-          console.log(JSON.stringify({
-            tag: "fanout_male_joined",
-            joiner: memberId,
-            candidates: femaleUsers.length,
-            every: everyUsers.length,
-            batched: batchedUsers.length,
-            excluded_active: femaleUsers.filter((f) => activeIds.has(f.id)).length,
-            every_ids: everyUsers.map((u) => u.id),
-          }));
-
-          if (everyUsers.length > 0) {
-            chunkedPushFanout(supabase, everyUsers, "male_search_every", {
-              title: "💬 Money Awaits - A guy is looking to video chat!",
-              body: "Tap to join and start chatting now!",
-              cooldown_minutes: 5,
-            }).catch(console.error);
-          }
-
-          if (batchedUsers.length > 0) {
-            Promise.all(
-              batchedUsers.map((user) => supabase.rpc("increment_male_search_count", { p_female_id: user.id })),
-            ).catch(console.error);
-          }
-        }
-      }
-
-      fetch(`${supabaseUrl}/functions/v1/match-notify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({ memberId, memberGender }),
-      }).catch((err) => console.warn("match-notify fire failed:", err));
+      // 🔔 Push fan-outs disabled: "searching" pushes (female_searching,
+      // male_search_every, batched male-search counts, match-notify) were
+      // re-engaging users while the app is closed. Queue insert above is kept
+      // so in-app matching still works.
+      console.log(JSON.stringify({ tag: "searching_pushes_disabled", joiner: memberId, memberGender }));
 
       return new Response(JSON.stringify({ success: true, message: "added_to_queue" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
