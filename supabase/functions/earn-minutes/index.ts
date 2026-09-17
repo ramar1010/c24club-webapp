@@ -24,6 +24,20 @@ function computeAdPoints(elapsedSeconds: number, isPremiumVip: boolean): number 
   return points;
 }
 
+// Native (iOS/Android app) traffic detection. Random-chat earning stays
+// enabled on the website and is blocked only for the native apps.
+function isNativeAppClient(req: Request): boolean {
+  const platform = (req.headers.get("x-supabase-client-platform") ?? "").toLowerCase();
+  if (platform === "ios" || platform === "android") return true;
+  const runtime = (req.headers.get("x-supabase-client-runtime") ?? "").toLowerCase();
+  if (runtime.includes("react-native") || runtime.includes("expo")) return true;
+  const ua = (req.headers.get("user-agent") ?? "").toLowerCase();
+  if (ua.includes("okhttp") || ua.includes("cfnetwork") || ua.includes("expo") || ua.includes("capacitor")) {
+    return true;
+  }
+  return false;
+}
+
 // Check if user should be frozen
 async function checkFreezeStatus(supabase: any, userId: string) {
   const { data: mm } = await supabase
@@ -263,7 +277,7 @@ Deno.serve(async (req) => {
       // (direct) calls earn — the male payer's recharge balance funds the
       // call and the female participant receives the gifted-minutes credit.
       // Soft success so existing web/native clients stop earning gracefully.
-      if (!isDirectCall) {
+      if (!isDirectCall && isNativeAppClient(req)) {
         const { data: bal } = await supabase
           .from("member_minutes")
           .select("total_minutes, gifted_minutes, recharge_minutes")
