@@ -70,9 +70,9 @@ const BountyEarningsPanel = ({ userId }: BountyEarningsPanelProps) => {
             You'll earn a bounty if these guys go VIP before their track expires.
           </p>
           <p className="text-white/40 text-[11px] italic">
-            When a guy messages you first and you reply once, he's locked to you for 30 days — going
-            offline, unmatching or blocking won't take it away. Call-only tracks still go to the
-            partner with the most recent interaction.
+            When you and a guy have a real DM conversation — you both send at least one message —
+            you're linked for 30 days. Going offline, unmatching, or blocking won't take it away.
+            Call-only tracks still go to the partner with the most recent interaction.
           </p>
 
           {pending.length === 0 ? (
