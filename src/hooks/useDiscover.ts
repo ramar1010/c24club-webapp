@@ -28,6 +28,7 @@ export type DiscoverFilter = {
   gender: string;
   country: string;
   onlineOnly: boolean;
+  linkedOnly: boolean;
 };
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
@@ -89,7 +90,9 @@ export const useDiscover = () => {
   const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [myGender, setMyGender] = useState<string | null>(null);
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
-  const [filters, setFilters] = useState<DiscoverFilter>({ gender: "all", country: "", onlineOnly: false });
+  const [filters, setFilters] = useState<DiscoverFilter>({ gender: "all", country: "", onlineOnly: false, linkedOnly: false });
+  // male_id -> connection expiry (server-provided, active & unawarded links only)
+  const [linkedProfiles, setLinkedProfiles] = useState<Map<string, string>>(new Map());
   const [mutualSocials, setMutualSocials] = useState<Map<string, string[]>>(new Map());
   const [countries, setCountries] = useState<string[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
