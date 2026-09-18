@@ -254,7 +254,30 @@ export const useDiscover = () => {
       }
       adminMembersFetchedRef.current = true;
 
-      const combined = [...membersList, ...priorityMembers];
+      // Linked profiles (server-side: own active, unexpired, unawarded links only,
+      // with blocked / banned / unavailable accounts already filtered out)
+      const { data: linkedRows } = await supabase.rpc("get_active_connected_profiles");
+      const linkedMap = new Map<string, string>();
+      const linkedMembers: DiscoverableMember[] = [];
+      const knownIds = new Set([...membersList, ...priorityMembers].map(m => m.id));
+      (linkedRows || []).forEach((r: any) => {
+        linkedMap.set(r.profile_id, r.connection_expires_at);
+        if (!knownIds.has(r.profile_id)) {
+          linkedMembers.push({
+            id: r.profile_id,
+            name: r.name,
+            image_url: r.image_url,
+            gender: r.gender,
+            country: null,
+            last_active_at: r.last_active_at,
+            bio: null,
+            created_at: r.connection_expires_at,
+          });
+        }
+      });
+      setLinkedProfiles(linkedMap);
+
+      const combined = [...membersList, ...priorityMembers, ...linkedMembers];
       const sorted = sortMembers(combined, adminIds, vipIds, modIds);
       setAllFetchedMembers(sorted);
 
