@@ -1,4 +1,4 @@
-import { Filter, Wifi } from "lucide-react";
+import { Filter, Wifi, Link2 } from "lucide-react";
 import type { DiscoverFilter } from "@/hooks/useDiscover";
 
 interface DiscoverFiltersProps {
@@ -7,9 +7,10 @@ interface DiscoverFiltersProps {
   countries: string[];
   totalCount: number;
   filteredCount: number;
+  linkedCount?: number;
 }
 
-const DiscoverFilters = ({ filters, onFilterChange, countries, totalCount, filteredCount }: DiscoverFiltersProps) => {
+const DiscoverFilters = ({ filters, onFilterChange, countries, totalCount, filteredCount, linkedCount = 0 }: DiscoverFiltersProps) => {
   return (
     <div className="mx-4 mt-3 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
@@ -40,6 +41,21 @@ const DiscoverFilters = ({ filters, onFilterChange, countries, totalCount, filte
           <Wifi className="w-3.5 h-3.5" />
           Online Now
         </button>
+
+        {/* Linked only toggle */}
+        {linkedCount > 0 && (
+          <button
+            onClick={() => onFilterChange({ ...filters, linkedOnly: !filters.linkedOnly })}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+              filters.linkedOnly
+                ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
+                : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+            }`}
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            Linked ({linkedCount})
+          </button>
+        )}
       </div>
 
       {filteredCount !== totalCount && (
