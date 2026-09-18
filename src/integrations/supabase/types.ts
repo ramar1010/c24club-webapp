@@ -3560,6 +3560,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_active_connected_profiles: {
+        Args: never
+        Returns: {
+          connection_expires_at: string
+          connection_status: string
+          gender: string
+          image_thumb_url: string
+          image_url: string
+          last_active_at: string
+          name: string
+          profile_id: string
+        }[]
+      }
       get_admin_user_ids: { Args: never; Returns: string[] }
       get_bounty_summary: { Args: never; Returns: Json }
       get_female_earnings_digest: {
