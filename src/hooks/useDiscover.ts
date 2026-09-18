@@ -271,7 +271,7 @@ export const useDiscover = () => {
             country: null,
             last_active_at: r.last_active_at,
             bio: null,
-            created_at: r.connection_expires_at,
+            created_at: new Date(0).toISOString(),
           });
         }
       });
@@ -420,6 +420,7 @@ export const useDiscover = () => {
       if (filters.gender !== "all" && m.gender?.toLowerCase() !== filters.gender) return false;
       if (filters.country && m.country !== filters.country) return false;
       if (filters.onlineOnly && !isEffectivelyOnline(m.id, m.gender, m.last_active_at)) return false;
+      if (filters.linkedOnly && !linkedProfiles.has(m.id)) return false;
       return true;
     });
 
@@ -442,6 +443,7 @@ export const useDiscover = () => {
     setFilters,
     countries,
     mutualSocials,
+    linkedProfiles,
     adminUserIds,
     vipUserIds,
     modUserIds,
