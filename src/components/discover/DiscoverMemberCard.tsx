@@ -38,6 +38,7 @@ interface DiscoverMemberCardProps {
   isVip?: boolean;
   isModerator?: boolean;
   isSelf?: boolean;
+  linkedExpiresAt?: string | null;
 }
 
 const DiscoverMemberCard = ({
@@ -52,6 +53,7 @@ const DiscoverMemberCard = ({
   isVip,
   isModerator,
   isSelf,
+  linkedExpiresAt,
 }: DiscoverMemberCardProps) => {
   const [showSocials, setShowSocials] = useState(false);
   const [directCall, setDirectCall] = useState<{ inviteId: string } | null>(null);
@@ -159,6 +161,12 @@ const DiscoverMemberCard = ({
             <span className="flex items-center gap-0.5 bg-amber-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">
               <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               New
+            </span>
+          )}
+          {linkedExpiresAt && (
+            <span className="flex items-center gap-0.5 bg-violet-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm shadow-lg">
+              <Link2 className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+              Linked · {Math.max(0, Math.ceil((new Date(linkedExpiresAt).getTime() - Date.now()) / 86400000))}d
             </span>
           )}
           {isMutualMatch && (

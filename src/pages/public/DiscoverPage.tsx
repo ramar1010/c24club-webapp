@@ -20,7 +20,7 @@ const DiscoverPage = () => {
   const {
     user, members, allMembers, loading, loadingMore, hasMore, loadMore,
     myInterests, incomingInterestsList, isDiscoverable, setIsDiscoverable,
-    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, adminUserIds, vipUserIds, modUserIds,
+    myGender, sendingInterest, filters, setFilters, countries, mutualSocials, linkedProfiles, adminUserIds, vipUserIds, modUserIds,
     isMutualMatch, handleInterest, handleRemoveListing,
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
@@ -211,6 +211,7 @@ const DiscoverPage = () => {
           countries={countries}
           totalCount={allMembers.length}
           filteredCount={members.length}
+          linkedCount={linkedProfiles.size}
         />
       )}
 
@@ -258,6 +259,7 @@ const DiscoverPage = () => {
                       isVip={vipUserIds.has(member.id)}
                       isModerator={modUserIds.has(member.id)}
                       isSelf={member.id === user?.id}
+                      linkedExpiresAt={linkedProfiles.get(member.id) ?? null}
                     />
                   </Fragment>
 
