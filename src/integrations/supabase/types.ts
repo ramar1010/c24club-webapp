@@ -547,6 +547,8 @@ export type Database = {
       }
       bounty_attributions: {
         Row: {
+          attribution_kind: string | null
+          bounty_awarded_at: string | null
           created_at: string
           expires_at: string
           female_id: string
@@ -556,6 +558,8 @@ export type Database = {
           male_id: string
         }
         Insert: {
+          attribution_kind?: string | null
+          bounty_awarded_at?: string | null
           created_at?: string
           expires_at?: string
           female_id: string
@@ -565,6 +569,8 @@ export type Database = {
           male_id: string
         }
         Update: {
+          attribution_kind?: string | null
+          bounty_awarded_at?: string | null
           created_at?: string
           expires_at?: string
           female_id?: string
