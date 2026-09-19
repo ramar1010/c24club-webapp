@@ -3645,7 +3645,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      private_call_billing_log: {
+        Row: {
+          created_at: string | null
+          earner_id: string | null
+          id: string | null
+          partner_id: string | null
+          session_date: string | null
+          spent_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          earner_id?: string | null
+          id?: string | null
+          partner_id?: string | null
+          session_date?: string | null
+          spent_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          earner_id?: string | null
+          id?: string | null
+          partner_id?: string | null
+          session_date?: string | null
+          spent_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_female_retention_seconds: {
