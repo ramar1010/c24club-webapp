@@ -118,6 +118,11 @@ const DiscoverPage = () => {
     let downwardDistance = 0;
 
     const onScroll = () => {
+      if (scrollPromptShownRef.current) {
+        window.removeEventListener("scroll", onScroll);
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
@@ -128,6 +133,7 @@ const DiscoverPage = () => {
 
       scrollPromptShownRef.current = true;
       sessionStorage.setItem(promptKey, "shown");
+      window.removeEventListener("scroll", onScroll);
       setShowScrollPrompt(true);
     };
 
