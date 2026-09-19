@@ -19,7 +19,7 @@ interface IncomingInterestsProps {
 }
 
 const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInterest, onOpenDm }: IncomingInterestsProps) => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const { user } = useAuth();
   const [directCall, setDirectCall] = useState<{ inviteId: string; partnerId: string; partnerName: string } | null>(null);
   const [showVipGate, setShowVipGate] = useState(false);
@@ -61,10 +61,10 @@ const IncomingInterests = ({ interests, myInterests, onInterestBack, sendingInte
 
   return (
     <>
-    <div className="mx-4 mt-3">
+    <div className="mx-3 mt-2 sm:mx-4">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-3 rounded-xl bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/15 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/15 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4 text-pink-400 fill-pink-400" />
