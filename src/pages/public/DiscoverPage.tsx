@@ -264,18 +264,6 @@ const DiscoverPage = () => {
         onOpenDm={(memberId) => setShowMessages(memberId)}
       />
 
-      {/* Filters */}
-      {!loading && allMembers.length > 0 && (
-        <DiscoverFilters
-          filters={filters}
-          onFilterChange={setFilters}
-          countries={countries}
-          totalCount={allMembers.length}
-          filteredCount={members.length}
-          linkedCount={linkedProfiles.size}
-        />
-      )}
-
       {/* Members grid */}
       <div className="p-3 sm:p-4">
         {loading ? (
