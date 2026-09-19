@@ -115,6 +115,7 @@ async function sendExpoPush(
   title: string,
   body: string,
   data: Record<string, unknown>,
+  ttlSeconds?: number,
 ): Promise<PushResult> {
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
   const maxAttempts = 4;
@@ -124,7 +125,10 @@ async function sendExpoPush(
     const resp = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ to: token, title, body, data, sound: "default", priority: "high", channelId }),
+      body: JSON.stringify({
+        to: token, title, body, data, sound: "default", priority: "high", channelId,
+        ...(typeof ttlSeconds === "number" && ttlSeconds > 0 ? { ttl: Math.min(ttlSeconds, 900) } : {}),
+      }),
     });
     const raw = await resp.text();
     let parsed: any = null;
@@ -156,20 +160,28 @@ async function sendFcmPush(
   title: string,
   body: string,
   data: Record<string, unknown>,
+  ttlSeconds?: number,
 ): Promise<PushResult> {
   const serviceAccount = JSON.parse(Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!);
   const accessToken = await getAccessToken(serviceAccount);
   const projectId = serviceAccount.project_id;
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
   const webLink = getWebLink(data);
+  const boundedTtl = typeof ttlSeconds === "number" && ttlSeconds > 0 ? Math.min(Math.floor(ttlSeconds), 900) : null;
+  const apnsExpiration = boundedTtl ? String(Math.floor(Date.now() / 1000) + boundedTtl) : null;
 
   const payload = JSON.stringify({
     message: {
       token,
       notification: { title, body },
       data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
-      android: { priority: "high", notification: { channel_id: channelId, sound: "default" } },
+      android: {
+        priority: "high",
+        ...(boundedTtl ? { ttl: `${boundedTtl}s` } : {}),
+        notification: { channel_id: channelId, sound: "default" },
+      },
       apns: {
+        ...(apnsExpiration ? { headers: { "apns-expiration": apnsExpiration } } : {}),
         payload: {
           aps: {
             alert: { title, body },
@@ -219,7 +231,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { user_id, title, body, data = {}, notification_type, cooldown_minutes, force_send = false } = await req.json();
+    const { user_id, title, body, data = {}, notification_type, cooldown_minutes, force_send = false, ttl_seconds } = await req.json();
 
     if (!user_id || !title) {
       return new Response(JSON.stringify({ success: false, reason: "Missing required fields" }), {
@@ -258,9 +270,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const normalizedData = typeof data === "object" && data !== null ? data as Record<string, unknown> : {};
+    const ttl = typeof ttl_seconds === "number" && ttl_seconds > 0 ? Math.min(Math.floor(ttl_seconds), 900) : undefined;
     const result = isExpoPushToken(member.push_token)
-      ? await sendExpoPush(member.push_token, title, body, normalizedData)
-      : await sendFcmPush(member.push_token, title, body, normalizedData);
+      ? await sendExpoPush(member.push_token, title, body, normalizedData, ttl)
+      : await sendFcmPush(member.push_token, title, body, normalizedData, ttl);
 
     if (!result.ok) {
       if (result.clearToken) {

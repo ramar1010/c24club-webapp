@@ -2287,6 +2287,147 @@ export type Database = {
         }
         Relationships: []
       }
+      ready_to_chat_deliveries: {
+        Row: {
+          created_at: string
+          effective_mode: string
+          failure_reason: string | null
+          id: string
+          opened_at: string | null
+          recipient_id: string
+          sent_at: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          effective_mode: string
+          failure_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          recipient_id: string
+          sent_at?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          effective_mode?: string
+          failure_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          recipient_id?: string
+          sent_at?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ready_to_chat_deliveries_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ready_to_chat_deliveries_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ready_to_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ready_to_chat_recipient_cooldowns: {
+        Row: {
+          cooldown_expires_at: string
+          id: string
+          last_session_id: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          cooldown_expires_at: string
+          id?: string
+          last_session_id?: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          cooldown_expires_at?: string
+          id?: string
+          last_session_id?: string | null
+          recipient_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ready_to_chat_recipient_cooldowns_last_session_id_fkey"
+            columns: ["last_session_id"]
+            isOneToOne: false
+            referencedRelation: "ready_to_chat_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ready_to_chat_recipient_cooldowns_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ready_to_chat_recipient_cooldowns_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ready_to_chat_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          metadata: Json
+          mode: string
+          recipient_count: number
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          metadata?: Json
+          mode: string
+          recipient_count?: number
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          metadata?: Json
+          mode?: string
+          recipient_count?: number
+          sender_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ready_to_chat_sessions_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recharge_purchases: {
         Row: {
           created_at: string
@@ -3546,6 +3687,7 @@ export type Database = {
         }
         Returns: Json
       }
+      cancel_ready_to_chat: { Args: { p_session_id: string }; Returns: Json }
       chat_display_name: { Args: { _user_id: string }; Returns: string }
       claim_reddit_task: {
         Args: { p_code: string; p_worker_name: string }
@@ -3566,6 +3708,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_ready_to_chat_sessions: { Args: never; Returns: number }
       get_active_connected_profiles: {
         Args: never
         Returns: {
@@ -3687,6 +3830,11 @@ export type Database = {
         Args: { p_cents: number; p_paypal_email: string }
         Returns: Json
       }
+      resolve_ready_to_chat: { Args: { p_session_id: string }; Returns: Json }
+      rtc_effective_mode: {
+        Args: { p_mode: string; p_recipient_id: string; p_sender_id: string }
+        Returns: string
+      }
       spend_recharge_minutes: {
         Args: { p_amount: number; p_user_id: string }
         Returns: {
@@ -3694,6 +3842,7 @@ export type Database = {
           spent: number
         }[]
       }
+      start_ready_to_chat: { Args: { p_mode: string }; Returns: Json }
       submit_reddit_task: {
         Args: {
           p_account_type?: string
@@ -3702,6 +3851,10 @@ export type Database = {
           p_variant_index?: number
           p_worker_name: string
         }
+        Returns: Json
+      }
+      validate_ready_to_chat_action: {
+        Args: { p_mode: string; p_session_id: string }
         Returns: Json
       }
     }
