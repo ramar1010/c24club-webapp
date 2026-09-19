@@ -135,7 +135,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     // Any sender_id / recipient list supplied by the client is ignored on purpose.
     const action = typeof body?.action === "string" ? body.action : "";
-    const sessionId = typeof body?.session_id === "string" ? body.session_id : null;
+    const rawSessionId = body?.sessionId ?? body?.session_id;
+    const sessionId = typeof rawSessionId === "string" ? rawSessionId : null;
     const mode = typeof body?.mode === "string" ? body.mode : null;
 
     if (action === "start") {
