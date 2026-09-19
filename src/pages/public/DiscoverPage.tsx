@@ -17,7 +17,6 @@ import ReadyToChatCard from "@/components/discover/ReadyToChatCard";
 import RechargeGate from "@/components/discover/RechargeGate";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
-import { useVipStatus } from "@/hooks/useVipStatus";
 import { useRechargeMinutes } from "@/hooks/useRechargeMinutes";
 const DiscoverPage = () => {
   const navigate = useNavigate();
@@ -35,7 +34,6 @@ const DiscoverPage = () => {
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const { startCheckout } = useVipStatus(user?.id ?? null);
   const { data: rechargeMinutes = 0 } = useRechargeMinutes(user?.id ?? null);
   const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
 

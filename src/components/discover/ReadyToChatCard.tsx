@@ -124,7 +124,10 @@ const ReadyToChatCard = ({ userId, enabled }: ReadyToChatCardProps) => {
       };
       window.localStorage.setItem(storageKey(userId), JSON.stringify(session));
       setActiveSession(session);
-      closeDialog();
+      setDialogOpen(false);
+      setSelectedMode(null);
+      setConfirming(false);
+      setError(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Ready to Chat could not be started. Please try again.");
     } finally {
