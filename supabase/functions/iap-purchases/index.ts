@@ -223,11 +223,12 @@ Deno.serve(async (req) => {
           sku,
           platform: platform ?? null,
           vip_tier: tier,
-          purchase_token: purchaseToken ?? null,
+          purchase_token_hash: purchaseToken ? await tokenFingerprint(purchaseToken) : null,
         });
       } catch (iapErr) {
         console.error("[iap-purchases] failed to log iap_purchases row:", iapErr);
       }
+
 
       // Free 5 recharge (call) minutes per VIP purchase / renewal.
       // Idempotent: keyed on the platform transaction token, so duplicate
