@@ -223,20 +223,27 @@ Deno.serve(async (req) => {
           sku,
           platform: platform ?? null,
           vip_tier: tier,
-          purchase_token: purchaseToken ?? null,
+          purchase_token_hash: purchaseToken ? await tokenFingerprint(purchaseToken) : null,
         });
       } catch (iapErr) {
         console.error("[iap-purchases] failed to log iap_purchases row:", iapErr);
       }
 
+
       // Free 5 recharge (call) minutes per VIP purchase / renewal.
       // Idempotent: keyed on the platform transaction token, so duplicate
       // callbacks from the app, Apple or Google can never double-credit.
       try {
-        const txKey = body.transactionId ?? body.originalTransactionId ?? purchaseToken ?? sku;
+        // Build a per-user, per-transaction key. iOS receipts share a long
+        // constant header, so slicing the raw token collided across users and
+        // silently returned "already_granted" — always hash + scope by user.
+        const rawTx = body.transactionId ?? body.originalTransactionId ?? purchaseToken ?? sku ?? "unknown";
+        const txKey = body.transactionId ?? body.originalTransactionId
+          ? String(rawTx).slice(0, 64)
+          : (await tokenFingerprint(String(rawTx))).slice(0, 32);
         const { data: grantResult } = await supabaseAdmin.rpc("grant_vip_recharge_minutes", {
           p_user_id: user.id,
-          p_grant_key: `iap:${platform ?? "native"}:${String(txKey).slice(0, 128)}`,
+          p_grant_key: `iap:${platform ?? "native"}:${user.id}:${txKey}`,
           p_minutes: 5,
           p_source: `iap_${platform ?? "native"}_${tier}`,
         });
@@ -244,6 +251,7 @@ Deno.serve(async (req) => {
       } catch (grantErr) {
         console.error("[iap-purchases] VIP free minutes grant failed:", grantErr);
       }
+
 
       // KPI: log to vip_purchase_intents so the admin analytics dashboard
       // shows native (iOS / Android) purchases alongside Stripe web purchases.
