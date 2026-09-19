@@ -3782,6 +3782,7 @@ export type Database = {
         }[]
       }
       get_partner_nsfw_strikes: { Args: { _user_id: string }; Returns: number }
+      get_ready_to_chat_limits: { Args: never; Returns: Json }
       get_reddit_task_by_code: {
         Args: { p_code: string }
         Returns: {
