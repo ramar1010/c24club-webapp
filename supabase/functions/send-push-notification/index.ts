@@ -231,7 +231,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { user_id, title, body, data = {}, notification_type, cooldown_minutes, force_send = false } = await req.json();
+    const { user_id, title, body, data = {}, notification_type, cooldown_minutes, force_send = false, ttl_seconds } = await req.json();
 
     if (!user_id || !title) {
       return new Response(JSON.stringify({ success: false, reason: "Missing required fields" }), {
