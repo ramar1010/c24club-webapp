@@ -125,7 +125,10 @@ async function sendExpoPush(
     const resp = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ to: token, title, body, data, sound: "default", priority: "high", channelId }),
+      body: JSON.stringify({
+        to: token, title, body, data, sound: "default", priority: "high", channelId,
+        ...(typeof ttlSeconds === "number" && ttlSeconds > 0 ? { ttl: Math.min(ttlSeconds, 900) } : {}),
+      }),
     });
     const raw = await resp.text();
     let parsed: any = null;
