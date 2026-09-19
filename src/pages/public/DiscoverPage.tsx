@@ -115,10 +115,10 @@ const DiscoverPage = () => {
       </div>
 
       {/* Compact account actions */}
-      <div className="flex items-center gap-2 overflow-x-auto px-3 pt-3 sm:px-4">
+      <div className="grid grid-cols-4 gap-2 px-3 pt-3 sm:flex sm:items-center sm:px-4">
         <button
           onClick={() => setShowMessages("")}
-          className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-blue-500/30 bg-blue-500/15 px-3 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/25"
+          className="relative flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-md border border-blue-500/30 bg-blue-500/15 px-2 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/25 sm:px-3"
         >
           <MessageSquare className="h-4 w-4" />
           DMs
@@ -131,7 +131,7 @@ const DiscoverPage = () => {
         {myGender === "male" && (
           <button
             onClick={() => setShowRecharge(true)}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25"
+            className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25 sm:px-3"
           >
             <Phone className="h-4 w-4" />
             Refill · {rechargeMinutes}
@@ -140,7 +140,7 @@ const DiscoverPage = () => {
           {(minutesData?.gifted_minutes ?? 0) > 0 && (
             <button
               onClick={() => setShowCashout(true)}
-              className="flex h-9 shrink-0 items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25"
+              className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25 sm:px-3"
             >
               <DollarSign className="h-4 w-4" />
               Cash Out
@@ -149,7 +149,7 @@ const DiscoverPage = () => {
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
-              className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-pink-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-pink-600"
+              className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md bg-pink-500 px-2 text-xs font-semibold text-white transition-colors hover:bg-pink-600 sm:px-3"
             >
               <Camera className="h-4 w-4" />
               Get Listed
@@ -157,7 +157,7 @@ const DiscoverPage = () => {
           ) : (
             <button
               onClick={handleRemoveListing}
-              className="ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-3 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/20"
+              className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-red-500/30 bg-red-500/10 px-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/20 sm:ml-auto sm:px-3"
             >
               <Trash2 className="h-4 w-4" />
               Remove
