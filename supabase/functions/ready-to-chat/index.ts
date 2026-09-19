@@ -139,6 +139,31 @@ Deno.serve(async (req) => {
     const sessionId = typeof rawSessionId === "string" ? rawSessionId : null;
     const mode = typeof body?.mode === "string" ? body.mode : null;
 
+    if (action === "limits") {
+      const sinceHour = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const sinceDay = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const countedStatuses = ["pending", "sent", "opened"];
+      const [outgoing, incomingHour, incomingDay] = await Promise.all([
+        admin.from("ready_to_chat_sessions").select("id", { count: "exact", head: true })
+          .eq("sender_id", userData.user.id).gt("created_at", sinceDay),
+        admin.from("ready_to_chat_deliveries").select("id", { count: "exact", head: true })
+          .eq("recipient_id", userData.user.id).in("status", countedStatuses).gt("created_at", sinceHour),
+        admin.from("ready_to_chat_deliveries").select("id", { count: "exact", head: true })
+          .eq("recipient_id", userData.user.id).in("status", countedStatuses).gt("created_at", sinceDay),
+      ]);
+
+      if (outgoing.error || incomingHour.error || incomingDay.error) {
+        return json({ success: false, reason: "limits_unavailable" }, 500);
+      }
+
+      return json({
+        success: true,
+        outgoing_daily_remaining: Math.max(0, 3 - (outgoing.count ?? 0)),
+        incoming_hourly_remaining: Math.max(0, 3 - (incomingHour.count ?? 0)),
+        incoming_daily_remaining: Math.max(0, 10 - (incomingDay.count ?? 0)),
+      });
+    }
+
     if (action === "start") {
       if (!mode || !["text", "video", "both"].includes(mode)) {
         return json({ success: false, reason: "invalid_mode" }, 400);
