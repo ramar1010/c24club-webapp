@@ -270,9 +270,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const normalizedData = typeof data === "object" && data !== null ? data as Record<string, unknown> : {};
+    const ttl = typeof ttl_seconds === "number" && ttl_seconds > 0 ? Math.min(Math.floor(ttl_seconds), 900) : undefined;
     const result = isExpoPushToken(member.push_token)
-      ? await sendExpoPush(member.push_token, title, body, normalizedData)
-      : await sendFcmPush(member.push_token, title, body, normalizedData);
+      ? await sendExpoPush(member.push_token, title, body, normalizedData, ttl)
+      : await sendFcmPush(member.push_token, title, body, normalizedData, ttl);
 
     if (!result.ok) {
       if (result.clearToken) {
