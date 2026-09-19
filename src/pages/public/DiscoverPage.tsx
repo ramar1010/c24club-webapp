@@ -14,6 +14,7 @@ import DiscoverRewardCard, { useDiscoverRewards } from "@/components/discover/Di
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
 import IncomingInterests from "@/components/discover/IncomingInterests";
 import ReadyToChatCard from "@/components/discover/ReadyToChatCard";
+import ReadyToChatInviteSheet from "@/components/discover/ReadyToChatInviteSheet";
 import RechargeGate from "@/components/discover/RechargeGate";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
@@ -356,6 +357,8 @@ const DiscoverPage = () => {
           </button>
         </div>
       )}
+
+      <ReadyToChatInviteSheet onOpenDm={(memberId) => setShowMessages(memberId)} />
 
       <SelfieCaptureModal open={showSelfie} onClose={() => setShowSelfie(false)} onComplete={handleSelfieComplete} />
 

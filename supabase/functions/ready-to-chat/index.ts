@@ -96,6 +96,7 @@ async function dispatchSession(sessionId: string) {
         type: "ready_to_chat",
         screen: "/(tabs)/discover",
         channelId: "chat_invites",
+        url: `https://c24club.com/discover?rtc=${session.id}&from=${session.sender_id}&mode=${d.effective_mode}`,
         params: JSON.stringify({
           source: "ready_to_chat",
           sessionId: session.id,
