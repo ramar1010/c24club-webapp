@@ -1,53 +1,29 @@
+# People-first Discover for web
 
+## Goal
+Reorder the responsive web Discover page so profile cards appear quickly, while preserving every existing profile action, safety rule, and account flow.
 
-## Hard-Coded Weekly Challenges with Extensible Architecture
+## Build
+- Keep the compact sticky Discover header, then move DMs, cash out/refill when eligible, and listing removal into a responsive action row.
+- Add a prominent full-width **Ready to Chat** card before filters.
+  - Open a focused dialog with exactly Text, Video, and Both.
+  - Require a choice, show a separate confirmation step, prevent repeat submissions, and surface loading/errors.
+  - Call the deployed `ready-to-chat` function using the provided action contract.
+  - Show only the returned notification count, selected mode, server expiry countdown, active styling, and Cancel.
+  - Retain the active session safely across a browser refresh until its server-provided expiry.
+- Compress the selfie/profile setup into one status row with its existing retake and profile-edit controls available on demand.
+- Restore **Interested in You** directly below selfie status, collapsed by default so it does not push profiles down.
+- Keep filters immediately above the profile grid and retain Linked, online, gender, country, sorting, infinite scrolling, badges, DMs, calls, gifting, blocking/reporting, and VIP behavior.
+- Remove or relocate oversized promotional panels above the grid so people remain the visual focus.
 
-### Overview
-Rewrite the WeeklyChallengesPage to render 3 hard-coded challenge cards (Bestie Challenge, Blue Eyes Hunt, Marathon Talk), each with a unique neon design and custom mechanics. The architecture uses a challenge registry pattern so adding future challenges is just adding an entry to an array — no structural changes needed.
+## Technical details
+- Add a dedicated web `ReadyToChatCard` component and use the existing design-system dialog/button controls.
+- Keep all identity and recipient selection server-controlled; never send or render a recipient list.
+- Make the deployed function accept the documented camel-case `sessionId` while remaining compatible with its existing snake-case input.
+- Use server-returned `expires_at`, `mode`, and `recipient_count`; do not invent client expiry or counts.
+- Keep this scoped to the React/Vite website and shared backend function only; no Expo/mobile client files will change.
 
-### Architecture: Challenge Registry Pattern
-
-A `CHALLENGE_CONFIGS` array defines each challenge with its slug, title, description, reward, difficulty, colors, icon, mechanic type (manual proof vs auto-tracked), max participants, and a custom React component or style config. The page iterates over this array to render cards. Adding a new challenge later = adding one object to the array.
-
-```text
-CHALLENGE_CONFIGS[]
-  ├── bestie-challenge   (purple/pink neon, referral + duration, manual proof)
-  ├── blue-eyes-hunt     (blue/cyan neon, screenshot snap, manual proof, max 3)
-  ├── marathon-talk      (green/emerald neon, auto-tracked 60min, max 2)
-  └── ... future challenges just add here
-```
-
-### Database Changes
-- **Migration**: Add `slug TEXT UNIQUE` column to `weekly_challenges` table so hard-coded UI can match to DB records for submission tracking.
-- Seed the 3 challenges with slugs: `bestie-challenge`, `blue-eyes-hunt`, `marathon-talk`.
-
-### File Changes
-
-**1. `src/pages/public/WeeklyChallengesPage.tsx`** — Full rewrite:
-- Define `CHALLENGE_CONFIGS` array with all visual/behavioral config per challenge.
-- Each card gets its own neon color scheme:
-  - **Bestie Challenge**: purple-pink gradient, Users icon, "EASY" badge, $25 reward. Shows 3-day progress tracker (Day 1/2/3 with checkmarks). Referral link copy + proof submission.
-  - **Blue Eyes Hunt**: blue-cyan gradient, Eye icon, "MEDIUM" badge, 15 min reward. "1/2 found" counter, screenshot upload/proof text, "Max 3 participants" indicator.
-  - **Marathon Talk**: green-emerald gradient, Clock icon, "MEDIUM" badge, $35 reward. Timer/progress bar toward 60 min, auto-tracked status, "Max 2 participants" indicator.
-- Each card rendered by mapping over configs, matching DB challenge by slug for submission status.
-- Bottom section: **"CASH OUT MINUTES FOR CASH / REWARDS!"** neon gold banner that opens the CashoutModal or navigates to My Rewards.
-- Still queries `challenge_submissions` table for user's submission status per challenge.
-
-**2. `src/components/videocall/GrowthPanel.tsx`** — Minor update:
-- Instead of querying DB for challenge previews, show the 3 hard-coded challenge names/rewards directly so the preview always shows content even if DB isn't seeded yet.
-
-### Card Design (per challenge)
-Each card includes:
-- Unique gradient background + glowing border (like existing neon style)
-- Shimmer animation overlay
-- Difficulty badge (EASY/MEDIUM/HARD) color-coded
-- Large reward display with neon glow
-- Description text
-- Progress indicator (custom per challenge type)
-- Action button (Submit Proof / auto-tracked status)
-- Max participants badge where applicable
-- Submission status overlay when submitted (pending/approved/rejected)
-
-### Extensibility
-To add a 4th challenge later, just push another object to `CHALLENGE_CONFIGS` with its unique colors, icon, slug, and mechanic type. The rendering loop handles everything else. DB-driven challenges from the admin panel can still render below the hard-coded ones as a fallback section.
-
+## Verification
+- Check the updated Discover experience at mobile (393×852), tablet, and desktop widths.
+- Verify modal selection/confirmation, duplicate-click prevention, active countdown/cancel, compact setup rows, and early profile visibility.
+- Check current diagnostics and the automated build after edits.
