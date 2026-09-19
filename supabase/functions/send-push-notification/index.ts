@@ -115,6 +115,7 @@ async function sendExpoPush(
   title: string,
   body: string,
   data: Record<string, unknown>,
+  ttlSeconds?: number,
 ): Promise<PushResult> {
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
   const maxAttempts = 4;
