@@ -1212,6 +1212,18 @@ const VideoCallPage = () => {
       {/* Mode selection overlay — shown every time the user enters C24Club */}
       {!loading && user && !needsSelfie && showModeSelection && (
         <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center p-4 md:p-8">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate("/login");
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-colors border border-white/10"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Log out
+            </button>
+          </div>
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-5xl font-black text-white mb-3">How do you want to connect?</h1>
             <p className="text-neutral-400 text-sm md:text-base">Pick what feels right right now.</p>
