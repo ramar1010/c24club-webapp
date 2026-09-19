@@ -104,14 +104,30 @@ const DiscoverPage = () => {
   useEffect(() => {
     if (!user || !isDiscoverable || readyAlertActive || scrollPromptShownRef.current) return;
 
-    // Only count distance the user actually scrolled from where they started,
-    // so restored scroll positions or mobile address-bar resizes don't trigger it.
-    const startScrollY = window.scrollY;
+    const promptKey = `ready-to-chat-scroll-prompt:${user.id}`;
+    if (sessionStorage.getItem(promptKey) === "shown") {
+      scrollPromptShownRef.current = true;
+      return;
+    }
+
+    // Count actual downward movement rather than the page's absolute position.
+    // This ignores mobile browser scroll restoration and address-bar jumps.
     const requiredDistance = Math.max(2200, window.innerHeight * 2.5);
+    const maxNaturalStep = Math.max(400, window.innerHeight * 0.75);
+    let lastScrollY = window.scrollY;
+    let downwardDistance = 0;
 
     const onScroll = () => {
-      if (window.scrollY - startScrollY < requiredDistance) return;
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      if (delta <= 0 || delta > maxNaturalStep) return;
+      downwardDistance += delta;
+      if (downwardDistance < requiredDistance) return;
+
       scrollPromptShownRef.current = true;
+      sessionStorage.setItem(promptKey, "shown");
       setShowScrollPrompt(true);
     };
 
