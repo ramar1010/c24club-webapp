@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Navigate, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChevronLeft, X, Video, MessageCircle } from "lucide-react";
+import { ChevronLeft, X, Video, MessageCircle, LogOut } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAuth } from "@/hooks/useAuth";
 import BannedScreen from "@/components/BannedScreen";
@@ -102,7 +102,7 @@ const VideoCallPage = () => {
   });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { user, loading, banInfo, recheckBan } = useAuth();
+  const { user, loading, banInfo, recheckBan, signOut } = useAuth();
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("both");
   const [showRedeem, setShowRedeem] = useState(false);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
@@ -1212,6 +1212,18 @@ const VideoCallPage = () => {
       {/* Mode selection overlay — shown every time the user enters C24Club */}
       {!loading && user && !needsSelfie && showModeSelection && (
         <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center p-4 md:p-8">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate("/login");
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-colors border border-white/10"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Log out
+            </button>
+          </div>
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-5xl font-black text-white mb-3">How do you want to connect?</h1>
             <p className="text-neutral-400 text-sm md:text-base">Pick what feels right right now.</p>
