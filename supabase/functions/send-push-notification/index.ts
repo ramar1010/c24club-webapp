@@ -167,14 +167,21 @@ async function sendFcmPush(
   const projectId = serviceAccount.project_id;
   const channelId = typeof data.channelId === "string" ? data.channelId : "default";
   const webLink = getWebLink(data);
+  const boundedTtl = typeof ttlSeconds === "number" && ttlSeconds > 0 ? Math.min(Math.floor(ttlSeconds), 900) : null;
+  const apnsExpiration = boundedTtl ? String(Math.floor(Date.now() / 1000) + boundedTtl) : null;
 
   const payload = JSON.stringify({
     message: {
       token,
       notification: { title, body },
       data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
-      android: { priority: "high", notification: { channel_id: channelId, sound: "default" } },
+      android: {
+        priority: "high",
+        ...(boundedTtl ? { ttl: `${boundedTtl}s` } : {}),
+        notification: { channel_id: channelId, sound: "default" },
+      },
       apns: {
+        ...(apnsExpiration ? { headers: { "apns-expiration": apnsExpiration } } : {}),
         payload: {
           aps: {
             alert: { title, body },
