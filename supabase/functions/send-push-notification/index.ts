@@ -160,6 +160,7 @@ async function sendFcmPush(
   title: string,
   body: string,
   data: Record<string, unknown>,
+  ttlSeconds?: number,
 ): Promise<PushResult> {
   const serviceAccount = JSON.parse(Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!);
   const accessToken = await getAccessToken(serviceAccount);
