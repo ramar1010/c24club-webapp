@@ -179,6 +179,15 @@ const DiscoverPage = () => {
             </span>
           )}
         </button>
+        {myGender !== "male" && (
+          <button
+            onClick={() => setShowCashout(true)}
+            className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25 sm:px-3"
+          >
+            <DollarSign className="h-4 w-4" />
+            Cash Out
+          </button>
+        )}
         {myGender === "male" && (
           <button
             onClick={() => setShowRecharge(true)}
@@ -188,15 +197,6 @@ const DiscoverPage = () => {
             Refill · {rechargeMinutes}
           </button>
         )}
-          {(minutesData?.gifted_minutes ?? 0) > 0 && (
-            <button
-              onClick={() => setShowCashout(true)}
-              className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25 sm:px-3"
-            >
-              <DollarSign className="h-4 w-4" />
-              Cash Out
-            </button>
-          )}
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
