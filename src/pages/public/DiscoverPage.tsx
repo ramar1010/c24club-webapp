@@ -104,15 +104,18 @@ const DiscoverPage = () => {
   useEffect(() => {
     if (!user || !isDiscoverable || readyAlertActive || scrollPromptShownRef.current) return;
 
+    // Only count distance the user actually scrolled from where they started,
+    // so restored scroll positions or mobile address-bar resizes don't trigger it.
+    const startScrollY = window.scrollY;
+    const requiredDistance = Math.max(2200, window.innerHeight * 2.5);
+
     const onScroll = () => {
-      const scrolledFar = window.scrollY >= Math.max(1100, window.innerHeight * 1.5);
-      if (!scrolledFar) return;
+      if (window.scrollY - startScrollY < requiredDistance) return;
       scrollPromptShownRef.current = true;
       setShowScrollPrompt(true);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, [user, isDiscoverable, readyAlertActive]);
 
