@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
-import { ArrowLeft, Camera, Sparkles, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Users } from "lucide-react";
+import { ArrowLeft, Camera, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
@@ -12,9 +12,13 @@ import DiscoverMemberCard from "@/components/discover/DiscoverMemberCard";
 import DiscoverRewardCard, { useDiscoverRewards } from "@/components/discover/DiscoverRewardCard";
 
 import DiscoverProfileEditor from "@/components/discover/DiscoverProfileEditor";
+import IncomingInterests from "@/components/discover/IncomingInterests";
+import ReadyToChatCard from "@/components/discover/ReadyToChatCard";
+import RechargeGate from "@/components/discover/RechargeGate";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { useVipStatus } from "@/hooks/useVipStatus";
+import { useRechargeMinutes } from "@/hooks/useRechargeMinutes";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
@@ -27,10 +31,12 @@ const DiscoverPage = () => {
   const [showSelfie, setShowSelfie] = useState(false);
   const [showMessages, setShowMessages] = useState<string | null>(null);
   const [showCashout, setShowCashout] = useState(false);
+  const [showRecharge, setShowRecharge] = useState(false);
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { startCheckout } = useVipStatus(user?.id ?? null);
+  const { data: rechargeMinutes = 0 } = useRechargeMinutes(user?.id ?? null);
   const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
 
 
@@ -98,8 +104,8 @@ const DiscoverPage = () => {
   return (
     <div className="min-h-screen bg-[#111] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#111]/95 backdrop-blur-md border-b border-white/10">
-        <div className="flex items-center gap-3 px-4 py-3">
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-[#111]/95 backdrop-blur-md">
+        <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
           <button onClick={() => navigate(-1)} className="text-white/60 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -107,101 +113,85 @@ const DiscoverPage = () => {
             <h1 className="font-bold text-lg">Discover People</h1>
             <p className="text-white/50 text-xs">Find people who want to video chat</p>
           </div>
-          {/* Cash Out button */}
+        </div>
+      </div>
+
+      {/* Compact account actions */}
+      <div className="flex items-center gap-2 overflow-x-auto px-3 pt-3 sm:px-4">
+        <button
+          onClick={() => setShowMessages("")}
+          className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-blue-500/30 bg-blue-500/15 px-3 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/25"
+        >
+          <MessageSquare className="h-4 w-4" />
+          DMs
+          {unreadDmCount > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+              {unreadDmCount > 9 ? "9+" : unreadDmCount}
+            </span>
+          )}
+        </button>
+        {myGender === "male" && (
+          <button
+            onClick={() => setShowRecharge(true)}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25"
+          >
+            <Phone className="h-4 w-4" />
+            Refill · {rechargeMinutes}
+          </button>
+        )}
           {(minutesData?.gifted_minutes ?? 0) > 0 && (
             <button
               onClick={() => setShowCashout(true)}
-              className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-semibold px-2.5 py-2 rounded-lg transition-colors border border-emerald-500/30"
+              className="flex h-9 shrink-0 items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/25"
             >
-              <DollarSign className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cash Out</span>
+              <DollarSign className="h-4 w-4" />
+              Cash Out
             </button>
           )}
-          {/* DMs button */}
-          <button
-            onClick={() => setShowMessages("")}
-            className="relative flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-blue-500/30"
-          >
-            <MessageSquare className="w-4 h-4" />
-            DMs
-            {unreadDmCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {unreadDmCount > 9 ? "9+" : unreadDmCount}
-              </span>
-            )}
-          </button>
           {!isDiscoverable ? (
             <button
               onClick={() => setShowSelfie(true)}
-              className="flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-pink-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-pink-600"
             >
-              <Camera className="w-4 h-4" />
+              <Camera className="h-4 w-4" />
               Get Listed
             </button>
           ) : (
             <button
               onClick={handleRemoveListing}
-              className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold px-3 py-2 rounded-lg transition-colors border border-red-500/30"
+              className="ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-3 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/20"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
               Remove
             </button>
           )}
-        </div>
       </div>
 
-      {/* Female VIP promo banner */}
-      {myGender === "female" && (
-        <>
-        <button
-          onClick={() => navigate("/earnings-chat")}
-          className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition text-left"
-        >
-          <Users className="w-5 h-5 text-emerald-400 shrink-0" />
-          <p className="text-sm font-semibold text-emerald-300 leading-snug">
-            💸 Girls Earnings Chat — see what other verified girls are making today
-          </p>
-        </button>
-        <button
-          onClick={async () => {
-            const { VIP_TIERS } = await import("@/config/vip-tiers");
-            void startCheckout(VIP_TIERS.basic.price_id, "discover_female_banner");
-          }}
-          className="mx-4 mt-3 p-3 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/20 animate-pulse-slow text-left w-[calc(100%-2rem)] cursor-pointer hover:brightness-110 transition"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-lg">👑</span>
-            <p className="text-white text-sm font-bold leading-snug">
-              Get noticed & gifted by thousands of guys — stay at the top of the Discover page with{" "}
-              <span className="text-yellow-200 underline underline-offset-2">VIP starting at $2.49/week!</span>
-            </p>
-            <Sparkles className="w-5 h-5 text-yellow-200 shrink-0" />
-          </div>
-        </button>
-        </>
-      )}
+      {user && <ReadyToChatCard userId={user.id} enabled={isDiscoverable} />}
 
-      {/* Not discoverable banner */}
+      {/* Compact selfie setup for members who are not listed yet */}
       {!isDiscoverable && (
-        <div className="mx-4 mt-4 p-4 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
-          <div className="flex items-start gap-3">
-            <Sparkles className="w-6 h-6 text-pink-400 shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-bold text-white mb-1">Get discovered!</h3>
-              <p className="text-white/70 text-sm mb-3">
-                Take a quick selfie to let others find you. We'll email you when someone wants to connect
-                {myGender === "female" ? <> — <span className="text-pink-300 font-semibold">earn cash</span> by chatting!</> : <>!</>}
-              </p>
-              <button
-                onClick={() => setShowSelfie(true)}
-                className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors"
-              >
-                📸 Take Selfie & Get Listed
-              </button>
-            </div>
+        <div className="mx-3 mt-2 flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 sm:mx-4">
+          <Camera className="h-4 w-4 shrink-0 text-pink-300" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-white">Add your Discover selfie</p>
+            <p className="truncate text-[11px] text-white/45">An approved photo lets people find you.</p>
           </div>
+          <button onClick={() => setShowSelfie(true)} className="h-8 shrink-0 rounded-md bg-pink-500 px-3 text-xs font-bold text-white hover:bg-pink-600">
+            Take selfie
+          </button>
         </div>
       )}
+
+      {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
+
+      <IncomingInterests
+        interests={incomingInterestsList}
+        myInterests={myInterests}
+        onInterestBack={handleInterest}
+        sendingInterest={sendingInterest}
+        onOpenDm={(memberId) => setShowMessages(memberId)}
+      />
 
       {/* Filters */}
       {!loading && allMembers.length > 0 && (
@@ -215,11 +205,8 @@ const DiscoverPage = () => {
         />
       )}
 
-      {/* Profile editor (for discoverable users) */}
-      {isDiscoverable && user && <DiscoverProfileEditor userId={user.id} />}
-
       {/* Members grid */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {[...Array(6)].map((_, i) => (
@@ -309,6 +296,7 @@ const DiscoverPage = () => {
           onSuccess={() => refetchMinutes()}
         />
       )}
+      {showRecharge && <RechargeGate balance={rechargeMinutes} onClose={() => setShowRecharge(false)} />}
     </div>
   );
 };
