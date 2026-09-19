@@ -250,6 +250,20 @@ const DiscoverPage = () => {
         onOpenDm={(memberId) => setShowMessages(memberId)}
       />
 
+      {/* Sticky filters */}
+      {!loading && allMembers.length > 0 && (
+        <div className="sticky top-[52px] z-30 border-b border-white/10 bg-[#111]/95 backdrop-blur-md px-3 py-2 sm:px-4">
+          <DiscoverFilters
+            filters={filters}
+            onFilterChange={setFilters}
+            countries={countries}
+            totalCount={allMembers.length}
+            filteredCount={members.length}
+            linkedCount={linkedProfiles.size}
+          />
+        </div>
+      )}
+
       {/* Members grid */}
       <div className="p-3 sm:p-4">
         {loading ? (
