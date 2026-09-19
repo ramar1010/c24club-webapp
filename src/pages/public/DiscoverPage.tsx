@@ -358,6 +358,8 @@ const DiscoverPage = () => {
         </div>
       )}
 
+      <ReadyToChatInviteSheet onOpenDm={(memberId) => setShowMessages(memberId)} />
+
       <SelfieCaptureModal open={showSelfie} onClose={() => setShowSelfie(false)} onComplete={handleSelfieComplete} />
 
       {showCashout && (
