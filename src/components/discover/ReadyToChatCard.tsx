@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Check, Clock3, Loader2, MessageCircle, Radio, Video } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BellRing, Check, Clock3, Loader2, MessageCircle, Radio, Send, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useVisiblePoll } from "@/hooks/useVisiblePoll";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,12 @@ interface ReadyToChatCardProps {
   enabled: boolean;
   openRequest?: number;
   onActiveChange?: (active: boolean) => void;
+}
+
+interface ReadyLimits {
+  outgoingDailyRemaining: number;
+  incomingHourlyRemaining: number;
+  incomingDailyRemaining: number;
 }
 
 const modeOptions: Array<{ mode: ReadyMode; label: string; description: string; icon: typeof MessageCircle }> = [
@@ -70,6 +77,21 @@ const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: R
   const [error, setError] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveReadySession | null>(() => readStoredSession(userId));
   const [now, setNow] = useState(Date.now());
+  const [limits, setLimits] = useState<ReadyLimits | null>(null);
+
+  const loadLimits = useCallback(async () => {
+    const { data, error: limitsError } = await supabase.functions.invoke("ready-to-chat", {
+      body: { action: "limits" },
+    });
+    if (limitsError || !data?.success) return;
+    setLimits({
+      outgoingDailyRemaining: Number(data.outgoing_daily_remaining) || 0,
+      incomingHourlyRemaining: Number(data.incoming_hourly_remaining) || 0,
+      incomingDailyRemaining: Number(data.incoming_daily_remaining) || 0,
+    });
+  }, []);
+
+  useVisiblePoll(() => void loadLimits(), 60_000, Boolean(userId));
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -138,6 +160,15 @@ const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: R
       };
       window.localStorage.setItem(storageKey(userId), JSON.stringify(session));
       setActiveSession(session);
+      if (data.limits?.success) {
+        setLimits({
+          outgoingDailyRemaining: Number(data.limits.outgoing_daily_remaining) || 0,
+          incomingHourlyRemaining: Number(data.limits.incoming_hourly_remaining) || 0,
+          incomingDailyRemaining: Number(data.limits.incoming_daily_remaining) || 0,
+        });
+      } else {
+        void loadLimits();
+      }
       setDialogOpen(false);
       setSelectedMode(null);
       setConfirming(false);
@@ -161,6 +192,7 @@ const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: R
       if (data?.success === false) throw new Error(data.reason || "Unable to cancel this alert.");
       window.localStorage.removeItem(storageKey(userId));
       setActiveSession(null);
+      void loadLimits();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to cancel this alert.");
     } finally {
@@ -190,6 +222,11 @@ const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: R
                 <p className="mt-0.5 text-xs text-white/60">
                   {activeSession.recipientCount} eligible {activeSession.recipientCount === 1 ? "person was" : "people were"} notified
                 </p>
+                {limits && (
+                  <p className="mt-1 text-[11px] text-white/45">
+                    {limits.outgoingDailyRemaining} alerts left today · Incoming {limits.incomingHourlyRemaining}/3 this hour, {limits.incomingDailyRemaining}/10 today
+                  </p>
+                )}
               </div>
               <div className="shrink-0 text-right">
                 <p className="flex items-center justify-end gap-1 text-sm font-bold tabular-nums text-emerald-300">
@@ -224,6 +261,12 @@ const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: R
               <span className="block text-xs leading-relaxed text-white/60 sm:text-sm">
                 Choose Text, Video, or Both and notify eligible people who were active today.
               </span>
+              {limits && (
+                <span className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-white/45">
+                  <span className="inline-flex items-center gap-1"><Send className="h-3 w-3" /> {limits.outgoingDailyRemaining} alerts left today</span>
+                  <span className="inline-flex items-center gap-1"><BellRing className="h-3 w-3" /> Incoming {limits.incomingHourlyRemaining}/3 hour · {limits.incomingDailyRemaining}/10 day</span>
+                </span>
+              )}
             </span>
             <span className="hidden text-sm font-semibold text-pink-300 sm:block">Start alert</span>
           </button>
