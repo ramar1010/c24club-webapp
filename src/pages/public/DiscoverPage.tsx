@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
-import { ArrowLeft, Camera, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Phone } from "lucide-react";
+import { ArrowLeft, Camera, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Phone, Radio, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
 import { useUnreadCount } from "@/hooks/useMessages";
@@ -18,6 +18,8 @@ import RechargeGate from "@/components/discover/RechargeGate";
 import MessagesPage from "@/pages/public/MessagesPage";
 import CashoutModal from "@/components/discover/CashoutModal";
 import { useRechargeMinutes } from "@/hooks/useRechargeMinutes";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 const DiscoverPage = () => {
   const navigate = useNavigate();
   const {
@@ -33,6 +35,10 @@ const DiscoverPage = () => {
   const [showRecharge, setShowRecharge] = useState(false);
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [readyOpenRequest, setReadyOpenRequest] = useState(0);
+  const [readyAlertActive, setReadyAlertActive] = useState(false);
+  const [showScrollPrompt, setShowScrollPrompt] = useState(false);
+  const scrollPromptShownRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { data: rechargeMinutes = 0 } = useRechargeMinutes(user?.id ?? null);
   const { data: inlineRewards = [] } = useDiscoverRewards(myGender);
@@ -94,6 +100,26 @@ const DiscoverPage = () => {
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
   }, [hasMore, loading, loadMore]);
+
+  useEffect(() => {
+    if (!user || !isDiscoverable || readyAlertActive || scrollPromptShownRef.current) return;
+
+    const onScroll = () => {
+      const scrolledFar = window.scrollY >= Math.max(1100, window.innerHeight * 1.5);
+      if (!scrolledFar) return;
+      scrollPromptShownRef.current = true;
+      setShowScrollPrompt(true);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [user, isDiscoverable, readyAlertActive]);
+
+  const openReadyToChat = () => {
+    setShowScrollPrompt(false);
+    setReadyOpenRequest((request) => request + 1);
+  };
 
   if (showMessages !== null) {
     return <MessagesPage onClose={() => setShowMessages(null)} initialPartnerId={showMessages || undefined} />;
@@ -165,7 +191,14 @@ const DiscoverPage = () => {
           )}
       </div>
 
-      {user && <ReadyToChatCard userId={user.id} enabled={isDiscoverable} />}
+      {user && (
+        <ReadyToChatCard
+          userId={user.id}
+          enabled={isDiscoverable}
+          openRequest={readyOpenRequest}
+          onActiveChange={setReadyAlertActive}
+        />
+      )}
 
       {/* Compact selfie setup for members who are not listed yet */}
       {!isDiscoverable && (
@@ -223,8 +256,23 @@ const DiscoverPage = () => {
               {shuffledMembers.map((member, idx) => {
                 const rewardIdx = Math.floor(idx / 6);
                 const showReward = idx > 0 && idx % 6 === 0 && inlineRewards.length > 0;
+                const showReadyReminder = idx > 0 && idx % 10 === 0 && isDiscoverable && !readyAlertActive;
                 return (
                   <Fragment key={member.id}>
+                    {showReadyReminder && (
+                      <div className="col-span-full flex items-center gap-3 rounded-lg border border-pink-500/40 bg-pink-500/10 p-3 sm:p-4">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-500 text-white">
+                          <Radio className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-white">Ready to chat now?</p>
+                          <p className="text-xs text-white/60">Alert people while you keep browsing Discover.</p>
+                        </div>
+                        <Button type="button" size="sm" onClick={openReadyToChat} className="shrink-0 bg-pink-500 text-white hover:bg-pink-600">
+                          Send alert
+                        </Button>
+                      </div>
+                    )}
                     {showReward && (
                       <DiscoverRewardCard
                         reward={inlineRewards[(rewardIdx - 1) % inlineRewards.length]}
@@ -295,6 +343,29 @@ const DiscoverPage = () => {
         />
       )}
       {showRecharge && <RechargeGate balance={rechargeMinutes} onClose={() => setShowRecharge(false)} />}
+
+      <Dialog open={showScrollPrompt} onOpenChange={setShowScrollPrompt}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-sm border-white/10 bg-[#171717] text-white">
+          <DialogHeader>
+            <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-pink-500/20 text-pink-300">
+              <BellRing className="h-5 w-5" />
+            </span>
+            <DialogTitle>Ready to chat?</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Alert people that you're available while you keep scrolling Discover.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:space-x-0">
+            <Button type="button" variant="ghost" onClick={() => setShowScrollPrompt(false)} className="text-white/60 hover:bg-white/10 hover:text-white">
+              Not now
+            </Button>
+            <Button type="button" onClick={openReadyToChat} className="bg-pink-500 text-white hover:bg-pink-600">
+              <Radio className="h-4 w-4" />
+              Set Ready to Chat
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

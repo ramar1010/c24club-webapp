@@ -23,6 +23,8 @@ interface ActiveReadySession {
 interface ReadyToChatCardProps {
   userId: string;
   enabled: boolean;
+  openRequest?: number;
+  onActiveChange?: (active: boolean) => void;
 }
 
 const modeOptions: Array<{ mode: ReadyMode; label: string; description: string; icon: typeof MessageCircle }> = [
@@ -59,7 +61,7 @@ const readStoredSession = (userId: string): ActiveReadySession | null => {
   }
 };
 
-const ReadyToChatCard = ({ userId, enabled }: ReadyToChatCardProps) => {
+const ReadyToChatCard = ({ userId, enabled, openRequest = 0, onActiveChange }: ReadyToChatCardProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMode, setSelectedMode] = useState<ReadyMode | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -80,6 +82,18 @@ const ReadyToChatCard = ({ userId, enabled }: ReadyToChatCardProps) => {
     window.localStorage.removeItem(storageKey(userId));
     setActiveSession(null);
   }, [activeSession, now, userId]);
+
+  useEffect(() => {
+    onActiveChange?.(activeSession !== null);
+  }, [activeSession, onActiveChange]);
+
+  useEffect(() => {
+    if (openRequest <= 0 || activeSession || !enabled) return;
+    setError(null);
+    setSelectedMode(null);
+    setConfirming(false);
+    setDialogOpen(true);
+  }, [openRequest, activeSession, enabled]);
 
   const remaining = useMemo(() => {
     if (!activeSession) return "";
