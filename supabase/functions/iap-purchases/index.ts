@@ -318,55 +318,37 @@ Deno.serve(async (req) => {
       await verifyReceipt();
 
       const purchaseTokenHash = purchaseToken ? await tokenFingerprint(purchaseToken) : null;
-      if (purchaseTokenHash) {
-        const { data: existingGift } = await supabaseAdmin
-          .from("iap_purchases")
-          .select("id")
-          .eq("action", "verify-gift")
-          .eq("purchase_token_hash", purchaseTokenHash)
-          .maybeSingle();
-        if (existingGift) {
-          return new Response(JSON.stringify({ success: true, already_processed: true }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-      }
+      const privateCallId = body.private_call_id ?? body.privateCallId ?? body.call_id ?? null;
 
-      // Gifts must ONLY credit gifted_minutes (cashable balance).
-      // They must NOT increase total_minutes ("earn chatting") to keep balances separate.
-      await supabaseAdmin.rpc("atomic_increment_member_balances", {
-        p_user_id: recipient_id,
-        p_total_amount: 0,
-        p_gifted_amount: minutesToGift,
+      // Atomic settlement: gift row + recipient credit + sender bonus + purchase record
+      // commit together or not at all. Fails loudly if anything goes wrong.
+      const { data: settled, error: settleErr } = await supabaseAdmin.rpc("settle_iap_gift", {
+        p_sender_id: user.id,
+        p_recipient_id: recipient_id,
+        p_sku: sku,
+        p_platform: platform ?? "native",
+        p_minutes: minutesToGift,
+        p_price_cents: PRICE_CENTS_MAP[sku] ?? Math.round(cashValue * 100),
+        p_sender_bonus: senderBonus,
+        p_purchase_token_hash: purchaseTokenHash,
+        p_private_call_id: privateCallId ? String(privateCallId) : null,
       });
-
-      await supabaseAdmin.from("gift_transactions").insert({
-        sender_id: user.id,
-        recipient_id,
-        minutes_amount: minutesToGift,
-        price_cents: PRICE_CENTS_MAP[sku] ?? Math.round(cashValue * 100),
-        status: "completed",
-      });
-
-      await supabaseAdmin.from("iap_purchases").insert({
-        user_id: user.id,
-        action: "verify-gift",
-        sku,
-        platform: platform ?? "native",
-        recipient_id,
-        minutes_added: minutesToGift,
-        purchase_token_hash: purchaseTokenHash,
-      });
-
-      if (senderBonus > 0) {
-        await supabaseAdmin.rpc("atomic_increment_member_balances", {
-          p_user_id: user.id,
-          p_total_amount: senderBonus,
-          p_gifted_amount: 0,
+      if (settleErr || !settled?.gift_transaction_id) {
+        console.error("[iap-purchases] gift settlement failed:", settleErr);
+        return new Response(JSON.stringify({ success: false, reason: "settlement_failed", error: settleErr?.message ?? "no_gift_row" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      return new Response(JSON.stringify({ success: true, minutes_gifted: minutesToGift, sender_bonus: senderBonus }), {
+      return new Response(JSON.stringify({
+        success: true,
+        already_processed: settled.already_processed === true,
+        gift_transaction_id: settled.gift_transaction_id,
+        private_call_id: privateCallId,
+        minutes_gifted: minutesToGift,
+        sender_bonus: senderBonus,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
