@@ -1070,25 +1070,31 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          gift_transaction_id: string | null
           id: string
+          message_kind: string
           read_at: string | null
-          sender_id: string
+          sender_id: string | null
         }
         Insert: {
           content: string
           conversation_id: string
           created_at?: string
+          gift_transaction_id?: string | null
           id?: string
+          message_kind?: string
           read_at?: string | null
-          sender_id: string
+          sender_id?: string | null
         }
         Update: {
           content?: string
           conversation_id?: string
           created_at?: string
+          gift_transaction_id?: string | null
           id?: string
+          message_kind?: string
           read_at?: string | null
-          sender_id?: string
+          sender_id?: string | null
         }
         Relationships: [
           {
@@ -1096,6 +1102,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dm_messages_gift_transaction_id_fkey"
+            columns: ["gift_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "gift_transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -3841,6 +3854,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      post_private_call_gift_dm: {
+        Args: { p_gift_id: string }
+        Returns: undefined
       }
       process_male_search_batch_notifications: {
         Args: never
