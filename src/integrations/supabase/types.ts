@@ -1403,6 +1403,7 @@ export type Database = {
           id: string
           minutes_amount: number
           price_cents: number
+          private_call_id: string | null
           recipient_id: string
           sender_id: string
           status: string
@@ -1414,6 +1415,7 @@ export type Database = {
           id?: string
           minutes_amount: number
           price_cents: number
+          private_call_id?: string | null
           recipient_id: string
           sender_id: string
           status?: string
@@ -1425,6 +1427,7 @@ export type Database = {
           id?: string
           minutes_amount?: number
           price_cents?: number
+          private_call_id?: string | null
           recipient_id?: string
           sender_id?: string
           status?: string
@@ -1467,6 +1470,7 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          gift_transaction_id: string | null
           id: string
           minutes_added: number | null
           platform: string
@@ -1479,6 +1483,7 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          gift_transaction_id?: string | null
           id?: string
           minutes_added?: number | null
           platform: string
@@ -1491,6 +1496,7 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          gift_transaction_id?: string | null
           id?: string
           minutes_added?: number | null
           platform?: string
@@ -3864,6 +3870,20 @@ export type Database = {
       rtc_effective_mode: {
         Args: { p_mode: string; p_recipient_id: string; p_sender_id: string }
         Returns: string
+      }
+      settle_iap_gift: {
+        Args: {
+          p_minutes: number
+          p_platform: string
+          p_price_cents: number
+          p_private_call_id: string
+          p_purchase_token_hash: string
+          p_recipient_id: string
+          p_sender_bonus: number
+          p_sender_id: string
+          p_sku: string
+        }
+        Returns: Json
       }
       spend_recharge_minutes: {
         Args: { p_amount: number; p_user_id: string }
