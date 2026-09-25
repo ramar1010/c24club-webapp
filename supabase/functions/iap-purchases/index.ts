@@ -333,7 +333,9 @@ Deno.serve(async (req) => {
         p_purchase_token_hash: purchaseTokenHash,
         p_private_call_id: privateCallId ? String(privateCallId) : null,
       });
-      if (settleErr || !settled?.gift_transaction_id) {
+      // Duplicates of purchases settled before gift_transaction_id existed return a
+      // NULL id — that's still a successful, already-processed purchase.
+      if (settleErr || (!settled?.gift_transaction_id && settled?.already_processed !== true)) {
         console.error("[iap-purchases] gift settlement failed:", settleErr);
         return new Response(JSON.stringify({ success: false, reason: "settlement_failed", error: settleErr?.message ?? "no_gift_row" }), {
           status: 500,
