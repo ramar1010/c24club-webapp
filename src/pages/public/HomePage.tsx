@@ -114,8 +114,8 @@ const MarqueeRow = ({ children, speed = 0.35 }: { children: React.ReactNode; spe
 type DiscoverPerson = { id: string; name: string | null; image: string | null };
 
 const PersonCard = ({ person }: { person: DiscoverPerson }) => (
-  <div className="flex-shrink-0 mx-2 w-32 sm:w-36">
-    <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-white/5">
+  <div className="flex-shrink-0 mx-[2px] w-32 sm:w-40">
+    <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/10 bg-white/5 group">
       {person.image ? (
         <img src={person.image} alt={person.name || "Member"} className="w-full h-full object-cover" loading="lazy" />
       ) : (
@@ -123,18 +123,26 @@ const PersonCard = ({ person }: { person: DiscoverPerson }) => (
           <Users className="h-10 w-10" />
         </div>
       )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
-        <p className="text-white font-bold text-sm truncate">{person.name || "Member"}</p>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-1.5 pt-8">
+        <p className="text-white font-bold text-xs truncate">{person.name || "Member"}</p>
+        <Link
+          to={`/discover?dm=${person.id}`}
+          className="mt-1 flex items-center justify-center gap-1 w-full py-1 rounded-md bg-pink-500 group-hover:bg-pink-400 text-white text-[10px] font-black uppercase tracking-wide transition-colors"
+        >
+          <MessageCircle className="h-3 w-3" />
+          Chat Now
+        </Link>
       </div>
     </div>
-    <Link
-      to={`/discover?dm=${person.id}`}
-      className="mt-2 flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wide shadow transition-colors"
-    >
-      <MessageCircle className="h-3.5 w-3.5" />
-      Chat Now
-    </Link>
   </div>
+);
+
+const RowTag = ({ label, color }: { label: string; color: string }) => (
+  <span
+    className={`absolute top-1.5 left-2 z-20 rounded-full bg-black/70 border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider backdrop-blur ${color}`}
+  >
+    {label}
+  </span>
 );
 
 const HeroCarousels = () => {
@@ -165,54 +173,68 @@ const HeroCarousels = () => {
     load();
   }, []);
 
-  const rewardItems = rewards;
-
   return (
-    <div className="max-w-6xl mx-auto space-y-5">
-      {/* Row 1: Rewards */}
-      <div>
-        <p className="text-center text-xs sm:text-sm font-black text-yellow-300 uppercase tracking-wider mb-2">
-          Rewards You Unlock By Chatting
-        </p>
-        <MarqueeRow speed={0.3}>
-          {rewardItems.map((r, i) => (
-            <div key={`rw-${i}`} className="flex-shrink-0 mx-2">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg border border-white/10">
-                <img src={r.image} alt={r.label} className="w-full h-full object-cover" loading="lazy" />
-              </div>
-              <p className="text-center text-white font-bold text-xs mt-1.5 drop-shadow">{r.minutes} Minutes</p>
+    <div className="relative max-w-6xl mx-auto">
+      {/* Glow behind the mosaic */}
+      <div className="absolute -inset-2 sm:-inset-3 rounded-[2rem] bg-gradient-to-r from-pink-500/25 via-yellow-400/15 to-pink-500/25 blur-xl pointer-events-none" />
+
+      <div className="relative rounded-2xl border border-white/15 bg-[#0d0b14]/90 p-1 shadow-2xl overflow-hidden">
+        {/* Online Now badge */}
+        <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1.5 rounded-full bg-black/75 border border-green-400/40 px-2.5 py-1 backdrop-blur">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+          </span>
+          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-green-300">Online Now</span>
+        </div>
+
+        <div className="space-y-1">
+          {/* Row 1: Rewards */}
+          <div className="relative">
+            <RowTag label="🎁 Rewards" color="border-yellow-400/40 text-yellow-300" />
+            <MarqueeRow speed={0.3}>
+              {rewards.map((r, i) => (
+                <div key={`rw-${i}`} className="flex-shrink-0 mx-[2px]">
+                  <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-lg overflow-hidden border border-white/10">
+                    <img src={r.image} alt={r.label} className="w-full h-full object-cover" loading="lazy" />
+                    <span className="absolute bottom-1 right-1 rounded-full bg-black/75 border border-yellow-400/40 text-yellow-300 text-[9px] font-black px-1.5 py-0.5">
+                      {r.minutes} MIN
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </MarqueeRow>
+          </div>
+
+          {/* Row 2: Females */}
+          {females.length > 0 && (
+            <div className="relative">
+              <RowTag label="💗 Girls" color="border-pink-400/40 text-pink-300" />
+              <MarqueeRow speed={0.25}>
+                {females.map((p) => (
+                  <PersonCard key={p.id} person={p} />
+                ))}
+              </MarqueeRow>
             </div>
-          ))}
-        </MarqueeRow>
+          )}
+
+          {/* Row 3: Males */}
+          {males.length > 0 && (
+            <div className="relative">
+              <RowTag label="💬 Guys" color="border-blue-400/40 text-blue-300" />
+              <MarqueeRow speed={0.22}>
+                {males.map((p) => (
+                  <PersonCard key={p.id} person={p} />
+                ))}
+              </MarqueeRow>
+            </div>
+          )}
+        </div>
+
+        {/* Edge fades */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 z-10 bg-gradient-to-r from-[#0d0b14]/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 z-10 bg-gradient-to-l from-[#0d0b14]/95 to-transparent" />
       </div>
-
-      {/* Row 2: Females */}
-      {females.length > 0 && (
-        <div>
-          <p className="text-center text-xs sm:text-sm font-black text-pink-400 uppercase tracking-wider mb-2">
-            Girls Online Now
-          </p>
-          <MarqueeRow speed={0.25}>
-            {females.map((p) => (
-              <PersonCard key={p.id} person={p} />
-            ))}
-          </MarqueeRow>
-        </div>
-      )}
-
-      {/* Row 3: Males */}
-      {males.length > 0 && (
-        <div>
-          <p className="text-center text-xs sm:text-sm font-black text-blue-400 uppercase tracking-wider mb-2">
-            Guys Online Now
-          </p>
-          <MarqueeRow speed={0.22}>
-            {males.map((p) => (
-              <PersonCard key={p.id} person={p} />
-            ))}
-          </MarqueeRow>
-        </div>
-      )}
     </div>
   );
 };
