@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Video, X, Gift, MessageCircle, Megaphone, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
+import { Video, X, Gift, MessageCircle, Sparkles, UserPlus, Clock, Zap, Star, DollarSign, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -957,53 +957,65 @@ const HomePage = () => {
                   <span className="text-red-400 font-black text-sm">STEP 3</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-white leading-tight" style={{ fontFamily: "'Antigone', 'Poppins', sans-serif" }}>
-                  Create Promos To <span className="text-orange-400">Reach More People!</span>
+                  Get Discovered <span className="text-orange-400">Beyond Random Matching!</span>
                 </h3>
                 <p className="text-white/60 text-base leading-relaxed">
-                  Don't want to video chat? Create eye-catching promo posts that display between other users' sessions. Promote your brand, socials, or anything you want — reach thousands!
+                  Add your selfie to Discover and let people find you directly. Fans can DM you, send call invites, and reconnect anytime through Linked profiles — you don't have to wait for random matching to meet someone.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <Megaphone className="h-4 w-4 text-orange-400" />
-                    <span className="text-white/80 text-sm font-medium">Custom promos</span>
+                    <Sparkles className="h-4 w-4 text-orange-400" />
+                    <span className="text-white/80 text-sm font-medium">Profile discovery</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
                     <MessageCircle className="h-4 w-4 text-orange-400" />
-                    <span className="text-white/80 text-sm font-medium">Thousands of viewers</span>
+                    <span className="text-white/80 text-sm font-medium">Direct DMs & call invites</span>
                   </div>
                 </div>
               </div>
               
-              {/* Promo visual */}
+              {/* Discover visual */}
               <div className="relative w-56 h-56 md:w-64 md:h-64 flex-shrink-0">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-600/20 border border-red-500/20 flex items-center justify-center">
-                  <div className="relative">
-                    <div className="w-44 bg-[#252535] rounded-2xl p-4 border border-orange-500/20 shadow-xl shadow-orange-500/10 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                      <div className="w-full h-20 rounded-lg bg-gradient-to-br from-orange-400/30 to-red-400/30 mb-3 flex items-center justify-center">
-                        <Megaphone className="h-8 w-8 text-orange-300" />
+                  <div className="relative w-40">
+                    {/* Profile card mockup */}
+                    <div className="rounded-2xl overflow-hidden border border-orange-500/20 shadow-xl shadow-orange-500/10 bg-[#252535] transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                      <div className="h-24 bg-gradient-to-br from-orange-400/30 via-red-400/30 to-pink-400/30 flex items-center justify-center">
+                        <UserPlus className="h-9 w-9 text-orange-300" />
                       </div>
-                      <div className="h-2 w-3/4 bg-white/20 rounded-full mb-2" />
-                      <div className="h-2 w-1/2 bg-white/10 rounded-full mb-3" />
-                      <div className="flex gap-1">
-                        <div className="h-6 flex-1 rounded-md bg-orange-500/40 flex items-center justify-center">
-                          <span className="text-[10px] text-white font-bold">Visit Link</span>
+                      <div className="p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="h-2.5 w-1/2 bg-white/25 rounded-full" />
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                            <span className="text-[8px] text-green-300 font-bold">Online</span>
+                          </span>
+                        </div>
+                        <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                        <div className="flex gap-1.5 pt-1">
+                          <div className="flex-1 h-6 rounded-md bg-pink-500/70 flex items-center justify-center">
+                            <span className="text-[10px] text-white font-bold">DM 💬</span>
+                          </div>
+                          <div className="flex-1 h-6 rounded-md bg-orange-500/60 flex items-center justify-center">
+                            <span className="text-[10px] text-white font-bold">Call 📞</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                     <div className="absolute -top-4 -right-4 animate-bounce" style={{ animationDelay: '0.3s' }}>
-                      <div className="px-2 py-1 rounded-full bg-red-500/90 shadow-lg">
-                        <span className="text-[10px] text-white font-bold">❤️ 2.4k</span>
+                      <div className="px-2 py-1 rounded-full bg-pink-500/90 shadow-lg">
+                        <span className="text-[10px] text-white font-bold">💬 New DM</span>
                       </div>
                     </div>
                     <div className="absolute -bottom-3 -left-3 animate-bounce" style={{ animationDelay: '0.8s' }}>
                       <div className="px-2 py-1 rounded-full bg-orange-500/90 shadow-lg">
-                        <span className="text-[10px] text-white font-bold">👁 5.1k</span>
+                        <span className="text-[10px] text-white font-bold">🔗 Linked</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
-                  <span className="text-white font-black text-sm tracking-wide">CREATE 🚀</span>
+                  <span className="text-white font-black text-sm tracking-wide">GET SEEN ✨</span>
                 </div>
               </div>
             </div>
