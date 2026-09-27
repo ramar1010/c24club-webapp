@@ -823,35 +823,8 @@ const HomePage = () => {
           </p>
         </div>
 
-        {/* Hero card with side rewards */}
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-1 lg:gap-2">
-          <div className="hidden sm:flex flex-col gap-3">
-            {leftSideRewards.map((r, i) => (
-              <SideCard key={`l-${i}`} image={r.image} label={r.label} />
-            ))}
-          </div>
-
-          <div className="flex-1 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="relative w-full" style={{ paddingBottom: "100%" }}>
-              <iframe
-                src="https://streamable.com/e/od3g2c?autoplay=1"
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full border-0"
-                title="C24 Club Video Chat Preview"
-                loading="eager"
-              />
-            </div>
-          </div>
-
-          <div className="hidden sm:flex flex-col gap-3">
-            {rightSideRewards.map((r, i) => (
-              <SideCard key={`r-${i}`} image={r.image} label={r.label} />
-            ))}
-          </div>
-        </div>
-
-        <MobileRewardSlider />
+        {/* 3-row marquee: rewards + people */}
+        <HeroCarousels />
 
         {/* CTA Buttons */}
         <div className="mt-8">
