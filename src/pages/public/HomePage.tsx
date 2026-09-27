@@ -83,7 +83,8 @@ const rightSideRewards = [
   { label: "Luxury shoulder bag reward", image: bagImg },
 ];
 
-const RewardCarousel = () => {
+/* ─── Slow marquee row (moves left → right, loops seamlessly) ─── */
+const MarqueeRow = ({ children, speed = 0.35 }: { children: React.ReactNode; speed?: number }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,33 +92,141 @@ const RewardCarousel = () => {
     if (!el) return;
     let pos = 0;
     let animId: number;
-    const speed = 0.5;
-    const totalWidth = el.scrollWidth / 2;
 
     const animate = () => {
-      pos -= speed;
-      if (pos <= -totalWidth) pos += totalWidth;
-      el.style.transform = `translateX(${pos}px)`;
+      const totalWidth = el.scrollWidth / 2;
+      if (totalWidth > 0) {
+        pos += speed;
+        if (pos >= 0) pos -= totalWidth;
+        el.style.transform = `translateX(${pos}px)`;
+      }
       animId = requestAnimationFrame(animate);
     };
-    animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
-  }, []);
-
-  const items = [...rewards, ...rewards];
+    // start offset at -half so it can move right
+    const start = () => {
+      const totalWidth = el.scrollWidth / 2;
+      if (totalWidth > 0) {
+        pos = -totalWidth;
+        el.style.transform = `translateX(${pos}px)`;
+      }
+      animId = requestAnimationFrame(animate);
+    };
+    const t = setTimeout(start, 100);
+    return () => { clearTimeout(t); cancelAnimationFrame(animId); };
+  }, [speed]);
 
   return (
-    <div className="w-full overflow-hidden rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-pink-400 py-6 cursor-grab">
+    <div className="w-full overflow-hidden">
       <div ref={scrollRef} className="flex w-max will-change-transform">
-        {items.map((r, i) => (
-          <div key={i} className="flex-shrink-0 mx-3">
-            <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg">
-              <img src={r.image} alt={r.label} className="w-full h-full object-cover" width="160" height="160" />
-            </div>
-            <p className="text-center text-white font-bold text-sm mt-2 drop-shadow">{r.minutes} Minutes</p>
-          </div>
-        ))}
+        {children}
+        {children}
       </div>
+    </div>
+  );
+};
+
+type DiscoverPerson = { id: string; name: string | null; image: string | null };
+
+const PersonCard = ({ person }: { person: DiscoverPerson }) => (
+  <div className="flex-shrink-0 mx-2 w-32 sm:w-36">
+    <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-white/5">
+      {person.image ? (
+        <img src={person.image} alt={person.name || "Member"} className="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white/30">
+          <Users className="h-10 w-10" />
+        </div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
+        <p className="text-white font-bold text-sm truncate">{person.name || "Member"}</p>
+      </div>
+    </div>
+    <Link
+      to={`/discover?dm=${person.id}`}
+      className="mt-2 flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wide shadow transition-colors"
+    >
+      <MessageCircle className="h-3.5 w-3.5" />
+      Chat Now
+    </Link>
+  </div>
+);
+
+const HeroCarousels = () => {
+  const [females, setFemales] = useState<DiscoverPerson[]>([]);
+  const [males, setMales] = useState<DiscoverPerson[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, name, gender, image_url, image_thumb_url")
+        .eq("is_discoverable", true)
+        .eq("image_status", "approved")
+        .not("image_url", "is", null)
+        .order("last_active_at", { ascending: false })
+        .limit(60);
+      if (!data) return;
+      const f: DiscoverPerson[] = [];
+      const m: DiscoverPerson[] = [];
+      for (const row of data) {
+        const p: DiscoverPerson = { id: row.id, name: row.name, image: row.image_thumb_url || row.image_url };
+        if ((row.gender || "").toLowerCase() === "female") f.push(p);
+        else if ((row.gender || "").toLowerCase() === "male") m.push(p);
+      }
+      setFemales(f.slice(0, 15));
+      setMales(m.slice(0, 15));
+    };
+    load();
+  }, []);
+
+  const rewardItems = rewards;
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-5">
+      {/* Row 1: Rewards */}
+      <div>
+        <p className="text-center text-xs sm:text-sm font-black text-yellow-300 uppercase tracking-wider mb-2">
+          Rewards You Unlock By Chatting
+        </p>
+        <MarqueeRow speed={0.3}>
+          {rewardItems.map((r, i) => (
+            <div key={`rw-${i}`} className="flex-shrink-0 mx-2">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                <img src={r.image} alt={r.label} className="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <p className="text-center text-white font-bold text-xs mt-1.5 drop-shadow">{r.minutes} Minutes</p>
+            </div>
+          ))}
+        </MarqueeRow>
+      </div>
+
+      {/* Row 2: Females */}
+      {females.length > 0 && (
+        <div>
+          <p className="text-center text-xs sm:text-sm font-black text-pink-400 uppercase tracking-wider mb-2">
+            Girls Online Now
+          </p>
+          <MarqueeRow speed={0.25}>
+            {females.map((p) => (
+              <PersonCard key={p.id} person={p} />
+            ))}
+          </MarqueeRow>
+        </div>
+      )}
+
+      {/* Row 3: Males */}
+      {males.length > 0 && (
+        <div>
+          <p className="text-center text-xs sm:text-sm font-black text-blue-400 uppercase tracking-wider mb-2">
+            Guys Online Now
+          </p>
+          <MarqueeRow speed={0.22}>
+            {males.map((p) => (
+              <PersonCard key={p.id} person={p} />
+            ))}
+          </MarqueeRow>
+        </div>
+      )}
     </div>
   );
 };
