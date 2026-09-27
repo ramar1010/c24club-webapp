@@ -70,14 +70,18 @@ const AnchorSettingsPage = () => {
         .from("bounty_earnings")
         .select("female_id, male_id, amount_minutes, source, created_at, clawed_back")
         .eq("clawed_back", false)
-        .in("source", ["basic", "premium"])
+        .in("source", ["basic", "premium", "streak"])
         .order("created_at", { ascending: false });
-      const map = new Map<string, { female_id: string; males: Set<string>; minutes: number; basic: number; premium: number; last: string }>();
+      const map = new Map<string, { female_id: string; males: Set<string>; minutes: number; basic: number; premium: number; streakMinutes: number; last: string }>();
       for (const row of data ?? []) {
         const key = row.female_id as string;
-        const entry = map.get(key) ?? { female_id: key, males: new Set(), minutes: 0, basic: 0, premium: 0, last: row.created_at as string };
-        entry.males.add(row.male_id as string);
+        const entry = map.get(key) ?? { female_id: key, males: new Set(), minutes: 0, basic: 0, premium: 0, streakMinutes: 0, last: row.created_at as string };
         entry.minutes += row.amount_minutes ?? 0;
+        if (row.source === "streak") {
+          entry.streakMinutes += row.amount_minutes ?? 0;
+        } else {
+          entry.males.add(row.male_id as string);
+        }
         if (row.source === "basic") entry.basic += 1;
         if (row.source === "premium") entry.premium += 1;
         if ((row.created_at as string) > entry.last) entry.last = row.created_at as string;
@@ -306,6 +310,7 @@ const AnchorSettingsPage = () => {
                   <th className="py-2 pr-3">Guys Converted</th>
                   <th className="py-2 pr-3">Basic</th>
                   <th className="py-2 pr-3">Premium</th>
+                  <th className="py-2 pr-3">Streak Bonus</th>
                   <th className="py-2 pr-3">Total Minutes</th>
                   <th className="py-2 pr-3">Cash Value</th>
                   <th className="py-2 pr-3">Last Conversion</th>
@@ -319,6 +324,7 @@ const AnchorSettingsPage = () => {
                     <td className="py-2 pr-3">{c.males_count}</td>
                     <td className="py-2 pr-3">{c.basic}</td>
                     <td className="py-2 pr-3">{c.premium}</td>
+                    <td className="py-2 pr-3">{c.streakMinutes > 0 ? `${c.streakMinutes} min` : "—"}</td>
                     <td className="py-2 pr-3">{c.minutes}</td>
                     <td className="py-2 pr-3 text-success font-bold">${(c.minutes * 0.01).toFixed(2)}</td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(c.last).toLocaleDateString()}</td>
