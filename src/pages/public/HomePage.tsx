@@ -113,29 +113,35 @@ const MarqueeRow = ({ children, speed = 0.35 }: { children: React.ReactNode; spe
 
 type DiscoverPerson = { id: string; name: string | null; image: string | null };
 
-const PersonCard = ({ person }: { person: DiscoverPerson }) => (
-  <div className="flex-shrink-0 mx-[2px] w-32 sm:w-40">
-    <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/10 bg-white/5 group">
-      {person.image ? (
-        <img src={person.image} alt={person.name || "Member"} className="w-full h-full object-cover" loading="lazy" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-white/30">
-          <Users className="h-10 w-10" />
+const PersonCard = ({ person, signedIn }: { person: DiscoverPerson; signedIn: boolean }) => {
+  const dmPath = `/discover?dm=${person.id}`;
+  // Signed-out visitors go through the homepage sign-in flow, then land in this person's DM.
+  const target = signedIn ? dmPath : `/?returnTo=${encodeURIComponent(dmPath)}`;
+
+  return (
+    <div className="flex-shrink-0 mx-[2px] w-32 sm:w-40">
+      <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/10 bg-white/5 group">
+        {person.image ? (
+          <img src={person.image} alt={person.name || "Member"} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white/30">
+            <Users className="h-10 w-10" />
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-1.5 pt-8">
+          <p className="text-white font-bold text-xs truncate">{person.name || "Member"}</p>
+          <Link
+            to={target}
+            className="mt-1 flex items-center justify-center gap-1 w-full py-1 rounded-md bg-pink-500 group-hover:bg-pink-400 text-white text-[10px] font-black uppercase tracking-wide transition-colors"
+          >
+            <MessageCircle className="h-3 w-3" />
+            Chat Now
+          </Link>
         </div>
-      )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-1.5 pt-8">
-        <p className="text-white font-bold text-xs truncate">{person.name || "Member"}</p>
-        <Link
-          to={`/discover?dm=${person.id}`}
-          className="mt-1 flex items-center justify-center gap-1 w-full py-1 rounded-md bg-pink-500 group-hover:bg-pink-400 text-white text-[10px] font-black uppercase tracking-wide transition-colors"
-        >
-          <MessageCircle className="h-3 w-3" />
-          Chat Now
-        </Link>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const RowTag = ({ label, color }: { label: string; color: string }) => (
   <span
@@ -146,8 +152,10 @@ const RowTag = ({ label, color }: { label: string; color: string }) => (
 );
 
 const HeroCarousels = () => {
+  const { user } = useAuth();
   const [females, setFemales] = useState<DiscoverPerson[]>([]);
   const [males, setMales] = useState<DiscoverPerson[]>([]);
+  const signedIn = !!user;
 
   useEffect(() => {
     const load = async () => {
@@ -212,7 +220,7 @@ const HeroCarousels = () => {
               <RowTag label="💗 Girls" color="border-pink-400/40 text-pink-300" />
               <MarqueeRow speed={0.25}>
                 {females.map((p) => (
-                  <PersonCard key={p.id} person={p} />
+                  <PersonCard key={p.id} person={p} signedIn={signedIn} />
                 ))}
               </MarqueeRow>
             </div>
@@ -224,7 +232,7 @@ const HeroCarousels = () => {
               <RowTag label="💬 Guys" color="border-blue-400/40 text-blue-300" />
               <MarqueeRow speed={0.22}>
                 {males.map((p) => (
-                  <PersonCard key={p.id} person={p} />
+                  <PersonCard key={p.id} person={p} signedIn={signedIn} />
                 ))}
               </MarqueeRow>
             </div>
