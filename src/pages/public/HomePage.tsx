@@ -263,7 +263,11 @@ const SignInPopup = ({ open, onClose, defaultSignUp = false }: { open: boolean; 
   if (!open) return null;
 
   const handleGoogle = async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    // Preserve the current query string (e.g. ?returnTo=/discover?dm=...) so
+    // the user lands back on the person they clicked after Google sign-in.
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + window.location.search,
+    });
     if (error) toast.error("Sign in failed", { description: String(error) });
   };
 

@@ -31,7 +31,12 @@ const DiscoverPage = () => {
   } = useDiscover();
   const { data: unreadDmCount = 0 } = useUnreadCount();
   const [showSelfie, setShowSelfie] = useState(false);
-  const [showMessages, setShowMessages] = useState<string | null>(null);
+  const [showMessages, setShowMessages] = useState<string | null>(() => {
+    // Open a DM thread directly when arriving via /discover?dm=<memberId>
+    // (e.g. Chat Now on the homepage after sign-in).
+    const dm = new URLSearchParams(window.location.search).get("dm");
+    return dm || null;
+  });
   const [showCashout, setShowCashout] = useState(false);
   const [showRecharge, setShowRecharge] = useState(false);
   const [shuffleSeed, setShuffleSeed] = useState(0);
