@@ -1203,6 +1203,15 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
                 </div>
               ) : (
                 messages.map((msg) => {
+                  if ((msg as any).message_kind === "system" || !msg.sender_id) {
+                    return (
+                      <div key={msg.id} className="flex justify-center">
+                        <div className="max-w-[85%] rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-center text-xs text-white/60">
+                          🎁 {msg.content}
+                        </div>
+                      </div>
+                    );
+                  }
                   const isMine = msg.sender_id === user?.id;
                   const isFromOwner = msg.sender_id === OWNER_ID;
                   const showEarnCta =
