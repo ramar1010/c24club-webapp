@@ -35,6 +35,7 @@ interface MemberImage {
 const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
+  const [genderFilter, setGenderFilter] = useState<"all" | "female" | "male">("all");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
@@ -121,15 +122,19 @@ const AdminDiscoverReviewPage = () => {
   });
 
   const filteredMembers = useMemo(() => {
+    let result = members;
+    if (genderFilter !== "all") {
+      result = result.filter((m) => (m.gender || "").toLowerCase() === genderFilter);
+    }
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return members;
-    return members.filter(m =>
+    if (!q) return result;
+    return result.filter(m =>
       (m.email || "").toLowerCase().includes(q) ||
       (m.name || "").toLowerCase().includes(q) ||
       (m.country || "").toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q)
     );
-  }, [members, searchQuery]);
+  }, [members, searchQuery, genderFilter]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ memberId, status }: { memberId: string; status: ImageStatus }) => {
@@ -369,14 +374,29 @@ const AdminDiscoverReviewPage = () => {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
             <Input
               placeholder="Search by email, name, country, or user ID…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-md"
             />
-            {searchQuery && (
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              {(["all", "female", "male"] as const).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGenderFilter(g)}
+                  className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
+                    genderFilter === g
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {g === "all" ? "All" : g === "female" ? "Females" : "Males"}
+                </button>
+              ))}
+            </div>
+            {(searchQuery || genderFilter !== "all") && (
               <p className="text-xs text-muted-foreground">
                 {filteredMembers.length} of {members.length}
               </p>
