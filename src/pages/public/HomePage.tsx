@@ -220,7 +220,7 @@ const HeroCarousels = () => {
               <RowTag label="💗 Girls" color="border-pink-400/40 text-pink-300" />
               <MarqueeRow speed={0.25}>
                 {females.map((p) => (
-                  <PersonCard key={p.id} person={p} />
+                  <PersonCard key={p.id} person={p} signedIn={signedIn} />
                 ))}
               </MarqueeRow>
             </div>
@@ -232,7 +232,7 @@ const HeroCarousels = () => {
               <RowTag label="💬 Guys" color="border-blue-400/40 text-blue-300" />
               <MarqueeRow speed={0.22}>
                 {males.map((p) => (
-                  <PersonCard key={p.id} person={p} />
+                  <PersonCard key={p.id} person={p} signedIn={signedIn} />
                 ))}
               </MarqueeRow>
             </div>
