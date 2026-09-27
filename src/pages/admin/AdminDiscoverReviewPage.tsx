@@ -35,6 +35,7 @@ interface MemberImage {
 const AdminDiscoverReviewPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ImageStatus>("pending");
+  const [genderFilter, setGenderFilter] = useState<"all" | "female" | "male">("all");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [banTarget, setBanTarget] = useState<MemberImage | null>(null);
@@ -121,15 +122,19 @@ const AdminDiscoverReviewPage = () => {
   });
 
   const filteredMembers = useMemo(() => {
+    let result = members;
+    if (genderFilter !== "all") {
+      result = result.filter((m) => (m.gender || "").toLowerCase() === genderFilter);
+    }
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return members;
-    return members.filter(m =>
+    if (!q) return result;
+    return result.filter(m =>
       (m.email || "").toLowerCase().includes(q) ||
       (m.name || "").toLowerCase().includes(q) ||
       (m.country || "").toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q)
     );
-  }, [members, searchQuery]);
+  }, [members, searchQuery, genderFilter]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ memberId, status }: { memberId: string; status: ImageStatus }) => {
