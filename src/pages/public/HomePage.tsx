@@ -68,22 +68,9 @@ const rewards = [
   { label: "Reward Item", minutes: 110, image: reward3 },
 ];
 
-const leftSideRewards = [
-  { label: "Designer bag reward", image: bag3 },
-  { label: "Designer boots reward", image: boots2 },
-  { label: "Denim shorts reward", image: shorts2 },
-  { label: "Heart-shaped handbag reward", image: heartbag2 },
-  { label: "Streetwear reward item", image: reward3 },
-];
-const rightSideRewards = [
-  { label: "Bucket hat reward", image: hat2 },
-  { label: "Designer phone case reward", image: phonecase2 },
-  { label: "Red handbag reward", image: redbag2 },
-  { label: "Fluffy slippers reward", image: slippers },
-  { label: "Luxury shoulder bag reward", image: bagImg },
-];
 
-const RewardCarousel = () => {
+/* ─── Slow marquee row (moves left → right, loops seamlessly) ─── */
+const MarqueeRow = ({ children, speed = 0.35 }: { children: React.ReactNode; speed?: number }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,126 +78,145 @@ const RewardCarousel = () => {
     if (!el) return;
     let pos = 0;
     let animId: number;
-    const speed = 0.5;
-    const totalWidth = el.scrollWidth / 2;
 
     const animate = () => {
-      pos -= speed;
-      if (pos <= -totalWidth) pos += totalWidth;
-      el.style.transform = `translateX(${pos}px)`;
+      const totalWidth = el.scrollWidth / 2;
+      if (totalWidth > 0) {
+        pos += speed;
+        if (pos >= 0) pos -= totalWidth;
+        el.style.transform = `translateX(${pos}px)`;
+      }
       animId = requestAnimationFrame(animate);
     };
-    animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
-  }, []);
-
-  const items = [...rewards, ...rewards];
+    // start offset at -half so it can move right
+    const start = () => {
+      const totalWidth = el.scrollWidth / 2;
+      if (totalWidth > 0) {
+        pos = -totalWidth;
+        el.style.transform = `translateX(${pos}px)`;
+      }
+      animId = requestAnimationFrame(animate);
+    };
+    const t = setTimeout(start, 100);
+    return () => { clearTimeout(t); cancelAnimationFrame(animId); };
+  }, [speed]);
 
   return (
-    <div className="w-full overflow-hidden rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-pink-400 py-6 cursor-grab">
+    <div className="w-full overflow-hidden">
       <div ref={scrollRef} className="flex w-max will-change-transform">
-        {items.map((r, i) => (
-          <div key={i} className="flex-shrink-0 mx-3">
-            <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg">
-              <img src={r.image} alt={r.label} className="w-full h-full object-cover" width="160" height="160" />
-            </div>
-            <p className="text-center text-white font-bold text-sm mt-2 drop-shadow">{r.minutes} Minutes</p>
-          </div>
-        ))}
+        {children}
+        {children}
       </div>
     </div>
   );
 };
 
-const SideCard = ({ image, label }: { image: string; label: string }) => (
-  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden shadow-md border border-white/10">
-    <img src={image} alt={label} className="w-full h-full object-cover" width="64" height="64" />
+type DiscoverPerson = { id: string; name: string | null; image: string | null };
+
+const PersonCard = ({ person }: { person: DiscoverPerson }) => (
+  <div className="flex-shrink-0 mx-2 w-32 sm:w-36">
+    <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-white/5">
+      {person.image ? (
+        <img src={person.image} alt={person.name || "Member"} className="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white/30">
+          <Users className="h-10 w-10" />
+        </div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
+        <p className="text-white font-bold text-sm truncate">{person.name || "Member"}</p>
+      </div>
+    </div>
+    <Link
+      to={`/discover?dm=${person.id}`}
+      className="mt-2 flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wide shadow transition-colors"
+    >
+      <MessageCircle className="h-3.5 w-3.5" />
+      Chat Now
+    </Link>
   </div>
 );
 
-const MobileRewardSlider = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const posRef = useRef(0);
-  const draggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const startPosRef = useRef(0);
-  const animIdRef = useRef<number>(0);
-  const pausedRef = useRef(false);
+const HeroCarousels = () => {
+  const [females, setFemales] = useState<DiscoverPerson[]>([]);
+  const [males, setMales] = useState<DiscoverPerson[]>([]);
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const speed = 0.4;
-
-    const getTotalWidth = () => el.scrollWidth / 2;
-
-    const animate = () => {
-      if (!pausedRef.current) {
-        posRef.current -= speed;
-        const tw = getTotalWidth();
-        if (tw > 0 && posRef.current <= -tw) posRef.current += tw;
-        el.style.transform = `translateX(${posRef.current}px)`;
+    const load = async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, name, gender, image_url, image_thumb_url")
+        .eq("is_discoverable", true)
+        .eq("image_status", "approved")
+        .not("image_url", "is", null)
+        .order("last_active_at", { ascending: false })
+        .limit(60);
+      if (!data) return;
+      const f: DiscoverPerson[] = [];
+      const m: DiscoverPerson[] = [];
+      for (const row of data) {
+        const p: DiscoverPerson = { id: row.id, name: row.name, image: row.image_thumb_url || row.image_url };
+        if ((row.gender || "").toLowerCase() === "female") f.push(p);
+        else if ((row.gender || "").toLowerCase() === "male") m.push(p);
       }
-      animIdRef.current = requestAnimationFrame(animate);
+      setFemales(f.slice(0, 15));
+      setMales(m.slice(0, 15));
     };
-    animIdRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animIdRef.current);
+    load();
   }, []);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    draggingRef.current = true;
-    pausedRef.current = true;
-    startXRef.current = e.clientX;
-    startPosRef.current = posRef.current;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!draggingRef.current || !scrollRef.current) return;
-    const delta = e.clientX - startXRef.current;
-    const tw = scrollRef.current.scrollWidth / 2;
-    let newPos = startPosRef.current + delta;
-    if (tw > 0) {
-      while (newPos <= -tw) newPos += tw;
-      while (newPos > 0) newPos -= tw;
-    }
-    posRef.current = newPos;
-    scrollRef.current.style.transform = `translateX(${newPos}px)`;
-  };
-
-  const handlePointerUp = () => {
-    draggingRef.current = false;
-    pausedRef.current = false;
-  };
-
-  const allRewardImages = [...leftSideRewards, ...rightSideRewards];
-  const items = [...allRewardImages, ...allRewardImages];
+  const rewardItems = rewards;
 
   return (
-    <div className="sm:hidden mt-5">
-        <p className="text-center text-sm font-black text-yellow-300 uppercase tracking-wider mb-3">
-        Rewards You Unlock By Chatting
-      </p>
-      <div
-        className="overflow-hidden rounded-xl cursor-grab active:cursor-grabbing touch-pan-y"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      >
-        <div ref={scrollRef} className="flex w-max will-change-transform select-none">
-          {items.map((r, i) => (
-            <div key={i} className="flex-shrink-0 mx-1.5">
-              <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <img src={r.image} alt={r.label} className="w-full h-full object-cover pointer-events-none" width="80" height="80" draggable={false} />
+    <div className="max-w-6xl mx-auto space-y-5">
+      {/* Row 1: Rewards */}
+      <div>
+        <p className="text-center text-xs sm:text-sm font-black text-yellow-300 uppercase tracking-wider mb-2">
+          Rewards You Unlock By Chatting
+        </p>
+        <MarqueeRow speed={0.3}>
+          {rewardItems.map((r, i) => (
+            <div key={`rw-${i}`} className="flex-shrink-0 mx-2">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                <img src={r.image} alt={r.label} className="w-full h-full object-cover" loading="lazy" />
               </div>
+              <p className="text-center text-white font-bold text-xs mt-1.5 drop-shadow">{r.minutes} Minutes</p>
             </div>
           ))}
-        </div>
+        </MarqueeRow>
       </div>
+
+      {/* Row 2: Females */}
+      {females.length > 0 && (
+        <div>
+          <p className="text-center text-xs sm:text-sm font-black text-pink-400 uppercase tracking-wider mb-2">
+            Girls Online Now
+          </p>
+          <MarqueeRow speed={0.25}>
+            {females.map((p) => (
+              <PersonCard key={p.id} person={p} />
+            ))}
+          </MarqueeRow>
+        </div>
+      )}
+
+      {/* Row 3: Males */}
+      {males.length > 0 && (
+        <div>
+          <p className="text-center text-xs sm:text-sm font-black text-blue-400 uppercase tracking-wider mb-2">
+            Guys Online Now
+          </p>
+          <MarqueeRow speed={0.22}>
+            {males.map((p) => (
+              <PersonCard key={p.id} person={p} />
+            ))}
+          </MarqueeRow>
+        </div>
+      )}
     </div>
   );
 };
+
 
 /* ─── Sign-In Popup ─── */
 const TURNSTILE_SITE_KEY = "0x4AAAAAACq2hFFseq9xTdN1";
@@ -714,35 +720,8 @@ const HomePage = () => {
           </p>
         </div>
 
-        {/* Hero card with side rewards */}
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-1 lg:gap-2">
-          <div className="hidden sm:flex flex-col gap-3">
-            {leftSideRewards.map((r, i) => (
-              <SideCard key={`l-${i}`} image={r.image} label={r.label} />
-            ))}
-          </div>
-
-          <div className="flex-1 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="relative w-full" style={{ paddingBottom: "100%" }}>
-              <iframe
-                src="https://streamable.com/e/od3g2c?autoplay=1"
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full border-0"
-                title="C24 Club Video Chat Preview"
-                loading="eager"
-              />
-            </div>
-          </div>
-
-          <div className="hidden sm:flex flex-col gap-3">
-            {rightSideRewards.map((r, i) => (
-              <SideCard key={`r-${i}`} image={r.image} label={r.label} />
-            ))}
-          </div>
-        </div>
-
-        <MobileRewardSlider />
+        {/* 3-row marquee: rewards + people */}
+        <HeroCarousels />
 
         {/* CTA Buttons */}
         <div className="mt-8">
