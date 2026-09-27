@@ -152,8 +152,10 @@ const RowTag = ({ label, color }: { label: string; color: string }) => (
 );
 
 const HeroCarousels = () => {
+  const { user } = useAuth();
   const [females, setFemales] = useState<DiscoverPerson[]>([]);
   const [males, setMales] = useState<DiscoverPerson[]>([]);
+  const signedIn = !!user;
 
   useEffect(() => {
     const load = async () => {
