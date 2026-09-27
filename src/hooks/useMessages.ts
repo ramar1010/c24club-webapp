@@ -89,7 +89,7 @@ export function useConversations() {
         .from("dm_messages")
         .select("conversation_id")
         .in("conversation_id", convoIds)
-        .neq("sender_id", user.id)
+        .or(`sender_id.is.null,sender_id.neq.${user.id}`)
         .is("read_at", null);
 
       // Count unread per conversation
@@ -162,7 +162,7 @@ export function useConversationMessages(conversationId: string | null) {
     if (!conversationId || !user || !query.data) return;
 
     const unread = query.data.filter(
-      (m) => m.sender_id !== user.id && !m.read_at
+      (m) => (m.sender_id === null || m.sender_id !== user.id) && !m.read_at
     );
 
     if (unread.length > 0) {
@@ -295,7 +295,7 @@ export function useUnreadCount() {
         .from("dm_messages")
         .select("id", { count: "exact", head: true })
         .in("conversation_id", convos.map((c: any) => c.id))
-        .neq("sender_id", user.id)
+        .or(`sender_id.is.null,sender_id.neq.${user.id}`)
         .is("read_at", null);
 
       return count || 0;
