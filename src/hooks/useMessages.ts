@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,17 +29,20 @@ export interface DmMessage {
   created_at: string;
 }
 
-const CONVO_PAGE_SIZE = 500;
+const CONVO_PAGE_SIZE = 100;
 
 export function useConversations() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["conversations", user?.id],
     enabled: !!user,
     staleTime: 15_000,
-    queryFn: async () => {
+    initialPageParam: 0,
+    getNextPageParam: (last: Conversation[], all: Conversation[][]) =>
+      last.length < CONVO_PAGE_SIZE ? undefined : all.length * CONVO_PAGE_SIZE,
+    queryFn: async ({ pageParam }): Promise<Conversation[]> => {
       if (!user) return [];
 
       // Get conversations – only the most recent ones
@@ -48,7 +51,7 @@ export function useConversations() {
         .select("*")
         .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
         .order("last_message_at", { ascending: false })
-        .limit(CONVO_PAGE_SIZE);
+        .range(pageParam as number, (pageParam as number) + CONVO_PAGE_SIZE - 1);
 
       if (error) throw error;
       if (!convos || convos.length === 0) return [];
@@ -149,7 +152,18 @@ export function useConversations() {
     };
   }, [user, queryClient]);
 
-  return query;
+  const data = useMemo(() => {
+    const seen = new Set<string>();
+    return (query.data?.pages.flat() || []).filter((c) => !seen.has(c.id) && seen.add(c.id));
+  }, [query.data]);
+
+  return {
+    data,
+    isLoading: query.isLoading,
+    hasNextPage: !!query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
+  };
 }
 
 export function useConversationMessages(conversationId: string | null) {

@@ -192,7 +192,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
       return data?.gender?.toLowerCase() || null;
     },
   });
-  const { data: conversations = [], isLoading: loadingConvos } = useConversations();
+  const { data: conversations = [], isLoading: loadingConvos, hasNextPage: moreConvosOnServer, isFetchingNextPage: fetchingMoreConvos, fetchNextPage: fetchMoreConvos } = useConversations();
   const { data: messages = [], isLoading: loadingMessages } = useConversationMessages(
     selectedConvo?.id || null
   );
@@ -658,7 +658,7 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
     () => filteredConversations.slice(0, visibleCount),
     [filteredConversations, visibleCount]
   );
-  const hasMore = filteredConversations.length > visibleCount;
+  const hasMore = filteredConversations.length > visibleCount || moreConvosOnServer;
 
   const showList = !selectedConvo || !isMobile;
   const showThread = !!selectedConvo;
@@ -995,10 +995,14 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
               ))}
               {hasMore && (
                 <button
-                  onClick={() => setVisibleCount((v) => v + CONVOS_PER_PAGE)}
+                  disabled={fetchingMoreConvos}
+                  onClick={() => {
+                    setVisibleCount((v) => v + CONVOS_PER_PAGE);
+                    if (moreConvosOnServer && filteredConversations.length - visibleCount <= CONVOS_PER_PAGE * 2) fetchMoreConvos();
+                  }}
                   className="w-full py-3 text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 transition-colors font-medium"
                 >
-                  Load More ({filteredConversations.length - visibleCount} remaining)
+                  {fetchingMoreConvos ? "Loading…" : moreConvosOnServer ? "Load More" : `Load More (${filteredConversations.length - visibleCount} remaining)`}
                 </button>
               )}
               </>
