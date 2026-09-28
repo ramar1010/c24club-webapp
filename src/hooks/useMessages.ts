@@ -58,10 +58,15 @@ export function useConversations() {
         c.participant_1 === user.id ? c.participant_2 : c.participant_1
       );
 
-      const { data: members } = await supabase
-        .from("members")
-        .select("id, name, image_url, gender, last_active_at")
-        .in("id", otherIds);
+      const memberResults = await Promise.all(
+        Array.from({ length: Math.ceil(otherIds.length / 50) }, (_, i) =>
+          supabase
+            .from("members")
+            .select("id, name, image_url, gender, last_active_at")
+            .in("id", otherIds.slice(i * 50, i * 50 + 50))
+        )
+      );
+      const members = memberResults.flatMap((r) => r.data || []);
 
       const memberMap = new Map((members || []).map((m: any) => [m.id, m]));
 
