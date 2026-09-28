@@ -29,7 +29,7 @@ export interface DmMessage {
   created_at: string;
 }
 
-const CONVO_PAGE_SIZE = 30;
+const CONVO_PAGE_SIZE = 500;
 
 export function useConversations() {
   const { user } = useAuth();
@@ -65,14 +65,22 @@ export function useConversations() {
 
       const memberMap = new Map((members || []).map((m: any) => [m.id, m]));
 
-      // Get last messages for ALL conversations in ONE query
-      // Using a subquery approach: get the most recent message per conversation
+      // Fetch in small batches so long lists don't hit URL/row limits
       const convoIds = convos.map((c: any) => c.id);
-      const { data: allMessages } = await supabase
-        .from("dm_messages")
-        .select("conversation_id, content, created_at")
-        .in("conversation_id", convoIds)
-        .order("created_at", { ascending: false });
+      const chunks: string[][] = [];
+      for (let i = 0; i < convoIds.length; i += 25) chunks.push(convoIds.slice(i, i + 25));
+
+      const msgResults = await Promise.all(
+        chunks.map((ids) =>
+          supabase
+            .from("dm_messages")
+            .select("conversation_id, content, created_at")
+            .in("conversation_id", ids)
+            .order("created_at", { ascending: false })
+            .limit(1000)
+        )
+      );
+      const allMessages = msgResults.flatMap((r) => r.data || []);
 
       // Build a map of conversation_id -> last message content
       const lastMsgMap = new Map<string, string>();
@@ -84,13 +92,17 @@ export function useConversations() {
         }
       }
 
-      // Get total unread count across all conversations in ONE query
-      const { data: unreadMessages } = await supabase
-        .from("dm_messages")
-        .select("conversation_id")
-        .in("conversation_id", convoIds)
-        .or(`sender_id.is.null,sender_id.neq.${user.id}`)
-        .is("read_at", null);
+      const unreadResults = await Promise.all(
+        chunks.map((ids) =>
+          supabase
+            .from("dm_messages")
+            .select("conversation_id")
+            .in("conversation_id", ids)
+            .or(`sender_id.is.null,sender_id.neq.${user.id}`)
+            .is("read_at", null)
+        )
+      );
+      const unreadMessages = unreadResults.flatMap((r) => r.data || []);
 
       // Count unread per conversation
       const unreadMap = new Map<string, number>();
