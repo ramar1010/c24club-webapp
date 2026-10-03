@@ -1571,6 +1571,36 @@ export type Database = {
           },
         ]
       }
+      late_bounty_windows: {
+        Row: {
+          awarded_at: string | null
+          awarded_female_id: string | null
+          expires_at: string
+          male_id: string
+          nudge_sent_at: string | null
+          tier: string
+          vip_started_at: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          awarded_female_id?: string | null
+          expires_at?: string
+          male_id: string
+          nudge_sent_at?: string | null
+          tier?: string
+          vip_started_at?: string
+        }
+        Update: {
+          awarded_at?: string | null
+          awarded_female_id?: string | null
+          expires_at?: string
+          male_id?: string
+          nudge_sent_at?: string | null
+          tier?: string
+          vip_started_at?: string
+        }
+        Relationships: []
+      }
       lucky_spin_settings: {
         Row: {
           daily_cap_cents: number
