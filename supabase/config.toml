@@ -17,3 +17,5 @@ project_id = "ncpbiymnafxdfsvpxirb"
     verify_jwt = false
   [functions.notify-admin-cashout]
     verify_jwt = false
+  [functions.notify-new-vip-guy]
+    verify_jwt = false
