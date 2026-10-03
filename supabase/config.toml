@@ -15,3 +15,5 @@ project_id = "ncpbiymnafxdfsvpxirb"
     verify_jwt = false
   [functions.notify-girls-earnings-chat]
     verify_jwt = false
+  [functions.notify-admin-cashout]
+    verify_jwt = false
