@@ -15,6 +15,13 @@
       "when": 1791065308903,
       "tag": "0001_late_vip_bounty_window",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791369911888,
+      "tag": "0002_prevent_blocking_admins",
+      "breakpoints": true
     }
   ]
 }
