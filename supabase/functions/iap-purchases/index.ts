@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { looksLikeJws, verifyAppleSignedTransaction, type AppleTransaction } from "./apple-jws.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -156,9 +157,31 @@ Deno.serve(async (req) => {
 
     console.log(`[iap-purchases] action=${action} sku=${sku} platform=${platform}`);
 
+    // Set when a StoreKit 2 signed transaction was verified; used for idempotency.
+    let appleTx: AppleTransaction | null = null;
+
     const verifyReceipt = async () => {
       if (!purchaseToken) throw new Error("Missing purchaseToken");
       const IOS_SHARED_SECRET = Deno.env.get("IOS_SHARED_SECRET");
+      if (platform === "ios" && looksLikeJws(String(purchaseToken))) {
+        const tx = await verifyAppleSignedTransaction(String(purchaseToken));
+        const expectedBundle = Deno.env.get("IOS_BUNDLE_ID") ?? "com.c24club.app";
+        console.log("[iap-purchases] StoreKit2 tx", {
+          transactionId: tx.transactionId, productId: tx.productId,
+          bundleId: tx.bundleId, environment: tx.environment,
+        });
+        if (tx.bundleId !== expectedBundle) throw new Error(`Apple verification failed: wrong app (${tx.bundleId})`);
+        if (sku && tx.productId.toLowerCase() !== sku) throw new Error("Apple verification failed: product mismatch");
+        if (tx.revocationDate) throw new Error("Apple verification failed: transaction was refunded or revoked");
+        if (tx.environment !== "Production" && tx.environment !== "Sandbox") {
+          throw new Error("Apple verification failed: unknown environment");
+        }
+        if (tx.appAccountToken && body.appAccountToken && tx.appAccountToken !== body.appAccountToken) {
+          throw new Error("Apple verification failed: ownership mismatch");
+        }
+        appleTx = tx;
+        return true;
+      }
       if (platform === "ios") {
         if (!IOS_SHARED_SECRET) {
           console.warn("IOS_SHARED_SECRET not set — skipping Apple verification.");
@@ -317,7 +340,10 @@ Deno.serve(async (req) => {
 
       await verifyReceipt();
 
-      const purchaseTokenHash = purchaseToken ? await tokenFingerprint(purchaseToken) : null;
+      // StoreKit 2: idempotency keyed on Apple's transaction ID (one gift per Apple transaction).
+      const purchaseTokenHash = appleTx
+        ? await tokenFingerprint(`apple:${(appleTx as AppleTransaction).transactionId}`)
+        : purchaseToken ? await tokenFingerprint(purchaseToken) : null;
       const privateCallId = body.private_call_id ?? body.privateCallId ?? body.call_id ?? null;
 
       // Atomic settlement: gift row + recipient credit + sender bonus + purchase record
