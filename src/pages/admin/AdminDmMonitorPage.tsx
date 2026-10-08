@@ -340,7 +340,7 @@ const AdminDmMonitorPage = () => {
           </div>
           <ScrollArea className="flex-1">
             {loading || searching ? (
-              <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>
+              <div className="p-4 text-center text-muted-foreground">{searching ? "Searching all chats..." : "Loading conversations..."}</div>
             ) : filteredConvos.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">No conversations found</div>
             ) : (
