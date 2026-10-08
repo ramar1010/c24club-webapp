@@ -170,6 +170,36 @@ const AdminDmMonitorPage = () => {
 
   const loadMore = async () => {
     setLoadingMore(true);
+    if (viewMode === "admin_replies") {
+      const { data: convos } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(`participant_1.eq.${ADMIN_USER_ID},participant_2.eq.${ADMIN_USER_ID}`)
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .range(adminFetched, adminFetched + 199);
+
+      if (convos) {
+        setAdminFetched((prev) => prev + convos.length);
+        setHasMore(convos.length === 200);
+        const rMap = await fetchReplyStatus(convos.map((c: any) => c.id));
+        const filtered = convos.filter((c: any) => {
+          const r = rMap.get(c.id);
+          if (!r) return false;
+          return r.senders && Array.from(r.senders).some((s: any) => s !== ADMIN_USER_ID);
+        });
+        setConversations((prev) => [...prev, ...filtered]);
+        const map = await fetchMemberInfo(filtered, members);
+        setMembers(map);
+        setReplyMap((prev) => {
+          const next = new Map(prev);
+          rMap.forEach((v, k) => next.set(k, { initiator: v.initiator, replied: v.replied }));
+          return next;
+        });
+      }
+      setLoadingMore(false);
+      return;
+    }
+
     const { data: convos } = await supabase
       .from("conversations")
       .select("*")
