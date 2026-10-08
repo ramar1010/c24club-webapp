@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { looksLikeJws, verifyAppleSignedTransaction, type AppleTransaction } from "./apple-jws.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
