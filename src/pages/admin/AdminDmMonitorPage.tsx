@@ -49,6 +49,8 @@ const AdminDmMonitorPage = () => {
   const [overallStats, setOverallStats] = useState<{ total: number; replied: number } | null>(null);
   const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "no_reply">("all");
   const [viewMode, setViewMode] = useState<"users" | "admin_replies">("users");
+  // Raw number of admin conversations fetched (before replies-only filtering)
+  const [adminFetched, setAdminFetched] = useState(0);
 
   // Fetch reply status for a batch of conversations
   const fetchReplyStatus = async (convoIds: string[]) => {
