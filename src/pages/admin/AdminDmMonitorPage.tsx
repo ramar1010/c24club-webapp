@@ -190,6 +190,56 @@ const AdminDmMonitorPage = () => {
     setLoadingMore(false);
   };
 
+  // Database-wide search by member name/email
+  const [searchResults, setSearchResults] = useState<ConversationRow[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) { setSearchResults(null); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setSearching(true);
+      const safe = q.replace(/[,()%]/g, "");
+      const { data: found } = await supabase
+        .from("members")
+        .select("id, name, email, image_thumb_url")
+        .or(`name.ilike.%${safe}%,email.ilike.%${safe}%`)
+        .limit(50);
+      const ids = (found || []).map((m) => m.id).filter((id) => viewMode === "admin_replies" || id !== ADMIN_USER_ID);
+      let convos: ConversationRow[] = [];
+      if (ids.length) {
+        const list = ids.join(",");
+        let query = supabase
+          .from("conversations")
+          .select("*")
+          .or(`participant_1.in.(${list}),participant_2.in.(${list})`)
+          .order("last_message_at", { ascending: false, nullsFirst: false })
+          .limit(300);
+        const { data } = await query;
+        convos = (data || []).filter((c: any) => {
+          const hasAdmin = c.participant_1 === ADMIN_USER_ID || c.participant_2 === ADMIN_USER_ID;
+          return viewMode === "admin_replies" ? hasAdmin : !hasAdmin;
+        });
+      }
+      if (cancelled) return;
+      const base = new Map(members);
+      (found || []).forEach((m) => base.set(m.id, m));
+      const map = await fetchMemberInfo(convos, base);
+      const rMap = await fetchReplyStatus(convos.map((c) => c.id));
+      if (cancelled) return;
+      setMembers(map);
+      setReplyMap((prev) => {
+        const next = new Map(prev);
+        rMap.forEach((v: any, k: string) => next.set(k, { initiator: v.initiator, replied: v.replied }));
+        return next;
+      });
+      setSearchResults(convos);
+      setSearching(false);
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, viewMode]);
+
   // Load messages for selected conversation
   useEffect(() => {
     if (!selectedConvo) return;
@@ -211,7 +261,8 @@ const AdminDmMonitorPage = () => {
   const getMemberEmail = (id: string) => members.get(id)?.email || "";
   const getMemberThumb = (id: string) => members.get(id)?.image_thumb_url;
 
-  const filteredConvos = conversations.filter((c) => {
+  const sourceConvos = searchResults ?? conversations;
+  const filteredConvos = sourceConvos.filter((c) => {
     if (replyFilter !== "all") {
       const r = replyMap.get(c.id);
       const replied = !!r?.replied;
@@ -227,7 +278,7 @@ const AdminDmMonitorPage = () => {
     return n1.includes(q) || n2.includes(q) || e1.includes(q) || e2.includes(q);
   });
 
-  const selectedConvoData = conversations.find((c) => c.id === selectedConvo);
+  const selectedConvoData = [...conversations, ...(searchResults || [])].find((c) => c.id === selectedConvo);
 
   return (
     <div className="space-y-4">
@@ -267,7 +318,7 @@ const AdminDmMonitorPage = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name or email..."
+                placeholder="Search all chats by name or email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -288,8 +339,8 @@ const AdminDmMonitorPage = () => {
             </div>
           </div>
           <ScrollArea className="flex-1">
-            {loading ? (
-              <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>
+            {loading || searching ? (
+              <div className="p-4 text-center text-muted-foreground">{searching ? "Searching all chats..." : "Loading conversations..."}</div>
             ) : filteredConvos.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">No conversations found</div>
             ) : (
