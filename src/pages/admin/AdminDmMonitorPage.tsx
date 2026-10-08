@@ -155,7 +155,8 @@ const AdminDmMonitorPage = () => {
           });
         }
         setConversations(filtered);
-        setHasMore(viewMode === "users" && convos.length === PAGE_SIZE);
+        setAdminFetched(viewMode === "admin_replies" ? convos.length : 0);
+        setHasMore(viewMode === "users" ? convos.length === PAGE_SIZE : convos.length === 200);
         const map = await fetchMemberInfo(filtered, new Map());
         setMembers(map);
         const simplified = new Map<string, { initiator: string; replied: boolean }>();
