@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { looksLikeJws, verifyAppleSignedTransaction, type AppleTransaction } from "./apple-jws.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,14 +41,42 @@ async function sha256Hex(input: string) {
   return Array.from(new Uint8Array(bytes)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/** Validate an Apple / Google receipt. Mirrors iap-purchases behaviour. */
-async function verifyNativeReceipt(platform: string, purchaseToken: string) {
+/**
+ * Validate an Apple / Google receipt. Mirrors iap-purchases behaviour.
+ * Returns the verified StoreKit 2 transaction when the token is a signed JWS.
+ */
+async function verifyNativeReceipt(
+  platform: string,
+  purchaseToken: string,
+  sku: string | null,
+  appAccountToken?: string,
+): Promise<AppleTransaction | null> {
   if (!purchaseToken) throw new Error("Missing purchaseToken");
+  if (platform === "ios" && looksLikeJws(purchaseToken)) {
+    const tx = await verifyAppleSignedTransaction(purchaseToken);
+    const expectedBundle = Deno.env.get("IOS_BUNDLE_ID") ?? "com.c24club.app";
+    console.log("[recharge-minutes] StoreKit2 tx", {
+      transactionId: tx.transactionId, productId: tx.productId,
+      bundleId: tx.bundleId, environment: tx.environment,
+    });
+    if (tx.bundleId !== expectedBundle) throw new Error(`Apple verification failed: wrong app (${tx.bundleId})`);
+    if (sku && tx.productId.toLowerCase() !== sku.toLowerCase() && resolvePackKey(tx.productId) !== resolvePackKey(sku)) {
+      throw new Error("Apple verification failed: product mismatch");
+    }
+    if (tx.revocationDate) throw new Error("Apple verification failed: transaction was refunded or revoked");
+    if (tx.environment !== "Production" && tx.environment !== "Sandbox") {
+      throw new Error("Apple verification failed: unknown environment");
+    }
+    if (tx.appAccountToken && appAccountToken && tx.appAccountToken !== appAccountToken) {
+      throw new Error("Apple verification failed: ownership mismatch");
+    }
+    return tx;
+  }
   if (platform === "ios") {
     const secret = Deno.env.get("IOS_SHARED_SECRET");
     if (!secret) {
       console.warn("[recharge-minutes] IOS_SHARED_SECRET not set — skipping Apple verification");
-      return true;
+      return null;
     }
     const callApple = async (url: string) => {
       const res = await fetch(url, {
@@ -64,11 +93,11 @@ async function verifyNativeReceipt(platform: string, purchaseToken: string) {
     let result = await callApple("https://buy.itunes.apple.com/verifyReceipt");
     if (result.status === 21007) result = await callApple("https://sandbox.itunes.apple.com/verifyReceipt");
     if (result.status !== 0) throw new Error(`Apple verification failed: status ${result.status}`);
-    return true;
+    return null;
   }
   if (platform === "android") {
     console.warn("[recharge-minutes] Google verification not configured — skipping");
-    return true;
+    return null;
   }
   throw new Error("Unknown platform");
 }
