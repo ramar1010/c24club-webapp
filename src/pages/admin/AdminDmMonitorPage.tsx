@@ -311,17 +311,49 @@ const AdminDmMonitorPage = () => {
     return !!c && (c.participant_1 === ADMIN_USER_ID || c.participant_2 === ADMIN_USER_ID);
   };
 
-  // Load messages for selected conversation
+  // Load messages for selected conversation (newest page first, older pages on demand)
+  const MSG_PAGE = 50;
+  const [hasOlderMsgs, setHasOlderMsgs] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const msgScrollRef = useRef<HTMLDivElement>(null);
   const loadMessages = async (convoId: string, silent = false) => {
     if (!silent) setMsgLoading(true);
     const { data } = await supabase
       .from("dm_messages")
       .select("*")
       .eq("conversation_id", convoId)
-      .order("created_at", { ascending: true });
-    if (data) setMessages(data as DmMessage[]);
+      .order("created_at", { ascending: false })
+      .limit(MSG_PAGE);
+    if (data) {
+      setMessages((data as DmMessage[]).reverse());
+      setHasOlderMsgs(data.length === MSG_PAGE);
+    }
     if (!silent) setMsgLoading(false);
   };
+  const loadOlderMessages = async () => {
+    if (!selectedConvo || loadingOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+    const oldest = messages[0].created_at;
+    const { data } = await supabase
+      .from("dm_messages")
+      .select("*")
+      .eq("conversation_id", selectedConvo)
+      .lt("created_at", oldest)
+      .order("created_at", { ascending: false })
+      .limit(MSG_PAGE);
+    if (data) {
+      setMessages((prev) => [...(data as DmMessage[]).reverse(), ...prev]);
+      setHasOlderMsgs(data.length === MSG_PAGE);
+    }
+    setLoadingOlder(false);
+  };
+  // Scroll to newest message when a conversation opens
+  useEffect(() => {
+    if (!msgLoading && messages.length > 0 && msgScrollRef.current) {
+      msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedConvo, msgLoading]);
   useEffect(() => {
     if (!selectedConvo) return;
     loadMessages(selectedConvo);
