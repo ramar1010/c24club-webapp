@@ -193,20 +193,32 @@ serve(async (req) => {
     if (action === "verify") {
       // ── Native in-app purchase (iOS / Android) ──────────────────────────
       if (!session_id) {
-        const packKey = resolvePackKey(sku ?? pack);
+        const token = String(
+          purchaseToken ?? body.jwsRepresentation ?? body.signedTransaction ?? body.transactionReceipt ?? "",
+        );
+        const normPlatform = String(platform ?? "").toLowerCase();
+        const appleTx = await verifyNativeReceipt(
+          normPlatform,
+          token,
+          sku ?? pack ?? null,
+          body.appAccountToken,
+        );
+
+        // Prefer the Apple-verified product ID over client-supplied SKU.
+        const packKey = resolvePackKey(appleTx?.productId ?? sku ?? pack);
         if (!packKey) throw new Error("Invalid or missing sku");
         const selected = RECHARGE_PACKS[packKey];
 
-        await verifyNativeReceipt(String(platform ?? "").toLowerCase(), purchaseToken);
-
-        // Idempotency: reuse the unique stripe_session_id index with an iap: key
-        const txKey = String(transactionId ?? purchaseToken ?? "").slice(0, 4096);
-        // NOTE: user.id must be part of the key — some clients send a shared/placeholder
+        // Idempotency: reuse the unique stripe_session_id index.
+        // StoreKit 2: Apple's transactionId is globally unique, so key on it alone —
+        // the same transaction can never be credited twice or to a second account.
+        // Legacy: user.id must be part of the key — some clients send a shared/placeholder
         // transaction token, which would otherwise make user B's purchase look like a
         // duplicate of user A's and silently skip crediting minutes.
-        const idempotencyKey = `iap:${platform ?? "native"}:${packKey}:${(
-          await sha256Hex(`${user.id}:${txKey}`)
-        ).slice(0, 40)}`;
+        const txKey = String(transactionId ?? token ?? "").slice(0, 4096);
+        const idempotencyKey = appleTx
+          ? `iap:ios:apple:${appleTx.transactionId}`
+          : `iap:${platform ?? "native"}:${packKey}:${(await sha256Hex(`${user.id}:${txKey}`)).slice(0, 40)}`;
 
         const { data: existing } = await supabaseAdmin
           .from("recharge_purchases")
