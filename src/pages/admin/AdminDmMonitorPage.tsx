@@ -273,30 +273,106 @@ const AdminDmMonitorPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, viewMode]);
 
+  // Unread: conversations with admin where the user's message hasn't been read
+  const [unreadConvos, setUnreadConvos] = useState<ConversationRow[]>([]);
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+  const [unreadLoading, setUnreadLoading] = useState(false);
+  const loadUnread = async () => {
+    setUnreadLoading(true);
+    const { data } = await supabase
+      .from("dm_messages")
+      .select("conversation_id, conversations!inner(id, participant_1, participant_2, last_message_at, created_at)")
+      .is("read_at", null)
+      .eq("message_kind", "user")
+      .neq("sender_id", ADMIN_USER_ID)
+      .or(`participant_1.eq.${ADMIN_USER_ID},participant_2.eq.${ADMIN_USER_ID}`, { referencedTable: "conversations" })
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    const counts = new Map<string, number>();
+    const convMap = new Map<string, ConversationRow>();
+    (data || []).forEach((m: any) => {
+      counts.set(m.conversation_id, (counts.get(m.conversation_id) || 0) + 1);
+      if (m.conversations) convMap.set(m.conversation_id, m.conversations);
+    });
+    const list = Array.from(convMap.values()).sort((a, b) =>
+      (b.last_message_at || "").localeCompare(a.last_message_at || ""));
+    setUnreadCounts(counts);
+    setUnreadConvos(list);
+    setMembers((prev) => prev);
+    const map = await fetchMemberInfo(list, members);
+    setMembers(map);
+    setUnreadLoading(false);
+  };
+  useEffect(() => { loadUnread(); /* eslint-disable-next-line */ }, []);
+
+  const isAdminConvo = (id: string | null) => {
+    const c = [...conversations, ...unreadConvos, ...(searchResults || [])].find((x) => x.id === id);
+    return !!c && (c.participant_1 === ADMIN_USER_ID || c.participant_2 === ADMIN_USER_ID);
+  };
+
   // Load messages for selected conversation
+  const loadMessages = async (convoId: string, silent = false) => {
+    if (!silent) setMsgLoading(true);
+    const { data } = await supabase
+      .from("dm_messages")
+      .select("*")
+      .eq("conversation_id", convoId)
+      .order("created_at", { ascending: true });
+    if (data) setMessages(data as DmMessage[]);
+    if (!silent) setMsgLoading(false);
+  };
   useEffect(() => {
     if (!selectedConvo) return;
-    const loadMessages = async () => {
-      setMsgLoading(true);
-      const { data } = await supabase
+    loadMessages(selectedConvo);
+    // Mark user messages as read when admin opens their own conversation
+    if (isAdminConvo(selectedConvo) && (unreadCounts.get(selectedConvo) || 0) > 0) {
+      supabase
         .from("dm_messages")
-        .select("*")
+        .update({ read_at: new Date().toISOString() })
         .eq("conversation_id", selectedConvo)
-        .order("created_at", { ascending: true });
-
-      if (data) setMessages(data);
-      setMsgLoading(false);
-    };
-    loadMessages();
+        .neq("sender_id", ADMIN_USER_ID)
+        .is("read_at", null)
+        .then(() => {
+          setUnreadCounts((prev) => { const n = new Map(prev); n.delete(selectedConvo); return n; });
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConvo]);
+
+  // Admin reply
+  const [replyText, setReplyText] = useState("");
+  const [sending, setSending] = useState(false);
+  const sendReply = async () => {
+    const text = replyText.trim();
+    if (!text || !selectedConvo || sending) return;
+    setSending(true);
+    const { error } = await supabase.from("dm_messages").insert({
+      conversation_id: selectedConvo,
+      sender_id: ADMIN_USER_ID,
+      content: text,
+      message_kind: "user",
+    });
+    if (error) {
+      toast.error(error.message.includes("row-level") ? "Sign in as the admin account to reply." : error.message);
+    } else {
+      setReplyText("");
+      const now = new Date().toISOString();
+      await supabase.from("conversations").update({ last_message_at: now }).eq("id", selectedConvo);
+      setReplyMap((prev) => { const n = new Map(prev); const r = n.get(selectedConvo); if (r) n.set(selectedConvo, { ...r, replied: true }); return n; });
+      await loadMessages(selectedConvo, true);
+    }
+    setSending(false);
+  };
 
   const getMemberName = (id: string) => members.get(id)?.name || id.slice(0, 8);
   const getMemberEmail = (id: string) => members.get(id)?.email || "";
   const getMemberThumb = (id: string) => members.get(id)?.image_thumb_url;
 
-  const sourceConvos = searchResults ?? conversations;
+  const sourceConvos = searchResults ?? (viewMode === "admin_unread"
+    ? unreadConvos.filter((c) => (unreadCounts.get(c.id) || 0) > 0)
+    : conversations);
   const filteredConvos = sourceConvos.filter((c) => {
-    if (replyFilter !== "all") {
+    if (replyFilter !== "all" && viewMode !== "admin_unread") {
       const r = replyMap.get(c.id);
       const replied = !!r?.replied;
       if (replyFilter === "replied" && !replied) return false;
@@ -311,7 +387,9 @@ const AdminDmMonitorPage = () => {
     return n1.includes(q) || n2.includes(q) || e1.includes(q) || e2.includes(q);
   });
 
-  const selectedConvoData = [...conversations, ...(searchResults || [])].find((c) => c.id === selectedConvo);
+  const unreadTotal = Array.from(unreadCounts.values()).filter((n) => n > 0).length;
+  const selectedConvoData = [...conversations, ...unreadConvos, ...(searchResults || [])].find((c) => c.id === selectedConvo);
+  const canReply = viewMode !== "users" && isAdminConvo(selectedConvo);
 
   return (
     <div className="space-y-4">
