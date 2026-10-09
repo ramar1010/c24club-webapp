@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -613,7 +613,7 @@ const AdminDmMonitorPage = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4" ref={msgScrollRef}>
                 {msgLoading ? (
                   <div className="text-center text-muted-foreground">Loading messages...</div>
                 ) : messages.length === 0 ? (
