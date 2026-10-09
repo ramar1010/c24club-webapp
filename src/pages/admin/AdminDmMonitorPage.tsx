@@ -393,6 +393,9 @@ const AdminDmMonitorPage = () => {
       await supabase.from("conversations").update({ last_message_at: now }).eq("id", selectedConvo);
       setReplyMap((prev) => { const n = new Map(prev); const r = n.get(selectedConvo); if (r) n.set(selectedConvo, { ...r, replied: true }); return n; });
       await loadMessages(selectedConvo, true);
+      requestAnimationFrame(() => {
+        if (msgScrollRef.current) msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
+      });
     }
     setSending(false);
   };
@@ -657,7 +660,7 @@ const AdminDmMonitorPage = () => {
                     })}
                   </div>
                 )}
-              </ScrollArea>
+              </div>
               {canReply && (
                 <div className="p-3 border-t border-border flex gap-2 items-end">
                   <Textarea
