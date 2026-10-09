@@ -350,8 +350,7 @@ const AdminDmMonitorPage = () => {
   // Scroll to newest message when a conversation opens
   useEffect(() => {
     if (!msgLoading && messages.length > 0 && msgScrollRef.current) {
-      const viewport = msgScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (viewport) viewport.scrollTop = viewport.scrollHeight;
+      msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConvo, msgLoading]);
@@ -614,7 +613,7 @@ const AdminDmMonitorPage = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4" ref={msgScrollRef}>
+              <div ref={msgScrollRef} className="flex-1 min-h-0 overflow-y-auto p-4">
                 {msgLoading ? (
                   <div className="text-center text-muted-foreground">Loading messages...</div>
                 ) : messages.length === 0 ? (
