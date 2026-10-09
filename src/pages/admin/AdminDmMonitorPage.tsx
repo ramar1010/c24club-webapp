@@ -350,8 +350,7 @@ const AdminDmMonitorPage = () => {
   // Scroll to newest message when a conversation opens
   useEffect(() => {
     if (!msgLoading && messages.length > 0 && msgScrollRef.current) {
-      const viewport = msgScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (viewport) viewport.scrollTop = viewport.scrollHeight;
+      msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConvo, msgLoading]);
@@ -394,6 +393,9 @@ const AdminDmMonitorPage = () => {
       await supabase.from("conversations").update({ last_message_at: now }).eq("id", selectedConvo);
       setReplyMap((prev) => { const n = new Map(prev); const r = n.get(selectedConvo); if (r) n.set(selectedConvo, { ...r, replied: true }); return n; });
       await loadMessages(selectedConvo, true);
+      requestAnimationFrame(() => {
+        if (msgScrollRef.current) msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
+      });
     }
     setSending(false);
   };
@@ -614,7 +616,7 @@ const AdminDmMonitorPage = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4" ref={msgScrollRef}>
+              <div ref={msgScrollRef} className="flex-1 min-h-0 overflow-y-auto p-4">
                 {msgLoading ? (
                   <div className="text-center text-muted-foreground">Loading messages...</div>
                 ) : messages.length === 0 ? (
@@ -658,7 +660,7 @@ const AdminDmMonitorPage = () => {
                     })}
                   </div>
                 )}
-              </ScrollArea>
+              </div>
               {canReply && (
                 <div className="p-3 border-t border-border flex gap-2 items-end">
                   <Textarea
