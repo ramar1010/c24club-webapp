@@ -4,8 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Search, MessageSquare, ArrowLeft, User, Clock } from "lucide-react";
+import { Search, MessageSquare, ArrowLeft, User, Clock, Send } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversationRow {
   id: string;
@@ -48,7 +50,7 @@ const AdminDmMonitorPage = () => {
   const [replyMap, setReplyMap] = useState<Map<string, { initiator: string; replied: boolean }>>(new Map());
   const [overallStats, setOverallStats] = useState<{ total: number; replied: number } | null>(null);
   const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "no_reply">("all");
-  const [viewMode, setViewMode] = useState<"users" | "admin_replies">("users");
+  const [viewMode, setViewMode] = useState<"users" | "admin_replies" | "admin_unread">("users");
   // Raw number of admin conversations fetched (before replies-only filtering)
   const [adminFetched, setAdminFetched] = useState(0);
 
@@ -238,7 +240,7 @@ const AdminDmMonitorPage = () => {
         .select("id, name, email, image_thumb_url")
         .or(`name.ilike.%${safe}%,email.ilike.%${safe}%`)
         .limit(50);
-      const ids = (found || []).map((m) => m.id).filter((id) => viewMode === "admin_replies" || id !== ADMIN_USER_ID);
+      const ids = (found || []).map((m) => m.id).filter((id) => viewMode !== "users" || id !== ADMIN_USER_ID);
       let convos: ConversationRow[] = [];
       if (ids.length) {
         const list = ids.join(",");
@@ -251,7 +253,7 @@ const AdminDmMonitorPage = () => {
         const { data } = await query;
         convos = (data || []).filter((c: any) => {
           const hasAdmin = c.participant_1 === ADMIN_USER_ID || c.participant_2 === ADMIN_USER_ID;
-          return viewMode === "admin_replies" ? hasAdmin : !hasAdmin;
+          return viewMode !== "users" ? hasAdmin : !hasAdmin;
         });
       }
       if (cancelled) return;
@@ -298,7 +300,6 @@ const AdminDmMonitorPage = () => {
       (b.last_message_at || "").localeCompare(a.last_message_at || ""));
     setUnreadCounts(counts);
     setUnreadConvos(list);
-    setMembers((prev) => prev);
     const map = await fetchMemberInfo(list, members);
     setMembers(map);
     setUnreadLoading(false);
@@ -420,6 +421,16 @@ const AdminDmMonitorPage = () => {
         >
           Replies to Me (Admin)
         </Button>
+        <Button
+          size="sm"
+          variant={viewMode === "admin_unread" ? "default" : "outline"}
+          onClick={() => { setViewMode("admin_unread"); setSelectedConvo(null); loadUnread(); }}
+        >
+          Unread to Me
+          {unreadTotal > 0 && (
+            <Badge className="ml-2 h-5 px-1.5 bg-destructive text-destructive-foreground">{unreadTotal}</Badge>
+          )}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
@@ -435,7 +446,7 @@ const AdminDmMonitorPage = () => {
                 className="pl-9"
               />
             </div>
-            <div className="flex gap-1 mt-2">
+            {viewMode !== "admin_unread" && <div className="flex gap-1 mt-2">
               {(["all", "replied", "no_reply"] as const).map((f) => (
                 <Button
                   key={f}
@@ -447,10 +458,10 @@ const AdminDmMonitorPage = () => {
                   {f === "all" ? "All" : f === "replied" ? "Replied" : "No reply"}
                 </Button>
               ))}
-            </div>
+            </div>}
           </div>
           <ScrollArea className="flex-1">
-            {loading || searching ? (
+            {(viewMode === "admin_unread" ? unreadLoading : loading) || searching ? (
               <div className="p-4 text-center text-muted-foreground">{searching ? "Searching all chats..." : "Loading conversations..."}</div>
             ) : filteredConvos.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">No conversations found</div>
@@ -495,7 +506,12 @@ const AdminDmMonitorPage = () => {
                             : "No messages"}
                         </p>
                       </div>
-                      {replyMap.get(c.id) && (
+                      {(unreadCounts.get(c.id) || 0) > 0 && (
+                        <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">
+                          {unreadCounts.get(c.id)} new
+                        </Badge>
+                      )}
+                      {viewMode !== "admin_unread" && replyMap.get(c.id) && (
                         <Badge
                           variant="outline"
                           className={
@@ -510,7 +526,7 @@ const AdminDmMonitorPage = () => {
                     </div>
                   </button>
                 ))}
-                {hasMore && !search && (
+                {hasMore && !search && viewMode !== "admin_unread" && (
                   <div className="p-3 text-center">
                     <Button
                       variant="ghost"
@@ -603,6 +619,24 @@ const AdminDmMonitorPage = () => {
                   </div>
                 )}
               </ScrollArea>
+              {canReply && (
+                <div className="p-3 border-t border-border flex gap-2 items-end">
+                  <Textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); }
+                    }}
+                    placeholder="Reply as admin... (Enter to send, Shift+Enter for new line)"
+                    className="min-h-[44px] max-h-40 resize-none"
+                    rows={2}
+                  />
+                  <Button onClick={sendReply} disabled={sending || !replyText.trim()}>
+                    <Send className="h-4 w-4 mr-1" />
+                    {sending ? "Sending..." : "Send"}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>
