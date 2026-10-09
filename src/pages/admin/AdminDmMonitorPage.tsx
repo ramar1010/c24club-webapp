@@ -350,7 +350,8 @@ const AdminDmMonitorPage = () => {
   // Scroll to newest message when a conversation opens
   useEffect(() => {
     if (!msgLoading && messages.length > 0 && msgScrollRef.current) {
-      msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight;
+      const viewport = msgScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
+      if (viewport) viewport.scrollTop = viewport.scrollHeight;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConvo, msgLoading]);
