@@ -12,6 +12,8 @@ export interface DiscoverableMember {
   last_active_at: string | null;
   bio: string | null;
   created_at: string;
+  /** VIP auto-listed before admin approved their photo; photo is hidden. */
+  photo_pending?: boolean;
 }
 
 export interface IncomingInterest {
@@ -246,11 +248,17 @@ export const useDiscover = () => {
       if (missingPriorityIds.length > 0) {
         const { data: priorityProfiles } = await supabase
           .from("members")
-          .select("id, name, image_url, gender, country, last_active_at, bio, created_at")
+          .select("id, name, image_url, gender, country, last_active_at, bio, created_at, image_status")
           .in("id", missingPriorityIds);
-        priorityMembers = ((priorityProfiles || []) as DiscoverableMember[]).filter(
-          m => m.image_url // Only include members with photos
-        );
+        priorityMembers = ((priorityProfiles || []) as any[]).flatMap((m) => {
+          const { image_status, ...rest } = m;
+          if (image_status === "approved") return m.image_url ? [rest as DiscoverableMember] : [];
+          // VIPs are auto-listed while their photo awaits admin review — photo stays hidden.
+          if (vipIds.has(m.id) && image_status !== "denied") {
+            return [{ ...rest, image_url: null, photo_pending: true } as DiscoverableMember];
+          }
+          return [];
+        });
       }
       adminMembersFetchedRef.current = true;
 

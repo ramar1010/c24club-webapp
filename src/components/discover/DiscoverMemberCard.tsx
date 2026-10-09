@@ -27,6 +27,7 @@ interface DiscoverMemberCardProps {
     last_active_at: string | null;
     bio: string | null;
     created_at: string;
+    photo_pending?: boolean;
   };
   alreadyInterested: boolean;
   isMutualMatch: boolean;
@@ -213,6 +214,14 @@ const DiscoverMemberCard = ({
               loading="lazy"
               decoding="async"
             />
+          ) : member.photo_pending ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-amber-500/20 via-white/5 to-pink-500/20">
+              <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/60 text-3xl font-bold blur-[1px]">
+                {member.name.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-amber-300">👑 New VIP</span>
+              <span className="text-[10px] text-white/50">Photo under review</span>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/20 text-4xl font-bold">
               {member.name.charAt(0).toUpperCase()}
