@@ -621,6 +621,13 @@ const AdminDmMonitorPage = () => {
                   <div className="text-center text-muted-foreground">No messages in this conversation</div>
                 ) : (
                   <div className="space-y-3">
+                    {hasOlderMsgs && (
+                      <div className="text-center pb-1">
+                        <Button size="sm" variant="outline" onClick={loadOlderMessages} disabled={loadingOlder}>
+                          {loadingOlder ? "Loading..." : "Load older messages"}
+                        </Button>
+                      </div>
+                    )}
                     {messages.map((msg) => {
                       const isP1 = selectedConvoData && msg.sender_id === selectedConvoData.participant_1;
                       return (
