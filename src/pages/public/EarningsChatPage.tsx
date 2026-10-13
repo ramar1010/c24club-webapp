@@ -11,6 +11,8 @@ interface ChatMessage {
   body: string;
   is_system: boolean;
   amount_cents: number | null;
+  male_id: string | null;
+  male_name: string | null;
   created_at: string;
 }
 
@@ -255,10 +257,27 @@ const EarningsChatPage = () => {
             const mine = m.user_id === user?.id;
             const author = m.user_id ? authors[m.user_id] : undefined;
             if (m.is_system) {
+              // Unlinked VIP guy: render his name as a tappable link to open a DM with him.
+              const nameIdx = m.male_id && m.male_name ? m.body.indexOf(m.male_name) : -1;
               return (
                 <div key={m.id} className="flex justify-center">
                   <div className="max-w-[92%] rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-center">
-                    <p className="text-emerald-300 text-sm font-semibold leading-snug">{m.body}</p>
+                    <p className="text-emerald-300 text-sm font-semibold leading-snug">
+                      {nameIdx >= 0 ? (
+                        <>
+                          {m.body.slice(0, nameIdx)}
+                          <button
+                            onClick={() => navigate(`/discover?dm=${m.male_id}`)}
+                            className="underline decoration-emerald-300/60 underline-offset-2 font-bold text-emerald-200 hover:text-white"
+                          >
+                            {m.male_name}
+                          </button>
+                          {m.body.slice(nameIdx + (m.male_name as string).length)}
+                        </>
+                      ) : (
+                        m.body
+                      )}
+                    </p>
                     <p className="text-white/30 text-[10px] mt-1">{timeAgo(m.created_at)} ago</p>
                   </div>
                 </div>
