@@ -1456,6 +1456,8 @@ export type Database = {
           created_at: string
           id: string
           is_system: boolean
+          male_id: string | null
+          male_name: string | null
           updated_at: string
           user_id: string | null
         }
@@ -1465,6 +1467,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_system?: boolean
+          male_id?: string | null
+          male_name?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -1474,6 +1478,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_system?: boolean
+          male_id?: string | null
+          male_name?: string | null
           updated_at?: string
           user_id?: string | null
         }
