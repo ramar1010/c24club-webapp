@@ -1,0 +1,1 @@
+- Private male↔female calls are blocked at the database (trigger on direct_call_invites) when the male has 0 recharge minutes — enforces payment even for old app builds.
