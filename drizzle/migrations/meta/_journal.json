@@ -29,6 +29,13 @@
       "when": 1791906525021,
       "tag": "0003_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792009640260,
+      "tag": "0004_block_unpaid_private_calls",
+      "breakpoints": true
     }
   ]
 }
