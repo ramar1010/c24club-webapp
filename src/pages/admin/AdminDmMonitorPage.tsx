@@ -111,13 +111,28 @@ const AdminDmMonitorPage = () => {
     });
     if (userIds.size === 0) return existingMap;
 
-    const { data: memberData } = await supabase
-      .from("members")
-      .select("id, name, email, image_thumb_url")
-      .in("id", Array.from(userIds));
+    const ids = Array.from(userIds);
+    const chunks: string[][] = [];
+    for (let i = 0; i < ids.length; i += 50) chunks.push(ids.slice(i, i + 50));
+
+    const runQueries = () =>
+      Promise.all(
+        chunks.map((c) =>
+          supabase.from("members").select("id, name, email, image_thumb_url").in("id", c)
+        )
+      );
+
+    let results = await runQueries();
+    // If the session token went stale mid-load, refresh it and retry once so
+    // names don't silently fall back to raw IDs.
+    if (results.some((r) => r.error)) {
+      console.warn("DM Monitor: member lookup failed, refreshing session and retrying", results[0].error);
+      await supabase.auth.refreshSession();
+      results = await runQueries();
+    }
 
     const map = new Map(existingMap);
-    memberData?.forEach((m) => map.set(m.id, m));
+    results.forEach((r) => r.data?.forEach((m) => map.set(m.id, m)));
     return map;
   };
 
