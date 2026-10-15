@@ -130,17 +130,20 @@ export function useConversations() {
         };
       });
 
-      // Owner's inbox: hide auto-welcome conversations until the member replies,
-      // so real messages don't get buried under "Welcome to C24 Club" threads.
+      // Owner-only inbox presentation; this does not grant admin permissions.
+      // Keep automatic welcome and near-limit reminders out until the member replies.
       const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
       if (user.id === OWNER_ID) {
-        const welcomeConvoIds = enriched
-          .filter((c) => (c.last_message || "").startsWith("Welcome to C24 Club"))
+        const isAutomatedPreview = (content: string) =>
+          content.startsWith("Welcome to C24 Club") ||
+          /^🔥 .+ has only 1 free message left with you! If he wants to keep chatting he has to buy VIP — and you get paid when he does\. Reply to him now to keep him hooked\.$/u.test(content.trim());
+        const automatedConvoIds = enriched
+          .filter((c) => isAutomatedPreview(c.last_message || ""))
           .map((c) => c.id);
 
-        if (welcomeConvoIds.length > 0) {
+        if (automatedConvoIds.length > 0) {
           const replyChunks: string[][] = [];
-          for (let i = 0; i < welcomeConvoIds.length; i += 25) replyChunks.push(welcomeConvoIds.slice(i, i + 25));
+          for (let i = 0; i < automatedConvoIds.length; i += 25) replyChunks.push(automatedConvoIds.slice(i, i + 25));
           const replyResults = await Promise.all(
             replyChunks.map((ids) =>
               supabase
@@ -152,11 +155,13 @@ export function useConversations() {
                 .limit(1000)
             )
           );
+          const replyError = replyResults.find((result) => result.error)?.error;
+          if (replyError) throw replyError;
           const repliedIds = new Set(
             replyResults.flatMap((r) => r.data || []).map((m: any) => m.conversation_id)
           );
           enriched = enriched.filter(
-            (c) => !(c.last_message || "").startsWith("Welcome to C24 Club") || repliedIds.has(c.id)
+            (c) => !isAutomatedPreview(c.last_message || "") || repliedIds.has(c.id)
           );
         }
       }
