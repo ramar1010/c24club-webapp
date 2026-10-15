@@ -120,7 +120,7 @@ export function useConversations() {
         }
       }
 
-      const enriched: Conversation[] = convos.map((c: any) => {
+      let enriched: Conversation[] = convos.map((c: any) => {
         const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
         return {
           ...c,
@@ -129,6 +129,37 @@ export function useConversations() {
           unread_count: unreadMap.get(c.id) || 0,
         };
       });
+
+      // Owner's inbox: hide auto-welcome conversations until the member replies,
+      // so real messages don't get buried under "Welcome to C24 Club" threads.
+      const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
+      if (user.id === OWNER_ID) {
+        const welcomeConvoIds = enriched
+          .filter((c) => (c.last_message || "").startsWith("Welcome to C24 Club"))
+          .map((c) => c.id);
+
+        if (welcomeConvoIds.length > 0) {
+          const replyChunks: string[][] = [];
+          for (let i = 0; i < welcomeConvoIds.length; i += 25) replyChunks.push(welcomeConvoIds.slice(i, i + 25));
+          const replyResults = await Promise.all(
+            replyChunks.map((ids) =>
+              supabase
+                .from("dm_messages")
+                .select("conversation_id")
+                .in("conversation_id", ids)
+                .neq("sender_id", user.id)
+                .not("sender_id", "is", null)
+                .limit(1000)
+            )
+          );
+          const repliedIds = new Set(
+            replyResults.flatMap((r) => r.data || []).map((m: any) => m.conversation_id)
+          );
+          enriched = enriched.filter(
+            (c) => !(c.last_message || "").startsWith("Welcome to C24 Club") || repliedIds.has(c.id)
+          );
+        }
+      }
 
       return enriched;
     },
