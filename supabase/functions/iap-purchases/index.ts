@@ -264,13 +264,28 @@ Deno.serve(async (req) => {
         const txKey = body.transactionId ?? body.originalTransactionId
           ? String(rawTx).slice(0, 64)
           : (await tokenFingerprint(String(rawTx))).slice(0, 32);
-        const { data: grantResult } = await supabaseAdmin.rpc("grant_vip_recharge_minutes", {
-          p_user_id: user.id,
-          p_grant_key: `iap:${platform ?? "native"}:${user.id}:${txKey}`,
-          p_minutes: 5,
-          p_source: `iap_${platform ?? "native"}_${tier}`,
-        });
-        console.log("[iap-purchases] VIP free minutes grant:", grantResult);
+        // The app re-sends old/renewal transactions (restore, launch replays),
+        // each with a new transaction ID. Allow at most one bonus per billing
+        // period per user, regardless of how many transactions arrive.
+        const periodDays = tier === "premium" ? 27 : 6;
+        const since = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000).toISOString();
+        const { count: recentGrants } = await supabaseAdmin
+          .from("vip_minute_grants")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .like("source", "iap_%")
+          .gte("created_at", since);
+        if ((recentGrants ?? 0) > 0) {
+          console.log("[iap-purchases] VIP free minutes skipped: already granted this period");
+        } else {
+          const { data: grantResult } = await supabaseAdmin.rpc("grant_vip_recharge_minutes", {
+            p_user_id: user.id,
+            p_grant_key: `iap:${platform ?? "native"}:${user.id}:${txKey}`,
+            p_minutes: 5,
+            p_source: `iap_${platform ?? "native"}_${tier}`,
+          });
+          console.log("[iap-purchases] VIP free minutes grant:", grantResult);
+        }
       } catch (grantErr) {
         console.error("[iap-purchases] VIP free minutes grant failed:", grantErr);
       }
