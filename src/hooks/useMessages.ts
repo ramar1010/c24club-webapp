@@ -131,11 +131,14 @@ export function useConversations() {
       });
 
       // Owner-only inbox presentation; this does not grant admin permissions.
-      // Keep automatic welcome and near-limit reminders out until the member replies.
+      // Keep automatic welcome, near-limit reminders, photo approvals and daily
+      // earnings updates out until the member replies.
       const OWNER_ID = "6f8bb0e2-a36a-4bc0-920f-312c340f7921";
       if (user.id === OWNER_ID) {
         const isAutomatedPreview = (content: string) =>
           content.startsWith("Welcome to C24 Club") ||
+          content.startsWith("🎉 Great news — your Discover photo was approved") ||
+          content.startsWith("💰 Your daily earnings update") ||
           /^🔥 .+ has only 1 free message left with you! If he wants to keep chatting he has to buy VIP — and you get paid when he does\. Reply to him now to keep him hooked\.$/u.test(content.trim());
         const automatedConvoIds = enriched
           .filter((c) => isAutomatedPreview(c.last_message || ""))
