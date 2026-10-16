@@ -196,6 +196,15 @@ export function useConversations() {
     return (query.data?.pages.flat() || []).filter((c) => !seen.has(c.id) && seen.add(c.id));
   }, [query.data]);
 
+  // When automated threads are hidden, a page can end up nearly empty.
+  // Keep fetching older pages (up to 15) until enough real conversations show.
+  const pageCount = query.data?.pages.length || 0;
+  useEffect(() => {
+    if (data.length < 30 && query.hasNextPage && !query.isFetchingNextPage && pageCount > 0 && pageCount < 15) {
+      void query.fetchNextPage();
+    }
+  }, [data.length, query.hasNextPage, query.isFetchingNextPage, pageCount, query.fetchNextPage]);
+
   return {
     data,
     isLoading: query.isLoading,
