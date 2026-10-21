@@ -1,1 +1,2 @@
 - Private male↔female calls are blocked at the database (trigger on direct_call_invites) when the male has 0 recharge minutes — enforces payment even for old app builds.
+- Discover pagination appends unique profiles without re-sorting existing ones; Shuffle snapshots the current order so later pages cannot move cards above the reader.

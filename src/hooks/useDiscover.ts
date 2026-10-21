@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { appendDiscoverMembers } from "@/lib/discover-order";
 
 export interface DiscoverableMember {
   id: string;
@@ -174,12 +175,7 @@ export const useDiscover = () => {
 
     if (newMembers.length > 0) {
       pageRef.current = nextPage;
-      setAllFetchedMembers(prev => {
-        const existingIds = new Set(prev.map(m => m.id));
-        const unique = newMembers.filter(m => !existingIds.has(m.id));
-        const combined = [...prev, ...unique];
-        return sortMembers(combined, adminUserIds, vipUserIds, modUserIds);
-      });
+      setAllFetchedMembers(prev => appendDiscoverMembers(prev, newMembers));
 
       // Load socials for new members
       const newIds = newMembers.map(m => m.id);
@@ -200,7 +196,7 @@ export const useDiscover = () => {
     }
 
     setLoadingMore(false);
-  }, [user, loadingMore, hasMore, adminUserIds, vipUserIds, modUserIds, fetchMembersPage, sortMembers]);
+  }, [user, loadingMore, hasMore, fetchMembersPage]);
 
   // Initial load
   useEffect(() => {
