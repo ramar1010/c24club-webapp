@@ -66,8 +66,21 @@ serve(async (req) => {
     if (!aiRes.ok) {
       const errText = await aiRes.text();
       console.error("Lovable AI error:", errText);
+      // Fail safe: flag the selfie for mandatory manual review. The client
+      // already routes unflagged selfies to "pending" admin review, so we
+      // surface moderation_failed to make the skip explicit in logs/alerts.
+      try {
+        await supabaseAdmin.from("user_reports").insert({
+          reporter_id: user.id,
+          reported_user_id: user.id,
+          reason: "AI_MODERATION_UNAVAILABLE",
+          details: `Selfie AI check failed (credits/quota or gateway error) — selfie NOT auto-screened, requires manual review. URL: ${image_url}`,
+        });
+      } catch (e) {
+        console.error("moderate-selfie: failed to queue manual review", e);
+      }
       return new Response(
-        JSON.stringify({ flagged: false, error: "AI moderation error" }),
+        JSON.stringify({ flagged: false, moderation_failed: true, error: "AI moderation error" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }

@@ -68,8 +68,20 @@ serve(async (req) => {
     if (!aiRes.ok) {
       const errText = await aiRes.text();
       console.error("Lovable AI error:", errText);
+      // Fail safe: queue the reported frame for manual admin review instead of
+      // silently passing it through unreviewed.
+      try {
+        await supabaseAdmin.from("user_reports").insert({
+          reporter_id: user.id,
+          reported_user_id,
+          reason: "AI_MODERATION_UNAVAILABLE",
+          details: "AI moderation check failed (credits/quota or gateway error) — reported frame was NOT auto-checked. Please review this report manually.",
+        });
+      } catch (e) {
+        console.error("moderate-frame: failed to queue manual review", e);
+      }
       return new Response(
-        JSON.stringify({ flagged: false, error: "AI moderation error" }),
+        JSON.stringify({ flagged: false, moderation_failed: true, error: "AI moderation error" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
