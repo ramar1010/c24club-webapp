@@ -8,6 +8,7 @@ const footerLinks = [
   { label: "Safety Center", href: "/safety" },
   { label: "Top Omegle Alternatives", href: "/top-omegle-alternatives" },
   { label: "Ome TV Alternative", href: "/ome-tv-alternative" },
+  { label: "Video Chat Alternatives", href: "/video-chat-alternatives" },
   { label: "Monkey App Alternative", href: "/monkey-app-alternative" },
   { label: "Contact", href: "/contact" },
 ];
