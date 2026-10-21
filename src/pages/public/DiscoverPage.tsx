@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "rea
 import { ArrowLeft, Camera, Trash2, MessageSquare, Loader2, DollarSign, Shuffle, Phone, Radio, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDiscover } from "@/hooks/useDiscover";
+import { orderDiscoverMembers } from "@/lib/discover-order";
 import { useUnreadCount } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +40,7 @@ const DiscoverPage = () => {
   });
   const [showCashout, setShowCashout] = useState(false);
   const [showRecharge, setShowRecharge] = useState(false);
-  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [shuffledIds, setShuffledIds] = useState<string[] | null>(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [readyOpenRequest, setReadyOpenRequest] = useState(0);
   const [readyAlertActive, setReadyAlertActive] = useState(false);
@@ -70,25 +71,24 @@ const DiscoverPage = () => {
   };
 
   const shuffledMembers = useMemo(() => {
-    if (shuffleSeed === 0) return members;
-    const arr = [...members];
-    let seed = shuffleSeed;
-    for (let i = arr.length - 1; i > 0; i--) {
-      seed = (seed * 16807) % 2147483647;
-      const j = seed % (i + 1);
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }, [members, shuffleSeed]);
+    return orderDiscoverMembers(members, shuffledIds);
+  }, [members, shuffledIds]);
 
   const handleShuffle = useCallback(() => {
     setIsShuffling(true);
     setTimeout(() => {
-      setShuffleSeed(Date.now());
+      const ids = members.map(member => member.id);
+      let seed = Date.now();
+      for (let i = ids.length - 1; i > 0; i--) {
+        seed = (seed * 16807) % 2147483647;
+        const j = seed % (i + 1);
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+      }
+      setShuffledIds(ids);
       setIsShuffling(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 400);
-  }, []);
+  }, [members]);
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
