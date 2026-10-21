@@ -34,6 +34,7 @@ Deno.serve(async () => {
     { loc: "/free-video-chat-no-sign-up", priority: "0.9", changefreq: "weekly" },
     { loc: "/cam-chat", priority: "0.9", changefreq: "weekly" },
     { loc: "/ome-tv-alternative", priority: "0.9", changefreq: "weekly" },
+    { loc: "/video-chat-alternatives", priority: "0.9", changefreq: "weekly" },
     { loc: "/monkey-app-alternative", priority: "0.9", changefreq: "weekly" },
   ];
 
