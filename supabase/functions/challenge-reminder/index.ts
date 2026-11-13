@@ -1,3 +1,4 @@
+import { maskEmail } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -134,7 +135,7 @@ Deno.serve(async (req) => {
       }
 
       sentCount++;
-      console.log(`📧 Reminder sent for ${member.email} (submission ${submission.id})`);
+      console.log(`📧 Reminder sent for ${maskEmail(member.email)} (submission ${submission.id})`);
     }
 
     console.log(`✅ Challenge reminders complete: ${sentCount} emails sent`);
