@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -16,7 +17,19 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { inviteeId, callerName } = await req.json();
+    const { inviteeId } = await req.json();
+    const callerId = await getAuthenticatedUserId(req);
+    if (!callerId) {
+      return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { data: recentInvite } = await supabase.from("direct_call_invites").select("id")
+      .eq("inviter_id", callerId).eq("invitee_id", inviteeId)
+      .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString()).limit(1).maybeSingle();
+    if (!recentInvite) {
+      return new Response(JSON.stringify({ success: false, message: "No active call invite" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { data: callerRow } = await supabase.from("members").select("name").eq("id", callerId).maybeSingle();
+    const callerName = callerRow?.name || "Someone";
     if (!inviteeId) {
       return new Response(
         JSON.stringify({ success: false, message: "inviteeId required" }),

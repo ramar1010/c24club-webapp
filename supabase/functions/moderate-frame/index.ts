@@ -1,3 +1,4 @@
+import { wereRecentlyConnected } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -36,6 +37,10 @@ serve(async (req) => {
 
     const { frame, reported_user_id } = await req.json();
     if (!frame || !reported_user_id) throw new Error("Missing frame or reported_user_id");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(reported_user_id))) throw new Error("Invalid reported_user_id");
+    if (!(await wereRecentlyConnected(user.id, reported_user_id))) {
+      throw new Error("You can only report someone you were just connected with");
+    }
 
     const dataUrl = `data:image/jpeg;base64,${frame}`;
 

@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getAuthenticatedUserId, hasRole, wereRecentlyConnected } from "../_shared/auth.ts";
 
 function getWeekStart(): string {
   const now = new Date();
@@ -25,7 +26,21 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { type, userId } = body;
+    const { type } = body;
+    const authUserId = await getAuthenticatedUserId(req);
+    if (!authUserId) {
+      return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const isAdminAction = typeof type === "string" && type.startsWith("admin_");
+    if (isAdminAction && !(await hasRole(authUserId, "admin"))) {
+      return new Response(JSON.stringify({ success: false, message: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Never trust a client-supplied userId for member actions
+    const userId: string = isAdminAction ? body.userId : authUserId;
 
     // Get anchor settings
     const { data: settings } = await supabase
@@ -625,6 +640,9 @@ Deno.serve(async (req) => {
       const { partnerId } = body;
       if (!userId || !partnerId) {
         return json({ success: false, message: "userId and partnerId required" }, 400);
+      }
+      if (!(await wereRecentlyConnected(userId, String(partnerId)))) {
+        return json({ success: true, tracked: false, reason: "no_recent_call" });
       }
 
       // Check the user is female

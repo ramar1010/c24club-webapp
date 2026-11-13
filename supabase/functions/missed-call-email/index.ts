@@ -1,3 +1,4 @@
+import { escapeHtml, getAuthenticatedUserId, isInternalCall, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -19,6 +20,20 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { inviteId, inviterId, inviteeId } = await req.json();
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(String(inviterId ?? "")) || !UUID_RE.test(String(inviteeId ?? "")) || (inviteId && !UUID_RE.test(String(inviteId)))) {
+      return new Response(JSON.stringify({ error: "Invalid ids" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const callerId = await getAuthenticatedUserId(req);
+    if (!callerId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    if (callerId !== inviterId && callerId !== inviteeId) { return new Response(JSON.stringify({ success: false, error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    // Require a real recent invite between these two members
+    let inviteQuery = supabase.from("direct_call_invites").select("id")
+      .eq("inviter_id", inviterId).eq("invitee_id", inviteeId)
+      .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+    if (inviteId) inviteQuery = inviteQuery.eq("id", inviteId);
+    const { data: realInvite } = await inviteQuery.limit(1).maybeSingle();
+    if (!realInvite) { return new Response(JSON.stringify({ success: false, error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
     if (!inviterId || !inviteeId) {
       return new Response(JSON.stringify({ error: "inviterId and inviteeId required" }), {
         status: 400,
@@ -140,8 +155,8 @@ Deno.serve(async (req) => {
         .replace(/\{\{user_name\}\}/g, userName);
 
       rawBody = template.body
-        .replace(/\{\{caller_name\}\}/g, callerName)
-        .replace(/\{\{user_name\}\}/g, userName);
+        .replace(/\{\{caller_name\}\}/g, escapeHtml(callerName))
+        .replace(/\{\{user_name\}\}/g, escapeHtml(userName));
     }
 
     // Rewrite staging URLs to production
@@ -205,7 +220,7 @@ Deno.serve(async (req) => {
         message_id: dedupeKey, template_name: "missed_video_call",
         recipient_email: invitee.email, status: "sent",
       });
-      console.log(`📹 Missed call email sent via Resend for ${invitee.email} (caller: ${callerName})`);
+      console.log(`📹 Missed call email sent via Resend for ${maskEmail(invitee.email)} (caller: ${callerName})`);
     } catch (sendErr) {
       console.error("Failed to send missed call email:", sendErr);
       return new Response(JSON.stringify({ error: "Failed to send" }), {

@@ -40,12 +40,10 @@ const PowerHourInvite = ({ userId, isFemale, onClose }: PowerHourInviteProps) =>
   const { data: settings } = useQuery({
     queryKey: ["anchor_settings_power_hour"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("anchor_settings")
-        .select("power_hour_start, power_hour_end")
-        .limit(1)
-        .single();
-      return data;
+      const { data } = await supabase.rpc("get_public_app_settings");
+      const s = (data ?? {}) as any;
+      if (!s.power_hour_start || !s.power_hour_end) return null;
+      return { power_hour_start: s.power_hour_start as string, power_hour_end: s.power_hour_end as string };
     },
     staleTime: 60000,
   });
@@ -60,18 +58,12 @@ const PowerHourInvite = ({ userId, isFemale, onClose }: PowerHourInviteProps) =>
     enabled: !!session,
     staleTime: 30000,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("power_hour_optins")
-        .select("user_id, gender")
-        .eq("session_date", session!.sessionDate);
-      const rows = data ?? [];
-      const opposite = rows.filter(
-        (r) => (r.gender ?? "").toLowerCase() === (isFemale ? "male" : "female")
-      ).length;
+      const { data } = await supabase.rpc("get_power_hour_summary", { p_session_date: session!.sessionDate });
+      const s = (data ?? {}) as any;
       return {
-        opposite,
-        total: rows.length,
-        joined: rows.some((r) => r.user_id === userId),
+        opposite: Number(isFemale ? s.male : s.female) || 0,
+        total: Number(s.total) || 0,
+        joined: !!s.joined,
       };
     },
   });

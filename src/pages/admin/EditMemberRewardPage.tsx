@@ -78,7 +78,7 @@ const EditMemberRewardPage = () => {
 
       // If marking as out of stock, refund the minutes
       if (isOutOfStock && redemption) {
-        const { error: refundErr } = await supabase.rpc("atomic_increment_minutes", {
+        const { error: refundErr } = await supabase.rpc("admin_adjust_minutes", {
           p_user_id: redemption.user_id,
           p_amount: redemption.minutes_cost,
         });

@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -19,7 +20,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { type, memberId, channelId, genderPreference, memberGender, partnerId, voiceMode } = await req.json();
+    const { type, channelId, genderPreference, memberGender, partnerId, voiceMode } = await req.json();
+    const memberId = await getAuthenticatedUserId(req);
+    if (!memberId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 
     // Helper: did this user open the app from a push notification in the last 10 minutes?
     const fromPushFor = async (uid: string | null | undefined): Promise<boolean> => {

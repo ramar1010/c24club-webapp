@@ -1,3 +1,4 @@
+import { isInternalOrAdmin, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -8,6 +9,12 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -130,7 +137,7 @@ Deno.serve(async (req) => {
       .update({ notes: existingNotes ? `${existingNotes}\n${emailLog}` : emailLog })
       .eq("id", redemptionId);
 
-    console.log(`📧 Email enqueued for ${member.email}: ${templateKey} (resend)`);
+    console.log(`📧 Email enqueued for ${maskEmail(member.email)}: ${templateKey} (resend)`);
 
     return new Response(
       JSON.stringify({ success: true, message: `Email sent to ${member.email}` }),

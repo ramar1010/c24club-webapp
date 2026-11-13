@@ -1,3 +1,4 @@
+import { isInternalOrAdmin, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -81,6 +82,12 @@ function buildDigestHtml(member: any, stats: { newInterests: number; mutualMatch
 }
 
 Deno.serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -174,7 +181,7 @@ Deno.serve(async (req) => {
         });
         sent++;
       } catch (sendErr) {
-        console.error(`Failed to send digest to ${member.email}:`, sendErr);
+        console.error(`Failed to send digest to ${maskEmail(member.email)}:`, sendErr);
       }
     }
 

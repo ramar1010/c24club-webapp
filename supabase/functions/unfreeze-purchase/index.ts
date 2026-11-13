@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -35,7 +36,7 @@ serve(async (req) => {
     });
 
     if (action === "purchase") {
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       let customerId;
       if (customers.data.length > 0) customerId = customers.data[0].id;
 
@@ -44,8 +45,8 @@ serve(async (req) => {
         customer_email: customerId ? undefined : user.email,
         line_items: [{ price: UNFREEZE_PRICE_ID, quantity: 1 }],
         mode: "payment",
-        success_url: `${req.headers.get("origin")}/videocall?unfreeze=success`,
-        cancel_url: `${req.headers.get("origin")}/videocall?unfreeze=cancel`,
+        success_url: `${safeOrigin(req.headers.get("origin"))}/videocall?unfreeze=success`,
+        cancel_url: `${safeOrigin(req.headers.get("origin"))}/videocall?unfreeze=cancel`,
         metadata: { user_id: user.id, type: "unfreeze" },
       });
 
@@ -57,7 +58,7 @@ serve(async (req) => {
     if (action === "purchase_for_partner") {
       if (!partner_id) throw new Error("partner_id is required");
 
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       let customerId;
       if (customers.data.length > 0) customerId = customers.data[0].id;
 
@@ -66,8 +67,8 @@ serve(async (req) => {
         customer_email: customerId ? undefined : user.email,
         line_items: [{ price: UNFREEZE_PRICE_ID, quantity: 1 }],
         mode: "payment",
-        success_url: `${req.headers.get("origin")}/videocall?unfreeze_partner=success&partner_id=${partner_id}`,
-        cancel_url: `${req.headers.get("origin")}/videocall?unfreeze_partner=cancel`,
+        success_url: `${safeOrigin(req.headers.get("origin"))}/videocall?unfreeze_partner=success&partner_id=${partner_id}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${safeOrigin(req.headers.get("origin"))}/videocall?unfreeze_partner=cancel`,
         metadata: { user_id: user.id, partner_id, type: "unfreeze_partner" },
       });
 
@@ -96,6 +97,21 @@ serve(async (req) => {
 
     if (action === "apply_for_partner") {
       if (!partner_id) throw new Error("partner_id is required");
+      const sessionId = typeof body.session_id === "string" ? body.session_id : "";
+      if (!sessionId.startsWith("cs_")) throw new Error("Payment session required");
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      if (
+        session.payment_status !== "paid" ||
+        session.metadata?.type !== "unfreeze_partner" ||
+        session.metadata?.user_id !== user.id ||
+        session.metadata?.partner_id !== partner_id
+      ) {
+        throw new Error("Payment not verified");
+      }
+      const { error: consumeErr } = await supabaseClient.from("consumed_stripe_sessions").insert({
+        session_id: sessionId, user_id: user.id, purpose: "unfreeze_partner",
+      });
+      if (consumeErr) throw new Error("Payment already used");
 
       const freezeFreeUntil = new Date();
       freezeFreeUntil.setDate(freezeFreeUntil.getDate() + 7);

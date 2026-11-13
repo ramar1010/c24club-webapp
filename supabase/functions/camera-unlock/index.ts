@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -62,7 +63,7 @@ serve(async (req) => {
       const recipientCutCents = Math.floor(priceCents * recipientCutPercent / 100);
 
       // Check for existing Stripe customer
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       let customerId;
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
@@ -101,8 +102,8 @@ serve(async (req) => {
           },
         ],
         mode: "payment",
-        success_url: `${req.headers.get("origin")}/camera-unlock-success?session_id={CHECKOUT_SESSION_ID}&request_id=${unlockReq.id}`,
-        cancel_url: `${req.headers.get("origin")}/camera-unlock-success?cancelled=true`,
+        success_url: `${safeOrigin(req.headers.get("origin"))}/camera-unlock-success?session_id={CHECKOUT_SESSION_ID}&request_id=${unlockReq.id}`,
+        cancel_url: `${safeOrigin(req.headers.get("origin"))}/camera-unlock-success?cancelled=true`,
         metadata: {
           unlock_request_id: unlockReq.id,
           requester_id: user.id,
@@ -177,6 +178,9 @@ serve(async (req) => {
       if (!unlockReq) throw new Error("Unlock request not found");
       if (unlockReq.recipient_id !== user.id) throw new Error("Not authorized");
       if (unlockReq.status !== "paid") throw new Error("Request not in paid state");
+      if (unlockReq.requester_id === unlockReq.recipient_id || !unlockReq.stripe_session_id) {
+        throw new Error("Invalid unlock request");
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

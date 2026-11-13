@@ -179,10 +179,7 @@ export const useDiscover = () => {
 
       // Load socials for new members
       const newIds = newMembers.map(m => m.id);
-      const { data: socials } = await supabase
-        .from("vip_settings")
-        .select("user_id, pinned_socials")
-        .in("user_id", newIds);
+      const { data: socials } = await supabase.rpc("get_pinned_socials", { p_user_ids: newIds });
 
       if (socials?.length) {
         setMutualSocials(prev => {
@@ -342,10 +339,7 @@ export const useDiscover = () => {
       // Load pinned socials
       const allMemberIds = sorted.map(m => m.id);
       if (allMemberIds.length > 0) {
-        const { data: socials } = await supabase
-          .from("vip_settings")
-          .select("user_id, pinned_socials")
-          .in("user_id", allMemberIds);
+        const { data: socials } = await supabase.rpc("get_pinned_socials", { p_user_ids: allMemberIds });
 
         const socialsMap = new Map<string, string[]>();
         (socials || []).forEach((s: any) => {

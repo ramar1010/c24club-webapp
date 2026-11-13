@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
@@ -43,11 +44,11 @@ Deno.serve(async (req) => {
 
       const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       let customerId;
       if (customers.data.length > 0) customerId = customers.data[0].id;
 
-      const origin = req.headers.get("origin") || "https://c24club.com";
+      const origin = safeOrigin(req.headers.get("origin")) || "https://c24club.com";
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,

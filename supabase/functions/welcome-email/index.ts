@@ -1,3 +1,4 @@
+import { escapeHtml, getAuthenticatedUserId, isInternalCall, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -19,7 +20,9 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { userId } = await req.json();
+    await req.json().catch(() => ({}));
+    const userId = await getAuthenticatedUserId(req);
+    if (!userId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -57,7 +60,7 @@ Deno.serve(async (req) => {
     // Personalized subject with user's name
     const subject = `You're in, ${firstName}! Here's how to start earning 💰`;
 
-    const rawBody = template.body.replace(/\{\{user_name\}\}/g, member.name);
+    const rawBody = template.body.replace(/\{\{user_name\}\}/g, escapeHtml(member.name));
 
     // Prepend app download message for male users
     const isMale = (member.gender || "").toLowerCase() === "male";
@@ -106,7 +109,7 @@ Deno.serve(async (req) => {
         message_id: messageId, template_name: "welcome",
         recipient_email: member.email, status: "sent",
       });
-      console.log(`📧 Welcome email sent via Resend for ${member.email} (id: ${resendResult.id})`);
+      console.log(`📧 Welcome email sent via Resend for ${maskEmail(member.email)} (id: ${resendResult.id})`);
     } catch (sendErr) {
       console.error("Failed to send welcome email via Resend", sendErr);
       await supabase.from("email_send_log").insert({

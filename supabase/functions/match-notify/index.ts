@@ -1,3 +1,4 @@
+import { escapeHtml, getAuthenticatedUserId, isInternalCall, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -82,7 +83,11 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { memberId, memberGender } = await req.json();
+    await req.json().catch(() => ({}));
+    const memberId = await getAuthenticatedUserId(req);
+    if (!memberId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    const { data: selfRow } = await supabase.from("members").select("gender").eq("id", memberId).maybeSingle();
+    const memberGender = selfRow?.gender;
 
     if (!memberId || !memberGender) {
       return new Response(
@@ -277,14 +282,14 @@ Deno.serve(async (req) => {
 
         if (emailTemplate) {
           for (const target of emailTargets) {
-            const emailBody = emailTemplate.body.replace(/\{\{user_name\}\}/g, target.name || "there");
+            const emailBody = emailTemplate.body.replace(/\{\{user_name\}\}/g, escapeHtml(target.name || "there"));
             const emailSubject = emailTemplate.subject;
 
           try {
             await sendResendEmail({ to: target.email, subject: emailSubject, html: emailBody });
             emailsSent++;
           } catch (emailErr) {
-            console.error("Failed to send email for", target.email, emailErr);
+            console.error("Failed to send email for", maskEmail(target.email), emailErr);
           }
         }
         } // end emailTemplate check

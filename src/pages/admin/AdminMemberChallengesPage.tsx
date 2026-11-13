@@ -45,7 +45,7 @@ const AdminMemberChallengesPage = () => {
 
     if (reward_type === "minutes") {
       // Add to total_minutes
-      const { error } = await supabase.rpc("atomic_increment_minutes", {
+      const { error } = await supabase.rpc("admin_adjust_minutes", {
         p_user_id: userId,
         p_amount: Math.round(reward_amount),
       });
@@ -58,7 +58,7 @@ const AdminMemberChallengesPage = () => {
       const cashableMinutes = Math.round(reward_amount / 0.35);
       
       // First add to total_minutes
-      const { error: totalErr } = await supabase.rpc("atomic_increment_minutes", {
+      const { error: totalErr } = await supabase.rpc("admin_adjust_minutes", {
         p_user_id: userId,
         p_amount: cashableMinutes,
       });

@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         banned: !!data,
         ip: ip || null,
-        ...(data ? { reason: data.reason, ban_type: data.ban_type, created_at: data.created_at } : {}),
+        ...(data ? { ban_type: data.ban_type } : {}),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

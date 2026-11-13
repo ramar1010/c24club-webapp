@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId, isInternalCall, escapeHtml, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -17,7 +18,9 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { user_id, notification_type, platform } = body ?? {};
+    const { notification_type, platform } = body ?? {};
+    const user_id = await getAuthenticatedUserId(req);
+    if (!user_id) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 
     if (!user_id || typeof user_id !== "string") {
       return new Response(

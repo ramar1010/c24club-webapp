@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId, isInternalCall, escapeHtml, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -43,6 +44,15 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const { inviterId, inviteeId, action } = body;
+    if (!(await isInternalCall(req))) {
+      const callerId = await getAuthenticatedUserId(req);
+      if (!callerId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+      if (callerId !== inviterId && callerId !== inviteeId) { return new Response(JSON.stringify({ success: false, error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+      const { data: inv } = await supabase.from("direct_call_invites").select("id")
+        .eq("inviter_id", inviterId).eq("invitee_id", inviteeId)
+        .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString()).limit(1).maybeSingle();
+      if (!inv) { return new Response(JSON.stringify({ success: false, error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    }
 
     if (!inviterId || !inviteeId) {
       return new Response(JSON.stringify({ success: false, message: "inviterId and inviteeId required" }), {

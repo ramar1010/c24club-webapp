@@ -15,12 +15,9 @@ const CameraUnlockButton = ({ recipientId, roomId }: CameraUnlockButtonProps) =>
   const { data: settings } = useQuery({
     queryKey: ["camera_unlock_settings"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("camera_unlock_settings")
-        .select("*")
-        .limit(1)
-        .single();
-      return data;
+      const { data } = await supabase.rpc("get_public_app_settings");
+      const price = (data as any)?.camera_unlock_price_cents;
+      return price != null ? { price_cents: price as number } : null;
     },
   });
 

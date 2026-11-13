@@ -36,6 +36,13 @@
       "when": 1792009640260,
       "tag": "0004_block_unpaid_private_calls",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794536159180,
+      "tag": "0005_security_hardening_batch",
+      "breakpoints": true
     }
   ]
 }

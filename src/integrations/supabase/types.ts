@@ -3740,6 +3740,10 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
       }
+      admin_adjust_minutes: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
       atomic_increment_member_balances: {
         Args: {
           p_gifted_amount?: number
@@ -3837,6 +3841,18 @@ export type Database = {
         }[]
       }
       get_partner_nsfw_strikes: { Args: { _user_id: string }; Returns: number }
+      get_pinned_socials: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          pinned_socials: string[]
+          user_id: string
+        }[]
+      }
+      get_power_hour_summary: {
+        Args: { p_session_date: string }
+        Returns: Json
+      }
+      get_public_app_settings: { Args: never; Returns: Json }
       get_ready_to_chat_limits: { Args: never; Returns: Json }
       get_reddit_task_by_code: {
         Args: { p_code: string }
@@ -3879,6 +3895,7 @@ export type Database = {
         Args: { p_female_id: string }
         Returns: undefined
       }
+      internal_edge_secret: { Args: never; Returns: string }
       is_blocked_by: { Args: { partner_id: string }; Returns: boolean }
       is_user_vip: { Args: { _user_id: string }; Returns: boolean }
       is_verified_female: { Args: { _user_id: string }; Returns: boolean }
@@ -3960,6 +3977,7 @@ export type Database = {
         Args: { p_mode: string; p_session_id: string }
         Returns: Json
       }
+      verify_internal_secret: { Args: { p_secret: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

@@ -36,6 +36,13 @@ serve(async (req) => {
     const { action, purchaseToken } = body;
 
     if (action === "verify-iap") {
+      // Unverified unban path disabled: purchases must be verified by the iap-purchases function (verify-unban).
+      return new Response(JSON.stringify({ ok: false, error: "Purchase could not be verified. Please update the app and try again." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+    if (action === "__disabled_verify_iap__") {
       const { data, error: updateError } = await supabaseAdmin
         .from("user_bans")
         .update({

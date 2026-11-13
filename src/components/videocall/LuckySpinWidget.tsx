@@ -22,12 +22,8 @@ const LuckySpinWidget = ({ isWaiting, onOpenMyRewards }: LuckySpinWidgetProps) =
   const { data: settings } = useQuery({
     queryKey: ["lucky-spin-settings"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("lucky_spin_settings")
-        .select("*")
-        .limit(1)
-        .single();
-      return data;
+      const { data } = await supabase.rpc("get_public_app_settings");
+      return ((data as any)?.lucky_spin ?? null) as { is_enabled: boolean; spin_interval_ms: number; hide_carousel: boolean } | null;
     },
     staleTime: 60000,
   });

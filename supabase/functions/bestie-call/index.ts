@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId, hasRole } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -164,6 +165,12 @@ serve(async (req) => {
     // --- COMPLETE DAY ---
     if (action === "verify_day") {
       const { pair_id, day_number } = body;
+      const callerId = await getAuthenticatedUserId(req);
+      if (!callerId || !(await hasRole(callerId, "admin"))) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       await supabase
         .from("bestie_daily_logs")

@@ -1,3 +1,4 @@
+import { isInternalOrAdmin, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { sendResendEmail } from "../_shared/resend.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -83,7 +84,7 @@ async function sendSmsAndLog(
     console.error("Failed to write SMS log:", logErr);
   }
 
-  console.log(`SMS [${action}] to ${normalizedTo}: status=${logEntry.vonage_status}, error=${logEntry.vonage_error_text}`);
+  console.log(`SMS [${action}] to ${maskPhone(normalizedTo)}: status=${logEntry.vonage_status}, error=${logEntry.vonage_error_text}`);
 
   return {
     status: logEntry.vonage_status,
@@ -117,6 +118,13 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { action } = body;
+
+    // Bulk reminder actions are backend/admin only
+    if ((action === "auto_remind" || action === "send_reminders") && !(await isInternalOrAdmin(req))) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (action === "auto_remind") {
       const now = new Date();
@@ -281,7 +289,7 @@ serve(async (req) => {
                 });
                 emailResults.push({ email: member.email, window: win.label });
               } catch (enqErr) {
-                console.error(`Email send failed for ${member.email}:`, enqErr);
+                console.error(`Email send failed for ${maskEmail(member.email)}:`, enqErr);
               }
             }
           }

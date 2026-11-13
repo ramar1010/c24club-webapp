@@ -1,3 +1,4 @@
+import { isInternalOrAdmin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -35,6 +36,12 @@ Rules for comments:
 - Avoid superlatives like "best ever" — sound believable, like a real user tip`;
 
 serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

@@ -527,8 +527,8 @@ const VideoCallPage = () => {
   const { data: hideCarousel } = useQuery({
     queryKey: ["lucky-spin-carousel-setting"],
     queryFn: async () => {
-      const { data } = await supabase.from("lucky_spin_settings").select("hide_carousel").limit(1).single();
-      return data?.hide_carousel ?? false;
+      const { data } = await supabase.rpc("get_public_app_settings");
+      return ((data as any)?.lucky_spin?.hide_carousel as boolean) ?? false;
     },
     staleTime: 60000,
   });
@@ -989,12 +989,8 @@ const VideoCallPage = () => {
       const { data: isVip } = await supabase.rpc("is_user_vip", { _user_id: currentPartnerId! });
       if (!isVip) return [];
 
-      const { data } = await supabase.
-      from("vip_settings").
-      select("pinned_socials").
-      eq("user_id", currentPartnerId!).
-      maybeSingle();
-      return data?.pinned_socials as string[] ?? [];
+      const { data } = await supabase.rpc("get_pinned_socials", { p_user_ids: [currentPartnerId!] });
+      return ((data as any)?.[0]?.pinned_socials as string[]) ?? [];
     }
   });
 
@@ -1022,7 +1018,7 @@ const VideoCallPage = () => {
       const partnerId = params.get("partner_id");
       if (partnerId) {
         supabase.functions.invoke("unfreeze-purchase", {
-          body: { action: "apply_for_partner", partner_id: partnerId }
+          body: { action: "apply_for_partner", partner_id: partnerId, session_id: params.get("session_id") }
         }).then(() => {
           toast.success("🥶 You unfroze their minutes! What a hero!");
           queryClient.invalidateQueries({ queryKey: ["partner_is_frozen"] });

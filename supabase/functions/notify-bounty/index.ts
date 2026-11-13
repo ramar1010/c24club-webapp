@@ -1,3 +1,4 @@
+import { isInternalOrAdmin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -15,6 +16,12 @@ const json = (body: Record<string, unknown>, status = 200) =>
   });
 
 serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {

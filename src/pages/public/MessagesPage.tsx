@@ -260,12 +260,9 @@ const MessagesPage = ({ onClose, initialPartnerId }: { onClose?: () => void; ini
   useEffect(() => {
     if (!profileCard?.id) { setProfileSocials([]); return; }
     supabase
-      .from("vip_settings")
-      .select("pinned_socials")
-      .eq("user_id", profileCard.id)
-      .maybeSingle()
+      .rpc("get_pinned_socials", { p_user_ids: [profileCard.id] })
       .then(({ data }) => {
-        setProfileSocials(data?.pinned_socials || []);
+        setProfileSocials(((data as any)?.[0]?.pinned_socials as string[]) || []);
       });
   }, [profileCard?.id]);
 

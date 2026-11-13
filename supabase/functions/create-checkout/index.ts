@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -24,6 +25,15 @@ serve(async (req) => {
 
     const { priceId, source, tier: tierFromClient } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
+    const ALLOWED_VIP_PRICES: Record<string, "basic" | "premium"> = {
+      price_1T9ygOA5n8uAZoY1tzoTfeMH: "basic",
+      price_1T9yhEA5n8uAZoY1zwb5wVdp: "premium",
+    };
+    if (!ALLOWED_VIP_PRICES[priceId]) {
+      return new Response(JSON.stringify({ error: "Invalid plan" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Log purchase intent for KPI tracking (interface/source)
     try {
@@ -51,7 +61,7 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -62,8 +72,8 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/videocall?checkout=success`,
-      cancel_url: `${req.headers.get("origin")}/videocall?checkout=cancel`,
+      success_url: `${safeOrigin(req.headers.get("origin"))}/videocall?checkout=success`,
+      cancel_url: `${safeOrigin(req.headers.get("origin"))}/videocall?checkout=cancel`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

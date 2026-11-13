@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId, isInternalCall, escapeHtml, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { sendResendEmail } from "../_shared/resend.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -118,7 +119,9 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { interested_user_id, target_user_id } = await req.json();
+    const { target_user_id } = await req.json();
+    const interested_user_id = await getAuthenticatedUserId(req);
+    if (!interested_user_id) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
     if (!interested_user_id || !target_user_id) {
       return new Response(JSON.stringify({ error: "Missing params" }), {
         status: 400,
@@ -149,7 +152,13 @@ serve(async (req) => {
       .eq("interested_in_user_id", target_user_id)
       .single();
 
-    interested.icebreaker = interestRow?.icebreaker_message || null;
+    if (!interestRow) {
+      return new Response(JSON.stringify({ error: "No interest recorded" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    interested.icebreaker = interestRow?.icebreaker_message ? escapeHtml(interestRow.icebreaker_message) : null;
+    interested.name = escapeHtml(interested.name);
+    target.name = escapeHtml(target.name);
+    if (interested.image_url) interested.image_url = escapeHtml(interested.image_url);
 
     // Mark as notified
     await supabase

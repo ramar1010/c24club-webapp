@@ -1,3 +1,4 @@
+import { isInternalOrAdmin, maskEmail, maskPhone } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -44,7 +45,7 @@ function buildEmailHtml(opts: {
           <h1 style="margin:0;font-size:22px;color:#fff;">Your Weekly Earnings 💸</h1>
         </td></tr>
         <tr><td style="padding:24px 24px 8px;">
-          <p style="font-size:16px;margin:0;text-align:center;color:#333;">Hey <strong>${name}</strong>, here's your money recap for the week!</p>
+          <p style="font-size:16px;margin:0;text-align:center;color:#333;">Hey <strong>${escapeHtml(name)}</strong>, here's your money recap for the week!</p>
         </td></tr>
         <tr><td style="padding:16px 24px 20px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -80,6 +81,12 @@ function buildEmailHtml(opts: {
 }
 
 Deno.serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -167,7 +174,7 @@ Deno.serve(async (req) => {
         });
         sent++;
       } catch (sendErr) {
-        console.error(`[female-earnings-weekly-email] failed for ${female.email}:`, sendErr);
+        console.error(`[female-earnings-weekly-email] failed for ${maskEmail(female.email)}:`, sendErr);
       }
     }
 

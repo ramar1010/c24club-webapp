@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -68,7 +69,7 @@ serve(async (req) => {
       .maybeSingle();
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");

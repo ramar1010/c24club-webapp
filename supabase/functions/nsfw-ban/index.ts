@@ -1,3 +1,4 @@
+import { hasRole, wereRecentlyConnected } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -33,6 +34,14 @@ Deno.serve(async (req) => {
     // Prevent banning yourself
     if (targetUserId === user.id && !allowSelfBan) {
       throw new Error("Cannot ban yourself");
+    }
+
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId)) throw new Error("Invalid targetUserId");
+    if (targetUserId !== user.id) {
+      const isStaff = (await hasRole(user.id, "admin")) || (await hasRole(user.id, "moderator"));
+      if (!isStaff && !(await wereRecentlyConnected(user.id, targetUserId))) {
+        throw new Error("You can only report someone you were just connected with");
+      }
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);

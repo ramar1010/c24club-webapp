@@ -104,8 +104,10 @@ serve(async (req) => {
 
     // === track_signup: called when a new user signs up with a referral code ===
     if (action === "track_signup") {
-      const { referral_code, new_user_id } = body;
-      if (!referral_code || !new_user_id) throw new Error("Missing fields");
+      const { referral_code } = body;
+      const new_user_id = await getAuthenticatedUserId();
+      if (!new_user_id) return json({ error: "Not authenticated" }, 401);
+      if (!referral_code) throw new Error("Missing fields");
 
       const { data: codeData } = await adminClient
         .from("referral_codes")
@@ -142,6 +144,9 @@ serve(async (req) => {
 
     // === check_engagement: called periodically to check if referred users have engaged ===
     if (action === "check_engagement") {
+      const engagementCaller = await getAuthenticatedUserId();
+      if (!engagementCaller) return json({ error: "Not authenticated" }, 401);
+      const { data: isAdminCaller } = await adminClient.rpc("has_role", { _user_id: engagementCaller, _role: "admin" });
       const { data: settings } = await adminClient
         .from("referral_settings")
         .select("engagement_threshold_minutes")
@@ -149,10 +154,12 @@ serve(async (req) => {
         .maybeSingle();
       const threshold = settings?.engagement_threshold_minutes ?? 10;
 
-      const { data: pending } = await adminClient
+      let pendingQuery = adminClient
         .from("referral_tracking")
         .select("id, referred_user_id")
         .eq("status", "signed_up");
+      if (isAdminCaller !== true) pendingQuery = pendingQuery.eq("referrer_id", engagementCaller);
+      const { data: pending } = await pendingQuery;
 
       if (!pending?.length) {
         return json({ updated: 0 });

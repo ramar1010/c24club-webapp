@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -16,7 +17,9 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const { type, userId, wagerAmount } = await req.json();
+    const { type, wagerAmount } = await req.json();
+    const userId = await getAuthenticatedUserId(req);
+    if (!userId) { return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 
     // GET_SETTINGS: Return wager configuration
     if (type === "get_settings") {

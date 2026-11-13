@@ -34,7 +34,7 @@ export async function sendResendEmail(options: ResendEmailOptions): Promise<{ id
   }
 
   if (!options.force && (await isEmailOptedOut(options.to))) {
-    console.log(`[resend] skipped: ${options.to} has email notifications turned off`);
+    console.log(`[resend] skipped: ${String(options.to).replace(/^(.).*@/, "$1***@")} has email notifications turned off`);
     return { id: "skipped-opted-out" };
   }
 

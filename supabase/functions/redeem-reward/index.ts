@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
@@ -98,7 +99,7 @@ Deno.serve(async (req) => {
 
     const createStripeCheckout = async (shippingFee: number, rewardTitle: string, redemptionId: string) => {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
-      const customers = await stripe.customers.list({ email: user!.email!, limit: 1 });
+      const customers = await ((user! as any).email_confirmed_at ? stripe.customers.list({ email: user!.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
       const session = await stripe.checkout.sessions.create({
@@ -110,8 +111,8 @@ Deno.serve(async (req) => {
         }],
         mode: "payment",
         metadata: { redemption_id: redemptionId },
-        success_url: `${req.headers.get("origin")}/my-rewards?payment=success`,
-        cancel_url: `${req.headers.get("origin")}/store?payment=canceled`,
+        success_url: `${safeOrigin(req.headers.get("origin"))}/my-rewards?payment=success`,
+        cancel_url: `${safeOrigin(req.headers.get("origin"))}/store?payment=canceled`,
       });
 
       await supabase.from("member_redemptions").update({ status: "pending_payment", notes: `stripe_session:${session.id}` }).eq("id", redemptionId);
@@ -143,11 +144,20 @@ Deno.serve(async (req) => {
         throw new Error("Cash rewards are only available to female members");
       }
 
+      // Atomically claim the one-time cash value before charging minutes so it can't be claimed twice
+      const { data: claimedRows } = await supabase.from("rewards").update({ cashout_value: 0 })
+        .eq("id", reward.id).eq("cashout_value", reward.cashout_value).gt("cashout_value", 0).select("id");
+      if (!claimedRows?.length) {
+        throw new Error("This cashout has already been claimed");
+      }
+      const restoreCashout = () => supabase.from("rewards").update({ cashout_value: reward.cashout_value }).eq("id", reward.id);
+
       // Deduct minutes (and proportionally reduce gifted_minutes)
       const { data: memberData } = await supabase.from("member_minutes").select("total_minutes, gifted_minutes").eq("user_id", user.id).maybeSingle();
       const totalMinutes = memberData?.total_minutes ?? 0;
       const giftedMins = (memberData as any)?.gifted_minutes ?? 0;
       if (totalMinutes < reward.minutes_cost) {
+        await restoreCashout();
         throw new Error("Not enough minutes");
       }
       const newGifted = Math.max(0, giftedMins - reward.minutes_cost);
@@ -172,11 +182,9 @@ Deno.serve(async (req) => {
       if (insertErr) {
         // Refund minutes
         await supabase.from("member_minutes").update({ total_minutes: totalMinutes, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+        await restoreCashout();
         throw insertErr;
       }
-
-      // Reset the cashout value on the reward to $0
-      await supabase.from("rewards").update({ cashout_value: 0 }).eq("id", reward.id);
 
       return new Response(JSON.stringify({ success: true, cashoutAmount: cashoutValue, balances: await getBalances() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

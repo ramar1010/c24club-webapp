@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -75,8 +76,7 @@ async function verifyNativeReceipt(
   if (platform === "ios") {
     const secret = Deno.env.get("IOS_SHARED_SECRET");
     if (!secret) {
-      console.warn("[recharge-minutes] IOS_SHARED_SECRET not set — skipping Apple verification");
-      return null;
+      throw new Error("Apple verification is not configured");
     }
     const callApple = async (url: string) => {
       const res = await fetch(url, {
@@ -96,8 +96,8 @@ async function verifyNativeReceipt(
     return null;
   }
   if (platform === "android") {
-    console.warn("[recharge-minutes] Google verification not configured — skipping");
-    return null;
+    // Fail closed: never credit minutes for an unverified Google Play purchase
+    throw new Error("Google Play purchase verification is not available");
   }
   throw new Error("Unknown platform");
 }
@@ -150,7 +150,7 @@ serve(async (req) => {
       if (!selected) throw new Error("Invalid pack");
 
       const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await ((user as any).email_confirmed_at ? stripe.customers.list({ email: user.email!, limit: 1 }) : Promise.resolve({ data: [] as any[] }));
       const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
       const { data: purchase, error: purchaseError } = await supabaseAdmin

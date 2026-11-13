@@ -1,3 +1,4 @@
+import { isInternalOrAdmin } from "../_shared/auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
 
@@ -71,6 +72,12 @@ function buildDigestHtml(
 }
 
 Deno.serve(async (req) => {
+  if (req.method !== "OPTIONS" && !(await isInternalOrAdmin(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -209,7 +216,7 @@ Deno.serve(async (req) => {
       .in("id", allSenderIds);
 
     const senderNameMap = new Map(
-      (senders || []).map((s: any) => [s.id, s.name || "Someone"])
+      (senders || []).map((s: any) => [s.id, escapeHtml(s.name || "Someone")])
     );
 
     // Get suppressed emails

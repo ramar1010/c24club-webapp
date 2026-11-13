@@ -105,13 +105,10 @@ export default function PickItemModal({
   useEffect(() => {
     if (!open) return;
     const fetchSettings = async () => {
-      const { data } = await supabase
-        .from("wishlist_settings")
-        .select("*")
-        .limit(1)
-        .maybeSingle();
-      const min = (data as any)?.min_minutes ?? 400;
-      const max = (data as any)?.max_minutes ?? 800;
+      const { data: appSettings } = await supabase.rpc("get_public_app_settings");
+      const data = (appSettings as any)?.wishlist;
+      const min = data?.min_minutes ?? 400;
+      const max = data?.max_minutes ?? 800;
       setMinutesCost(Math.round(min + Math.random() * (max - min)));
     };
     fetchSettings();
